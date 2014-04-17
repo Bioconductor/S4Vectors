@@ -5,10 +5,10 @@ IRanges before the split (version 1.23.5)
 R files: 73 files
 
   Going to S4Vectors (31 files in total):
-    S4-utils.R
-    utils.R
-    isConstant.R
-    normarg-utils.R
+  X S4-utils.R
+  X utils.R
+  X isConstant.R
+  X normarg-utils.R
     subsetting-utils.R  (contains a reference to the Ranges class)
     int-utils.R
     str-utils.R
@@ -43,11 +43,11 @@ C files:
 - 36 compilation units (.c files)
 
   Going to S4Vectors (15 files in total):
-    safe_arithm.c
-    sort_utils.c
-    hash_utils.c
-    AEbufs.c    (RangeAE stuff needs to stay in IRanges e.g. in RangeAEbufs.c)
-    anyMissing.c
+  X safe_arithm.c
+  X sort_utils.c
+  X hash_utils.c
+  X AEbufs.c    (RangeAE stuff needs to stay in IRanges e.g. in RangeAEbufs.c)
+  X anyMissing.c
     SEXP_utils.c
     int_utils.c
     str_utils.c

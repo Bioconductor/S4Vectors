@@ -1,0 +1,65 @@
+useDynLib(S4Vectors)
+
+import(methods)
+importFrom(utils, head, tail, stack)
+importFrom(stats, var, cov, cor, sd, median, quantile, mad,
+           IQR, smoothEnds, runmed, window, "window<-", aggregate,
+           na.omit, na.exclude, complete.cases, setNames)
+
+import(BiocGenerics)
+importFrom(stats4, summary, update)
+
+exportClasses(
+    characterORNULL
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S3 methods
+###
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 methods for generics not defined in S4Vectors
+###
+
+exportMethods(
+    ## Generics defined in the method package:
+    coerce
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export non-generic functions
+###
+
+export(
+    ## S4-utils.R:
+    setValidity2, new2, setMethods,
+
+    ## utils.R:
+    .Call2,
+    get_showHeadLines, get_showTailLines,
+
+    ## normarg-utils.R:
+    isTRUEorFALSE, isSingleInteger, isSingleNumber, isSingleString,
+    isSingleNumberOrNA, isSingleStringOrNA,
+    recycleIntegerArg, recycleNumericArg,
+    fold
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 generics defined in S4Vectors + export corresponding methods
+###
+
+export(
+    ## isConstant.R:
+    isConstant
+)
+
+### Exactly the same list as above.
+exportMethods(
+    isConstant
+)
+

@@ -16,3 +16,7 @@ Depends: R (>= 3.1.0), methods, utils, stats, BiocGenerics (>= 0.9.1)
 Imports: methods, utils, stats, BiocGenerics, stats4
 Suggests: IRanges, RUnit
 License: Artistic-2.0
+Collate: S4-utils.R
+	utils.R
+	isConstant.R
+	normarg-utils.R
