@@ -1,0 +1,66 @@
+
+IRanges before the split (version 1.23.5)
+-----------------------------------------
+
+R files: 73 files
+
+  Going to S4Vectors (31 files in total):
+    S4-utils.R
+    utils.R
+    isConstant.R
+    normarg-utils.R
+    subsetting-utils.R  (contains a reference to the Ranges class)
+    int-utils.R
+    str-utils.R
+    compact_bitvector.R
+    endoapply.R
+    runstat.R
+    Annotated-class.R
+    Vector-class.R
+    Vector-comparison.R
+    List-class.R
+    DataTable-API.R
+    DataTable-stats.R
+    SimpleList-class.R
+    seqapply.R
+    multisplit.R
+    List-comparison.R
+    funprog-methods.R
+    expand-methods.R
+    eval-utils.R
+    DataFrame-class.R
+    DataFrame-utils.R
+    Rle-class.R
+    Hits-class.R
+    FilterRules-class.R
+    classNameForDisplay-methods.R (method for CompressedList needs to stay
+                                   in IRanges)
+    updateObject-methods.R (need to remove methods for range-based objects)
+    zzz.R
+
+C files:
+
+- 36 compilation units (.c files)
+
+  Going to S4Vectors (15 files in total):
+    safe_arithm.c
+    sort_utils.c
+    hash_utils.c
+    AEbufs.c    (RangeAE stuff needs to stay in IRanges e.g. in RangeAEbufs.c)
+    anyMissing.c
+    SEXP_utils.c
+    int_utils.c
+    str_utils.c
+    compact_bitvector.c
+    Vector_class.c
+    SimpleList_class.c
+    DataFrame_class.c
+    Rle_class.c
+    Rle_utils.c
+    Hits_class.c
+
+- 9 header files (.h files)
+
+  None goes to S4Vectors.
+  Seems like errCatch.h isn't used and could be removed.
+
