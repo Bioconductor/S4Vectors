@@ -16,6 +16,50 @@ static const R_CallMethodDef callMethods[] = {
 /* anyMissing.c */
 	CALLMETHOD_DEF(anyMissing, 1),
 
+/* logical_utils.c */
+        CALLMETHOD_DEF(logical_as_compact_bitvector, 1),
+        CALLMETHOD_DEF(compact_bitvector_as_logical, 2),
+        CALLMETHOD_DEF(subset_compact_bitvector, 2),
+        CALLMETHOD_DEF(compact_bitvector_bit_count, 1),
+        CALLMETHOD_DEF(compact_bitvector_last_bit, 1),
+        CALLMETHOD_DEF(compact_bitvector_set_op, 3),
+
+/* int_utils.c */
+	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
+	CALLMETHOD_DEF(Integer_sum_non_neg_vals, 1),
+	CALLMETHOD_DEF(Integer_diff_with_0, 1),
+	CALLMETHOD_DEF(Integer_diff_with_last, 2),
+	CALLMETHOD_DEF(Integer_order, 2),
+	CALLMETHOD_DEF(Integer_order2, 3),
+	CALLMETHOD_DEF(Integer_match2_quick, 5),
+	CALLMETHOD_DEF(Integer_selfmatch2_quick, 2),
+	CALLMETHOD_DEF(Integer_match2_hash, 5),
+	CALLMETHOD_DEF(Integer_selfmatch2_hash, 2),
+	CALLMETHOD_DEF(Integer_order4, 5),
+	CALLMETHOD_DEF(Integer_match4_quick, 9),
+	CALLMETHOD_DEF(Integer_selfmatch4_quick, 4),
+	CALLMETHOD_DEF(Integer_match4_hash, 9),
+	CALLMETHOD_DEF(Integer_selfmatch4_hash, 4),
+	CALLMETHOD_DEF(Integer_tabulate2, 4),
+	CALLMETHOD_DEF(Integer_explode_bits, 2),
+	CALLMETHOD_DEF(Integer_sorted_merge, 2),
+	CALLMETHOD_DEF(Integer_mseq, 2),
+	CALLMETHOD_DEF(Integer_fancy_mseq, 3),
+	CALLMETHOD_DEF(findIntervalAndStartFromWidth, 2),
+
+/* str_utils.c */
+	CALLMETHOD_DEF(unstrsplit_list, 2),
+	CALLMETHOD_DEF(safe_strexplode, 1),
+	CALLMETHOD_DEF(strsplit_as_list_of_ints, 2),
+	CALLMETHOD_DEF(svn_time, 0),
+
+/* list_utils.c */
+	CALLMETHOD_DEF(sapply_NROW, 1),
+
+/* eval_utils.c */
+        CALLMETHOD_DEF(top_prenv, 2),
+        CALLMETHOD_DEF(top_prenv_dots, 1),
+
 	{NULL, NULL, 0}
 };
 
@@ -93,6 +137,15 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_CharAEAE_insert_at);
 	REGISTER_CCALLABLE(_append_string_to_CharAEAE);
 	REGISTER_CCALLABLE(_new_CHARACTER_from_CharAEAE);
+
+/* SEXP_utils.c */
+	REGISTER_CCALLABLE(_get_classname);
+
+/* int_utils.c */
+	REGISTER_CCALLABLE(_sum_non_neg_ints);
+	REGISTER_CCALLABLE(_check_integer_pairs);
+	REGISTER_CCALLABLE(_find_interv_and_start_from_width);
+
 	return;
 }
 

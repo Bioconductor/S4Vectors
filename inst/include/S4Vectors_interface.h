@@ -337,3 +337,35 @@ void append_string_to_CharAEAE(
 
 SEXP new_CHARACTER_from_CharAEAE(const CharAEAE *char_aeae);
 
+/*
+ * SEXP_utils.c
+ */
+
+const char *get_classname(SEXP x);
+
+/*
+ * int_utils.c
+ */
+
+int sum_non_neg_ints(
+	const int *x,
+	int x_len,
+	const char *varname
+);
+
+int check_integer_pairs(
+	SEXP a,
+	SEXP b,
+	const int **a_p,
+	const int **b_p,
+	const char *a_argname,
+	const char *b_argname
+);
+
+SEXP find_interv_and_start_from_width(
+	const int *x,
+	int x_len,
+	const int *width,
+	int width_len
+);
+

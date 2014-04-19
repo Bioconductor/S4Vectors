@@ -353,3 +353,31 @@ DEFINE_CCALLABLE_STUB(SEXP, new_CHARACTER_from_CharAEAE,
 	(                char_aeae)
 )
 
+/*
+ * Stubs for callables defined in SEXP_utils.c
+ */
+
+DEFINE_CCALLABLE_STUB(const char *, get_classname,
+	(SEXP x),
+	(     x)
+)
+
+/*
+ * Stubs for callables defined in int_utils.c
+ */
+
+DEFINE_CCALLABLE_STUB(int, sum_non_neg_ints,
+	(const int *x, int x_len, const char *varname),
+	(           x,     x_len,             varname)
+)
+
+DEFINE_CCALLABLE_STUB(int, check_integer_pairs,
+	(SEXP a, SEXP b, const int **a_p, const int **b_p, const char *a_argname, const char *b_argname),
+	(     a,      b,             a_p,             b_p,             a_argname,             b_argname)
+)
+
+DEFINE_CCALLABLE_STUB(SEXP, find_interv_and_start_from_width,
+	(const int *x, int x_len, const int *width, int width_len),
+	(           x,     x_len,            width,     width_len)
+)
+

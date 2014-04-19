@@ -45,7 +45,12 @@ export(
     isTRUEorFALSE, isSingleInteger, isSingleNumber, isSingleString,
     isSingleNumberOrNA, isSingleStringOrNA,
     recycleIntegerArg, recycleNumericArg,
-    fold
+    fold,
+
+    ## str-utils.R:
+    safeExplode,
+    strsplitAsListOfIntegerVectors,
+    svn.time
 )
 
 
@@ -55,11 +60,15 @@ export(
 
 export(
     ## isConstant.R:
-    isConstant
+    isConstant,
+
+    ## str-utils.R:
+    unstrsplit
 )
 
 ### Exactly the same list as above.
 exportMethods(
-    isConstant
+    isConstant,
+    unstrsplit
 )
 

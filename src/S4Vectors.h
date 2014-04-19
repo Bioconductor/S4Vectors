@@ -95,6 +95,7 @@ void _get_matches_of_ordered_int_quads(
 	int out_shift
 );
 
+
 /* hash_utils.c */
 
 struct htab _new_htab(int n);
@@ -332,7 +333,214 @@ SEXP _new_CHARACTER_from_CharAEAE(const CharAEAE *char_aeae);
 SEXP AEbufs_free();
 
 
+/* SEXP_utils.c */
+
+const char *_get_classname(SEXP x);
+
+
 /* anyMissing.c */
 
 SEXP anyMissing(SEXP x);
+
+
+/* logical_utils.c */
+
+SEXP logical_as_compact_bitvector(SEXP x);
+
+SEXP compact_bitvector_as_logical(SEXP x, SEXP length_out);
+
+SEXP subset_compact_bitvector(SEXP x, SEXP subscript);
+
+SEXP compact_bitvector_bit_count(SEXP x);
+
+SEXP compact_bitvector_last_bit(SEXP x);
+
+SEXP compact_bitvector_set_op(SEXP query, SEXP ref, SEXP align);
+
+
+/* int_utils.c */
+
+SEXP Integer_any_missing_or_outside(SEXP x, SEXP lower, SEXP upper);
+
+int _sum_non_neg_ints(
+	const int *x,
+	int x_len,
+	const char *varname
+);
+
+SEXP Integer_sum_non_neg_vals(SEXP x);
+
+SEXP Integer_diff_with_0(SEXP x);
+
+SEXP Integer_diff_with_last(SEXP x, SEXP last);
+
+SEXP Integer_order(
+	SEXP x,
+	SEXP decreasing
+);
+
+int _check_integer_pairs(
+	SEXP a,
+	SEXP b,
+	const int **a_p,
+	const int **b_p,
+	const char *a_argname,
+	const char *b_argname
+);
+
+SEXP Integer_order2(
+	SEXP a,
+	SEXP b,
+	SEXP decreasing
+);
+
+SEXP Integer_match2_quick(
+	SEXP a1,
+	SEXP b1,
+	SEXP a2,
+	SEXP b2,
+	SEXP nomatch
+);
+
+SEXP Integer_selfmatch2_quick(
+	SEXP a,
+	SEXP b
+);
+
+SEXP Integer_match2_hash(
+	SEXP a1,
+	SEXP b1,
+	SEXP a2,
+	SEXP b2,
+	SEXP nomatch
+);
+
+SEXP Integer_selfmatch2_hash(
+	SEXP a,
+	SEXP b
+);
+
+int _check_integer_quads(
+	SEXP a,
+	SEXP b,
+	SEXP c,
+	SEXP d,
+	const int **a_p,
+	const int **b_p,
+	const int **c_p,
+	const int **d_p,
+	const char *a_argname,
+	const char *b_argname,
+	const char *c_argname,
+	const char *d_argname
+);
+
+SEXP Integer_order4(
+	SEXP a,
+	SEXP b,
+	SEXP c,
+	SEXP d,
+	SEXP decreasing
+);
+
+SEXP Integer_match4_quick(
+	SEXP a1,
+	SEXP b1,
+	SEXP c1,
+	SEXP d1,
+	SEXP a2,
+	SEXP b2,
+	SEXP c2,
+	SEXP d2,
+	SEXP nomatch
+);
+
+SEXP Integer_selfmatch4_quick(
+	SEXP a,
+	SEXP b,
+	SEXP c,
+	SEXP d
+);
+
+SEXP Integer_match4_hash(
+	SEXP a1,
+	SEXP b1,
+	SEXP c1,
+	SEXP d1,
+	SEXP a2,
+	SEXP b2,
+	SEXP c2,
+	SEXP d2,
+	SEXP nomatch
+);
+
+SEXP Integer_selfmatch4_hash(
+	SEXP a,
+	SEXP b,
+	SEXP c,
+	SEXP d
+);
+
+SEXP Integer_tabulate2(
+	SEXP x,
+	SEXP nbins,
+	SEXP weight,
+	SEXP strict
+);
+
+SEXP Integer_explode_bits(
+	SEXP x,
+	SEXP bitpos
+);
+
+SEXP Integer_sorted_merge(
+	SEXP x,
+	SEXP y
+);
+
+SEXP Integer_mseq(
+	SEXP from,
+	SEXP to
+);
+
+SEXP Integer_fancy_mseq(
+	SEXP lengths,
+	SEXP offset,
+	SEXP rev
+);
+
+SEXP _find_interv_and_start_from_width(
+	const int *x,
+	int x_len,
+	const int *width,
+	int width_len
+);
+
+SEXP findIntervalAndStartFromWidth(
+	SEXP x,
+	SEXP vec
+);
+
+
+/* str_utils.c */
+
+SEXP unstrsplit_list(SEXP x, SEXP sep);
+
+SEXP safe_strexplode(SEXP s);
+
+SEXP strsplit_as_list_of_ints(SEXP x, SEXP sep);
+
+SEXP svn_time();
+
+
+/* list_utils.c */
+
+SEXP sapply_NROW(SEXP x);
+
+
+/* eval_utils.c */
+
+SEXP top_prenv(SEXP nm, SEXP env);
+
+SEXP top_prenv_dots(SEXP env);
 

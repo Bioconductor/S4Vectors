@@ -9,10 +9,12 @@ R files: 73 files
   X utils.R
   X isConstant.R
   X normarg-utils.R
+  X compact_bitvector.R (renamed logical-utils.R)
+  X int-utils.R
+  X str-utils.R
+  X list-utils.R        (NEW!)
+  X eval-utils.R
     subsetting-utils.R  (contains a reference to the Ranges class)
-    int-utils.R
-    str-utils.R
-    compact_bitvector.R
     endoapply.R
     runstat.R
     Annotated-class.R
@@ -27,7 +29,6 @@ R files: 73 files
     List-comparison.R
     funprog-methods.R
     expand-methods.R
-    eval-utils.R
     DataFrame-class.R
     DataFrame-utils.R
     Rle-class.R
@@ -47,11 +48,11 @@ C files:
   X sort_utils.c
   X hash_utils.c
   X AEbufs.c    (RangeAE stuff needs to stay in IRanges e.g. in RangeAEbufs.c)
+  X SEXP_utils.c (split in SEXP_utils.c + list_utils.c + eval_utils.c)
   X anyMissing.c
-    SEXP_utils.c
-    int_utils.c
-    str_utils.c
-    compact_bitvector.c
+  X compact_bitvector.c (renamed logical_utils.c)
+  X int_utils.c
+  X str_utils.c
     Vector_class.c
     SimpleList_class.c
     DataFrame_class.c
