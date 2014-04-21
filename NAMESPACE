@@ -10,7 +10,8 @@ import(BiocGenerics)
 importFrom(stats4, summary, update)
 
 exportClasses(
-    characterORNULL
+    characterORNULL,
+    Annotated
 )
 
 
@@ -63,12 +64,16 @@ export(
     isConstant,
 
     ## str-utils.R:
-    unstrsplit
+    unstrsplit,
+
+    ## Annotated-class.R:
+    metadata, "metadata<-"
 )
 
 ### Exactly the same list as above.
 exportMethods(
     isConstant,
-    unstrsplit
+    unstrsplit,
+    metadata, "metadata<-"
 )
 

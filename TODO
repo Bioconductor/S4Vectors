@@ -15,7 +15,7 @@ R files: 73 files
   X list-utils.R        (NEW!)
   X eval-utils.R
 
-    Annotated-class.R
+  X Annotated-class.R
     DataTable-API.R     (rename DataTable-class.R, put DataTable class def here)
 
     subsetting-utils.R  (contains a reference to the Ranges class!)
