@@ -11,7 +11,8 @@ importFrom(stats4, summary, update)
 
 exportClasses(
     characterORNULL,
-    Annotated
+    Annotated,
+    DataTable
 )
 
 
@@ -19,14 +20,41 @@ exportClasses(
 ### Export S3 methods
 ###
 
+S3method(duplicated, DataTable)
+S3method(unique, DataTable)
+
+### We also export them thru the export() directive so that (a) they can be
+### called directly, (b) tab-completion on the name of the generic shows them,
+### (but ?generic.<tab> shows all documented methods) and (c) methods()
+### doesn't asterisk them.
+export(
+    duplicated.DataTable,
+    unique.DataTable
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Export S4 methods for generics not defined in S4Vectors
 ###
 
 exportMethods(
-    ## Generics defined in the method package:
-    coerce
+    ## Generics defined in the base package:
+    NROW, NCOL, dim,
+    dimnames, "dimnames<-",
+    "rownames<-", "colnames<-",
+    subset,
+    is.na,
+    cbind, rbind,
+    merge,
+    duplicated, unique,
+    by,
+    transform,
+
+    ## Generics defined in the methods package:
+    coerce, show,
+
+    ## Generics defined in the stats package:
+    na.omit, na.exclude, complete.cases
 )
 
 
@@ -67,13 +95,17 @@ export(
     unstrsplit,
 
     ## Annotated-class.R:
-    metadata, "metadata<-"
+    metadata, "metadata<-",
+
+    ## DataTable-class.R:
+    as.env
 )
 
 ### Exactly the same list as above.
 exportMethods(
     isConstant,
     unstrsplit,
-    metadata, "metadata<-"
+    metadata, "metadata<-",
+    as.env
 )
 

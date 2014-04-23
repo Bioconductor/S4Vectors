@@ -16,7 +16,8 @@ R files: 73 files
   X eval-utils.R
 
   X Annotated-class.R
-    DataTable-API.R     (rename DataTable-class.R, put DataTable class def here)
+  X DataTable-API.R     (rename DataTable-class.R, put DataTable class def here)
+  X DataTable-stats.R   (merge with DataTable-class.R)
 
     subsetting-utils.R  (contains a reference to the Ranges class!)
     Vector-class.R
@@ -33,7 +34,6 @@ R files: 73 files
 
     DataFrame-class.R
     DataFrame-utils.R
-    DataTable-stats.R   (merge with DataFrame-utils.R)
     expand-methods.R    (merge with DataFrame-utils.R)
 
     Rle-class.R         (too big! split in Rle-class.R + Rle-utils.R)
