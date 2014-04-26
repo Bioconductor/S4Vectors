@@ -25,5 +25,6 @@ Collate: S4-utils.R
 	str-utils.R
 	list-utils.R
 	eval-utils.R
+	subsetting-utils.R
 	Annotated-class.R
 	DataTable-class.R
