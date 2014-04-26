@@ -18,7 +18,6 @@
 \alias{NSBS,logical-method}
 \alias{NSBS,character-method}
 \alias{NSBS,factor-method}
-\alias{NSBS,matrix-method}
 \alias{NSBS,array-method}
 
 \alias{as.integer,NativeNSBS-method}

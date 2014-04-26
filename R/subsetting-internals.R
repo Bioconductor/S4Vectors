@@ -213,15 +213,6 @@ setMethod("NSBS", "character", .NSBS.characterORfactor)
 
 setMethod("NSBS", "factor", .NSBS.characterORfactor)
 
-setMethod("NSBS", "matrix",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
-    {
-        warning("subscript is a matrix, passing it thru as.vector() first")
-        i <- as.vector(i)
-        callGeneric()
-    }
-)
-
 setMethod("NSBS", "array",
     function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
     {
