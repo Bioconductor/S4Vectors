@@ -134,34 +134,34 @@ setMethod("NSBS", "NULL",
     }
 )
 
-setMethod("NSBS", "numeric",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
-    {
-        x_NROW <- NROW(x)
-        if (!is.integer(i))
-            i <- as.integer(i)
-        if (upperBoundIsStrict) {
-            if (anyMissingOrOutside(i, upper=x_NROW))
-                stop("subscript contains NAs or out-of-bounds indices")
-        } else {
-            if (any(is.na(i)))
-                stop("subscript contains NAs")
-        }
-        nonzero_idx <- which(i != 0L)
-        i <- i[nonzero_idx]
-        if (length(i) != 0L) {
-            any_pos <- any(i > 0L)
-            any_neg <- any(i < 0L)
-            if (any_neg && any_pos)
-                stop("cannot mix negative with positive indices")
-            ## From here, indices are guaranteed to be either all positive or
-            ## all negative.
-            if (any_neg)
-                i <- seq_len(x_NROW)[i]
-        }
-        .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+.NSBS.numeric <- function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+{
+    x_NROW <- NROW(x)
+    if (!is.integer(i))
+        i <- as.integer(i)
+    if (upperBoundIsStrict) {
+        if (anyMissingOrOutside(i, upper=x_NROW))
+            stop("subscript contains NAs or out-of-bounds indices")
+    } else {
+        if (any(is.na(i)))
+            stop("subscript contains NAs")
     }
-)
+    nonzero_idx <- which(i != 0L)
+    i <- i[nonzero_idx]
+    if (length(i) != 0L) {
+        any_pos <- any(i > 0L)
+        any_neg <- any(i < 0L)
+        if (any_neg && any_pos)
+            stop("cannot mix negative with positive indices")
+        ## From here, indices are guaranteed to be either all positive or
+        ## all negative.
+        if (any_neg)
+            i <- seq_len(x_NROW)[i]
+    }
+    .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+}
+
+setMethod("NSBS", "numeric", .NSBS.numeric)
 
 setMethod("NSBS", "logical",
     function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
@@ -213,6 +213,23 @@ setMethod("NSBS", "character", .NSBS.characterORfactor)
 
 setMethod("NSBS", "factor", .NSBS.characterORfactor)
 
+setMethod("NSBS", "matrix",
+    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    {
+        warning("subscript is a matrix, passing it thru as.vector() first")
+        i <- as.vector(i)
+        callGeneric()
+    }
+)
+
+setMethod("NSBS", "array",
+    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    {
+        warning("subscript is an array, passing it thru as.vector() first")
+        i <- as.vector(i)
+        callGeneric()
+    }
+)
 
 ### Other methods.
 

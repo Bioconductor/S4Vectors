@@ -11,13 +11,15 @@
 \alias{isStrictlySorted,NSBS-method}
 
 \alias{NSBS}
+\alias{NSBS,NSBS-method}
 \alias{NSBS,missing-method}
 \alias{NSBS,NULL-method}
 \alias{NSBS,numeric-method}
 \alias{NSBS,logical-method}
 \alias{NSBS,character-method}
 \alias{NSBS,factor-method}
-\alias{NSBS,NSBS-method}
+\alias{NSBS,matrix-method}
+\alias{NSBS,array-method}
 
 \alias{as.integer,NativeNSBS-method}
 
