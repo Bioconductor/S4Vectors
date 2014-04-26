@@ -10,9 +10,10 @@ import(BiocGenerics)
 importFrom(stats4, summary, update)
 
 exportClasses(
-    characterORNULL,
-    Annotated,
-    DataTable
+    characterORNULL, vectorORfactor,
+    DataTable,
+    NSBS,
+    Annotated
 )
 
 
@@ -94,18 +95,32 @@ export(
     ## str-utils.R:
     unstrsplit,
 
-    ## Annotated-class.R:
-    metadata, "metadata<-",
-
     ## DataTable-class.R:
-    as.env
+    ROWNAMES,
+    as.env,
+
+    ## subsetting-internals.R:
+    NSBS,
+    normalizeSingleBracketSubscript, normalizeSingleBracketReplacementValue,
+    extractROWS, replaceROWS,
+    normalizeDoubleBracketSubscript,
+    getListElement, setListElement,
+
+    ## Annotated-class.R:
+    metadata, "metadata<-"
 )
 
 ### Exactly the same list as above.
 exportMethods(
     isConstant,
     unstrsplit,
-    metadata, "metadata<-",
-    as.env
+    ROWNAMES,
+    as.env,
+    NSBS,
+    #normalizeSingleBracketSubscript, normalizeSingleBracketReplacementValue,
+    extractROWS, replaceROWS,
+    #normalizeDoubleBracketSubscript,
+    getListElement, setListElement,
+    metadata, "metadata<-"
 )
 

@@ -29,6 +29,7 @@ AEbufs.free <- function()
 
 ### Exported!
 setClassUnion("characterORNULL", c("character", "NULL"))
+setClassUnion("vectorORfactor", c("vector", "factor"))
 
 ### Exported!
 ### We define the coercion method below as a workaround to the following

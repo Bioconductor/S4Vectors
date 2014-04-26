@@ -21,6 +21,14 @@ setMethod("NCOL", "DataTable", function(x) ncol(x))
 
 setMethod("dim", "DataTable", function(x) c(nrow(x), ncol(x)))
 
+setGeneric("ROWNAMES", function(x) standardGeneric("ROWNAMES"))
+
+setMethod("ROWNAMES", "ANY",
+    function (x) if (length(dim(x)) != 0L) rownames(x) else names(x)
+)
+
+setMethod("ROWNAMES", "DataTable", function(x) rownames(x))
+
 setMethod("dimnames", "DataTable",
           function(x) {
             list(rownames(x), colnames(x))

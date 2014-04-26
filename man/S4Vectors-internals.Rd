@@ -9,6 +9,9 @@
 \alias{class:characterORNULL}
 \alias{characterORNULL-class}
 \alias{characterORNULL}
+\alias{class:vectorORfactor}
+\alias{vectorORfactor-class}
+\alias{vectorORfactor}
 \alias{coerce,ANY,vector-method}
 \alias{get_showHeadLines}
 \alias{get_showTailLines}

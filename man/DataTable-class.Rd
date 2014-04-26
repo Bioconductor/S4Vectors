@@ -8,6 +8,9 @@
 \alias{NROW,DataTable-method}
 \alias{NCOL,DataTable-method}
 \alias{dim,DataTable-method}
+\alias{ROWNAMES}
+\alias{ROWNAMES,ANY-method}
+\alias{ROWNAMES,DataTable-method}
 \alias{dimnames,DataTable-method}
 \alias{dimnames<-,DataTable-method}
 
