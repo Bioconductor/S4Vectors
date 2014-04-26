@@ -6,6 +6,7 @@
 \alias{NSBS-class}
 
 \alias{length,NSBS-method}
+\alias{anyDuplicated,NSBS-method}
 \alias{isStrictlySorted,NSBS-method}
 
 \alias{NSBS}
