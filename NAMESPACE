@@ -89,8 +89,8 @@ export(
 ###
 
 export(
-    ## isConstant.R:
-    isConstant,
+    ## comparison-utils.R:
+    isConstant, isSorted, isStrictlySorted,
 
     ## str-utils.R:
     unstrsplit,
@@ -112,7 +112,7 @@ export(
 
 ### Exactly the same list as above.
 exportMethods(
-    isConstant,
+    isConstant, isSorted, isStrictlySorted,
     unstrsplit,
     ROWNAMES,
     as.env,

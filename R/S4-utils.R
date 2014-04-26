@@ -68,3 +68,52 @@ setMethods <- function(f, signatures=list(), definition,
         setMethod(f, signature=signature, definition, where=where, ...)
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Manipulating the prototype of an S4 class.
+###
+
+### Gets or sets the default value of the given slot of the given class by
+### reading or altering the prototype of the class. setDefaultSlotValue() is
+### typically used in the .onLoad() hook of a package when the DLL of the
+### package needs to be loaded *before* the default value of a slot can be
+### computed.
+getDefaultSlotValue <- function(classname, slotname, where=.GlobalEnv)
+{
+    classdef <- getClass(classname, where=where)
+    if (!(slotname %in% names(attributes(classdef@prototype))))
+        stop("prototype for class \"", classname, "\" ",
+             "has no \"", slotname, "\" attribute")
+    attr(classdef@prototype, slotname, exact=TRUE)
+}
+
+setDefaultSlotValue <- function(classname, slotname, value, where=.GlobalEnv)
+{
+    classdef <- getClass(classname, where=where)
+    if (!(slotname %in% names(attributes(classdef@prototype))))
+        stop("prototype for class \"", classname, "\" ",
+             "has no \"", slotname, "\" attribute")
+    attr(classdef@prototype, slotname) <- value
+    assignClassDef(classname, classdef, where=where)
+    ## Re-compute the complete definition of the class. methods::setValidity()
+    ## does that after calling assignClassDef() so we do it too.
+    resetClass(classname, classdef, where=where)
+}
+
+setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
+{
+    classdef <- getClass(classname, where=where)
+    if (class(object) != classname)
+        stop("'object' must be a ", classname, " instance")
+    object_attribs <- attributes(object)
+    object_attribs$class <- NULL
+    ## Sanity check.
+    stopifnot(identical(names(object_attribs),
+                        names(attributes(classdef@prototype))))
+    attributes(classdef@prototype) <- object_attribs
+    assignClassDef(classname, classdef, where=where)
+    ## Re-compute the complete definition of the class. methods::setValidity()
+    ## does that after calling assignClassDef() so we do it too.
+    resetClass(classname, classdef, where=where)
+}
+

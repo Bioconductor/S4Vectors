@@ -5,6 +5,9 @@
 \alias{class:NSBS}
 \alias{NSBS-class}
 
+\alias{length,NSBS-method}
+\alias{isStrictlySorted,NSBS-method}
+
 \alias{NSBS}
 \alias{NSBS,missing-method}
 \alias{NSBS,NULL-method}
@@ -14,7 +17,6 @@
 \alias{NSBS,factor-method}
 \alias{NSBS,NSBS-method}
 
-\alias{length,NSBS-method}
 \alias{as.integer,NativeNSBS-method}
 
 \alias{normalizeSingleBracketSubscript}
