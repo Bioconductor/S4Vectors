@@ -79,13 +79,15 @@ setMethod("upperBound", "NSBS", function(x) x@upper_bound)
 
 setMethod("upperBoundIsStrict", "NSBS", function(x) x@upper_bound_is_strict)
 
-### Overriden by NSBS subclasses RleNSBS and RangesNSBS.
+### The 3 default methods below are overriden by NSBS subclasses RleNSBS and
+### RangesNSBS defined in the IRanges package.
 
 setMethod("length", "NSBS", function(x) length(as.integer(x)))
 
-setMethod("anyDuplicated", "NSBS",
-    function(x, incomparables=FALSE, ...) anyDuplicated(as.integer(x))
-)
+## S3/S4 combo for anyDuplicated.NSBS
+anyDuplicated.NSBS <- function(x, incomparables=FALSE, ...)
+    anyDuplicated(as.integer(x))
+setMethod("anyDuplicated", "NSBS", anyDuplicated.NSBS)
 
 setMethod("isStrictlySorted", "NSBS",
     function(x) isStrictlySorted(as.integer(x))

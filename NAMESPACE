@@ -21,7 +21,10 @@ exportClasses(
 ### Export S3 methods
 ###
 
+S3method(anyDuplicated, NSBS)
+
 S3method(duplicated, DataTable)
+
 S3method(unique, DataTable)
 
 ### We also export them thru the export() directive so that (a) they can be
@@ -29,7 +32,10 @@ S3method(unique, DataTable)
 ### (but ?generic.<tab> shows all documented methods) and (c) methods()
 ### doesn't asterisk them.
 export(
+    anyDuplicated.NSBS,
+
     duplicated.DataTable,
+
     unique.DataTable
 )
 
@@ -47,7 +53,7 @@ exportMethods(
     is.na,
     cbind, rbind,
     merge,
-    duplicated, unique,
+    duplicated, unique, anyDuplicated,
     by,
     transform,
 
