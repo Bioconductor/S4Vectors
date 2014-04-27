@@ -70,6 +70,9 @@ exportMethods(
 ###
 
 export(
+    ## utils.R:
+    wmsg,
+
     ## S4-utils.R:
     setValidity2, new2, setMethods,
 

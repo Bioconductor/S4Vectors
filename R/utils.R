@@ -1,8 +1,14 @@
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Some low-level helper functions and classes.
+### =========================================================================
+### Some low-level helper functions
+### -------------------------------------------------------------------------
 ###
-### Unless stated otherwise, nothing in this section is exported.
-###
+
+
+### Usage:
+###   stop(wmsg(...))
+###   warning(wmsg(...))
+wmsg <- function(...)
+    paste0(strwrap(paste0(c(...), collapse="")), collapse="\n  ")
 
 errorIfWarning <- function(expr)
 {
@@ -25,57 +31,6 @@ AEbufs.free <- function()
     #AEbufs.use.malloc(TRUE)
     #on.exit({AEbufs.free(); AEbufs.use.malloc(FALSE)})    
     .Call(.NAME, ..., PACKAGE=PACKAGE)
-}
-
-### Exported!
-setClassUnion("characterORNULL", c("character", "NULL"))
-setClassUnion("vectorORfactor", c("vector", "factor"))
-
-### Exported!
-### We define the coercion method below as a workaround to the following
-### bug in R:
-###
-###   setClass("A", representation(stuff="numeric"))
-###   setMethod("as.vector", "A", function(x, mode="any") x@stuff)
-###
-###   a <- new("A", stuff=3:-5)
-###   > as.vector(a)
-###   [1]  3  2  1  0 -1 -2 -3 -4 -5
-###   > as(a, "vector")
-###   Error in as.vector(from) : 
-###     no method for coercing this S4 class to a vector
-###   > selectMethod("coerce", c("A", "vector"))
-###   Method Definition:
-###
-###   function (from, to, strict = TRUE) 
-###   {
-###       value <- as.vector(from)
-###       if (strict) 
-###           attributes(value) <- NULL
-###       value
-###   }
-###   <environment: namespace:methods>
-###
-###   Signatures:
-###           from  to      
-###   target  "A"   "vector"
-###   defined "ANY" "vector"
-###   > setAs("ANY", "vector", function(from) as.vector(from))
-###   > as(a, "vector")
-###   [1]  3  2  1  0 -1 -2 -3 -4 -5
-setAs("ANY", "vector", function(from) as.vector(from))
-
-coercerToClass <- function(class) {
-  if (extends(class, "vector"))
-    .as <- get(paste0("as.", class))
-  else .as <- function(from) as(from, class)
-  function(from) {
-    to <- .as(from)
-    if (!identical(names(from), names(to))) {
-      names(to) <- names(from)
-    }
-    to
-  }
 }
 
 

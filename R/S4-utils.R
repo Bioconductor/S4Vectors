@@ -1,5 +1,64 @@
-### 
-### Utility functions for reducing redundant testing of object validity.
+### =========================================================================
+### Some low-level S4 classes and utilities
+### -------------------------------------------------------------------------
+###
+
+
+setClassUnion("characterORNULL", c("character", "NULL"))
+setClassUnion("vectorORfactor", c("vector", "factor"))
+
+
+### We define the coercion method below as a workaround to the following
+### bug in R:
+###
+###   setClass("A", representation(stuff="numeric"))
+###   setMethod("as.vector", "A", function(x, mode="any") x@stuff)
+###
+###   a <- new("A", stuff=3:-5)
+###   > as.vector(a)
+###   [1]  3  2  1  0 -1 -2 -3 -4 -5
+###   > as(a, "vector")
+###   Error in as.vector(from) : 
+###     no method for coercing this S4 class to a vector
+###   > selectMethod("coerce", c("A", "vector"))
+###   Method Definition:
+###
+###   function (from, to, strict = TRUE) 
+###   {
+###       value <- as.vector(from)
+###       if (strict) 
+###           attributes(value) <- NULL
+###       value
+###   }
+###   <environment: namespace:methods>
+###
+###   Signatures:
+###           from  to      
+###   target  "A"   "vector"
+###   defined "ANY" "vector"
+###   > setAs("ANY", "vector", function(from) as.vector(from))
+###   > as(a, "vector")
+###   [1]  3  2  1  0 -1 -2 -3 -4 -5
+setAs("ANY", "vector", function(from) as.vector(from))
+
+coercerToClass <- function(class) {
+  if (extends(class, "vector"))
+    .as <- get(paste0("as.", class))
+  else .as <- function(from) as(from, class)
+  function(from) {
+    to <- .as(from)
+    if (!identical(names(from), names(to))) {
+      names(to) <- names(from)
+    }
+    to
+  }
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### setValidity2(), new2()
+###
+### Give more contol over when object validation should happen.
 ###
 
 .validity_options <- new.env(hash=TRUE, parent=emptyenv())
