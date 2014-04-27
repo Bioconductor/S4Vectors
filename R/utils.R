@@ -4,9 +4,11 @@
 ###
 
 
-### Usage:
+### Wrap the message in lines that don't exceed the terminal width (obtained
+### with 'getOption("width")'). Usage:
 ###   stop(wmsg(...))
 ###   warning(wmsg(...))
+###   message(wmsg(...))
 wmsg <- function(...)
     paste0(strwrap(paste0(c(...), collapse="")), collapse="\n  ")
 
