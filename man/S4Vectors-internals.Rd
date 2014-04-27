@@ -5,6 +5,7 @@
 \alias{setMethods}
 
 % Stuff from R/utils.R:
+\alias{wmsg}
 \alias{.Call2}
 \alias{class:characterORNULL}
 \alias{characterORNULL-class}
