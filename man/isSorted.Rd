@@ -1,43 +1,49 @@
-\name{comparison-utils}
+\name{isSorted}
 
-\alias{comparison-utils}
+\alias{isSorted}
+\alias{isSorted,ANY-method}
 
 \alias{isConstant}
 \alias{isConstant,integer-method}
 \alias{isConstant,numeric-method}
 \alias{isConstant,array-method}
 
-\alias{isSorted}
-\alias{isSorted,ANY-method}
-
 \alias{isStrictlySorted}
 \alias{isStrictlySorted,ANY-method}
 
 
-\title{Test if a vector-like or array-like object is contant or sorted}
+\title{Test if a vector-like object is sorted}
 
 \description{
-  Generic functions to test if a vector-like or array-like object is constant,
-  sorted, or/and strictly sorted.
+  \code{isSorted} and \code{isStrictlySorted} test if a vector-like object
+  is sorted or strictly sorted, respectively.
+
+  \code{isConstant} tests if a vector-like or array-like object is constant.
   Currently only \code{isConstant} methods for vectors or arrays of type
   integer or double are implemented.
 }
 
 \usage{
-isConstant(x)
 isSorted(x)
 isStrictlySorted(x)
+isConstant(x)
 }
 
 \arguments{
   \item{x}{
-    A vector-like or array-like object.
+    A vector-like object. Can also be a array-like object for
+    \code{isConstant}.
   }
 }
 
 \details{
-  Vectors of length 0 or 1 are always considered to be constant, sorted,
-  and strictly sorted.
+  Vectors of length 0 or 1 are always considered to be sorted, strictly
+  sorted, and constant.
+
+  Strictly sorted and constant objects are particular cases of sorted objects.
+
+  \code{isStrictlySorted(x)} is equivalent to
+  \code{isSorted(x) && !anyDuplicated(x)}
 }
 
 \value{
@@ -47,16 +53,37 @@ isStrictlySorted(x)
 \author{H. Pages}
 
 \seealso{
-  \code{\link{duplicated}},
-  \code{\link{unique}},
-  \code{\link{all.equal}},
-  \code{\link{NA}},
-  \code{\link{is.finite}}
+  \itemize{
+    \item \code{\link{is.unsorted}}.
+
+    \item \code{\link{duplicated}} and \code{\link{unique}}.
+
+    \item \code{\link{all.equal}}.
+
+    \item \code{\link{NA}} and \code{\link{is.finite}}.
+  }
 }
 
 \examples{
 ## ---------------------------------------------------------------------
-## A. METHOD FOR integer VECTORS
+## A. isSorted() and isStrictlySorted()
+## ---------------------------------------------------------------------
+
+x <- 1:10
+
+isSorted(x)           # TRUE
+isSorted(-x)          # FALSE
+isSorted(rev(x))      # FALSE
+isSorted(-rev(x))     # TRUE
+
+isStrictlySorted(x)   # TRUE
+
+x2 <- rep(x, each=2)
+isSorted(x2)          # TRUE
+isStrictlySorted(x2)  # FALSE
+
+## ---------------------------------------------------------------------
+## B. "isConstant" METHOD FOR integer VECTORS
 ## ---------------------------------------------------------------------
 
 ## On a vector with no NAs:
@@ -71,7 +98,7 @@ stopifnot(isConstant(NA_integer_))
 
 
 ## ---------------------------------------------------------------------
-## B. METHOD FOR numeric VECTORS
+## C. "isConstant" METHOD FOR numeric VECTORS
 ## ---------------------------------------------------------------------
 ## This method does its best to handle rounding errors and special
 ## values NA, NaN, Inf and -Inf in a way that "makes sense".

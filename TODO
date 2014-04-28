@@ -7,7 +7,7 @@ R files: 73 files
   Going to S4Vectors (31 files in total):
   X S4-utils.R
   X utils.R
-  X isConstant.R        (renamed comparison-utils.R)
+  X isConstant.R        (renamed isSorted.R)
   X normarg-utils.R
   X compact_bitvector.R (renamed logical-utils.R)
   X int-utils.R

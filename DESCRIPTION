@@ -18,7 +18,7 @@ Suggests: IRanges, RUnit
 License: Artistic-2.0
 Collate: S4-utils.R
 	utils.R
-	comparison-utils.R
+	isSorted.R
 	normarg-utils.R
 	logical-utils.R
 	int-utils.R

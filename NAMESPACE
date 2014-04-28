@@ -98,7 +98,7 @@ export(
 ###
 
 export(
-    ## comparison-utils.R:
+    ## isSorted.R:
     isConstant, isSorted, isStrictlySorted,
 
     ## str-utils.R:
