@@ -31,14 +31,14 @@ isConstant(x)
 
 \arguments{
   \item{x}{
-    A vector-like object. Can also be a array-like object for
+    A vector-like object. Can also be an array-like object for
     \code{isConstant}.
   }
 }
 
 \details{
-  Vectors of length 0 or 1 are always considered to be sorted, strictly
-  sorted, and constant.
+  Vector-like objects of length 0 or 1 are always considered to be sorted,
+  strictly sorted, and constant.
 
   Strictly sorted and constant objects are particular cases of sorted objects.
 
