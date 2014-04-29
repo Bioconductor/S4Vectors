@@ -343,6 +343,24 @@ const char *_get_classname(SEXP x);
 SEXP anyMissing(SEXP x);
 
 
+/* vector_utils.c */
+
+int _vector_memcmp(
+        SEXP x1,
+        int x1_offset,
+        SEXP x2,
+        int x2_offset,
+        int nelt
+);
+
+void _vector_memcpy(
+        SEXP out,
+        int out_offset,
+        SEXP in,
+        int in_offset,
+        int nelt
+);
+
 /* logical_utils.c */
 
 SEXP logical_as_compact_bitvector(SEXP x);

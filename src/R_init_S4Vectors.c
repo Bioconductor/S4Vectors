@@ -141,6 +141,10 @@ void R_init_S4Vectors(DllInfo *info)
 /* SEXP_utils.c */
 	REGISTER_CCALLABLE(_get_classname);
 
+/* vector_utils.c */
+	REGISTER_CCALLABLE(_vector_memcmp);
+	REGISTER_CCALLABLE(_vector_memcpy);
+
 /* int_utils.c */
 	REGISTER_CCALLABLE(_sum_non_neg_ints);
 	REGISTER_CCALLABLE(_check_integer_pairs);

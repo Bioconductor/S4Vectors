@@ -344,6 +344,26 @@ SEXP new_CHARACTER_from_CharAEAE(const CharAEAE *char_aeae);
 const char *get_classname(SEXP x);
 
 /*
+ * vector_utils.c
+ */
+
+int vector_memcmp(
+	SEXP x1,
+	int x1_offset,
+	SEXP x2,
+	int x2_offset,
+	int nelt
+);
+
+void vector_memcpy(
+	SEXP out,
+	int out_offset,
+	SEXP in,
+	int in_offset,
+	int nelt
+);
+
+/*
  * int_utils.c
  */
 
