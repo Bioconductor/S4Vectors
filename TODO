@@ -20,8 +20,8 @@ R files: 73 files
   X DataTable-stats.R   (merge with DataTable-class.R)
 
   X subsetting-utils.R  (rename subsetting-internals.R)
-  X Vector-class.R      (not all the stuff that was in IRanges/R/Vector-class.R
-                         ended up here)
+  X Vector-class.R      (there are some leftovers in IRanges/R/Vector-class.R)
+  X Hits-class.R        (there are some leftovers in IRanges/R/Hits-class.R)
     Vector-comparison.R
 
     List-class.R        (split in List-class.R + List-utils.R)
@@ -40,12 +40,10 @@ R files: 73 files
     Rle-class.R         (too big! split in Rle-class.R + Rle-utils.R)
     runstat.R           (merge with Rle-utils.R)
 
-    Hits-class.R
 
     FilterRules-class.R
 
-    classNameForDisplay-methods.R (method for CompressedList needs to stay
-                                   in IRanges)
+    classNameForDisplay-methods.R (no more, has been diluted in other files)
     updateObject-methods.R (need to remove methods for range-based objects)
     zzz.R
 

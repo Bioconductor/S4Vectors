@@ -14,7 +14,8 @@ exportClasses(
     DataTable,
     NSBS,
     Annotated,
-    DataTableORNULL, Vector
+    DataTableORNULL, Vector,
+    Hits
 )
 
 
@@ -56,12 +57,14 @@ exportMethods(
     dimnames, "dimnames<-",
     is.na, anyNA,
     as.logical, as.integer, as.numeric, as.complex, as.character, as.raw,
+    as.data.frame, as.matrix, as.table,
     "[", "[<-",
     subset,
     c, append,
     cbind, rbind,
     merge,
-    duplicated, unique, anyDuplicated,
+    match, duplicated, unique, anyDuplicated,
+    t,
     by,
     transform,
 
@@ -99,7 +102,10 @@ export(
 
     ## subsetting-internals.R:
     normalizeSingleBracketSubscript,
-    normalizeDoubleBracketSubscript
+    normalizeDoubleBracketSubscript,
+
+    ## Hits-class.R:
+    remapHits
 )
 
 
@@ -132,7 +138,13 @@ export(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    classNameForDisplay, showAsCell
+    classNameForDisplay, showAsCell,
+
+    ## Hits-class.R:
+    queryHits, subjectHits,
+    queryLength, subjectLength,
+    countQueryHits, countSubjectHits,
+    selfmatch
 )
 
 ### Exactly the same list as above.
@@ -150,6 +162,10 @@ exportMethods(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    classNameForDisplay, showAsCell
+    classNameForDisplay, showAsCell,
+    queryHits, subjectHits,
+    queryLength, subjectLength,
+    countQueryHits, countSubjectHits,
+    selfmatch
 )
 

@@ -29,3 +29,4 @@ Collate: S4-utils.R
 	subsetting-internals.R
 	Annotated-class.R
 	Vector-class.R
+	Hits-class.R
