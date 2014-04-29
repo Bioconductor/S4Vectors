@@ -560,3 +560,11 @@ SEXP top_prenv(SEXP nm, SEXP env);
 
 SEXP top_prenv_dots(SEXP env);
 
+
+/* Hits_class.c */
+
+SEXP make_all_group_inner_hits(
+	SEXP group_sizes,
+	SEXP hit_type
+);
+

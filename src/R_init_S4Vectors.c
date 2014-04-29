@@ -60,6 +60,9 @@ static const R_CallMethodDef callMethods[] = {
         CALLMETHOD_DEF(top_prenv, 2),
         CALLMETHOD_DEF(top_prenv_dots, 1),
 
+/* Hits_class.c */
+	CALLMETHOD_DEF(make_all_group_inner_hits, 2),
+
 	{NULL, NULL, 0}
 };
 
