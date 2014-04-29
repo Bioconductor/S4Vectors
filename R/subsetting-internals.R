@@ -6,7 +6,7 @@
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Formal representation of a Normalized Single Bracket Subscript, i.e. a
-### subscript that hold positive integer values that can be used for single
+### subscript that holds positive integer values that can be used for single
 ### bracket subsetting ([ or [<-).
 ###
 ### NSBS and its subclasses are for internal use only.

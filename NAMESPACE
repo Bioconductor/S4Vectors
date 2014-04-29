@@ -13,7 +13,8 @@ exportClasses(
     characterORNULL, vectorORfactor,
     DataTable,
     NSBS,
-    Annotated
+    Annotated,
+    DataTableORNULL, Vector
 )
 
 
@@ -22,6 +23,8 @@ exportClasses(
 ###
 
 S3method(anyDuplicated, NSBS)
+
+S3method(as.data.frame, Vector)
 
 S3method(duplicated, DataTable)
 
@@ -33,6 +36,8 @@ S3method(unique, DataTable)
 ### doesn't asterisk them.
 export(
     anyDuplicated.NSBS,
+
+    as.data.frame.Vector,
 
     duplicated.DataTable,
 
@@ -47,10 +52,13 @@ export(
 exportMethods(
     ## Generics defined in the base package:
     NROW, NCOL, dim,
-    dimnames, "dimnames<-",
     "rownames<-", "colnames<-",
+    dimnames, "dimnames<-",
+    is.na, anyNA,
+    as.logical, as.integer, as.numeric, as.complex, as.character, as.raw,
+    "[", "[<-",
     subset,
-    is.na,
+    c, append,
     cbind, rbind,
     merge,
     duplicated, unique, anyDuplicated,
@@ -89,7 +97,11 @@ export(
     ## str-utils.R:
     safeExplode,
     strsplitAsListOfIntegerVectors,
-    svn.time
+    svn.time,
+
+    ## subsetting-internals.R:
+    normalizeSingleBracketSubscript,
+    normalizeDoubleBracketSubscript
 )
 
 
@@ -110,13 +122,19 @@ export(
 
     ## subsetting-internals.R:
     NSBS,
-    normalizeSingleBracketSubscript, normalizeSingleBracketReplacementValue,
+    normalizeSingleBracketReplacementValue,
     extractROWS, replaceROWS,
-    normalizeDoubleBracketSubscript,
     getListElement, setListElement,
 
     ## Annotated-class.R:
-    metadata, "metadata<-"
+    metadata, "metadata<-",
+
+    ## Vector-class.R:
+    fixedColumnNames,
+    elementMetadata, mcols, values,
+    "elementMetadata<-", "mcols<-", "values<-",
+    rename,
+    showAsCell
 )
 
 ### Exactly the same list as above.
@@ -126,10 +144,14 @@ exportMethods(
     ROWNAMES,
     as.env,
     NSBS,
-    #normalizeSingleBracketSubscript, normalizeSingleBracketReplacementValue,
+    normalizeSingleBracketReplacementValue,
     extractROWS, replaceROWS,
-    #normalizeDoubleBracketSubscript,
     getListElement, setListElement,
-    metadata, "metadata<-"
+    metadata, "metadata<-",
+    fixedColumnNames,
+    elementMetadata, mcols, values,
+    "elementMetadata<-", "mcols<-", "values<-",
+    rename,
+    showAsCell
 )
 

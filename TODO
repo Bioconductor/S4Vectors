@@ -20,7 +20,8 @@ R files: 73 files
   X DataTable-stats.R   (merge with DataTable-class.R)
 
   X subsetting-utils.R  (rename subsetting-internals.R)
-    Vector-class.R
+  X Vector-class.R      (not all the stuff that was in IRanges/R/Vector-class.R
+                         ended up here)
     Vector-comparison.R
 
     List-class.R        (split in List-class.R + List-utils.R)
