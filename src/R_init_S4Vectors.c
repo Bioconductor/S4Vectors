@@ -16,6 +16,9 @@ static const R_CallMethodDef callMethods[] = {
 /* anyMissing.c */
 	CALLMETHOD_DEF(anyMissing, 1),
 
+/* vector_utils.c */
+	CALLMETHOD_DEF(sapply_NROW, 1),
+
 /* logical_utils.c */
         CALLMETHOD_DEF(logical_as_compact_bitvector, 1),
         CALLMETHOD_DEF(compact_bitvector_as_logical, 2),
@@ -52,9 +55,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(safe_strexplode, 1),
 	CALLMETHOD_DEF(strsplit_as_list_of_ints, 2),
 	CALLMETHOD_DEF(svn_time, 0),
-
-/* list_utils.c */
-	CALLMETHOD_DEF(sapply_NROW, 1),
 
 /* eval_utils.c */
         CALLMETHOD_DEF(top_prenv, 2),

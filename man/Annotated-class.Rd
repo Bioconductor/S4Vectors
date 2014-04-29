@@ -33,8 +33,7 @@
 \author{P. Aboyoun}
 
 \seealso{
-  The \link[IRanges]{Vector} class in the \pkg{IRanges} package, that extends
-  Annotated directly.
+  The \link{Vector} class, which extends Annotated directly.
 }
 
 \examples{

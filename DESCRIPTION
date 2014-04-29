@@ -24,7 +24,6 @@ Collate: S4-utils.R
 	logical-utils.R
 	int-utils.R
 	str-utils.R
-	list-utils.R
 	eval-utils.R
 	DataTable-class.R
 	subsetting-internals.R

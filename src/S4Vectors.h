@@ -361,6 +361,9 @@ void _vector_memcpy(
         int nelt
 );
 
+SEXP sapply_NROW(SEXP x);
+
+
 /* logical_utils.c */
 
 SEXP logical_as_compact_bitvector(SEXP x);
@@ -549,11 +552,6 @@ SEXP safe_strexplode(SEXP s);
 SEXP strsplit_as_list_of_ints(SEXP x, SEXP sep);
 
 SEXP svn_time();
-
-
-/* list_utils.c */
-
-SEXP sapply_NROW(SEXP x);
 
 
 /* eval_utils.c */
