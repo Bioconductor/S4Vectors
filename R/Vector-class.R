@@ -323,8 +323,27 @@ setMethod("replaceROWS", "Vector",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Internal helper used by the "show" methods of various Vector subclasses.
+### Internal helpers used by the "show" method of various Vector subclasses.
 ###
+
+setGeneric("classNameForDisplay",
+    function(x) standardGeneric("classNameForDisplay"))
+
+setMethod("classNameForDisplay", "ANY",
+   function(x)
+   {
+       ## Selecting the 1st element guarantees that we return a single string
+       ## (e.g. on an ordered factor, class(x) returns a character vector of
+       ## length 2).
+       class(x)[1L]
+   }
+)
+
+setMethod("classNameForDisplay", "AsIs", function(x) {
+  class(x) <- setdiff(class(x), "AsIs")
+  classNameForDisplay(x)
+})
+
 
 setGeneric("showAsCell",
     function(object) standardGeneric("showAsCell")

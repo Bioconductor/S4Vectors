@@ -92,8 +92,6 @@ export(
     recycleIntegerArg, recycleNumericArg,
     fold,
 
-    ## vector-utils.R:
-
     ## str-utils.R:
     safeExplode,
     strsplitAsListOfIntegerVectors,
@@ -134,7 +132,7 @@ export(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    showAsCell
+    classNameForDisplay, showAsCell
 )
 
 ### Exactly the same list as above.
@@ -152,6 +150,6 @@ exportMethods(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    showAsCell
+    classNameForDisplay, showAsCell
 )
 

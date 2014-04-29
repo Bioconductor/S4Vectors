@@ -59,6 +59,9 @@
 \alias{extractROWS,matrix-method}
 \alias{replaceROWS,Vector-method}
 
+\alias{classNameForDisplay}
+\alias{classNameForDisplay,ANY-method}
+\alias{classNameForDisplay,AsIs-method}
 \alias{showAsCell}
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,Vector-method}
@@ -197,6 +200,27 @@
       that of \code{x}.
     }
   }
+}
+
+\section{Displaying}{
+  Displaying of a Vector object is controlled by 2 internal helpers,
+  \code{classNameForDisplay} and \code{showAsCell}.
+
+  For most objects \code{classNameForDisplay(x)} just returns \code{class(x)}.
+  However, for some objects it can return the name of a parent class that is
+  more suitable for display because it's simpler and as informative as the
+  real class name. See \link[IRanges]{SimpleList} and
+  \link[IRanges]{CompressedList} objects in the \pkg{IRanges} package for
+  examples of objects for which \code{classNameForDisplay} returns the name
+  of a parent class.
+
+  \code{showAsCell(x)} produces a character vector \emph{parallel} to
+  \code{x} (i.e. with one string per vector element in \code{x}) that
+  contains compact string representations of each elements in \code{x}.
+
+  Note that \code{classNameForDisplay} and \code{showAsCell} are generic
+  functions so developpers can implement methods to control how their own
+  Vector extension gets displayed.
 }
 
 \seealso{
