@@ -30,7 +30,7 @@
 % comparison
 \alias{match,Hits,Hits-method}
 \alias{selfmatch}
-\alias{selfmatch,Hits,Hits-method}
+\alias{selfmatch,Hits-method}
 
 % show
 \alias{show,Hits-method}
