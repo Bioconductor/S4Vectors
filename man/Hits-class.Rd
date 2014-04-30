@@ -29,7 +29,6 @@
 
 % comparison
 \alias{match,Hits,Hits-method}
-\alias{selfmatch}
 \alias{selfmatch,Hits-method}
 
 % show
@@ -154,7 +153,7 @@
     \item \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package,
           which generates an instance of this class.
 
-    \item \link[IRanges]{Hits-class} in the \pkg{IRanges} package, for
+    \item \link[IRanges]{Hits-examples} in the \pkg{IRanges} package, for
           some examples of Hits object basic manipulation.
 
     \item \link[IRanges]{setops-methods} in the \pkg{IRanges} package,
@@ -163,8 +162,8 @@
 }
 
 \examples{
-## See ?`Hits-class` in the IRanges package for some examples of Hits
-## object basic manipulation.
+## See ?`Hits-examples` in the IRanges package for examples of basic
+## manipulation of Hits objects.
 }
 \keyword{methods}
 \keyword{classes}

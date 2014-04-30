@@ -228,8 +228,8 @@
     \item \link[IRanges]{Rle}, \link[IRanges]{IRanges} and \link[XVector]{XRaw}
           for example implementations.
 
-    \item \link[IRanges]{Vector-comparison} for comparing, ordering, and
-          tabulating vector-like objects.
+    \item \link{Vector-comparison} for comparing, ordering, and tabulating
+          vector-like objects.
 
     \item \link[IRanges]{List} for a direct extension that serves a similar role
           as \link[base]{list} in base R.

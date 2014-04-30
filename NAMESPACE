@@ -28,8 +28,12 @@ S3method(anyDuplicated, NSBS)
 S3method(as.data.frame, Vector)
 
 S3method(duplicated, DataTable)
+S3method(duplicated, Vector)
+
+S3method(sort, Vector)
 
 S3method(unique, DataTable)
+S3method(unique, Vector)
 
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
@@ -41,8 +45,12 @@ export(
     as.data.frame.Vector,
 
     duplicated.DataTable,
+    duplicated.Vector,
 
-    unique.DataTable
+    sort.Vector,
+
+    unique.DataTable,
+    unique.Vector
 )
 
 
@@ -63,7 +71,9 @@ exportMethods(
     c, append,
     cbind, rbind,
     merge,
-    match, duplicated, unique, anyDuplicated,
+    "==", "!=", "<=", ">=", "<", ">",
+    match, duplicated, unique, anyDuplicated, "%in%",
+    sort, rank, xtfrm,
     t,
     by,
     transform,
@@ -140,6 +150,11 @@ export(
     rename,
     classNameForDisplay, showAsCell,
 
+    ## Vector-comparison.R:
+    compare,
+    selfmatch,
+    findMatches, countMatches,
+
     ## Hits-class.R:
     queryHits, subjectHits,
     queryLength, subjectLength,
@@ -163,6 +178,9 @@ exportMethods(
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
     classNameForDisplay, showAsCell,
+    compare,
+    selfmatch,
+    findMatches, countMatches,
     queryHits, subjectHits,
     queryLength, subjectLength,
     countQueryHits, countSubjectHits,

@@ -171,8 +171,6 @@ setMethod("match", c("Hits", "Hits"),
     }
 )
 
-setGeneric("selfmatch", function(x, ...) standardGeneric("selfmatch"))
-
 setMethod("selfmatch", "Hits",
     function (x, method=c("auto", "quick", "hash"))
         selfmatchIntegerPairs(queryHits(x), subjectHits(x), method=method)
