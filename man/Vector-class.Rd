@@ -66,7 +66,6 @@
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,Vector-method}
 
-\alias{c,Vector-method}
 \alias{append,Vector,Vector-method}
 
 

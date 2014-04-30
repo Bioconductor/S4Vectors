@@ -377,44 +377,6 @@ setMethod("showAsCell", "Vector", function(object)
 ### Combining.
 ###
 
-### Used in IRanges!
-rbindRowOfNAsToMetadatacols <- function(x) {
-  x_mcols <- mcols(x)
-  if (!is.null(x_mcols))
-    mcols(x)[nrow(x_mcols)+1L,] <- NA
-  x
-}
-
-### Used in IRanges!
-rbind.mcols <- function(x, ...)
-{
-    l <- list(x, ...)
-    l_mcols <- lapply(l, mcols)
-    no_mcols <- sapply(l_mcols, is.null)
-    if (all(no_mcols))
-        return(NULL)
-    newDf <- function(nr) new("DataFrame", nrows = nr)
-    l_mcols[no_mcols] <- lapply(elementLengths(l[no_mcols]), newDf)
-    allCols <- unique(do.call(c, lapply(l_mcols, colnames)))
-    fillCols <- function(df) {
-      if (nrow(df))
-          df[setdiff(allCols, colnames(df))] <- DataFrame(NA)
-      df
-    }
-    do.call(rbind, lapply(l_mcols, fillCols))
-}
-
-.c.Vector <- function(x, ..., recursive = FALSE)
-{
-    if (!is.null(mcols(x)))
-      mcols(x) <- rbind.mcols(x, ...)
-    x
-}
-
-setMethod("c", "Vector",
-          function(x, ..., recursive = FALSE)
-          stop("missing 'c' method for Vector class ", class(x)))
-
 ### FIXME: This method doesn't work properly on DataTable objects if 'after'
 ### is >= 1 and < length(x).
 setMethod("append", c("Vector", "Vector"),
