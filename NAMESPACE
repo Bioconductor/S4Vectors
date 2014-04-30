@@ -68,7 +68,7 @@ exportMethods(
     as.data.frame, as.matrix, as.table,
     "[", "[<-",
     subset,
-    c, append,
+    append,
     cbind, rbind,
     merge,
     "==", "!=", "<=", ">=", "<", ">",
