@@ -9,6 +9,11 @@ importFrom(stats, var, cov, cor, sd, median, quantile, mad,
 import(BiocGenerics)
 importFrom(stats4, summary, update)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 classes
+###
+
 exportClasses(
     characterORNULL, vectorORfactor,
     DataTable,
