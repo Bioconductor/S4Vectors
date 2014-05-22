@@ -103,6 +103,7 @@ export(
     wmsg,
     .Call2,
     get_showHeadLines, get_showTailLines,
+    printAtomicVectorInAGrid,
 
     ## normarg-utils.R:
     isTRUEorFALSE, isSingleInteger, isSingleNumber, isSingleString,

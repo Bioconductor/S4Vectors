@@ -40,6 +40,77 @@ AEbufs.free <- function()
 ### Pretty printing
 ###
 
+### showHeadLines and showTailLines robust to NA, Inf and non-integer 
+.get_showLines <- function(default, option)
+{
+    opt <- getOption(option, default=default)
+    if (!is.infinite(opt))
+        opt <- as.integer(opt)
+    if (is.na(opt))
+        opt <- default
+    opt 
+}
+
+get_showHeadLines <- function()
+{
+    .get_showLines(5L, "showHeadLines") 
+}
+
+get_showTailLines <- function()
+{
+    .get_showLines(5L, "showTailLines") 
+}
+
+printAtomicVectorInAGrid <- function(x, prefix="", justify="left")
+{
+    if (!is.character(x))
+        x <- setNames(as.character(x), names(x))
+
+    ## Nothing to print if length(x) is 0.
+    if (length(x) == 0L)
+        return(invisible(x))
+
+    ## Determine the nb of cols in the grid.
+    grid_width <- getOption("width") + 1L - nchar(prefix)
+    cell_width <- max(3L, nchar(x), nchar(names(x)))
+    ncol <- grid_width %/% (cell_width + 1L)
+
+    ## Determine the nb of rows in the grid.    
+    nrow <- length(x) %/% ncol
+    remainder <- length(x) %% ncol
+    if (remainder != 0L) {
+        nrow <- nrow + 1L
+        x <- c(x, character(ncol - remainder))
+    }
+
+    ## Print the grid.
+    print_line <- function(y)
+    {
+        cells <- format(y, justify=justify, width=cell_width)
+        cat(prefix, paste0(cells, collapse=" "), "\n", sep="")
+    }
+    print_grid_row <- function(i)
+    {
+        idx <- (i - 1L) * ncol + seq_len(ncol)
+        slice <- x[idx]
+        if (!is.null(names(slice)))
+            print_line(names(slice))
+        print_line(slice)
+    }
+    n1 <- get_showHeadLines()
+    n2 <- get_showTailLines()
+    if (nrow <= n1 + n2) {
+        for (i in seq_len(nrow)) print_grid_row(i)
+    } else {
+        idx1 <- seq_len(n1)
+        idx2 <- nrow - n2 + seq_len(n2)
+        for (i in idx1) print_grid_row(i)
+        print_line(rep.int("...", ncol))
+        for (i in idx2) print_grid_row(i)
+    }
+    invisible(x)
+}
+
 ### 'makeNakedMat.FUN' must be a function returning a character matrix.
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
@@ -126,29 +197,5 @@ toNumSnippet <- function(x, max.width)
         return(ans)
     ans_tail <- ans_tail[-length(ans_tail)]
     paste(paste(ans_head, collapse=" "), "...", paste(ans_tail, collapse=" "))
-}
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### showHeadLines and showTailLines robust to NA, Inf and non-integer 
-###
-
-get_showHeadLines <- function()
-{
-    .get_showLines(5L, "showHeadLines") 
-}
-
-get_showTailLines <- function()
-{
-    .get_showLines(5L, "showTailLines") 
-}
-
-.get_showLines <- function(default, option)
-{
-    opt <- getOption(option, default=default)
-    if (!is.infinite(opt))
-        opt <- as.integer(opt)
-    if (is.na(opt))
-        opt <- default
-    opt 
 }
 

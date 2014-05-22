@@ -1,12 +1,6 @@
 \name{S4Vectors internals}
 
-\alias{setValidity2}
-\alias{new2}
-\alias{setMethods}
-
-% Stuff from R/utils.R:
-\alias{wmsg}
-\alias{.Call2}
+% Stuff from R/S4-utils.R:
 \alias{class:characterORNULL}
 \alias{characterORNULL-class}
 \alias{characterORNULL}
@@ -14,8 +8,16 @@
 \alias{vectorORfactor-class}
 \alias{vectorORfactor}
 \alias{coerce,ANY,vector-method}
+\alias{setValidity2}
+\alias{new2}
+\alias{setMethods}
+
+% Stuff from R/utils.R:
+\alias{wmsg}
+\alias{.Call2}
 \alias{get_showHeadLines}
 \alias{get_showTailLines}
+\alias{printAtomicVectorInAGrid}
 
 % Low-level helper functions from R/normarg-utils.R:
 \alias{isTRUEorFALSE}
