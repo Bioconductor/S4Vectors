@@ -5,7 +5,6 @@
 \alias{Hits}
 
 % accessors
-\alias{length,Hits-method}
 \alias{subjectHits}
 \alias{subjectHits,Hits-method}
 \alias{queryHits}

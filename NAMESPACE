@@ -150,7 +150,7 @@ export(
     metadata, "metadata<-",
 
     ## Vector-class.R:
-    fixedColumnNames,
+    parallelSlotnames, fixedColumnNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,

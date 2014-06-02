@@ -19,12 +19,45 @@ setClass("Vector",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### parallelSlotnames()
+###
+### For internal use only.
+###
+### Must return the names of all the slots in Vector object 'x' that are
+### "parallel" to 'x'. Slot 'x@foo' is considered to be "parallel" to 'x' if:
+###   (a) it holds a NULL or a vector-like object which NROW() is equal to
+###       'length(x)', and
+###   (b) the i-th element in 'x@foo' describes some component of the i-th
+###       element in 'x'.
+### For example, the "start", "width", "NAMES", and "elementMetadata" slots
+### of an IRanges object are parallel to the object. Note that the "NAMES"
+### and "elementMetadata" slots can be set to NULL.
+### The *first" slot name returned by parallelSlotnames() is used to get the
+### length of 'x'.
+###
+
+setGeneric("parallelSlotnames",
+    function(x) standardGeneric("parallelSlotnames")
+)
+
+setMethod("parallelSlotnames", "Vector", function(x) "elementMetadata")
+
+### Methods for Vector subclasses only need to specify the parallel slots they
+### add to their parent class. See Hits-class.R file for an example.
+
+### fixedColumnNames() is for internal use only.
+### TODO: Deprecate fixedColumnNames(). Use parallelSlotnames() instead.
+setGeneric("fixedColumnNames", function(x) standardGeneric("fixedColumnNames"))
+setMethod("fixedColumnNames", "ANY", function(x) character())
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters.
 ###
 
-### fixedColumnNames() is for internal use only.
-setGeneric("fixedColumnNames", function(x) standardGeneric("fixedColumnNames"))
-setMethod("fixedColumnNames", "ANY", function(x) character())
+setMethod("length", "Vector",
+    function(x) length(slot(x, parallelSlotnames(x)[[1L]]))
+)
 
 setMethod("NROW", "Vector", function(x) length(x))
 setMethod("ROWNAMES", "Vector", function(x) names(x))
@@ -274,6 +307,23 @@ extractROWSWithBracket <- function(x, i) {
 setMethod("extractROWS", "ANY", extractROWSWithBracket)
 
 setMethod("extractROWS", "matrix", extractROWSWithBracket)
+
+### We provide a default "extractROWS" method for Vector objects that only
+### subsets the individual parallel slots. Works for most Vector derivatives!
+setMethod("extractROWS", "Vector",
+    function(x, i)
+    {
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        x_pslotnames <- parallelSlotnames(x)
+        ans_pslots <- lapply(setNames(x_pslotnames, x_pslotnames),
+                             function(slotname)
+                                 extractROWS(slot(x, slotname), i))
+        ## Does NOT validate the object before returning it.
+        do.call(BiocGenerics:::updateS4, c(list(x),
+                                           ans_pslots,
+                                           list(check=FALSE)))
+    }
+)
 
 setReplaceMethod("[", "Vector",
     function(x, i, j, ..., value)

@@ -18,10 +18,19 @@ setClass("Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessors
+### parallelSlotnames()
 ###
 
-setMethod("length", "Hits", function(x) length(queryHits(x)))
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotnames", "Hits",
+    function(x) c("queryHits", "subjectHits", callNextMethod())
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessors
+###
 
 setGeneric("queryHits", function(x, ...) standardGeneric("queryHits"))
 
@@ -67,10 +76,7 @@ setMethod("extractROWS", "Hits",
         if (!isStrictlySorted(i))
             stop("subscript must extract elements at strictly sorted ",
                  "positions when\n  subsetting a ", class(x), " object")
-        x@queryHits <- extractROWS(x@queryHits, i)
-        x@subjectHits <- extractROWS(x@subjectHits, i)
-        x@elementMetadata <- extractROWS(x@elementMetadata, i)
-        x
+        callNextMethod()
     }
 )
 
