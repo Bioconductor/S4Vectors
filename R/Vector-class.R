@@ -422,6 +422,8 @@ setMethod("showAsCell", "ANY", function(object) {
 setMethod("showAsCell", "Vector", function(object)
           rep.int("########", length(object)))
 
+setMethod("showAsCell", "Date", function(object) object)
+setMethod("showAsCell", "POSIXt", function(object) object)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
