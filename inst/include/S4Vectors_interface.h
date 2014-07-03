@@ -389,3 +389,55 @@ SEXP find_interv_and_start_from_width(
 	int width_len
 );
 
+/*
+ * Low-level manipulation of Rle objects.
+ * (see Rle_class.c)
+ */
+
+SEXP logical_Rle_constructor(
+	const int *values,
+	int nvalues,
+	const int *lengths,
+	int buflength
+);
+
+SEXP integer_Rle_constructor(
+	const int *values,
+	int nvalues,
+	const int *lengths,
+	int buflength
+);
+
+SEXP numeric_Rle_constructor(
+	const double *values,
+	int nvalues,
+	const int *lengths,
+	int buflength
+);
+
+SEXP complex_Rle_constructor(
+	const Rcomplex *values,
+	int nvalues,
+	const int *lengths,
+	int buflength
+);
+
+SEXP character_Rle_constructor(
+	SEXP values,
+	const int *lengths,
+	int buflength
+);
+
+SEXP raw_Rle_constructor(
+	const Rbyte *values,
+	int nvalues,
+	const int *lengths,
+	int buflength
+);
+
+SEXP seqselect_Rle(SEXP x,
+	const int *start,
+	const int *width,
+	int length
+);
+

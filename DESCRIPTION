@@ -8,11 +8,11 @@ Description: The S4Vectors package defines the Vector and List virtual classes
 	interest (e.g. DataFrame, Rle, and Hits) are implemented in the
 	S4Vectors package itself (many more are implemented in the IRanges
 	package and in other Bioconductor infrastructure packages).
-Version: 0.0.9
+Version: 0.1.0
 Author: H. Pages, M. Lawrence and P. Aboyoun
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure, DataRepresentation
-Depends: R (>= 3.1.0), methods, utils, stats, BiocGenerics (>= 0.11.1)
+Depends: R (>= 3.1.0), methods, utils, stats, BiocGenerics (>= 0.11.3)
 Imports: methods, utils, stats, BiocGenerics, stats4
 Suggests: IRanges, RUnit
 License: Artistic-2.0
@@ -31,3 +31,6 @@ Collate: S4-utils.R
 	Vector-class.R
 	Vector-comparison.R
 	Hits-class.R
+	Rle-class.R
+	Rle-utils.R
+	zzz.R

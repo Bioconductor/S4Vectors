@@ -18,14 +18,16 @@ static const R_CallMethodDef callMethods[] = {
 
 /* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),
+	CALLMETHOD_DEF(vector_subsetByRanges, 3),
+	CALLMETHOD_DEF(vector_seqselect, 3),
 
 /* logical_utils.c */
-        CALLMETHOD_DEF(logical_as_compact_bitvector, 1),
-        CALLMETHOD_DEF(compact_bitvector_as_logical, 2),
-        CALLMETHOD_DEF(subset_compact_bitvector, 2),
-        CALLMETHOD_DEF(compact_bitvector_bit_count, 1),
-        CALLMETHOD_DEF(compact_bitvector_last_bit, 1),
-        CALLMETHOD_DEF(compact_bitvector_set_op, 3),
+	CALLMETHOD_DEF(logical_as_compact_bitvector, 1),
+	CALLMETHOD_DEF(compact_bitvector_as_logical, 2),
+	CALLMETHOD_DEF(subset_compact_bitvector, 2),
+	CALLMETHOD_DEF(compact_bitvector_bit_count, 1),
+	CALLMETHOD_DEF(compact_bitvector_last_bit, 1),
+	CALLMETHOD_DEF(compact_bitvector_set_op, 3),
 
 /* int_utils.c */
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
@@ -57,11 +59,25 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(svn_time, 0),
 
 /* eval_utils.c */
-        CALLMETHOD_DEF(top_prenv, 2),
-        CALLMETHOD_DEF(top_prenv_dots, 1),
+	CALLMETHOD_DEF(top_prenv, 2),
+	CALLMETHOD_DEF(top_prenv_dots, 1),
 
 /* Hits_class.c */
 	CALLMETHOD_DEF(make_all_group_inner_hits, 2),
+
+/* Rle_class.c */
+	CALLMETHOD_DEF(Rle_constructor, 4),
+	CALLMETHOD_DEF(Rle_start, 1),
+	CALLMETHOD_DEF(Rle_end, 1),
+	CALLMETHOD_DEF(Rle_getStartEndRunAndOffset, 3),
+	CALLMETHOD_DEF(Rle_window_aslist, 5),
+	CALLMETHOD_DEF(Rle_window, 6),
+	CALLMETHOD_DEF(Rle_seqselect, 3),
+
+/* Rle_utils.c */
+	CALLMETHOD_DEF(Rle_runsum, 3),
+	CALLMETHOD_DEF(Rle_runwtsum, 4),
+	CALLMETHOD_DEF(Rle_runq, 4),
 
 	{NULL, NULL, 0}
 };
@@ -152,6 +168,15 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_sum_non_neg_ints);
 	REGISTER_CCALLABLE(_check_integer_pairs);
 	REGISTER_CCALLABLE(_find_interv_and_start_from_width);
+
+/* Rle_class.c */
+	REGISTER_CCALLABLE(_logical_Rle_constructor);
+	REGISTER_CCALLABLE(_integer_Rle_constructor);
+	REGISTER_CCALLABLE(_numeric_Rle_constructor);
+	REGISTER_CCALLABLE(_complex_Rle_constructor);
+	REGISTER_CCALLABLE(_character_Rle_constructor);
+	REGISTER_CCALLABLE(_raw_Rle_constructor);
+	REGISTER_CCALLABLE(_seqselect_Rle);
 
 	return;
 }

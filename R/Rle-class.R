@@ -1,0 +1,743 @@
+### =========================================================================
+### Rle objects
+### -------------------------------------------------------------------------
+###
+### Class definitions
+###
+
+setClass("Rle",
+         representation(values = "vectorORfactor",
+                        lengths = "integer"),
+         prototype = prototype(values = logical()),
+         contains = "Vector",
+         validity = function(object)
+         {
+             msg <- NULL
+             run_values <- runValue(object)
+             run_lengths <- runLength(object)
+             if (length(run_values) != length(run_lengths))
+                 msg <- c(msg, "run values and run lengths must have the same length")
+             if (!all(run_lengths > 0L))
+                 msg <- c(msg, "all run lengths must be positive")
+             ## TODO: Fix the following test.
+             #if (length(run_lengths) >= 2 && is.atomic(run_values)
+             #      && any(run_values[-1L] == run_values[-length(run_values)]))
+             #    msg <- c(msg, "consecutive runs must have different values")
+             if (is.null(msg)) TRUE else msg
+         })
+ 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessor methods.
+###
+
+setGeneric("runLength", signature = "x",
+           function(x) standardGeneric("runLength"))
+setMethod("runLength", "Rle", function(x) x@lengths)
+ 
+setGeneric("runValue", signature = "x",
+           function(x) standardGeneric("runValue"))
+setMethod("runValue", "Rle", function(x) x@values)
+
+setGeneric("nrun", signature = "x", function(x) standardGeneric("nrun"))
+setMethod("nrun", "Rle", function(x) length(runLength(x)))
+
+setMethod("start", "Rle", function(x) .Call2("Rle_start", x, PACKAGE="S4Vectors"))
+setMethod("end", "Rle", function(x) .Call2("Rle_end", x, PACKAGE="S4Vectors"))
+setMethod("width", "Rle", function(x) runLength(x))
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Replace methods.
+###
+
+setGeneric("runLength<-", signature="x",
+           function(x, value) standardGeneric("runLength<-"))
+setReplaceMethod("runLength", "Rle",
+                 function(x, value) Rle(values = runValue(x), lengths = value))
+         
+setGeneric("runValue<-", signature="x",
+           function(x, value) standardGeneric("runValue<-"))
+setReplaceMethod("runValue", "Rle",
+                 function(x, value) Rle(values = value, lengths = runLength(x)))
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructors
+###
+
+setGeneric("Rle", signature = c("values", "lengths"),
+           function(values, lengths, ...) standardGeneric("Rle"))
+
+setMethod("Rle", signature = c(values = "missing", lengths = "missing"),
+          function(values, lengths)
+              new2("Rle", values = vector(), lengths = integer(), check=FALSE))
+
+setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "missing"),
+          function(values, lengths) Rle(values, integer(0), check = FALSE))
+
+setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "integer"),
+          function(values, lengths, check = TRUE)
+          {
+              if (!isTRUEorFALSE(check))
+                  stop("'check' must be TRUE or FALSE")
+              ans <- .Call2("Rle_constructor",
+                            values, lengths, check, 0L,
+                            PACKAGE="S4Vectors")
+              if (is.factor(values)) {
+                  ans@values <-
+                    factor(ans@values,
+                           levels = seq_len(length(levels(values))),
+                           labels = levels(values))
+              }
+              ans
+          })
+
+setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "numeric"),
+          function(values, lengths, check = TRUE)
+              Rle(values = values, lengths = as.integer(lengths),
+                  check = check))
+
+setMethod("Rle", signature = c(values = "Rle", lengths = "missing"),
+          function(values, lengths, check = TRUE) values)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion
+###
+
+setAs("vector", "Rle", function(from) Rle(from))
+setAs("logical", "Rle", function(from) Rle(from))
+setAs("integer", "Rle", function(from) Rle(from))
+setAs("numeric", "Rle", function(from) Rle(from))
+setAs("complex", "Rle", function(from) Rle(from))
+setAs("character", "Rle", function(from) Rle(from))
+setAs("raw", "Rle", function(from) Rle(from))
+setAs("factor", "Rle", function(from) Rle(from))
+
+setAs("Rle", "vector", function(from) as.vector(from))
+setAs("Rle", "logical", function(from) as.logical(from))
+setAs("Rle", "integer", function(from) as.integer(from))
+setAs("Rle", "numeric", function(from) as.numeric(from))
+setAs("Rle", "complex", function(from) as.complex(from))
+setAs("Rle", "character", function(from) as.character(from))
+setAs("Rle", "raw", function(from) as.raw(from))
+setAs("Rle", "factor", function(from) as.factor(from))
+setAs("Rle", "list", function(from) as.list(from))
+setAs("Rle", "data.frame", function(from) as.data.frame(from))
+
+setMethod("as.vector", "Rle", function(x, mode) rep.int(as.vector(runValue(x), mode), runLength(x)))
+setMethod("as.logical", "Rle", function(x) rep.int(as.logical(runValue(x)), runLength(x)))
+setMethod("as.integer", "Rle", function(x) rep.int(as.integer(runValue(x)), runLength(x)))
+setMethod("as.numeric", "Rle", function(x) rep.int(as.numeric(runValue(x)), runLength(x)))
+setMethod("as.complex", "Rle", function(x) rep.int(as.complex(runValue(x)), runLength(x)))
+setMethod("as.character", "Rle", function(x) rep.int(as.character(runValue(x)), runLength(x)))
+setMethod("as.raw", "Rle", function(x) rep.int(as.raw(runValue(x)), runLength(x)))
+setMethod("as.factor", "Rle", function(x) rep.int(as.factor(runValue(x)), runLength(x)))
+
+asFactorOrFactorRle <- function(x) {
+  if (is(x, "Rle")) {
+    runValue(x) <- as.factor(runValue(x))
+    x
+  } else {
+    as.factor(x)
+  }
+}
+
+### S3/S4 combo for as.list.Rle
+.as.list.Rle <- function(x) as.list(as.vector(x))
+as.list.Rle <- function(x, ...) .as.list.Rle(x, ...)
+setMethod("as.list", "Rle", as.list.Rle)
+
+decodeRle <- function(x) rep.int(runValue(x), runLength(x))
+
+### S3/S4 combo for as.data.frame.Rle
+as.data.frame.Rle <- function(x, row.names=NULL, optional=FALSE, ...)
+{
+    value <- decodeRle(x)
+    as.data.frame(value, row.names=row.names,
+                  optional=optional, ...)
+}
+setMethod("as.data.frame", "Rle", as.data.frame.Rle)
+
+getStartEndRunAndOffset <- function(x, start, end) {
+    .Call2("Rle_getStartEndRunAndOffset", x, start, end, PACKAGE="S4Vectors")
+}
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### General methods
+###
+
+setMethod("extractROWS", "Rle",
+    function(x, i)
+    {
+        ## FIXME: Right now, the subscript 'i' is turned into an IRanges
+        ## object so we need stuff that lives in the IRanges package for this
+        ## to work. This is ugly/hacky and needs to be fixed (thru a redesign
+        ## of this method).
+        if (!suppressWarnings(require(IRanges, quietly=TRUE)))
+            stop("Couldn't load the IRanges package. You need to install ",
+                 "the IRanges\n  package in order to subset an Rle object.")
+
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        ## TODO: Maybe make this the coercion method from NSBS to Ranges.
+        if (is(i, "RangesNSBS")) {
+            ir <- i@subscript
+        } else {
+            ir <- as(as.integer(i), "IRanges")
+        }
+        ## Rle_seqselect .Call entry point will segfault if 'ir' contains
+        ## empty ranges!
+        ir <- ir[width(ir) != 0L]
+        ansList <- .Call2("Rle_seqselect", x, start(ir), width(ir),
+                          PACKAGE="S4Vectors")
+        ans_values <- ansList[["values"]]
+        ans_lengths <- ansList[["lengths"]]
+        if (is.factor(runValue(x)))
+            attributes(ans_values) <- list(levels=levels(x), class="factor")
+        ans <- Rle(ans_values, ans_lengths)
+        ans <- as(ans, class(x))
+        mcols(ans) <- extractROWS(mcols(ans), i)
+        ans
+    }
+)
+
+setMethod("[", "Rle",
+    function(x, i, j, ..., drop=getOption("dropRle", default=FALSE))
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid subsetting")
+        if (!missing(i))
+            x <- extractROWS(x, i)
+        if (drop)
+            x <- decodeRle(x)
+        x
+    }
+)
+
+setMethod("replaceROWS", "Rle",
+    function(x, i, value)
+    {
+        ## FIXME: Right now, the subscript 'i' is turned into an IRanges
+        ## object so we need stuff that lives in the IRanges package for this
+        ## to work. This is ugly/hacky and needs to be fixed (thru a redesign
+        ## of this method).
+        if (!suppressWarnings(require(IRanges, quietly=TRUE)))
+            stop("Couldn't load the IRanges package. You need to install ",
+                 "the IRanges\n  package in order to replace values in ",
+                 "an Rle object.")
+
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        lv <- length(value)
+        if (lv != 1L) 
+            return(Rle(replaceROWS(decodeRle(x), i, as.vector(value))))
+
+        ## From here, 'value' is guaranteed to be of length 1.
+
+        ## TODO: Maybe make this the coercion method from NSBS to Ranges.
+        if (is(i, "RangesNSBS")) {
+            ir <- i@subscript
+        } else {
+            ir <- as(as.integer(i), "IRanges")
+        }
+        ir <- reduce(ir)
+        if (length(ir) == 0L)
+            return(x)
+
+        isFactorRle <- is.factor(runValue(x))
+        value <- normalizeSingleBracketReplacementValue(value, x)
+        value <- as.vector(value)
+        if (isFactorRle) {
+            value <- factor(value, levels=levels(x))
+            dummy_value <- factor(levels(x), levels=levels(x))
+        }
+        if (anyMissingOrOutside(start(ir), 1L, length(x)) ||
+            anyMissingOrOutside(end(ir), 1L, length(x)))
+            stop("some ranges are out of bounds")
+
+        valueWidths <- width(ir)
+        ir <- gaps(ir, start=1, end=length(x))
+        k <- length(ir)
+        start <- start(ir)
+        end <- end(ir)
+
+        info <- getStartEndRunAndOffset(x, start, end)
+        runStart <- info[["start"]][["run"]]
+        offsetStart <- info[["start"]][["offset"]]
+        runEnd <- info[["end"]][["run"]]
+        offsetEnd <- info[["end"]][["offset"]]
+
+        if ((length(ir) == 0L) || (start(ir)[1L] != 1L)) {
+            k <- k + 1L
+            runStart <- c(1L, runStart)
+            offsetStart <- c(0L, offsetStart)
+            runEnd <- c(0L, runEnd)
+            offsetEnd <- c(0L, offsetEnd)
+        } 
+        if ((length(ir) > 0L) && (end(ir[length(ir)]) != length(x))) {
+            k <- k + 1L
+            runStart <- c(runStart, 1L)
+            offsetStart <- c(offsetStart, 0L)
+            runEnd <- c(runEnd, 0L)
+            offsetEnd <- c(offsetEnd, 0L)
+        }
+
+        subseqs <- vector("list", length(valueWidths) + k)
+        if (k > 0L) {
+            if (isFactorRle) {
+                subseqs[seq(1L, length(subseqs), by=2L)] <-
+                    lapply(seq_len(k), function(i) {
+                           ans <- .Call2("Rle_window_aslist",
+                                         x, runStart[i], runEnd[i],
+                                         offsetStart[i], offsetEnd[i],
+                                         PACKAGE="S4Vectors")
+                           ans[["values"]] <- dummy_value[ans[["values"]]]
+                           ans})
+            } else {
+                subseqs[seq(1L, length(subseqs), by=2L)] <-
+                    lapply(seq_len(k), function(i)
+                           .Call2("Rle_window_aslist",
+                                  x, runStart[i], runEnd[i],
+                                  offsetStart[i], offsetEnd[i],
+                                  PACKAGE="S4Vectors"))
+            }
+        }
+        if (length(valueWidths) > 0L) {
+            subseqs[seq(2L, length(subseqs), by=2L)] <-
+                lapply(seq_len(length(valueWidths)), function(i)
+                       list(values=value,
+                            lengths=valueWidths[i]))
+        }
+        values <- unlist(lapply(subseqs, "[[", "values"))
+        if (isFactorRle)
+            values <- dummy_value[values]
+        Rle(values=values,
+            lengths=unlist(lapply(subseqs, "[[", "lengths")))
+    }
+)
+
+setReplaceMethod("[", "Rle",
+    function(x, i, j,..., value)
+    {
+        if (!missing(j) || length(list(...)) > 0L)
+            stop("invalid subsetting")
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        li <- length(i)
+        if (li == 0L) {
+            ## Surprisingly, in that case, `[<-` on standard vectors does not
+            ## even look at 'value'. So neither do we...
+            return(x)
+        }
+        lv <- length(value)
+        if (lv == 0L)
+            stop("replacement has length zero")
+        replaceROWS(x, i, value)
+    }
+)
+
+setMethod("%in%", "Rle",
+          function(x, table)
+              Rle(values = runValue(x) %in% table, lengths = runLength(x),
+                  check = FALSE))
+
+setMethod("c", "Rle", 
+          function(x, ..., recursive = FALSE)
+          {
+              if (!identical(recursive, FALSE))
+                  stop("\"c\" method for Rle objects ",
+                       "does not support the 'recursive' argument")
+              args <- RleList(unname(list(x, ...)), compress = FALSE)
+              args <- args[elementLengths(args) > 0]
+              if (length(args) == 0)
+                  x
+              else
+                  Rle(values  = unlist(lapply(args, slot, "values")),
+                      lengths = unlist(lapply(args, slot, "lengths")))
+          })
+
+setGeneric("findRun", signature = "vec",
+           function(x, vec) standardGeneric("findRun"))
+
+setMethod("findRun", signature = c(vec = "Rle"),
+          function(x, vec) {
+            runs <- findIntervalAndStartFromWidth(as.integer(x),
+                                         runLength(vec))[["interval"]]
+            runs[x == 0 | x > length(vec)] <- NA
+            runs
+          })
+
+setMethod("is.na", "Rle",
+          function(x)
+              Rle(values = is.na(runValue(x)), lengths = runLength(x),
+                  check = FALSE))
+
+setMethod("anyNA", "Rle",
+          function(x)
+              anyNA(runValue(x)))
+
+setMethod("is.unsorted", "Rle",
+          function(x, na.rm = FALSE, strictly = FALSE)
+          {
+              ans <- is.unsorted(runValue(x), na.rm = na.rm, strictly = strictly)
+              if (strictly && !ans)
+                  ans <- any(runLength(x) > 1L)
+              ans
+          })
+
+setMethod("length", "Rle", function(x) sum(runLength(x)))
+
+setMethod("match", "Rle",
+          function(x, table, nomatch = NA_integer_, incomparables = NULL)
+              Rle(values =
+                  match(runValue(x), table = table, nomatch = nomatch,
+                        incomparables = incomparables), 
+                  lengths = runLength(x), check = FALSE))
+
+setMethod("rep", "Rle",
+          function(x, times, length.out, each)
+          {
+              usedEach <- FALSE
+              if (!missing(each) && length(each) > 0) {
+                  each <- as.integer(each[1L])
+                  if (!is.na(each)) {
+                      if (each < 0)
+                          stop("invalid 'each' argument")
+                      usedEach <- TRUE
+                      if (each == 0)
+                          x <- new(class(x), values = runValue(x)[0L])
+                      else
+                          x@lengths <- each[1L] * runLength(x)
+                  }
+              }
+              if (!missing(length.out) && length(length.out) > 0) {
+                  n <- length(x)
+                  length.out <- as.integer(length.out[1L])
+                  if (!is.na(length.out)) {
+                      if (length.out == 0) {
+                          x <- new(class(x), values = runValue(x)[0L])
+                      } else if (length.out < n) {
+                          x <- window(x, 1, length.out)
+                      } else if (length.out > n) {
+                          if (n == 0) {
+                              x <- Rle(rep(runValue(x), length.out=1),
+                                       length.out)
+                          } else {
+                              x <-
+                                window(rep.int(x, ceiling(length.out / n)),
+                                       1, length.out)
+                          }
+                      }
+                  }
+              } else if (!missing(times)) {
+                  if (usedEach && length(times) != 1)
+                      stop("invalid 'times' argument")
+                  x <- rep.int(x, times)
+              }
+              x
+          })
+
+setMethod("rep.int", "Rle",
+          function(x, times)
+          {
+              n <- length(x)
+              if (!is.integer(times))
+                  times <- as.integer(times)
+              if ((length(times) > 1 && length(times) < n) ||
+                  anyMissingOrOutside(times, 0L))
+                  stop("invalid 'times' argument")
+              if (length(times) == n) {
+                  runLength(x) <- diffWithInitialZero(cumsum(times)[end(x)])
+              } else if (length(times) == 1) {
+                  times <- as.vector(times)
+                  x <- Rle(values  = rep.int(runValue(x), times),
+                           lengths = rep.int(runLength(x), times))
+              }
+              x
+          })
+
+### S3/S4 combo for rev.Rle
+rev.Rle <- function(x)
+{
+    x@values <- rev(runValue(x))
+    x@lengths <- rev(runLength(x))
+    x
+}
+setMethod("rev", "Rle", rev.Rle)
+
+setGeneric("shiftApply", signature = c("X", "Y"),
+           function(SHIFT, X, Y, FUN, ..., OFFSET = 0L, simplify = TRUE,
+                    verbose = FALSE)
+           standardGeneric("shiftApply"))
+
+setMethod("shiftApply", signature(X = "Rle", Y = "Rle"),
+          function(SHIFT, X, Y, FUN, ..., OFFSET = 0L, simplify = TRUE,
+                   verbose = FALSE)
+          {
+              FUN <- match.fun(FUN)
+              N <- length(X)
+              if (N != length(Y))
+                  stop("'X' and 'Y' must be of equal length")
+
+              if (!is.integer(SHIFT))
+                  SHIFT <- as.integer(SHIFT)
+              if (length(SHIFT) == 0 || anyMissingOrOutside(SHIFT, 0L))
+                  stop("all 'SHIFT' values must be non-negative")
+
+              if (!is.integer(OFFSET))
+                  OFFSET <- as.integer(OFFSET)
+              if (length(OFFSET) == 0 || anyMissingOrOutside(OFFSET, 0L))
+                  stop("'OFFSET' must be non-negative")
+
+              ## Perform X setup
+              infoX <-
+                getStartEndRunAndOffset(X, rep.int(1L + OFFSET, length(SHIFT)),
+                                        N - SHIFT)
+              runStartX <- infoX[["start"]][["run"]]
+              offsetStartX <- infoX[["start"]][["offset"]]
+              runEndX <- infoX[["end"]][["run"]]
+              offsetEndX <- infoX[["end"]][["offset"]]
+
+              ## Perform Y setup
+              infoY <-
+                getStartEndRunAndOffset(Y, 1L + SHIFT,
+                                        rep.int(N - OFFSET, length(SHIFT)))
+              runStartY <- infoY[["start"]][["run"]]
+              offsetStartY <- infoY[["start"]][["offset"]]
+              runEndY <- infoY[["end"]][["run"]]
+              offsetEndY <- infoY[["end"]][["offset"]]
+
+              ## Performance Optimization
+              ## Use a stripped down loop with empty Rle object
+              newX <- new("Rle")
+              newY <- new("Rle")
+              if (verbose) {
+                  maxI <- length(SHIFT)
+                  ans <-
+                    sapply(seq_len(length(SHIFT)),
+                           function(i) {
+                               cat("\r", i, "/", maxI)
+                               FUN(.Call2("Rle_window",
+                                         X, runStartX[i], runEndX[i],
+                                         offsetStartX[i], offsetEndX[i],
+                                         newX, PACKAGE = "S4Vectors"),
+                                   .Call2("Rle_window",
+                                         Y, runStartY[i], runEndY[i],
+                                         offsetStartY[i], offsetEndY[i],
+                                         newY, PACKAGE = "S4Vectors"),
+                                              ...)
+                           }, simplify = simplify)
+                  cat("\n")
+              } else {
+                  ans <-
+                    sapply(seq_len(length(SHIFT)),
+                           function(i)
+                               FUN(.Call2("Rle_window",
+                                         X, runStartX[i], runEndX[i],
+                                         offsetStartX[i], offsetEndX[i],
+                                         newX, PACKAGE = "S4Vectors"),
+                                   .Call2("Rle_window",
+                                         Y, runStartY[i], runEndY[i],
+                                         offsetStartY[i], offsetEndY[i],
+                                         newY, PACKAGE = "S4Vectors"),
+                                   ...),
+                               simplify = simplify)
+              }
+              ans
+          })
+
+setMethod("order", "Rle",
+    function(..., na.last=TRUE, decreasing=FALSE)
+    {
+        args <- lapply(unname(list(...)),
+                       function(x) {if (is(x, "Rle")) decodeRle(x) else x})
+        do.call(order, c(args, list(na.last=na.last, decreasing=decreasing)))
+    }
+)
+
+### S3/S4 combo for sort.Rle
+.sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
+{
+    if (is.na(na.last)) {
+        if (anyMissing(runValue(x)))
+            x <- x[!is.na(x)]
+    }
+    if (is.integer(runValue(x)) || is.factor(runValue(x)))
+        ord <- orderInteger(runValue(x), decreasing=decreasing,
+                                         na.last=na.last)
+    else
+        ord <- order(runValue(x), decreasing=decreasing,
+                     na.last=na.last)
+    Rle(values=runValue(x)[ord], 
+        lengths=runLength(x)[ord],
+        check=FALSE)
+}
+sort.Rle <- function(x, decreasing=FALSE, ...)
+    .sort.Rle(x, decreasing=decreasing, ...)
+setMethod("sort", "Rle", sort.Rle)
+
+setMethod("xtfrm", "Rle", function(x) {
+    initialize(x, runValue=xtfrm(runValue(x)))
+})
+
+setMethod("rank", "Rle", function (x, na.last = TRUE,
+                                   ties.method = c("average", "first", 
+                                     "random", "max", "min"))
+          {
+              ties.method <- match.arg(ties.method)
+              if (ties.method == "min" || ties.method == "first") {
+                  callNextMethod()
+              } else {
+                  x <- as.vector(x)
+                  ans <- callGeneric()
+                  if (ties.method %in% c("average", "max", "min")) {
+                      Rle(ans)
+                  } else {
+                      ans
+                  }
+              }
+          })
+
+setMethod("table", "Rle", 
+    function(...)
+    {
+        ## Currently only 1 Rle is supported. An approach for multiple 
+        ## Rle's could be disjoin(), findRun() to find matches, then 
+        ## xtabs(length ~ value ...).
+        x <- sort(list(...)[[1L]]) 
+        if (is.factor(runValue(x))) {
+            dn <- levels(x)
+            tab <- integer(length(dn))
+            tab[dn %in% runValue(x)] <- runLength(x)
+            dims <- length(dn)
+        } else {
+            dn <- as.character(runValue(x)) 
+            tab <- runLength(x) 
+            dims <- nrun(x)
+        }
+        ## Adjust 'dn' for consistency with base::table
+        if (length(dn) == 0L)
+            dn <- NULL
+        dn <- list(dn)
+        names(dn) <- .list.names(...) 
+        y <- array(tab, dims, dimnames=dn)
+        class(y) <- "table"
+        y 
+    }
+)
+
+.list.names <- function(...) {
+    l <- as.list(substitute(list(...)))[-1L]
+    deparse.level <- 1 
+    nm <- names(l)
+    fixup <- if (is.null(nm))
+        seq_along(l)
+    else nm == ""
+    dep <- vapply(l[fixup], function(x) switch(deparse.level +
+        1, "", if (is.symbol(x)) as.character(x) else "",
+        deparse(x, nlines = 1)[1L]), "")
+    if (is.null(nm))
+        dep
+    else {
+        nm[fixup] <- dep
+        nm
+    }
+}
+
+### S3/S4 combo for duplicated.Rle
+.duplicated.Rle <- function(x, incomparables=FALSE, fromLast=FALSE)
+    stop("no \"duplicated\" method for Rle objects yet, sorry")
+duplicated.Rle <- function(x, incomparables=FALSE, ...)
+    .duplicated.Rle(x, incomparables=incomparables, ...)
+setMethod("duplicated", "Rle", duplicated.Rle)
+
+### S3/S4 combo for unique.Rle
+unique.Rle <- function(x, incomparables=FALSE, ...)
+    unique(runValue(x), incomparables=incomparables, ...)
+setMethod("unique", "Rle", unique.Rle)
+
+### S3/S4 combo for anyDuplicated.Rle
+anyDuplicated.Rle <- function(x, incomparables=FALSE, ...)
+    all(runLength(x) == 1L) && anyDuplicated(runValue(x))
+setMethod("anyDuplicated", "Rle", anyDuplicated.Rle)
+
+setMethod("isStrictlySorted", "Rle",
+    function(x)  all(runLength(x) == 1L) && isStrictlySorted(runValue(x))
+)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Set methods
+###
+### The return values of these do not have any duplicated values, so
+### it would obviously be more efficient to return plain vectors. That
+### might violate user expectations though.
+
+setMethod("union", c("Rle", "Rle"), function(x, y) {
+  Rle(union(runValue(x), runValue(y)))
+})
+
+setMethod("union", c("ANY", "Rle"), function(x, y) {
+  Rle(union(as.vector(x), runValue(y)))
+})
+
+setMethod("union", c("Rle", "ANY"), function(x, y) {
+  Rle(union(runValue(x), as.vector(y)))
+})
+
+setMethod("intersect", c("Rle", "Rle"), function(x, y) {
+  Rle(intersect(runValue(x), runValue(y)))
+})
+
+setMethod("intersect", c("ANY", "Rle"), function(x, y) {
+  Rle(intersect(as.vector(x), runValue(y)))
+})
+
+setMethod("intersect", c("Rle", "ANY"), function(x, y) {
+  Rle(intersect(runValue(x), as.vector(y)))
+})
+
+setMethod("setdiff", c("Rle", "Rle"), function(x, y) {
+  Rle(setdiff(runValue(x), runValue(y)))
+})
+
+setMethod("setdiff", c("ANY", "Rle"), function(x, y) {
+  Rle(setdiff(as.vector(x), runValue(y)))
+})
+
+setMethod("setdiff", c("Rle", "ANY"), function(x, y) {
+  Rle(setdiff(runValue(x), as.vector(y)))
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### The "show" method
+###
+
+setMethod("show", "Rle",
+          function(object)
+          {
+              lo <- length(object)
+              nr <- nrun(object)
+              halfWidth <- getOption("width") %/% 2L
+              cat(classNameForDisplay(runValue(object)),
+                  "-Rle of length ", lo, " with ", nr,
+                  ifelse(nr == 1, " run\n", " runs\n"), sep = "")
+              first <- max(1L, halfWidth)
+              showMatrix <-
+                rbind(as.character(head(runLength(object), first)),
+                      as.character(head(runValue(object), first)))
+              if (nr > first) {
+                  last <- min(nr - first, halfWidth)
+                  showMatrix <-
+                    cbind(showMatrix,
+                          rbind(as.character(tail(runLength(object), last)),
+                                as.character(tail(runValue(object), last))))
+              }
+              if (is.character(runValue(object))) {
+                  showMatrix[2L,] <-
+                    paste("\"", showMatrix[2L,], "\"", sep = "")
+              }
+              showMatrix <- format(showMatrix, justify = "right")
+              cat(BiocGenerics:::labeledLine("  Lengths", showMatrix[1L,],
+                                             count = FALSE))
+              cat(BiocGenerics:::labeledLine("  Values ", showMatrix[2L,],
+                                             count = FALSE))
+              if (is.factor(runValue(object)))
+                  cat(BiocGenerics:::labeledLine("Levels", levels(object)))
+          })
+
+setMethod("showAsCell", "Rle", function(object) as.vector(object))
