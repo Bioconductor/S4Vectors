@@ -224,7 +224,7 @@
 
 \seealso{
   \itemize{
-    \item \link[IRanges]{Rle}, \link[IRanges]{IRanges} and \link[XVector]{XRaw}
+    \item \link{Rle}, \link[IRanges]{IRanges} and \link[XVector]{XRaw}
           for example implementations.
 
     \item \link{Vector-comparison} for comparing, ordering, and tabulating
