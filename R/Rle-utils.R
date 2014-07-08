@@ -292,15 +292,15 @@ diff.Rle <- function(x, ...) .diff.Rle(x, ...)
 setMethod("diff", "Rle", .diff.Rle)
 
 .psummary.Rle <- function(FUN, ..., MoreArgs = NULL) {
-    rlist <- RleList(..., compress = FALSE)
-    ends <- end(rlist[[1L]])
-    if (length(rlist) > 1) {
-        for (i in 2:length(rlist))
-            ends <- sortedMerge(ends, end(rlist[[i]]))
+    args <- list(...)
+    ends <- end(args[[1L]])
+    if (length(args) > 1) {
+        for (i in 2:length(args))
+            ends <- sortedMerge(ends, end(args[[i]]))
     }
     Rle(values =
         do.call(FUN,
-                c(lapply(rlist,
+                c(lapply(args,
                          function(x) {
                              runs <- findIntervalAndStartFromWidth(ends,
                                          runLength(x))[["interval"]]
@@ -722,12 +722,12 @@ setMethod("gsub", signature = c(pattern = "ANY", replacement = "ANY", x = "Rle")
 setMethod("paste", "Rle",
           function(..., sep = " ", collapse = NULL)
           {
-              rleList <- RleList(..., compress = FALSE)
-              ans <- rleList[[1L]]
-              if (length(rleList) > 1) {
-                  for (i in 2:length(rleList)) {
+              args <- list(...)
+              ans <- args[[1L]]
+              if (length(args) > 1) {
+                  for (i in 2:length(args)) {
                       ans <-
-                        .pasteTwoRles(ans, rleList[[i]], sep = sep,
+                        .pasteTwoRles(ans, args[[i]], sep = sep,
                                       collapse = collapse)
                   }
               }
