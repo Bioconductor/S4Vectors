@@ -342,13 +342,13 @@ setMethod("c", "Rle",
               if (!identical(recursive, FALSE))
                   stop("\"c\" method for Rle objects ",
                        "does not support the 'recursive' argument")
-              args <- unname(list(x, ...))
+              args <- lapply(unname(list(x, ...)), Rle)
               args <- args[sapply(args, length) > 0]
-              if (length(args) == 0)
-                  x
-              else
-                  Rle(values  = unlist(lapply(args, slot, "values")),
-                      lengths = unlist(lapply(args, slot, "lengths")))
+              if (length(args) == 0L)
+                  return(x)
+              ans_values <- unlist(lapply(args, slot, "values"))
+              ans_lengths <- unlist(lapply(args, slot, "lengths"))
+              Rle(ans_values, ans_lengths)
           })
 
 setGeneric("findRun", signature = "vec",
