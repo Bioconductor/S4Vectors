@@ -11,7 +11,8 @@ safeEval <- function(expr, envir, enclos, strict=FALSE) {
 }
 
 makeGlobalWarningEnv <- function(expr, envir, enclos) {
-  globals <- setdiff(all.names(expr, functions=FALSE), names(envir))
+  envir <- as.env(envir, enclos)
+  globals <- setdiff(all.names(expr, functions=FALSE), ls(envir))
   env <- new.env(parent=enclos)
   lapply(globals, function(g) {
     makeActiveBinding(g, function() {
