@@ -53,7 +53,7 @@ evalqForSubset <- function(expr, envir, ...) {
 
 evalqForSelect <- function(expr, df, ...) {
   if (missingArg(substitute(expr), parent.frame())) {
-    TRUE
+    rep(TRUE, ncol(df))
   } else {
     nl <- as.list(seq_len(ncol(df)))
     names(nl) <- colnames(df)
