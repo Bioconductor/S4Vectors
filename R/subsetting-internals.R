@@ -329,6 +329,14 @@ setMethod("replaceROWS", "vectorORfactor",
     }
 )
 
+setMethod("replaceROWS", "matrix",
+          function(x, i, value)
+          {
+            i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
+            x[i,] <- value
+            x
+          }
+          )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
