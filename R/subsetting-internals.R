@@ -338,6 +338,13 @@ setMethod("replaceROWS", "matrix",
           }
           )
 
+setMethod("replaceROWS",
+          "NULL",
+          function(x, i, value) {
+            NULL
+          }
+          )
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
 ###
