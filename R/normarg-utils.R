@@ -49,14 +49,106 @@ isNumericOrNAs <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### For checking AND fixing (aka normalizing).
+### Vertical/horiontal recycling of a vector-like/list-like object.
 ###
 
+### Vertical recycling (of any vector-like object).
 ### NOT exported.
-numeric2integer <- function(x)
+V_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton")
 {
-    if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
+    x_len <- length(x)
+    skeleton_len <- length(skeleton)
+    if (x_len == skeleton_len)
+        return(x)
+    if (x_len > skeleton_len && x_len != 1L)
+        stop(wmsg(
+            "'", x_what, "' cannot be longer than '", skeleton_what, "'"
+        ))
+    if (x_len == 0L)
+        stop(wmsg(
+            "'", x_what, "' is a zero-length object but '", skeleton_what,
+            "' is not"
+        ))
+    if (skeleton_len %% x_len != 0L)
+        warning(wmsg(
+            "'length(", skeleton_what, ")' is not a multiple of 'length(",
+            x_what, ")'"
+        ))
+    rep(x, length.out=skeleton_len)
 }
+
+### Horizontal recycling (of a list-like object only).
+### NOT exported.
+H_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
+                      more_blahblah=NA)
+{
+    stopifnot(is.list(x) || is(x, "List"))
+    stopifnot(is.list(skeleton) || is(skeleton, "List"))
+    x_len <- length(x)
+    skeleton_len <- length(skeleton)
+    stopifnot(x_len == skeleton_len)
+
+    x_what2 <- paste0("some list elements in '", x_what, "'")
+    if (!is.na(more_blahblah))
+        x_what2 <- paste0(x_what2, " (", more_blahblah, ")")
+
+    x_eltlens <- unname(elementLengths(x))
+    skeleton_eltlens <- unname(elementLengths(skeleton))
+    idx <- which(x_eltlens != skeleton_eltlens)
+    if (length(idx) == 0L)
+        return(x)
+
+    longer_idx <- which(x_eltlens > skeleton_eltlens)
+    shorter_idx <- which(x_eltlens < skeleton_eltlens)
+    if (length(longer_idx) == 0L && length(shorter_idx) == 0L)
+        return(x)
+    if (length(longer_idx) != 0L) {
+        if (max(x_eltlens[longer_idx]) >= 2L)
+            stop(wmsg(
+                x_what2, " are longer than their corresponding ",
+                "list element in '", skeleton_what, "'"
+            ))
+    }
+    if (length(shorter_idx) != 0L) {
+        tmp <- x_eltlens[shorter_idx]
+        if (min(tmp) == 0L)
+            stop(wmsg(
+                x_what2, " are of length 0, but their corresponding ",
+                "list element in '", skeleton_what, "' is not"
+            ))
+        if (max(tmp) >= 2L)
+            stop(wmsg(
+                x_what2, " are shorter than their corresponding ",
+                "list element in '", skeleton_what, "', but have ",
+                "a length >= 2. \"Horizontal\" recycling only supports ",
+                "list elements of length 1 at the moment."
+            ))
+    }
+
+    ## From here 'x[idx]' is guaranteed to contain list elements of length 1.
+
+    ## We use an "unlist => stretch => relist" algo to perform the horizontal
+    ## recycling. Because of this, the returned value is not necessary of the
+    ## same class as 'x' (e.g. can be an IntegerList if 'x' is an ordinary
+    ## list of integers and 'skeleton' a List object).
+    unlisted_x <- unlist(x, use.names=FALSE)
+    times <- rep.int(1L, length(unlisted_x))
+    idx2 <- cumsum(x_eltlens)[idx]
+    times[idx2] <- skeleton_eltlens[idx]
+    unlisted_ans <- rep.int(unlisted_x, times)
+    ans <- relist(unlisted_ans, skeleton)
+    names(ans) <- names(x)
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### More recycling of a vector-like object.
+###
+### TODO: This section needs to be cleaned. Some of the stuff in it is
+### redundant with and superseded by V_recycle() and/or H_recycle() (defined
+### in the previous section).
+###
 
 ### NOT exported.
 ### recycleVector() vs rep(x, length.out=length):
@@ -113,6 +205,11 @@ recycleNumericArg <- function(arg, argname, length.out)
         stop("'", argname, "' must be a numeric vector")
     recycleArg(arg, argname, length.out)
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Fold a vector-like object.
+###
 
 ### We use a signature in the style of IRanges::successiveIRanges() or
 ### IRanges::successiveViews().
@@ -174,6 +271,7 @@ fold <- function(x, circle.length, from=1)
 ### Other non exported normarg* functions.
 ###
 
+### NOT exported.
 normargSingleStartOrNA <- function(start)
 {
     if (!isSingleNumberOrNA(start))
@@ -183,6 +281,7 @@ normargSingleStartOrNA <- function(start)
     start
 }
 
+### NOT exported.
 normargSingleEndOrNA <- function(end)
 {
     if (!isSingleNumberOrNA(end))
@@ -192,6 +291,7 @@ normargSingleEndOrNA <- function(end)
     end
 }
 
+### NOT exported.
 normargUseNames <- function(use.names)
 {
     if (is.null(use.names))
@@ -201,6 +301,7 @@ normargUseNames <- function(use.names)
     use.names
 }
 
+### NOT exported.
 normargRunK <- function(k, n, endrule)
 {
     if (!is.numeric(k))
@@ -219,6 +320,7 @@ normargRunK <- function(k, n, endrule)
     as.integer(k)
 }
 
+### NOT exported.
 normargSubset2_iOnly <-
     function(x, i, j, ..., .conditionPrefix=character())
 {
@@ -242,6 +344,18 @@ normargSubset2_iOnly <-
     i
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Miscellaneous.
+###
+
+### NOT exported.
+numeric2integer <- function(x)
+{
+    if (is.numeric(x) && !is.integer(x)) as.integer(x) else x
+}
+
+### NOT exported.
 extraArgsAsList <- function(.valid.argnames, ...)
 {
     args <- list(...)
