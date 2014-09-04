@@ -141,6 +141,19 @@ H_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
     ans
 }
 
+### Performs first vertical then horizontal recycling (of a list-like object
+### only).
+### NOT exported.
+VH_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
+                       more_blahblah=NA)
+{
+    x <- S4Vectors:::V_recycle(x, skeleton,
+                               x_what=x_what, skeleton_what=skeleton_what)
+    S4Vectors:::H_recycle(x, skeleton,
+                          x_what=x_what, skeleton_what=skeleton_what,
+                          more_blahblah=more_blahblah)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### More recycling of a vector-like object.
