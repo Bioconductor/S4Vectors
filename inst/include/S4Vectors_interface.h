@@ -441,3 +441,12 @@ SEXP seqselect_Rle(SEXP x,
 	int length
 );
 
+/*
+ * Low-level manipulation of Vector objects.
+ * (see List_class.c)
+ */
+
+const char *get_List_elementType(SEXP x);
+
+void set_List_elementType(SEXP x, const char *type);
+

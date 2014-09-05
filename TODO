@@ -62,7 +62,7 @@ C files:
   X Hits_class.c
   X Rle_class.c
   X Rle_utils.c
-    Vector_class.c
+  X Vector_class.c (renamed List_class.c)
     SimpleList_class.c
     DataFrame_class.c
 

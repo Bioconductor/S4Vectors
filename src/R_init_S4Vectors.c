@@ -178,6 +178,10 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_raw_Rle_constructor);
 	REGISTER_CCALLABLE(_seqselect_Rle);
 
+/* List_class.c */
+	REGISTER_CCALLABLE(_get_List_elementType);
+	REGISTER_CCALLABLE(_set_List_elementType);
+
 	return;
 }
 

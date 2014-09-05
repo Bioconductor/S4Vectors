@@ -364,15 +364,15 @@ void _vector_memcpy(
 SEXP sapply_NROW(SEXP x);
 
 SEXP vector_subsetByRanges(
-        SEXP x,
-        SEXP start,
-        SEXP width
+	SEXP x,
+	SEXP start,
+	SEXP width
 );
 
 SEXP vector_seqselect(
-        SEXP x,
-        SEXP start,
-        SEXP width
+	SEXP x,
+	SEXP start,
+	SEXP width
 );
 
 
@@ -692,5 +692,15 @@ SEXP Rle_runq(
 	SEXP k,
 	SEXP which,
 	SEXP na_rm
+);
+
+
+/* List_class.c */
+
+const char *_get_List_elementType(SEXP x);
+
+void _set_List_elementType(
+	SEXP x,
+	const char *type
 );
 
