@@ -429,6 +429,13 @@ setMethod("showAsCell", "POSIXt", function(object) object)
 ### Combining.
 ###
 
+rbindRowOfNAsToMetadatacols <- function(x) {
+  x_mcols <- mcols(x)
+  if (!is.null(x_mcols))
+    mcols(x)[nrow(x_mcols)+1L,] <- NA
+  x
+}
+
 ### FIXME: This method doesn't work properly on DataTable objects if 'after'
 ### is >= 1 and < length(x).
 setMethod("append", c("Vector", "Vector"),

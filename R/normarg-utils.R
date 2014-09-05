@@ -147,11 +147,9 @@ H_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
 VH_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
                        more_blahblah=NA)
 {
-    x <- S4Vectors:::V_recycle(x, skeleton,
-                               x_what=x_what, skeleton_what=skeleton_what)
-    S4Vectors:::H_recycle(x, skeleton,
-                          x_what=x_what, skeleton_what=skeleton_what,
-                          more_blahblah=more_blahblah)
+    x <- V_recycle(x, skeleton, x_what=x_what, skeleton_what=skeleton_what)
+    H_recycle(x, skeleton, x_what=x_what, skeleton_what=skeleton_what,
+                           more_blahblah=more_blahblah)
 }
 
 

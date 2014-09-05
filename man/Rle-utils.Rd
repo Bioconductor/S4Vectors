@@ -1,8 +1,6 @@
 \name{Rle-utils}
-\docType{class}
 
 \alias{Rle-utils}
-
 
 \alias{Ops,Rle,Rle-method}
 \alias{Ops,Rle,vector-method}
@@ -337,22 +335,23 @@
 }
 
 \examples{
-  x <- Rle(10:1, 1:10)
-  x
+x <- Rle(10:1, 1:10)
+x
 
-  sqrt(x)
-  x^2 + 2 * x + 1
-  range(x)
-  sum(x)
-  mean(x)
-  aggregate(x, x > 4, mean)
-  aggregate(x, FUN = mean, start = 1:(length(x) - 50), end = 51:length(x))
+sqrt(x)
+x^2 + 2 * x + 1
+range(x)
+sum(x)
+mean(x)
+aggregate(x, x > 4, mean)
+aggregate(x, FUN = mean, start = 1:(length(x) - 50), end = 51:length(x))
 
-  z <- c("the", "quick", "red", "fox", "jumps", "over", "the", "lazy", "brown", "dog")
-  z <- Rle(z, seq_len(length(z)))
-  chartr("a", "@", z)
-  toupper(z)
+z <- c("the", "quick", "red", "fox", "jumps", "over", "the", "lazy", "brown", "dog")
+z <- Rle(z, seq_len(length(z)))
+chartr("a", "@", z)
+toupper(z)
 }
 
+\keyword{utilities}
 \keyword{methods}
 \keyword{arith}

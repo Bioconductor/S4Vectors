@@ -1,7 +1,7 @@
 useDynLib(S4Vectors)
 
 import(methods)
-importFrom(utils, head, tail, stack)
+importFrom(utils, head, tail)
 importFrom(stats, var, cov, cor, sd, median, quantile, mad,
            IQR, smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames)
@@ -21,7 +21,8 @@ exportClasses(
     Annotated,
     DataTableORNULL, Vector,
     Hits,
-    Rle
+    Rle,
+    List
 )
 
 
@@ -35,8 +36,10 @@ S3method(anyDuplicated, NSBS)
 
 S3method(as.data.frame, Vector)
 S3method(as.data.frame, Rle)
+S3method(as.data.frame, List)
 
 S3method(as.list, Rle)
+S3method(as.list, List)
 
 S3method(diff, Rle)
 
@@ -74,8 +77,10 @@ export(
 
     as.data.frame.Vector,
     as.data.frame.Rle,
+    as.data.frame.List,
 
     as.list.Rle,
+    as.list.List,
 
     diff.Rle,
 
@@ -116,11 +121,11 @@ exportMethods(
     is.na, anyNA,
     as.logical, as.integer, as.numeric, as.complex, as.character, as.raw,
     as.factor,
-    as.data.frame, as.matrix, as.table,
+    as.list, as.data.frame,
+    as.matrix, as.table,
     "[", "[<-",
     subset,
     append,
-    cbind, rbind,
     merge,
     "==", "!=", "<=", ">=", "<", ">",
     match, duplicated, unique, anyDuplicated, "%in%",
@@ -129,14 +134,23 @@ exportMethods(
     by,
     transform,
     substr, substring, levels, "levels<-", ifelse,
+    "[[", "[[<-", "$", "$<-",
+    within,
 
     ## Generics defined in the methods package:
     coerce, show,
+
+    ## Generics defined in the utils package:
 
     ## Generics defined in the stats package:
     na.omit, na.exclude, complete.cases,
 
     ## Generics defined in the BiocGenerics package:
+    cbind, rbind,
+    lapply, sapply,
+    Reduce, Filter, Find, Map, Position,
+    unlist,
+    do.call,
     start, end, width
 )
 
@@ -171,7 +185,10 @@ export(
     normalizeDoubleBracketSubscript,
 
     ## Hits-class.R:
-    remapHits
+    remapHits,
+
+    ## List-class.R:
+    List, phead, ptail, pc
 )
 
 
@@ -224,7 +241,14 @@ export(
     shiftApply,
 
     ## Rle-utils.R:
-    runsum, runmean, runwtsum, runq
+    runsum, runmean, runwtsum, runq,
+
+    ## List-class.R:
+    elementType, elementLengths,
+    isEmpty, revElements,
+
+    ## List-utils.R:
+    endoapply, mendoapply
 )
 
 ### Exactly the same list as above.
@@ -254,6 +278,9 @@ exportMethods(
     Rle,
     findRun,
     shiftApply,
-    runsum, runmean, runwtsum, runq
+    runsum, runmean, runwtsum, runq,
+    elementType, elementLengths,
+    isEmpty, revElements,
+    endoapply, mendoapply
 )
 

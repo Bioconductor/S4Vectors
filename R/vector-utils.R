@@ -17,3 +17,22 @@ sapply_NROW <- function(x)
     return(sapply(x, NROW))
 }
 
+listElementType <- function(x) {
+  cl <- lapply(x, class)
+  clnames <- unique(unlist(cl, use.names=FALSE))
+  if (length(clnames == 1L)) {
+    clnames
+  } else {
+    contains <- lapply(cl, function(x) getClass(x, TRUE)@contains)
+    clnames <- c(clnames,
+                 unlist(lapply(contains, names), use.names=FALSE))
+    cltab <- table(factor(clnames, unique(clnames)))
+    clnames <- names(cltab)[cltab == length(x)]
+    if (length(clnames) > 0L) {
+      clnames[1]
+    } else {
+      NULL
+    }
+  }
+}
+

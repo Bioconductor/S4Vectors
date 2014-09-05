@@ -4,7 +4,7 @@ IRanges before the split (version 1.23.5)
 
 R files: 73 files
 
-  Going to S4Vectors (31 files in total):
+  Going to S4Vectors (29 files in total):
   X S4-utils.R
   X utils.R
   X isConstant.R        (renamed isSorted.R)
@@ -27,11 +27,10 @@ R files: 73 files
   X Rle-class.R         (too big! split in Rle-class.R + Rle-utils.R)
   X runstat.R           (merge with Rle-utils.R)
 
-    List-class.R        (split in List-class.R + List-utils.R)
-    endoapply.R         (merge with List-utils.R)
-    funprog-methods.R   (merge with List-utils.R)
-    multisplit.R        (merge with List-utils.R)
-    seqapply.R          (deprecate this stuff)
+  X List-class.R        (split in List-class.R + List-utils.R)
+  X endoapply.R         (merge with List-utils.R)
+  X funprog-methods.R   (merge with List-utils.R)
+
     List-comparison.R   (methods for CompressedList need to stay in IRanges)
 
     SimpleList-class.R

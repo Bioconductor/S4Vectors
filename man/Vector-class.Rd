@@ -13,6 +13,7 @@
 \alias{fixedColumnNames}
 \alias{fixedColumnNames,ANY-method}
 
+\alias{length,Vector-method}
 \alias{NROW,Vector-method}
 \alias{ROWNAMES,Vector-method}
 
@@ -230,8 +231,8 @@
     \item \link{Vector-comparison} for comparing, ordering, and tabulating
           vector-like objects.
 
-    \item \link[IRanges]{List} for a direct extension that serves a similar role
-          as \link[base]{list} in base R.
+    \item \link{List} for a direct Vector extension that serves a similar
+          role as \link[base]{list} in base R.
 
     \item \link[IRanges]{extractList} for grouping elements of a vector-like
           object into a list-like object.
