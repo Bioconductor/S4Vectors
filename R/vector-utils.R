@@ -20,7 +20,7 @@ sapply_NROW <- function(x)
 listElementType <- function(x) {
   cl <- lapply(x, class)
   clnames <- unique(unlist(cl, use.names=FALSE))
-  if (length(clnames == 1L)) {
+  if (length(clnames) == 1L) {
     clnames
   } else {
     contains <- lapply(cl, function(x) getClass(x, TRUE)@contains)
