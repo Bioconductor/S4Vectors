@@ -182,6 +182,9 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_get_List_elementType);
 	REGISTER_CCALLABLE(_set_List_elementType);
 
+/* SimpleList_class.c */
+	REGISTER_CCALLABLE(_new_SimpleList);
+
 	return;
 }
 

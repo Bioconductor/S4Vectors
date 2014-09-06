@@ -450,3 +450,10 @@ const char *get_List_elementType(SEXP x);
 
 void set_List_elementType(SEXP x, const char *type);
 
+/*
+ * Low-level manipulation of SimpleList objects.
+ * (see SimpleList_class.c)
+ */
+
+SEXP new_SimpleList(const char *classname, SEXP listData);
+

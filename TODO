@@ -30,10 +30,9 @@ R files: 73 files
   X List-class.R        (split in List-class.R + List-utils.R)
   X endoapply.R         (merge with List-utils.R)
   X funprog-methods.R   (merge with List-utils.R)
+  X SimpleList-class.R
 
     List-comparison.R   (methods for CompressedList need to stay in IRanges)
-
-    SimpleList-class.R
 
     DataFrame-class.R
     DataFrame-utils.R
@@ -63,7 +62,7 @@ C files:
   X Rle_class.c
   X Rle_utils.c
   X Vector_class.c (renamed List_class.c)
-    SimpleList_class.c
+  X SimpleList_class.c
     DataFrame_class.c
 
 - 9 header files (.h files)

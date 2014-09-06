@@ -75,6 +75,8 @@ test_Rle_general <- function() {
     checkIdentical(rep(x, x, 20, 2), as.vector(rep(xRle, x, 20, 2)))
     checkIdentical(rep.int(x, times = 2), as.vector(rep.int(xRle, times = 2)))
     checkIdentical(rev(x), as.vector(rev(xRle)))
+
+    library(IRanges)
     checkIdentical(as.vector(xRle[IRanges(start=1:3, width=1:3)]),
                    x[c(1,2,3,3,4,5)])
     z <- x

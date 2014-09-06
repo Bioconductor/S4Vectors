@@ -16,15 +16,6 @@
 \alias{isEmpty,ANY-method}
 \alias{isEmpty,List-method}
 
-\alias{show,List-method}
-
-\alias{[[,List-method}
-\alias{[[<-,List-method}
-\alias{$,List-method}
-\alias{$<-,List-method}
-\alias{[,List-method}
-\alias{[<-,List-method}
-
 \alias{coerce,List,list-method}
 \alias{as.list.List}
 \alias{coerce,ANY,List-method}
@@ -35,6 +26,15 @@
 \alias{as.data.frame.List}
 \alias{as.data.frame,List-method}
 \alias{coerce,List,data.frame-method}
+
+\alias{[,List-method}
+\alias{[<-,List-method}
+\alias{[[,List-method}
+\alias{[[<-,List-method}
+\alias{$,List-method}
+\alias{$<-,List-method}
+
+\alias{show,List-method}
 
 
 \title{List objects}
@@ -102,6 +102,19 @@
   
   \describe{
     \item{}{
+      \code{length(x)}:
+      Get the number of list elements in \code{x}.
+    }
+    \item{}{
+      \code{names(x)}, \code{names(x) <- value}:
+      Get or set the names of the elements in the List.
+    }
+    \item{}{
+      \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
+      Get or set the metadata columns. See \link{Vector} man page for
+      more information.
+    }
+    \item{}{
       \code{elementType(x)}:
       Get the scalar string naming the class from which all elements must
       derive.
@@ -119,46 +132,41 @@
   }
 }
 
-\section{Element extraction (list style)}{
-  In the code snippets below, \code{x} is a List object.
-
+\section{Coercion}{
+  To List.
   \describe{
     \item{}{
-      \code{x[[i]]}:
-      If defined, return the selected element \code{i}, where \code{i} is an
-      numeric or character vector of length 1.
-    }
-    \item{}{
-      \code{x$name}:
-      Similar to \code{x[[name]]}, but \code{name} is taken literally as an
-      element name.
+      \code{as(x, "List")}: Converts a vector-like object into a
+      List, usually a \link[IRanges]{CompressedList} derivative.
+      One notable exception is when \code{x} is an ordinary list,
+      in which case \code{as(x, "List")} returns a \link{SimpleList}
+      derivative.
+
+      To explicitly request a \link{SimpleList} derivative, call
+      \code{as(x, "SimpleList")}.
+
+      See \code{?\link[IRanges]{CompressedList}} (you might need to load
+      the \pkg{IRanges} package first) and \code{?\link{SimpleList}} for
+      more information about the CompressedList and SimpleList
+      representations.
     }
   }
-}
 
-\section{Coercion}{
-  In the code snippets below, \code{x} is a List object.
-
+  From List. In the code snippets below, \code{x} is a List object.
   \describe{
-    \item{}{\code{as.env(x, enclos = parent.frame())}:
-      Creates an environment from \code{x} with a symbol for each
-      \code{names(x)}. The values are not actually copied into the
-      environment. Rather, they are dynamically bound using
-      \code{\link{makeActiveBinding}}. This prevents unnecessary copying
-      of the data from the external vectors into R vectors. The values
-      are cached, so that the data is not copied every time the symbol
-      is accessed.
-    }
     \item{}{
       \code{as.list(x, ...)}, \code{as(from, "list")}:
-      Turns \code{x} into a standard list.
+      Turns \code{x} into an ordinary list.
     }
-    \item{}{\code{unlist(x, recursive = TRUE, use.names = TRUE)}: Concatenates
-      the elements of \code{x} into a single \code{elementType(x)} object.
+    \item{}{
+      \code{unlist(x, recursive=TRUE, use.names=TRUE)}:
+      Concatenates the elements of \code{x} into a single vector-like
+      object (of class \code{elementType(x)}).
     }
-    \item{}{\code{as.data.frame(x, row.names = NULL, optional = FALSE ,
-      value.name = "value", use.outer.mcols = FALSE, 
-      group_name.as.factor = FALSE, ...)}: 
+    \item{}{
+      \code{as.data.frame(x, row.names=NULL, optional=FALSE ,
+                          value.name="value", use.outer.mcols=FALSE, 
+                          group_name.as.factor=FALSE, ...)}: 
       Coerces a \code{List} to a \code{data.frame}. The result has the
       same length as unlisted \code{x} with two additional columns,
       \code{group} and \code{group_name}. \code{group} is an \code{integer}
@@ -177,6 +185,53 @@
       groups in \code{x} should be done using the \code{group} column as 
       the \code{f} argument to \code{splitAsList}. To relist data, use
       \code{x} as the \code{skeleton} argument to \code{relist}.
+    }
+    \item{}{
+      \code{as.env(x, enclos = parent.frame())}:
+      Creates an environment from \code{x} with a symbol for each
+      \code{names(x)}. The values are not actually copied into the
+      environment. Rather, they are dynamically bound using
+      \code{\link{makeActiveBinding}}. This prevents unnecessary copying
+      of the data from the external vectors into R vectors. The values
+      are cached, so that the data is not copied every time the symbol
+      is accessed.
+    }
+  }
+}
+
+\section{Subsetting}{
+  In the code snippets below, \code{x} is a List object.
+
+  \describe{
+    \item{}{
+      \code{x[i]}:
+      Return a new List object made of the list elements selected by
+      subscript \code{i}. Subscript \code{i} can be of any type supported
+      by subsetting of a Vector object (see \link{Vector} man page for the
+      details), plus the following types: \link[IRanges]{IntegerList},
+      \link[IRanges]{LogicalList}, \link[IRanges]{CharacterList},
+      integer-\link[IRanges]{RleList}, logical-\link[IRanges]{RleList},
+      character-\link[IRanges]{RleList}, and \link[IRanges]{RangesList}.
+      Those additional types perform subsetting within the list elements
+      rather than across them.
+    }
+    \item{}{
+      \code{x[i] <- value}:
+      Replacement version of \code{x[i]}.
+    }
+    \item{}{
+      \code{x[[i]]}:
+      Return the selected list element \code{i}, where \code{i} is an
+      numeric or character vector of length 1.
+    }
+    \item{}{
+      \code{x[[i]] <- value}:
+      Replacement version of \code{x[[i]]}.
+    }
+    \item{}{
+      \code{x$name}, \code{x$name <- value}:
+      Similar to \code{x[[name]]} and \code{x[[name]] <- value}, but
+      \code{name} is taken literally as an element name.
     }
   }
 }

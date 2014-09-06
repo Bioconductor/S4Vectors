@@ -10,13 +10,9 @@
 \alias{Vector-class}
 \alias{Vector}
 
-\alias{fixedColumnNames}
-\alias{fixedColumnNames,ANY-method}
-
 \alias{length,Vector-method}
 \alias{NROW,Vector-method}
 \alias{ROWNAMES,Vector-method}
-
 \alias{elementMetadata}
 \alias{elementMetadata,Vector-method}
 \alias{mcols}
@@ -60,6 +56,8 @@
 \alias{extractROWS,matrix-method}
 \alias{replaceROWS,Vector-method}
 
+\alias{append,Vector,Vector-method}
+
 \alias{classNameForDisplay}
 \alias{classNameForDisplay,ANY-method}
 \alias{classNameForDisplay,AsIs-method}
@@ -67,7 +65,8 @@
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,Vector-method}
 
-\alias{append,Vector,Vector-method}
+\alias{fixedColumnNames}
+\alias{fixedColumnNames,ANY-method}
 
 
 \title{Vector objects}
@@ -156,8 +155,9 @@
       support \code{as.vector}, so this coercion is possible only for
       certain types.
     }
-    \item{}{\code{as.env(x)}: Constructs an environment object
-      containing the elements of \code{mcols(x)}.
+    \item{}{\code{as.env(x)}:
+      Constructs an environment object containing the elements of
+      \code{mcols(x)}.
     }
   }
 }
@@ -173,7 +173,7 @@
       If defined, returns a new Vector object made of selected elements
       \code{i}, which can be missing; an NA-free logical, numeric, or
       character vector; or a logical Rle object. The \code{drop} argument
-      specifies whether or not to coerce the returned sequence to a standard
+      specifies whether or not to coerce the returned sequence to an ordinary
       vector.
     }
     \item{}{
@@ -203,16 +203,18 @@
 }
 
 \section{Displaying}{
+  [FOR ADVANCED USERS OR DEVELOPERS]
+
   Displaying of a Vector object is controlled by 2 internal helpers,
   \code{classNameForDisplay} and \code{showAsCell}.
 
   For most objects \code{classNameForDisplay(x)} just returns \code{class(x)}.
   However, for some objects it can return the name of a parent class that is
   more suitable for display because it's simpler and as informative as the
-  real class name. See \link[IRanges]{SimpleList} and
-  \link[IRanges]{CompressedList} objects in the \pkg{IRanges} package for
-  examples of objects for which \code{classNameForDisplay} returns the name
-  of a parent class.
+  real class name. See \link{SimpleList} objects (defined in this package)
+  and \link[IRanges]{CompressedList} objects (defined in the \pkg{IRanges}
+  package) for examples of objects for which \code{classNameForDisplay}
+  returns the name of a parent class.
 
   \code{showAsCell(x)} produces a character vector \emph{parallel} to
   \code{x} (i.e. with one string per vector element in \code{x}) that

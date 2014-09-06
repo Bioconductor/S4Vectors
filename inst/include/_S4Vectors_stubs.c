@@ -448,3 +448,12 @@ DEFINE_NOVALUE_CCALLABLE_STUB(set_List_elementType,
 	(     x,             type)
 )
 
+/*
+ * Stubs for callables defined in SimpleList_class.c
+ */
+
+DEFINE_CCALLABLE_STUB(SEXP, new_SimpleList,
+	(const char *classname, SEXP listData),
+	(            classname,      listData)
+)
+

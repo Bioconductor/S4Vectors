@@ -22,7 +22,8 @@ exportClasses(
     DataTableORNULL, Vector,
     Hits,
     Rle,
-    List
+    List,
+    SimpleList
 )
 
 
@@ -40,6 +41,7 @@ S3method(as.data.frame, List)
 
 S3method(as.list, Rle)
 S3method(as.list, List)
+S3method(as.list, SimpleList)
 
 S3method(diff, Rle)
 
@@ -81,6 +83,7 @@ export(
 
     as.list.Rle,
     as.list.List,
+    as.list.SimpleList,
 
     diff.Rle,
 
@@ -115,6 +118,8 @@ export(
 
 exportMethods(
     ## Generics defined in the base package:
+    length,
+    names, "names<-",
     NROW, NCOL, dim,
     "rownames<-", "colnames<-",
     dimnames, "dimnames<-",
@@ -125,7 +130,7 @@ exportMethods(
     as.matrix, as.table,
     "[", "[<-",
     subset,
-    append,
+    c, append,
     merge,
     "==", "!=", "<=", ">=", "<", ">",
     match, duplicated, unique, anyDuplicated, "%in%",
@@ -143,7 +148,7 @@ exportMethods(
     ## Generics defined in the utils package:
 
     ## Generics defined in the stats package:
-    na.omit, na.exclude, complete.cases,
+    aggregate, na.omit, na.exclude, complete.cases,
 
     ## Generics defined in the BiocGenerics package:
     cbind, rbind,
@@ -188,7 +193,10 @@ export(
     remapHits,
 
     ## List-class.R:
-    List, phead, ptail, pc
+    List, phead, ptail, pc,
+
+    ## SimpleList-class.R:
+    SimpleList
 )
 
 

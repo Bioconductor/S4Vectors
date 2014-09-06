@@ -704,3 +704,11 @@ void _set_List_elementType(
 	const char *type
 );
 
+
+/* SimpleList_class.c */
+
+SEXP _new_SimpleList(
+	const char *classname,
+	SEXP listData
+);
+
