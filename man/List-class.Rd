@@ -177,7 +177,7 @@
 
       When \code{use.outer.mcols} is TRUE the metadata columns on the 
       outer list elements of \code{x} are replicated out and included 
-      in the \code{data.frame}. \code{List} objects that unlist to a 
+      in the \code{data.frame}. List objects that unlist to a 
       single vector (column) are given the column name `value` by default.
       A custom name can be provided in \code{value.name}.
 
@@ -240,22 +240,23 @@
 
 \seealso{
   \itemize{
+    \item \link{List-utils} for common operations on List objects.
+
     \item \link{Vector} objects for the parent class.
 
-    \item The \link[IRanges]{SimpleList} and \link[IRanges]{CompressedList}
-          classes defined in the \pkg{IRanges} package for direct extensions
-          of the \link{List} class.
+    \item The \link{SimpleList} class for a direct extension of the List class.
+
+    \item The \link[IRanges]{CompressedList} class defined in the
+          \pkg{IRanges} package for another direct extension of the List class.
 
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{RleList}, and
           \link[IRanges]{IRanges} classes and constructors defined in the
-          \pkg{IRanges} package for examples of concrete \link{List}
+          \pkg{IRanges} package for more examples of concrete List
           subclasses.
 
     \item The \link[IRanges]{extractList} function defined in the
           \pkg{IRanges} package for grouping elements of a vector-like
           object into a list-like object.
-
-    \item \link{List-utils} for common operations on List objects.
   }
 }
 

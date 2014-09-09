@@ -87,7 +87,7 @@
         accessor (\code{mcols} stands for \emph{metadata columns}) and
         is represented as a \link{DataTable} object (i.e. as an instance
         of a concrete subclass of \link{DataTable}, e.g. a
-        \link[IRanges]{DataFrame} object), with a row for each element
+        \link{DataFrame} object), with a row for each element
         and a column for each metadata variable. Note that the element-wise
         metadata can also be \code{NULL}.
   }

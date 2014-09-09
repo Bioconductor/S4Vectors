@@ -23,7 +23,8 @@ exportClasses(
     Hits,
     Rle,
     List,
-    SimpleList
+    SimpleList,
+    DataFrame
 )
 
 
@@ -38,6 +39,7 @@ S3method(anyDuplicated, NSBS)
 S3method(as.data.frame, Vector)
 S3method(as.data.frame, Rle)
 S3method(as.data.frame, List)
+S3method(as.data.frame, DataFrame)
 
 S3method(as.list, Rle)
 S3method(as.list, List)
@@ -80,6 +82,7 @@ export(
     as.data.frame.Vector,
     as.data.frame.Rle,
     as.data.frame.List,
+    as.data.frame.DataFrame,
 
     as.list.Rle,
     as.list.List,
@@ -120,8 +123,10 @@ exportMethods(
     ## Generics defined in the base package:
     length,
     names, "names<-",
-    NROW, NCOL, dim,
-    "rownames<-", "colnames<-",
+    nrow, ncol, dim,
+    NROW, NCOL,
+    rownames, "rownames<-",
+    colnames, "colnames<-",
     dimnames, "dimnames<-",
     is.na, anyNA,
     as.logical, as.integer, as.numeric, as.complex, as.character, as.raw,
@@ -156,6 +161,7 @@ exportMethods(
     Reduce, Filter, Find, Map, Position,
     unlist,
     do.call,
+    xtabs,
     start, end, width
 )
 
@@ -196,7 +202,10 @@ export(
     List, phead, ptail, pc,
 
     ## SimpleList-class.R:
-    SimpleList
+    SimpleList,
+
+    ## DataFrame-class.R:
+    DataFrame
 )
 
 

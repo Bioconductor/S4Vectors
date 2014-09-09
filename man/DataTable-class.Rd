@@ -46,7 +46,7 @@
 
 \description{
   DataTable is an API only (i.e. virtual class with no slots) for accessing
-  objects with a rectangular shape like \link[IRanges]{DataFrame} or
+  objects with a rectangular shape like \link{DataFrame} or
   \link[IRanges]{RangedData} objects. It mimics the API for standard
   \link{data.frame} objects.
 }
@@ -215,10 +215,11 @@
 }
 
 \seealso{
-  \link[IRanges]{DataFrame} for an implementation that mimics
-  \code{data.frame},
+  \itemize{
+    \item \link{DataFrame} for an implementation that mimics \code{data.frame}.
 
-  \link{data.frame}
+    \item \link{data.frame}
+  }
 }
 
 \examples{

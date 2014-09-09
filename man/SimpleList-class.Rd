@@ -92,6 +92,8 @@
 
     \item The \link[IRanges]{SimpleIntegerList} class defined in the
           \pkg{IRanges} package for a SimpleList subclass example.
+
+    \item The \link{DataFrame} class for another SimpleList subclass example.
   }
 }
 

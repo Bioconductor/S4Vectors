@@ -32,9 +32,10 @@ R files: 73 files
   X funprog-methods.R   (merge with List-utils.R)
   X SimpleList-class.R
 
+  X DataFrame-class.R
+
     List-comparison.R   (methods for CompressedList need to stay in IRanges)
 
-    DataFrame-class.R
     DataFrame-utils.R
     expand-methods.R    (merge with DataFrame-utils.R)
 
