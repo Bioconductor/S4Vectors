@@ -75,6 +75,9 @@ orderInteger <- function(x, decreasing=FALSE, na.last=NA)
     }
     ## At this point 'x' is guaranteed to contain at least one non NA value.
     has_NAs <- anyNA(x)
+    if (!has_NAs && !decreasing && isStrictlySorted(x)) {
+        return(seq_along(x))
+    }
     if (!input_is_factor)
         x_delta <- max(x, na.rm=TRUE) - x_min
     if (x_delta < 100000L) {
