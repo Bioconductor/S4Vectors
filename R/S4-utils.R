@@ -176,3 +176,30 @@ setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
     resetClass(classname, classdef, where=where)
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+### allEqualsS4: just a hack that auomatically digs down
+### deeply nested objects to detect differences.
+###
+
+.allEqualS4 <- function(x, y) {
+  eq <- all.equal(x, y)
+  canCompareS4 <- !isTRUE(eq) && isS4(x) && isS4(y) && class(x) == class(y)
+  if (canCompareS4) {
+    child.diffs <- mapply(.allEqualS4, attributes(x), attributes(y),
+                          SIMPLIFY=FALSE)
+    child.diffs$class <- NULL
+    dfs <- mapply(function(d, nm) {
+      if (!is.data.frame(d)) {
+        data.frame(comparison = I(list(d)))
+      } else d
+    }, child.diffs, names(child.diffs), SIMPLIFY=FALSE)
+    do.call(rbind, dfs)
+  } else {
+    eq[1]
+  }
+}
+
+allEqualS4 <- function(x, y) {
+  eq <- .allEqualS4(x, y)
+  setNames(eq$comparison, rownames(eq))[sapply(eq$comparison, Negate(isTRUE))]
+}
