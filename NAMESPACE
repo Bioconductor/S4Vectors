@@ -70,6 +70,9 @@ S3method(unique, DataTable)
 S3method(unique, Vector)
 S3method(unique, Rle)
 
+S3method(droplevels, Rle)
+S3method(droplevels, List)
+
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
 ### and (c) methods() doesn't asterisk them.
@@ -142,7 +145,7 @@ exportMethods(
     t,
     by,
     transform,
-    substr, substring, levels, "levels<-", ifelse,
+    substr, substring, levels, "levels<-", droplevels, ifelse,
     "[[", "[[<-", "$", "$<-",
     within,
 

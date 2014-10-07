@@ -199,3 +199,12 @@ toNumSnippet <- function(x, max.width)
     paste(paste(ans_head, collapse=" "), "...", paste(ans_tail, collapse=" "))
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Functional fun
+###
+
+Has <- function(FUN) {
+  function(x) {
+    !is.null(FUN(x))
+  }
+}

@@ -229,3 +229,16 @@ setMethod("do.call", c("ANY", "List"),
             callGeneric()
           })
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Factors.
+###
+
+droplevels.List <- function(x, except = NULL) 
+{
+  ix <- vapply(x, Has(levels), logical(1L))
+  ix[except] <- FALSE
+  x[ix] <- lapply(x[ix], droplevels)
+  x
+}
+
+setMethod("droplevels", "List", droplevels.List)
