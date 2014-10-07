@@ -278,5 +278,9 @@ setMethod("xtabs", signature(data = "DataTable"),
             callGeneric()
           })
 
+setMethod("table", "DataTable", function(...) {
+  table(as.list(cbind(...)))
+})
+
 ## TODO: lm, glm, loess, ...
 
