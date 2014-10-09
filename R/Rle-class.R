@@ -171,7 +171,7 @@ setMethod("extractROWS", "Rle",
         ## object so we need stuff that lives in the IRanges package for this
         ## to work. This is ugly/hacky and needs to be fixed (thru a redesign
         ## of this method).
-        if (!suppressWarnings(require(IRanges, quietly=TRUE)))
+        if (!requireNamespace("IRanges", quietly=TRUE))
             stop("Couldn't load the IRanges package. You need to install ",
                  "the IRanges\n  package in order to subset an Rle object.")
 
@@ -218,7 +218,7 @@ setMethod("replaceROWS", "Rle",
         ## object so we need stuff that lives in the IRanges package for this
         ## to work. This is ugly/hacky and needs to be fixed (thru a redesign
         ## of this method).
-        if (!suppressWarnings(require(IRanges, quietly=TRUE)))
+        if (!requireNamespace("IRanges", quietly=TRUE))
             stop("Couldn't load the IRanges package. You need to install ",
                  "the IRanges\n  package in order to replace values in ",
                  "an Rle object.")
