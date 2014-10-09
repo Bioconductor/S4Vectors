@@ -550,7 +550,7 @@ listClassName <- function(impl, element.type) {
 
 setAs("ANY", "List", function(from) {
   ## since list is directed to SimpleList, we assume 'from' is non-list-like
-  relist(from, PartitioningByEnd(seq_len(length(from))))
+  relist(from, PartitioningByEnd(seq_along(from), names=names(from)))
 })
 
 ## Special cased, because integer extends ANY (somehow) and numeric,

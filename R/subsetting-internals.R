@@ -348,7 +348,8 @@ setMethod("replaceROWS",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
 ###
-### Supported types for 'i': single NA, numeric and character vectors only.
+### Supported types for 'i': single NA, or numeric or character vector of
+### length 1, or numeric- or character-Rle of length 1.
 ### Always returns a single integer. When called with 'error.if.nomatch=FALSE',
 ### returns an NA_integer_ if no match is found. Otherwise (the default),
 ### raises an error if no match is found so the returned integer is guaranteed
@@ -364,13 +365,18 @@ normalizeDoubleBracketSubscript <- function(i, x, exact=TRUE,
         stop("'error.if.nomatch' must be TRUE or FALSE")
     if (missing(i))
         stop("subscript is missing")
+    subscript_type <- class(i)
+    if (is(i, "Rle")) {
+        i <- decodeRle(i)
+        subscript_type <- paste0(class(i), "-", subscript_type)
+    }
     if (is.vector(i) && length(i) == 1L && is.na(i)) {
         if (error.if.nomatch)
             stop("subsetting by NA returns no match")
         return(NA_integer_)
     }
     if (!is.numeric(i) && !is.character(i))
-        stop("invalid subscript type '", class(i), "'")
+        stop("invalid [[ subscript type: ", subscript_type)
     if (length(i) < 1L)
         stop("attempt to extract less than one element")
     if (length(i) > 1L)
