@@ -581,8 +581,18 @@ setAs("xtabs", "DataFrame",
 }
 
 setAs("ANY", "DataFrame", .defaultAsDataFrame)
+
+.VectorAsDataFrame <- function(from) {
+  ans <- .defaultAsDataFrame(from)
+  if (!is.null(mcols(from))) {
+    ans <- cbind(ans, mcols(from))
+  }
+  ans
+}
+
 ## overriding the default inheritance-based coercion from methods package
-setAs("SimpleList", "DataFrame", .defaultAsDataFrame)
+setAs("SimpleList", "DataFrame", .VectorAsDataFrame)
+setAs("Vector", "DataFrame", .VectorAsDataFrame)
 
 ## note that any element named 'row.names' will be interpreted differently
 ## is this a bug or a feature?
