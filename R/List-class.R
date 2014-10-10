@@ -620,7 +620,10 @@ as.data.frame.List <-
     function(x, row.names=NULL, optional=FALSE, ..., value.name="value",
              use.outer.mcols=FALSE, group_name.as.factor=FALSE)
 {
-    if (!length(togroup(x)))
+    if (!requireNamespace("IRanges", quietly=TRUE))
+        stop("Couldn't load the IRanges package. You need to install ",
+             "the IRanges\n  package to coerce a List object to data.frame.")
+    if (!length(IRanges::togroup(x)))
         return(data.frame())
     if (!isSingleString(value.name))
         stop("'value.name' must be a single string")
@@ -631,18 +634,18 @@ as.data.frame.List <-
     if (!(is.null(row.names) || is.character(row.names)))
         stop("'row.names'  must be NULL or a character vector")
 
-    if (!length(group_name <- names(x)[togroup(x)]))
+    if (!length(group_name <- names(x)[IRanges::togroup(x)]))
         group_name <- NA_character_
     if (group_name.as.factor)
         group_name <- factor(group_name, levels=unique(group_name))
-    xx <- cbind(data.frame(group=togroup(x), group_name, 
+    xx <- cbind(data.frame(group=IRanges::togroup(x), group_name, 
                            stringsAsFactors=FALSE), 
                 as.data.frame(unlist(x, use.names=FALSE), 
                               row.names=row.names, optional=optional, ...))
     if (ncol(xx) == 3)
         colnames(xx)[3] <- value.name
     if (use.outer.mcols)
-        if (length(md <- mcols(x)[togroup(x), , drop=FALSE]))
+        if (length(md <- mcols(x)[IRanges::togroup(x), , drop=FALSE]))
             return(cbind(xx, md))
 
     xx

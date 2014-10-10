@@ -236,7 +236,7 @@ setMethod("replaceROWS", "Rle",
         } else {
             ir <- as(as.integer(i), "IRanges")
         }
-        ir <- reduce(ir)
+        ir <- IRanges::reduce(ir)
         if (length(ir) == 0L)
             return(x)
 
@@ -252,7 +252,7 @@ setMethod("replaceROWS", "Rle",
             stop("some ranges are out of bounds")
 
         valueWidths <- width(ir)
-        ir <- gaps(ir, start=1, end=length(x))
+        ir <- IRanges::gaps(ir, start=1, end=length(x))
         k <- length(ir)
         start <- start(ir)
         end <- end(ir)
