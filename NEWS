@@ -1,0 +1,49 @@
+CHANGES IN VERSION 0.4.0
+------------------------
+
+NEW FEATURES
+
+    o Add isSorted() and isStrictlySorted() generics, plus some methods.
+
+    o Add low-level wmsg() helper for formatting error/warning messages.
+
+    o Add pc() function for parallel c() of list-like objects.
+
+    o Add coerce,Vector,DataFrame; just adds any mcols as columns on top of the
+      coerce,ANY,DataFrame behavior.
+
+    o [[ on a List object now accepts a numeric- or character-Rle of length 1.
+
+    o Add "droplevels" methods for Rle, List, and DataFrame objects.
+
+    o Add table,DataTable and transform,DataTable methods.
+
+    o Add prototype of a better all.equals() for S4 objects.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Move Annotated, DataTable, Vector, Hits, Rle, List, SimpleList, and
+      DataFrame classes from the IRanges package.
+
+    o Move isConstant(), classNameForDisplay(), and low-level argument
+      checking helpers isSingleNumber(), isSingleString(), etc... from the
+      IRanges package.
+
+    o Add as.data.frame,List method and remove other inconsistent and not
+      needed anymore "as.data.frame" methods for List subclasses.
+
+    o Remove useless and thus probably never used aggregate,DataTable method
+      that followed the time-series API.
+
+    o coerce,ANY,List method now propagates the names.
+
+BUG FIXES
+
+    o Fix bug in coercion from list to SimpleList when the list contains
+      matrices and arrays.
+
+    o Fix subset() on a zero column DataFrame.
+
+    o Fix rendering of Date/time classes as DataFrame columns.
+
+
