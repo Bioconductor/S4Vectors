@@ -98,9 +98,10 @@ transform.DataTable <- function(`_data`, ...) {
     stop("all arguments in '...' must be named")
   }
   ## elements in '...' can originate from different environments
-  vals <- mapply(safeEval, exprs, list(`_data`), top_prenv_dots(...),
-                 SIMPLIFY=FALSE)
-  `_data`[,names(vals)] <- vals
+  env <- setNames(top_prenv_dots(...), names(exprs))
+  for (colName in names(exprs)) { # for loop allows inter-arg dependencies
+    `_data`[[colName]] <- safeEval(exprs[[colName]], `_data`, env[[colName]])
+  }
   `_data`
 }
 
