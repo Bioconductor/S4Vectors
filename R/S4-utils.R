@@ -47,7 +47,7 @@ coercerToClass <- function(class) {
   else .as <- function(from) as(from, class)
   function(from) {
     to <- .as(from)
-    if (!identical(names(from), names(to))) {
+    if (!is.null(names(from)) && is.null(names(to))) {
       names(to) <- names(from)
     }
     to
