@@ -147,7 +147,7 @@ exportMethods(
     transform,
     substr, substring, levels, "levels<-", droplevels, ifelse,
     "[[", "[[<-", "$", "$<-",
-    within,
+    eval, with, within,
 
     ## Generics defined in the methods package:
     coerce, show,
