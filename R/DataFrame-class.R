@@ -323,7 +323,6 @@ setReplaceMethod("[", "DataFrame",
                    useI <- FALSE
                    newrn <- newcn <- NULL
                    if (nargs() < 4) {
-                     i2 <- seq_len(nrow(x))
                      if (missing(i)) {
                        j2 <- seq_len(ncol(x))
                      } else {
@@ -356,8 +355,8 @@ setReplaceMethod("[", "DataFrame",
                        if (is.character(j))
                            newcn <- j[j2 > ncol(x)]
                      }
+                     i <- i2
                    }
-                   i <- i2
                    j <- j2
                    if (!length(j)) # nothing to replace
                      return(x)
@@ -486,6 +485,10 @@ droplevels.DataFrame <- function(x, except=NULL) {
   x
 }
 setMethod("droplevels", "DataFrame", droplevels.DataFrame)
+
+setMethod("rep", "DataFrame", function(x, ...) {
+  x[rep(seq_len(nrow(x)), ...),,drop=FALSE]
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
