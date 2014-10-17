@@ -453,3 +453,22 @@ setMethod("append", c("Vector", "Vector"),
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Evaluating.
+###
+
+setMethod("eval", c("expression", "Vector"),
+          function(expr, envir, enclos = parent.frame())
+          eval(expr, as.env(envir, enclos))
+          )
+
+setMethod("eval", c("language", "Vector"),
+          function(expr, envir, enclos = parent.frame())
+          eval(expr, as.env(envir, enclos))
+          )
+
+setMethod("with", "Vector",
+          function(data, expr, ...)
+          {
+            safeEval(substitute(expr), data, parent.frame(), ...)
+          })
