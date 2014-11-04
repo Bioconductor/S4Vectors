@@ -19,34 +19,34 @@ setClass("Vector",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotnames()
+### parallelSlotNames()
 ###
 ### For internal use only.
 ###
 ### Must return the names of all the slots in Vector object 'x' that are
-### "parallel" to 'x'. Slot 'x@foo' is considered to be "parallel" to 'x' if:
-###   (a) it holds a NULL or a vector-like object which NROW() is equal to
+### "parallel" to 'x'. Slot 'foo' is considered to be "parallel" to 'x' if:
+###   (a) 'x@foo' is NULL or an object for which NROW() is equal to
 ###       'length(x)', and
 ###   (b) the i-th element in 'x@foo' describes some component of the i-th
 ###       element in 'x'.
 ### For example, the "start", "width", "NAMES", and "elementMetadata" slots
 ### of an IRanges object are parallel to the object. Note that the "NAMES"
 ### and "elementMetadata" slots can be set to NULL.
-### The *first" slot name returned by parallelSlotnames() is used to get the
+### The *first" slot name returned by parallelSlotNames() is used to get the
 ### length of 'x'.
 ###
 
-setGeneric("parallelSlotnames",
-    function(x) standardGeneric("parallelSlotnames")
+setGeneric("parallelSlotNames",
+    function(x) standardGeneric("parallelSlotNames")
 )
 
-setMethod("parallelSlotnames", "Vector", function(x) "elementMetadata")
+setMethod("parallelSlotNames", "Vector", function(x) "elementMetadata")
 
 ### Methods for Vector subclasses only need to specify the parallel slots they
 ### add to their parent class. See Hits-class.R file for an example.
 
 ### fixedColumnNames() is for internal use only.
-### TODO: Deprecate fixedColumnNames(). Use parallelSlotnames() instead.
+### TODO: Deprecate fixedColumnNames(). Use parallelSlotNames() instead.
 setGeneric("fixedColumnNames", function(x) standardGeneric("fixedColumnNames"))
 setMethod("fixedColumnNames", "ANY", function(x) character())
 
@@ -56,7 +56,7 @@ setMethod("fixedColumnNames", "ANY", function(x) character())
 ###
 
 setMethod("length", "Vector",
-    function(x) length(slot(x, parallelSlotnames(x)[[1L]]))
+    function(x) NROW(slot(x, parallelSlotNames(x)[[1L]]))
 )
 
 setMethod("NROW", "Vector", function(x) length(x))
@@ -106,8 +106,34 @@ setMethod("anyNA", "Vector", function(x) any(is.na(x)))
     x_len <- length(x)
     if (!isSingleInteger(x_len) || x_len < 0L)
         return("'length(x)' must be a single non-negative integer")
-    if (!is.null(names(x_len)))
-        return("'length(x)' must be an unnamed number")
+    if (!is.null(attributes(x_len)))
+        return("'length(x)' must be a single integer with no attributes")
+    NULL
+}
+
+.valid.Vector.parallelSlots <- function(x)
+{
+    x_len <- length(x)
+    x_pslotnames <- parallelSlotNames(x)
+    if (!is.character(x_pslotnames)
+     || anyMissing(x_pslotnames)
+     || anyDuplicated(x_pslotnames)) {
+        msg <- c("'parallelSlotNames(x)' must be a character vector ",
+                 "with no NAs and no duplicates")
+        return(paste(msg, collapse=""))
+    }
+    if (x_pslotnames[[length(x_pslotnames)]] != "elementMetadata") {
+        msg <- c("last string in 'parallelSlotNames(x)' ",
+                 "must be \"elementMetadata\"")
+        return(paste(msg, collapse=""))
+    }
+    for (slotname in x_pslotnames) {
+        tmp <- slot(x, slotname)
+        if (!(is.null(tmp) || NROW(tmp) == x_len)) {
+            msg <- c("'x@", slotname, "' is not parallel to 'x'")
+            return(paste(msg, collapse=""))
+        }
+    }
     NULL
 }
 
@@ -116,10 +142,13 @@ setMethod("anyNA", "Vector", function(x) any(is.na(x)))
     x_names <- names(x)
     if (is.null(x_names))
         return(NULL)
-    if (!is.character(x_names) || !is.null(names(x_names)))
-        return("'names(x)' must be NULL or an unnamed character vector")
+    if (!is.character(x_names) || !is.null(attributes(x_names))) {
+        msg <- c("'names(x)' must be NULL or a character vector ",
+                 "with no attributes")
+        return(paste(msg, collapse=""))
+    }
     if (length(x_names) != length(x))
-        return("when not NULL, 'names(x)' must have the length of 'x'")
+        return("'names(x)' must be NULL or have the length of 'x'")
     NULL
 }
 
@@ -131,12 +160,11 @@ setMethod("anyNA", "Vector", function(x) any(is.na(x)))
     if (is.null(x_mcols))
         return(NULL)
     ## 'x_mcols' is a DataTable object.
-    if (nrow(x_mcols) != length(x)) {
-        msg <- c("number of rows in DataTable 'mcols(x)' ",
-                 "must match length of 'x'")
-        return(paste(msg, collapse=""))
-    }
-    if (!is.null(rownames(x_mcols)) && !identical(rownames(x_mcols), names(x))) {
+    x_mcols_rownames <- rownames(x_mcols)
+    if (is.null(x_mcols_rownames))
+        return(NULL)
+    if (!identical(x_mcols_rownames, names(x)))
+    {
         msg <- c("the rownames of DataTable 'mcols(x)' ",
                  "must match the names of 'x'")
         return(paste(msg, collapse=""))
@@ -147,6 +175,7 @@ setMethod("anyNA", "Vector", function(x) any(is.na(x)))
 .valid.Vector <- function(x)
 {
     c(.valid.Vector.length(x),
+      .valid.Vector.parallelSlots(x),
       .valid.Vector.names(x),
       .valid.Vector.mcols(x))
 }
@@ -309,16 +338,19 @@ setMethod("extractROWS", "ANY", extractROWSWithBracket)
 setMethod("extractROWS", "matrix", extractROWSWithBracket)
 
 ### We provide a default "extractROWS" method for Vector objects that only
-### subsets the individual parallel slots. Works for most Vector derivatives!
+### subsets the individual parallel slots. That should be enough for most
+### Vector derivatives that have parallelSlotNames() properly set.
 setMethod("extractROWS", "Vector",
     function(x, i)
     {
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        x_pslotnames <- parallelSlotnames(x)
+        x_pslotnames <- parallelSlotNames(x)
         ans_pslots <- lapply(setNames(x_pslotnames, x_pslotnames),
                              function(slotname)
                                  extractROWS(slot(x, slotname), i))
-        ## Does NOT validate the object before returning it.
+        ## Does NOT validate the object before returning it, because, most of
+        ## the times, this is not needed. There are exceptions though. See
+        ## for example the "extractROWS" method for Hits objects.
         do.call(BiocGenerics:::updateS4, c(list(x),
                                            ans_pslots,
                                            list(check=FALSE)))

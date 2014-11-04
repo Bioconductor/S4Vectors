@@ -18,12 +18,12 @@ setClass("Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotnames()
+### parallelSlotNames()
 ###
 
 ### Combine the new parallel slots with those of the parent class. Make sure
 ### to put the new parallel slots *first*.
-setMethod("parallelSlotnames", "Hits",
+setMethod("parallelSlotNames", "Hits",
     function(x) c("queryHits", "subjectHits", callNextMethod())
 )
 
@@ -66,17 +66,98 @@ setMethod("countSubjectHits", "Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Validity
 ###
 
+.valid.Hits.queryLength <- function(x)
+{
+    x_q_len <- queryLength(x)
+    if (!isSingleInteger(x_q_len) || x_q_len < 0L)
+        return("'queryLength(x)' must be a single non-negative integer")
+    if (!is.null(attributes(x_q_len)))
+        return("'queryLength(x)' must be a single integer with no attributes")
+    NULL
+}
+
+.valid.Hits.subjectLength <- function(x)
+{
+    x_s_len <- subjectLength(x)
+    if (!isSingleInteger(x_s_len) || x_s_len < 0L) 
+        return("'subjectLength(x)' must be a single non-negative integer")
+    if (!is.null(attributes(x_s_len)))
+        return("'subjectLength(x)' must be a single integer with no attributes")
+    NULL
+}
+
+.valid.Hits.queryHits_or_subjectHits <- function(q_hits, q_len, what)
+{
+    if (!(is.integer(q_hits) && is.null(attributes(q_hits)))) {
+        msg <- c("'", what, "Hits(x)' must be an integer vector ",
+                 "with no attributes")
+        return(paste(msg, collapse=""))
+    }
+    if (anyMissingOrOutside(q_hits, 1L, q_len)) {
+        msg <- c("'", what, "Hits(x)' must contain non-NA values ",
+                 ">= 1 and <= '", what, "Length(x)'")
+        return(paste(msg, collapse=""))
+    }
+    NULL
+}
+
+### Coercion from Hits to List is very fast because it assumes that the hits
+### are already sorted by query. So for a Hits object to be valid we require
+### that the hits in it are already sorted by query.
+.valid.Hits.queryHits_ordering <- function(q_hits)
+{
+    if (isNotSorted(q_hits))
+        return("'queryHits(x)' must be sorted")
+    NULL
+}
+
+.valid.Hits.queryHits <- function(x)
+{
+    x_q_hits <- queryHits(x)
+    x_q_len <- queryLength(x)
+    c(.valid.Hits.queryHits_or_subjectHits(x_q_hits, x_q_len, "query"),
+      .valid.Hits.queryHits_ordering(x_q_hits))
+}
+
+.valid.Hits.subjectHits <- function(x)
+{
+    x_s_hits <- subjectHits(x)
+    x_s_len <- subjectLength(x)
+    .valid.Hits.queryHits_or_subjectHits(x_s_hits, x_s_len, "subject")
+}
+
+.valid.Hits <- function(x)
+{
+    c(.valid.Hits.queryLength(x),
+      .valid.Hits.subjectLength(x),
+      .valid.Hits.queryHits(x),
+      .valid.Hits.subjectHits(x))
+}
+
+setValidity2("Hits", .valid.Hits)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting
+###
+
+### The "extractROWS" method for Vector objects doesn't test the validity of
+### the result so we override it.
 setMethod("extractROWS", "Hits",
     function(x, i)
     {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        if (!isStrictlySorted(i))
-            stop("subscript must extract elements at strictly sorted ",
-                 "positions when\n  subsetting a ", class(x), " object")
-        callNextMethod()
+        ans <- callNextMethod()
+        pbs <- validObject(ans, test=TRUE)
+        if (is.character(pbs))
+            stop(wmsg("Problem(s) found when testing validity of ", class(ans),
+                      " object returned by subsetting operation: ",
+                      paste0(pbs, collapse=", "), ". Make sure to use a ",
+                      "subscript that results in a valid ", class(ans),
+                      " object."))
+        ans
     }
 )
 
@@ -84,8 +165,6 @@ setMethod("extractROWS", "Hits",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
-
-## return a matrix where each row indicates a hit (query and subject index)
 
 setMethod("as.matrix", "Hits",
     function(x) cbind(queryHits=queryHits(x), subjectHits=subjectHits(x))
@@ -98,6 +177,8 @@ setMethod("as.table", "Hits", function(x, ...) {
 })
 
 ### FIXME: this needs a new name given the switch to Vector
+### Note that, because this method reorders the hits by query, you should NOT
+### expect 't(t(x))' to bring back 'x'.
 setMethod("t", "Hits", function(x) {
   tmp <- x@queryHits
   x@queryHits <- x@subjectHits
@@ -105,7 +186,8 @@ setMethod("t", "Hits", function(x) {
   tmp <- x@queryLength
   x@queryLength <- x@subjectLength
   x@subjectLength <- tmp
-  x
+  ## Reorder the hits by query so the returned value is a valid Hits object.
+  extractROWS(x, orderInteger(x@queryHits))
 })
 
 
@@ -184,7 +266,7 @@ setMethod("selfmatch", "Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Remap the query and/or subject hits.
+### Remap the query and/or subject hits
 ###
 
 ### Returns 'arg' as a NULL, an integer vector, or a factor.
