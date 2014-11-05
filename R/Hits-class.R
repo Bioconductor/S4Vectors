@@ -176,19 +176,33 @@ setMethod("as.table", "Hits", function(x, ...) {
   tabulate(queryHits(x), queryLength(x))
 })
 
-### FIXME: this needs a new name given the switch to Vector
-### Note that, because this method reorders the hits by query, you should NOT
-### expect 't(t(x))' to bring back 'x'.
-setMethod("t", "Hits", function(x) {
-  tmp <- x@queryHits
-  x@queryHits <- x@subjectHits
-  x@subjectHits <- tmp
-  tmp <- x@queryLength
-  x@queryLength <- x@subjectLength
-  x@subjectLength <- tmp
-  ## Reorder the hits by query so the returned value is a valid Hits object.
-  extractROWS(x, orderInteger(x@queryHits))
-})
+### NOT exported (but used in IRanges).
+### TODO: Move revmap() generic from AnnotationDbi to S4Vectors, and make this
+### the "revmap" method for Hits objects.
+### Note that:
+###   - If 'x' is a valid Hits object (i.e. the hits in it are sorted by
+###     query), then 'Hits_revmap(x)' returns a Hits object where hits are
+###     "fully sorted" i.e. sorted by query first and then by subject.
+###     This is due to the fact orderInteger() produces a "stable" ordering.
+###   - Because Hits_revmap() reorders the hits by query, doing
+###     'Hits_revmap(Hits_revmap(x))' brings back 'x' but with the hits in it
+###     now "fully sorted".
+Hits_revmap <- function(x)
+{
+    tmp <- x@queryHits
+    x@queryHits <- x@subjectHits
+    x@subjectHits <- tmp
+    tmp <- x@queryLength
+    x@queryLength <- x@subjectLength
+    x@subjectLength <- tmp
+    ## We must reorder the hits by query so the returned value is a valid
+    ## Hits object.
+    oo <- orderInteger(x@queryHits)
+    extractROWS(x, oo)
+}
+
+### FIXME: Replace this with "revmap" method for Hits objects.
+setMethod("t", "Hits", Hits_revmap)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
