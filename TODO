@@ -53,7 +53,7 @@ C files:
   X safe_arithm.c
   X sort_utils.c
   X hash_utils.c
-  X AEbufs.c    (RangeAE stuff needs to stay in IRanges e.g. in RangeAEbufs.c)
+  X AEbufs.c
   X SEXP_utils.c (split in SEXP_utils.c + vector_utils.c + eval_utils.c)
   X anyMissing.c
   X compact_bitvector.c (renamed logical_utils.c)
