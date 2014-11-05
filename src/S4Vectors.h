@@ -236,41 +236,41 @@ SEXP _IntAEAE_toEnvir(
 	int keyshift
 );
 
-int _RangeAE_get_nelt(const RangeAE *range_ae);
+int _IntPairAE_get_nelt(const IntPairAE *intpair_ae);
 
-int _RangeAE_set_nelt(
-	RangeAE *range_ae,
+int _IntPairAE_set_nelt(
+	IntPairAE *intpair_ae,
 	int nelt
 );
 
-RangeAE _new_RangeAE(
+IntPairAE _new_IntPairAE(
 	int buflength,
 	int nelt
 );
 
-void _RangeAE_insert_at(
-	RangeAE *range_ae,
+void _IntPairAE_insert_at(
+	IntPairAE *intpair_ae,
 	int at,
-	int start,
-	int width
+	int a,
+	int b
 );
 
-int _RangeAEAE_get_nelt(const RangeAEAE *range_aeae);
+int _IntPairAEAE_get_nelt(const IntPairAEAE *intpair_aeae);
 
-int _RangeAEAE_set_nelt(
-	RangeAEAE *range_aeae,
+int _IntPairAEAE_set_nelt(
+	IntPairAEAE *intpair_aeae,
 	int nelt
 );
 
-RangeAEAE _new_RangeAEAE(
+IntPairAEAE _new_IntPairAEAE(
 	int buflength,
 	int nelt
 );
 
-void _RangeAEAE_insert_at(
-	RangeAEAE *range_aeae,
+void _IntPairAEAE_insert_at(
+	IntPairAEAE *intpair_aeae,
 	int at,
-	const RangeAE *range_ae
+	const IntPairAE *intpair_ae
 );
 
 int _CharAE_get_nelt(const CharAE *char_ae);

@@ -238,44 +238,44 @@ DEFINE_CCALLABLE_STUB(SEXP, IntAEAE_toEnvir,
 	(               int_aeae,      envir,     keyshift)
 )
 
-DEFINE_CCALLABLE_STUB(int, RangeAE_get_nelt,
-	(const RangeAE *range_ae),
-	(               range_ae)
+DEFINE_CCALLABLE_STUB(int, IntPairAE_get_nelt,
+	(const IntPairAE *intpair_ae),
+	(                 intpair_ae)
 )
 
-DEFINE_CCALLABLE_STUB(int, RangeAE_set_nelt,
-	(RangeAE *range_ae, int nelt),
-	(         range_ae,     nelt)
+DEFINE_CCALLABLE_STUB(int, IntPairAE_set_nelt,
+	(IntPairAE *intpair_ae, int nelt),
+	(           intpair_ae,     nelt)
 )
 
-DEFINE_CCALLABLE_STUB(RangeAE, new_RangeAE,
+DEFINE_CCALLABLE_STUB(IntPairAE, new_IntPairAE,
 	(int buflength, int nelt),
 	(    buflength,     nelt)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(RangeAE_insert_at,
-	(RangeAE *range_ae, int at, int start, int width),
-	(         range_ae,     at,     start,     width)
+DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAE_insert_at,
+	(IntPairAE *intpair_ae, int at, int a, int b),
+	(           intpair_ae,     at,     a,     b)
 )
 
-DEFINE_CCALLABLE_STUB(int, RangeAEAE_get_nelt,
-	(const RangeAEAE *range_aeae),
-	(                 range_aeae)
+DEFINE_CCALLABLE_STUB(int, IntPairAEAE_get_nelt,
+	(const IntPairAEAE *intpair_aeae),
+	(                   intpair_aeae)
 )
 
-DEFINE_CCALLABLE_STUB(int, RangeAEAE_set_nelt,
-	(RangeAEAE *range_aeae, int nelt),
-	(           range_aeae,     nelt)
+DEFINE_CCALLABLE_STUB(int, IntPairAEAE_set_nelt,
+	(IntPairAEAE *intpair_aeae, int nelt),
+	(             intpair_aeae,     nelt)
 )
 
-DEFINE_CCALLABLE_STUB(RangeAEAE, new_RangeAEAE,
+DEFINE_CCALLABLE_STUB(IntPairAEAE, new_IntPairAEAE,
 	(int buflength, int nelt),
 	(    buflength,     nelt)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(RangeAEAE_insert_at,
-	(RangeAEAE *range_aeae, int at, const RangeAE *range_ae),
-	(           range_aeae,     at,                range_ae)
+DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAEAE_insert_at,
+	(IntPairAEAE *intpair_aeae, int at, const IntPairAE *intpair_ae),
+	(             intpair_aeae,     at,                  intpair_ae)
 )
 
 DEFINE_CCALLABLE_STUB(int, CharAE_get_nelt,

@@ -31,13 +31,13 @@ struct htab {
  * Auto-Extending buffers used for temporary storage of incoming data whose
  * size is not known in advance:
  *
- *   o IntAE:     Auto-Extending buffer of ints;
- *   o IntAEAE:   Auto-Extending buffer of Auto-Extending buffers of ints;
- *   o RangeAE:   Auto-Extending buffer of integer ranges;
- *   o RangeAEAE: Auto-Extending buffer of Auto-Extending buffers of integer
- *                ranges;
- *   o CharAE:    Auto-Extending buffer of chars;
- *   o CharAEAE:  Auto-Extending buffer of Auto-Extending buffers of chars.
+ *   o IntAE:       Auto-Extending buffer of ints;
+ *   o IntAEAE:     Auto-Extending buffer of Auto-Extending buffers of ints;
+ *   o IntPairAE:   Auto-Extending buffer of pairs of ints;
+ *   o IntPairAEAE: Auto-Extending buffer of Auto-Extending buffers of pairs
+ *                  of ints;
+ *   o CharAE:      Auto-Extending buffer of chars;
+ *   o CharAEAE:    Auto-Extending buffer of Auto-Extending buffers of chars.
  *
  * Some differences between AE buffers and SEXP: (a) AE buffers auto-extend
  * i.e. they automatically reallocate when more room is needed to add a new
@@ -59,18 +59,18 @@ typedef struct int_aeae {
 	int _AE_malloc_stack_idx;
 } IntAEAE; 
 
-typedef struct range_ae {
-	IntAE start;
-	IntAE width;
+typedef struct intpair_ae {
+	IntAE a;
+	IntAE b;
 	int _AE_malloc_stack_idx;
-} RangeAE;
+} IntPairAE;
 
-typedef struct range_aeae {
+typedef struct intpair_aeae {
 	int buflength;
-	RangeAE *elts;
+	IntPairAE *elts;
 	int _nelt;
 	int _AE_malloc_stack_idx;
-} RangeAEAE;
+} IntPairAEAE;
 
 typedef struct char_ae {
 	int buflength;

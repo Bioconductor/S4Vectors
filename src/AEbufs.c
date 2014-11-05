@@ -690,250 +690,253 @@ SEXP _IntAEAE_toEnvir(const IntAEAE *int_aeae, SEXP envir, int keyshift)
 
 
 /****************************************************************************
- * RangeAE buffers
+ * IntPairAE buffers
  *
- * We use a "global RangeAE malloc stack" to store a copy of each top-level
- * malloc-based RangeAE that is created during the execution of a .Call entry
- * point. The copy must be modified every time the start or width members are
+ * We use a "global IntPairAE malloc stack" to store a copy of each top-level
+ * malloc-based IntPairAE that is created during the execution of a .Call
+ * entry point. The copy must be modified every time the a or b members are
  * modified.
  * Every .Call() should start with an empty stack.
  * After the .Call() has returned, the stack must be emptied with
  *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	RANGEAE_MALLOC_STACK_NELT_MAX 2048
-static RangeAE RangeAE_malloc_stack[RANGEAE_MALLOC_STACK_NELT_MAX];
-static int RangeAE_malloc_stack_nelt = 0;
+#define	INTPAIRAE_MALLOC_STACK_NELT_MAX 2048
+static IntPairAE IntPairAE_malloc_stack[INTPAIRAE_MALLOC_STACK_NELT_MAX];
+static int IntPairAE_malloc_stack_nelt = 0;
 
-static void RangeAE_alloc(RangeAE *range_ae, int buflength)
+static void IntPairAE_alloc(IntPairAE *intpair_ae, int buflength)
 {
-	IntAE_alloc(&(range_ae->start), buflength);
-	IntAE_alloc(&(range_ae->width), buflength);
-	range_ae->_AE_malloc_stack_idx = -1;
+	IntAE_alloc(&(intpair_ae->a), buflength);
+	IntAE_alloc(&(intpair_ae->b), buflength);
+	intpair_ae->_AE_malloc_stack_idx = -1;
 	return;
 }
 
-int _RangeAE_get_nelt(const RangeAE *range_ae)
+int _IntPairAE_get_nelt(const IntPairAE *intpair_ae)
 {
-	return _IntAE_get_nelt(&(range_ae->start));
+	return _IntAE_get_nelt(&(intpair_ae->a));
 }
 
-int _RangeAE_set_nelt(RangeAE *range_ae, int nelt)
+int _IntPairAE_set_nelt(IntPairAE *intpair_ae, int nelt)
 {
 	int idx;
 
-	_IntAE_set_nelt(&(range_ae->start), nelt);
-	_IntAE_set_nelt(&(range_ae->width), nelt);
-	idx = range_ae->_AE_malloc_stack_idx;
+	_IntAE_set_nelt(&(intpair_ae->a), nelt);
+	_IntAE_set_nelt(&(intpair_ae->b), nelt);
+	idx = intpair_ae->_AE_malloc_stack_idx;
 	if (idx >= 0)
-		RangeAE_malloc_stack[idx] = *range_ae;
+		IntPairAE_malloc_stack[idx] = *intpair_ae;
 	return nelt;
 }
 
 #ifdef DEBUG_S4VECTORS
-static void RangeAE_print(const RangeAE *range_ae)
+static void IntPairAE_print(const IntPairAE *intpair_ae)
 {
-	IntAE_print(&(range_ae->start));
+	IntAE_print(&(intpair_ae->a));
 	Rprintf(" ");
-	IntAE_print(&(range_ae->width));
-	Rprintf(" _AE_malloc_stack_idx=%d", range_ae->_AE_malloc_stack_idx);
+	IntAE_print(&(intpair_ae->b));
+	Rprintf(" _AE_malloc_stack_idx=%d", intpair_ae->_AE_malloc_stack_idx);
 	return;
 }
 #endif
 
-/* Must be used on a malloc-based RangeAE */
-static void RangeAE_free(const RangeAE *range_ae)
+/* Must be used on a malloc-based IntPairAE */
+static void IntPairAE_free(const IntPairAE *intpair_ae)
 {
-	IntAE_free(&(range_ae->start));
-	IntAE_free(&(range_ae->width));
+	IntAE_free(&(intpair_ae->a));
+	IntAE_free(&(intpair_ae->b));
 	return;
 }
 
-static void reset_RangeAE_malloc_stack()
+static void reset_IntPairAE_malloc_stack()
 {
 	int i;
-	const RangeAE *range_ae;
+	const IntPairAE *intpair_ae;
 
-	for (i = 0, range_ae = RangeAE_malloc_stack;
-	     i < RangeAE_malloc_stack_nelt;
-	     i++, range_ae++)
+	for (i = 0, intpair_ae = IntPairAE_malloc_stack;
+	     i < IntPairAE_malloc_stack_nelt;
+	     i++, intpair_ae++)
 	{
 #ifdef DEBUG_S4VECTORS
 		if (debug) {
-			Rprintf("RangeAE_malloc_stack[%d]: ", i);
-			RangeAE_print(range_ae);
+			Rprintf("IntPairAE_malloc_stack[%d]: ", i);
+			IntPairAE_print(intpair_ae);
 			Rprintf("\n");
 		}
 #endif
-		RangeAE_free(range_ae);
+		IntPairAE_free(intpair_ae);
 	}
-	RangeAE_malloc_stack_nelt = 0;
+	IntPairAE_malloc_stack_nelt = 0;
 	return;
 }
 
-RangeAE _new_RangeAE(int buflength, int nelt)
+IntPairAE _new_IntPairAE(int buflength, int nelt)
 {
-	RangeAE range_ae;
+	IntPairAE intpair_ae;
 	int idx;
 
 	/* Allocation */
-	RangeAE_alloc(&range_ae, buflength);
+	IntPairAE_alloc(&intpair_ae, buflength);
 	if (use_malloc) {
-		if (RangeAE_malloc_stack_nelt >= RANGEAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_RangeAE(): "
-			      "the \"global RangeAE malloc stack\" is full");
-		idx = RangeAE_malloc_stack_nelt++;
-		range_ae._AE_malloc_stack_idx = idx;
-		RangeAE_malloc_stack[idx] = range_ae;
+		if (IntPairAE_malloc_stack_nelt >=
+		    INTPAIRAE_MALLOC_STACK_NELT_MAX)
+			error("S4Vectors internal error in _new_IntPairAE(): "
+			      "the \"global IntPairAE malloc stack\" is full");
+		idx = IntPairAE_malloc_stack_nelt++;
+		intpair_ae._AE_malloc_stack_idx = idx;
+		IntPairAE_malloc_stack[idx] = intpair_ae;
 	}
 	/* Elements are NOT initialized */
-	_RangeAE_set_nelt(&range_ae, nelt);
-	return range_ae;
+	_IntPairAE_set_nelt(&intpair_ae, nelt);
+	return intpair_ae;
 }
 
-void _RangeAE_insert_at(RangeAE *range_ae, int at, int start, int width)
+void _IntPairAE_insert_at(IntPairAE *intpair_ae, int at, int a, int b)
 {
 	int idx;
 
-	_IntAE_insert_at(&(range_ae->start), at, start);
-	_IntAE_insert_at(&(range_ae->width), at, width);
-	idx = range_ae->_AE_malloc_stack_idx;
+	_IntAE_insert_at(&(intpair_ae->a), at, a);
+	_IntAE_insert_at(&(intpair_ae->b), at, b);
+	idx = intpair_ae->_AE_malloc_stack_idx;
 	if (idx >= 0)
-		RangeAE_malloc_stack[idx] = *range_ae;
+		IntPairAE_malloc_stack[idx] = *intpair_ae;
 	return;
 }
 
 
 /****************************************************************************
- * RangeAEAE buffers
+ * IntPairAEAE buffers
  *
- * We use a "global RangeAEAE malloc stack" to store a copy of each top-level
- * malloc-based RangeAEAE that is created during the execution of a .Call entry
- * point. The copy must be modified at every reallocation or every time the
- * nb of elements in the buffer (nelt member) is modified.
+ * We use a "global IntPairAEAE malloc stack" to store a copy of each
+ * top-level malloc-based IntPairAEAE that is created during the execution of
+ * a .Call entry point. The copy must be modified at every reallocation or
+ * every time the nb of elements in the buffer (nelt member) is modified.
  * Every .Call() should start with an empty stack.
  * After the .Call() has returned, the stack must be emptied with
  *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	RANGEAEAE_MALLOC_STACK_NELT_MAX 2048
-static RangeAEAE RangeAEAE_malloc_stack[RANGEAEAE_MALLOC_STACK_NELT_MAX];
-static int RangeAEAE_malloc_stack_nelt = 0;
+#define	INTPAIRAEAE_MALLOC_STACK_NELT_MAX 2048
+static IntPairAEAE IntPairAEAE_malloc_stack[INTPAIRAEAE_MALLOC_STACK_NELT_MAX];
+static int IntPairAEAE_malloc_stack_nelt = 0;
 
-static void RangeAEAE_alloc(RangeAEAE *range_aeae, int buflength)
+static void IntPairAEAE_alloc(IntPairAEAE *intpair_aeae, int buflength)
 {
-	range_aeae->elts = (RangeAE *) alloc_AEbuf(buflength, sizeof(RangeAE));
-	range_aeae->buflength = buflength;
-	range_aeae->_AE_malloc_stack_idx = -1;
+	intpair_aeae->elts = (IntPairAE *) alloc_AEbuf(buflength,
+							sizeof(IntPairAE));
+	intpair_aeae->buflength = buflength;
+	intpair_aeae->_AE_malloc_stack_idx = -1;
 	return;
 }
 
-static void RangeAEAE_realloc(RangeAEAE *range_aeae)
+static void IntPairAEAE_realloc(IntPairAEAE *intpair_aeae)
 {
 	int new_buflength, idx;
 
-	new_buflength = _get_new_buflength(range_aeae->buflength);
-	range_aeae->elts = (RangeAE *) realloc_AEbuf(range_aeae->elts,
-					new_buflength, range_aeae->buflength,
-					sizeof(RangeAE));
-	range_aeae->buflength = new_buflength;
-	idx = range_aeae->_AE_malloc_stack_idx;
+	new_buflength = _get_new_buflength(intpair_aeae->buflength);
+	intpair_aeae->elts = (IntPairAE *) realloc_AEbuf(intpair_aeae->elts,
+					new_buflength, intpair_aeae->buflength,
+					sizeof(IntPairAE));
+	intpair_aeae->buflength = new_buflength;
+	idx = intpair_aeae->_AE_malloc_stack_idx;
 	if (idx >= 0)
-		RangeAEAE_malloc_stack[idx] = *range_aeae;
+		IntPairAEAE_malloc_stack[idx] = *intpair_aeae;
 	return;
 }
 
-int _RangeAEAE_get_nelt(const RangeAEAE *range_aeae)
+int _IntPairAEAE_get_nelt(const IntPairAEAE *intpair_aeae)
 {
-	return range_aeae->_nelt;
+	return intpair_aeae->_nelt;
 }
 
-int _RangeAEAE_set_nelt(RangeAEAE *range_aeae, int nelt)
+int _IntPairAEAE_set_nelt(IntPairAEAE *intpair_aeae, int nelt)
 {
 	int idx;
 
-	range_aeae->_nelt = nelt;
-	idx = range_aeae->_AE_malloc_stack_idx;
+	intpair_aeae->_nelt = nelt;
+	idx = intpair_aeae->_AE_malloc_stack_idx;
 	if (idx >= 0)
-		RangeAEAE_malloc_stack[idx] = *range_aeae;
+		IntPairAEAE_malloc_stack[idx] = *intpair_aeae;
 	return nelt;
 }
 
-/* Must be used on a malloc-based RangeAEAE */
-static void RangeAEAE_free(const RangeAEAE *range_aeae)
+/* Must be used on a malloc-based IntPairAEAE */
+static void IntPairAEAE_free(const IntPairAEAE *intpair_aeae)
 {
 	int nelt, i;
-	RangeAE *elt;
+	IntPairAE *elt;
 
-	nelt = _RangeAEAE_get_nelt(range_aeae);
-	for (i = 0, elt = range_aeae->elts; i < nelt; i++, elt++)
-		RangeAE_free(elt);
-	if (range_aeae->elts != NULL)
-		free(range_aeae->elts);
+	nelt = _IntPairAEAE_get_nelt(intpair_aeae);
+	for (i = 0, elt = intpair_aeae->elts; i < nelt; i++, elt++)
+		IntPairAE_free(elt);
+	if (intpair_aeae->elts != NULL)
+		free(intpair_aeae->elts);
 	return;
 }
 
-static void reset_RangeAEAE_malloc_stack()
+static void reset_IntPairAEAE_malloc_stack()
 {
 	int i;
-	const RangeAEAE *range_aeae;
+	const IntPairAEAE *intpair_aeae;
 
-	for (i = 0, range_aeae = RangeAEAE_malloc_stack;
-	     i < RangeAEAE_malloc_stack_nelt;
-	     i++, range_aeae++)
+	for (i = 0, intpair_aeae = IntPairAEAE_malloc_stack;
+	     i < IntPairAEAE_malloc_stack_nelt;
+	     i++, intpair_aeae++)
 	{
-		RangeAEAE_free(range_aeae);
+		IntPairAEAE_free(intpair_aeae);
 	}
-	RangeAEAE_malloc_stack_nelt = 0;
+	IntPairAEAE_malloc_stack_nelt = 0;
 	return;
 }
 
-RangeAEAE _new_RangeAEAE(int buflength, int nelt)
+IntPairAEAE _new_IntPairAEAE(int buflength, int nelt)
 {
-	RangeAEAE range_aeae;
+	IntPairAEAE intpair_aeae;
 	int idx, i;
-	RangeAE *elt;
+	IntPairAE *elt;
 
 	/* Allocation */
-	RangeAEAE_alloc(&range_aeae, buflength);
+	IntPairAEAE_alloc(&intpair_aeae, buflength);
 	if (use_malloc) {
-		if (RangeAEAE_malloc_stack_nelt >=
-		    RANGEAEAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_RangeAEAE(): "
-			      "the \"global RangeAEAE malloc stack\" is full");
-		idx = RangeAEAE_malloc_stack_nelt++;
-		range_aeae._AE_malloc_stack_idx = idx;
-		RangeAEAE_malloc_stack[idx] = range_aeae;
+		if (IntPairAEAE_malloc_stack_nelt >=
+		    INTPAIRAEAE_MALLOC_STACK_NELT_MAX)
+			error("S4Vectors internal error in "
+			      "_new_IntPairAEAE(): the \"global "
+			      "IntPairAEAE malloc stack\" is full");
+		idx = IntPairAEAE_malloc_stack_nelt++;
+		intpair_aeae._AE_malloc_stack_idx = idx;
+		IntPairAEAE_malloc_stack[idx] = intpair_aeae;
 	}
 	/* Initialization */
-	_RangeAEAE_set_nelt(&range_aeae, nelt);
-	for (i = 0, elt = range_aeae.elts; i < nelt; i++, elt++) {
-		RangeAE_alloc(elt, 0);
-		_RangeAE_set_nelt(elt, 0);
+	_IntPairAEAE_set_nelt(&intpair_aeae, nelt);
+	for (i = 0, elt = intpair_aeae.elts; i < nelt; i++, elt++) {
+		IntPairAE_alloc(elt, 0);
+		_IntPairAE_set_nelt(elt, 0);
 	}
-	return range_aeae;
+	return intpair_aeae;
 }
 
-void _RangeAEAE_insert_at(RangeAEAE *range_aeae, int at,
-		const RangeAE *range_ae)
+void _IntPairAEAE_insert_at(IntPairAEAE *intpair_aeae, int at,
+		const IntPairAE *intpair_ae)
 {
 	int nelt, i;
-	RangeAE *elt1;
-	const RangeAE *elt2;
+	IntPairAE *elt1;
+	const IntPairAE *elt2;
 
-	if (range_ae->_AE_malloc_stack_idx >= 0)
-		error("S4Vectors internal error in _RangeAEAE_insert_at(): "
-		      "cannot insert a RangeAE that is in the "
-		      "\"global RangeAE malloc stack\"");
-	nelt = _RangeAEAE_get_nelt(range_aeae);
-	if (nelt >= range_aeae->buflength)
-		RangeAEAE_realloc(range_aeae);
-	elt1 = range_aeae->elts + nelt;
+	if (intpair_ae->_AE_malloc_stack_idx >= 0)
+		error("S4Vectors internal error in _IntPairAEAE_insert_at(): "
+		      "cannot insert a IntPairAE that is in the "
+		      "\"global IntPairAE malloc stack\"");
+	nelt = _IntPairAEAE_get_nelt(intpair_aeae);
+	if (nelt >= intpair_aeae->buflength)
+		IntPairAEAE_realloc(intpair_aeae);
+	elt1 = intpair_aeae->elts + nelt;
 	elt2 = elt1 - 1;
 	for (i = nelt; i > at; i--)
 		*(elt1--) = *(elt2--);
-	*elt1 = *range_ae;
-	_RangeAEAE_set_nelt(range_aeae, nelt + 1);
+	*elt1 = *intpair_ae;
+	_IntPairAEAE_set_nelt(intpair_aeae, nelt + 1);
 	return;
 }
 
@@ -1304,8 +1307,8 @@ SEXP AEbufs_free()
 {
 	reset_IntAE_malloc_stack();
 	reset_IntAEAE_malloc_stack();
-	reset_RangeAE_malloc_stack();
-	reset_RangeAEAE_malloc_stack();
+	reset_IntPairAE_malloc_stack();
+	reset_IntPairAEAE_malloc_stack();
 	reset_CharAE_malloc_stack();
 	reset_CharAEAE_malloc_stack();
 	return R_NilValue;
