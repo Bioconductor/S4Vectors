@@ -9,6 +9,33 @@ capitalize <- function(x)
     x
 }
 
+### Reduce size of each input string by keeping only its head and tail
+### separated by 3 dots. Each returned strings is guaranteed to have a number
+### characters <= width.
+sketchStr <- function(x, width=23) 
+{
+    if (!is.character(x))
+        stop("'x' must be a character vector")
+    if (!isSingleNumber(width))
+        stop("'width' must be a single integer")
+    if (!is.integer(width))
+        width <- as.integer(width)
+    if (width < 7L) 
+        width <- 7L
+    x_nchar <- nchar(x, type="width")
+    idx <- which(x_nchar > width)
+    if (length(idx) != 0L) {
+        xx <- x[idx]
+        xx_nchar <- x_nchar[idx]
+        w1 <- (width - 2L) %/% 2L
+        w2 <- (width - 3L) %/% 2L
+        x[idx] <- paste0(substr(xx, start=1L, stop=w1),
+                         "...",
+                         substr(xx, start=xx_nchar - w2 + 1L, stop=xx_nchar))
+    }
+    x
+}
+
 setGeneric("unstrsplit", signature="x",
     function(x, sep="") standardGeneric("unstrsplit")
 )
