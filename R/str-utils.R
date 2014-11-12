@@ -3,12 +3,14 @@
 ### -------------------------------------------------------------------------
 
 
+### NOT exported
 capitalize <- function(x)
 {
     substring(x, 1L, 1L) <- toupper(substring(x, 1L, 1L))
     x
 }
 
+### NOT exported
 ### Reduce size of each input string by keeping only its head and tail
 ### separated by 3 dots. Each returned strings is guaranteed to have a number
 ### characters <= width.
