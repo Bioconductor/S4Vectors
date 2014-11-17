@@ -27,12 +27,6 @@
 \alias{as.vector,Rle-method}
 \alias{as.vectorORfactor}
 \alias{as.vectorORfactor,Rle-method}
-\alias{as.logical,Rle-method}
-\alias{as.integer,Rle-method}
-\alias{as.numeric,Rle-method}
-\alias{as.complex,Rle-method}
-\alias{as.character,Rle-method}
-\alias{as.raw,Rle-method}
 \alias{as.factor,Rle-method}
 \alias{as.data.frame.Rle}
 \alias{as.data.frame,Rle-method}
@@ -187,30 +181,6 @@
       based on the type of values contained in \code{x}. This is the
       most general way to decompress the Rle to a native R data
       structure.
-    }
-    \item{}{
-      \code{as.logical(x)}, \code{as(from, "logical")}: Creates a logical
-      vector based on the values contained in \code{x}.
-    }
-    \item{}{
-      \code{as.integer(x)}, \code{as(from, "integer")}: Creates an integer
-      vector based on the values contained in \code{x}.
-    }
-    \item{}{
-      \code{as.numeric(x)}, \code{as(from, "numeric")}: Creates a numeric
-      vector based on the values contained in \code{x}.
-    }
-    \item{}{
-      \code{as.complex(x)}, \code{as(from, "complex")}: Creates a complex
-      vector based on the values contained in \code{x}.
-    }
-    \item{}{
-      \code{as.character(x)}, \code{as(from, "character")}: Creates a character
-      vector based on the values contained in \code{x}.
-    }
-    \item{}{
-      \code{as.raw(x)}, \code{as(from, "raw")}: Creates a raw
-      vector based on the values contained in \code{x}.
     }
     \item{}{
       \code{as.factor(x)}, \code{as(from, "factor")}: Creates a factor object

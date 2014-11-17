@@ -424,3 +424,12 @@ setGeneric("setListElement", signature="x",
     function(x, i, value) standardGeneric("setListElement")
 )
 
+setMethod("getListElement", "list",
+    function(x, i, exact=TRUE)
+    {
+        i <- normalizeDoubleBracketSubscript(i, x, exact=exact,
+                                             error.if.nomatch=FALSE)
+        x[[i]]
+    }
+)
+

@@ -114,11 +114,7 @@ setMethod("replaceROWS", "SimpleList",
 
 setMethod("getListElement", "SimpleList",
     function(x, i, exact=TRUE)
-    {
-        i <- normalizeDoubleBracketSubscript(i, x, exact=exact,
-                                             error.if.nomatch=FALSE)
-        x@listData[[i]]
-    }
+        getListElement(x@listData, i, exact=exact)
 )
 
 setMethod("setListElement", "SimpleList",
