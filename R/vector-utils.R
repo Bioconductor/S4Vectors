@@ -36,3 +36,33 @@ listElementType <- function(x) {
   }
 }
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### quick_unlist() and quick_unsplit()
+###
+### Both functions *assume* that 'x' is a list of length >= 1 with no names,
+### and that the list elements in 'x' have the same type. But they don't
+### actually check this!
+###
+
+quick_unlist <- function(x)
+{
+    x1 <- x[[1L]]
+    if (is.factor(x1)) {
+        ## Fast unlisting of a list of factors that all have the same levels
+        ## in the same order.
+        structure(unlist(x), class="factor", levels=levels(x1))
+    } else {
+        do.call(c, x)  # doesn't work on list of factors
+    }
+}
+
+quick_unsplit <- function(x, f)
+{
+    idx <- split(seq_along(f), f)
+    idx <- unlist(idx, use.names=FALSE)
+    revidx <- integer(length(idx))
+    revidx[idx] <- seq_along(idx)
+    quick_unlist(x)[revidx]
+}
+
