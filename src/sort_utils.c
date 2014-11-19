@@ -139,6 +139,31 @@ static int compar_aabb_for_stable_desc_order(const void *p1, const void *p2)
 	return i1 - i2;
 }
 
+int _int_pairs_are_sorted(const int *a, const int *b, int nelt,
+		int desc, int strict)
+{
+	int a1, b1, a2, b2, i, ret;
+
+	if (nelt == 0)
+		return 1;
+	a2 = a[0];
+	b2 = b[0];
+	for (i = 1; i < nelt; i++) {
+		a1 = a2;
+		b1 = b2;
+		a2 = a[i];
+		b2 = b[i];
+		ret = compar_int_pairs(a1, b1, a2, b2);
+		if (ret == 0) {
+			if (strict) return 0;
+			continue;
+		}
+		if (desc != (ret > 0))
+			return 0;
+	}
+	return 1;
+}
+
 void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
 		int desc, int *out, int out_shift)
 {

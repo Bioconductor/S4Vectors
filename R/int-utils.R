@@ -139,6 +139,13 @@ orderInteger <- function(x, decreasing=FALSE, na.last=NA)
     method
 }
 
+sortedIntegerPairs <- function(a, b, decreasing=FALSE, strictly=FALSE)
+{
+    a <- .normargIntegerOrFactor(a, "a")
+    b <- .normargIntegerOrFactor(b, "b")
+    .Call2("Integer_sorted2", a, b, decreasing, strictly, PACKAGE="S4Vectors")
+}
+
 ### For 'a' and 'b' integer vectors of equal length with no NAs,
 ### 'orderIntegerPairs(a, b)' is equivalent to (but faster than):
 ###

@@ -211,6 +211,19 @@ SEXP Integer_order(SEXP x, SEXP decreasing)
 }
 
 /* --- .Call ENTRY POINT --- */
+SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
+{
+	const int *a_p, *b_p;
+	int npair, ans;
+
+	npair = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
+	ans = _int_pairs_are_sorted(a_p, b_p, npair,
+				    LOGICAL(decreasing)[0],
+				    LOGICAL(strictly)[0]);
+	return ScalarLogical(ans);
+}
+
+/* --- .Call ENTRY POINT --- */
 SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 {
 	int ans_length;
