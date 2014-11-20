@@ -111,6 +111,32 @@ printAtomicVectorInAGrid <- function(x, prefix="", justify="left")
     invisible(x)
 }
 
+.rownames2 <- function(names=NULL, len=NULL, tindex=NULL, bindex=NULL)
+{
+  if (is.null(tindex) && is.null(bindex)) {
+    ## all lines
+    if (len == 0L)
+      character(0)
+    else if (is.null(names))
+      paste0("[", seq_len(len), "]")
+    else
+      names
+  } else {
+    ## head and tail 
+    if (!is.null(names)) {
+      c(names[tindex], "...", names[bindex])
+    } else {
+      s1 <- paste0("[", tindex, "]")
+      s2 <- paste0("[", bindex, "]")
+      if (all(tindex == 0)) 
+        s1 <- character(0) 
+      if (all(bindex == 0)) 
+        s2 <- character(0) 
+      c(s1, "...", s2)
+    }
+  }
+}
+
 ### 'makeNakedMat.FUN' must be a function returning a character matrix.
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
@@ -139,30 +165,24 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
   ans
 }
 
-.rownames2 <- function(names=NULL, len=NULL, tindex=NULL, bindex=NULL)
+makeClassinfoRowForCompactPrinting <- function(x, col2class)
 {
-  if (is.null(tindex) && is.null(bindex)) {
-    ## all lines
-    if (len == 0L)
-      character(0)
-    else if (is.null(names))
-      paste0("[", seq_len(len), "]")
-    else
-      names
-  } else {
-    ## head and tail 
-    if (!is.null(names)) {
-      c(names[tindex], "...", names[bindex])
-    } else {
-      s1 <- paste0("[", tindex, "]")
-      s2 <- paste0("[", bindex, "]")
-      if (all(tindex == 0)) 
-        s1 <- character(0) 
-      if (all(bindex == 0)) 
-        s2 <- character(0) 
-      c(s1, "...", s2)
+    ans_names <- names(col2class)
+    no_bracket <- ans_names == ""
+    ans_names[no_bracket] <- col2class[no_bracket]
+    left_brackets <- right_brackets <- character(length(col2class))
+    left_brackets[!no_bracket] <- "<"
+    right_brackets[!no_bracket] <- ">"
+    ans <- paste0(left_brackets, col2class, right_brackets)
+    names(ans) <- ans_names
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    if (x_nmc > 0L) {
+        tmp <- sapply(x_mcols,
+                      function(xx) paste0("<", classNameForDisplay(xx), ">"))
+        ans <- c(ans, `|`="|", tmp)
     }
-  }
+    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
 ### Works as long as length(), "[" and as.numeric() work on 'x'.
@@ -208,3 +228,4 @@ Has <- function(FUN) {
     !is.null(FUN(x))
   }
 }
+

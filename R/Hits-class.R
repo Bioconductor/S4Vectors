@@ -141,6 +141,21 @@ setValidity2("Hits", .valid.Hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion
+###
+
+setMethod("as.matrix", "Hits",
+    function(x) cbind(queryHits=queryHits(x), subjectHits=subjectHits(x))
+)
+
+## count up the hits for each query
+
+setMethod("as.table", "Hits", function(x, ...) {
+  tabulate(queryHits(x), queryLength(x))
+})
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
 ###
 
@@ -163,92 +178,65 @@ setMethod("extractROWS", "Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion
+### Displaying
 ###
 
-setMethod("as.matrix", "Hits",
-    function(x) cbind(queryHits=queryHits(x), subjectHits=subjectHits(x))
+.makeNakedMatFromHits <- function(x)
+{
+    x_len <- length(x)
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    ans <- cbind(queryHits=as.character(queryHits(x)),
+                 subjectHits=as.character(subjectHits(x)))
+    if (x_nmc > 0L) {
+        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
+                                     list(check.names=FALSE)))
+        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
+    }
+    ans
+}
+
+showHits <- function(x, margin="", print.classinfo=FALSE,
+                                   print.qslengths=FALSE)
+{
+    x_class <- class(x)
+    x_len <- length(x)
+    x_mcols <- mcols(x)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    cat(x_class, " object with ",
+        x_len, " hit", ifelse(x_len == 1L, "", "s"),
+        " and ",
+        x_nmc, " metadata column", ifelse(x_nmc == 1L, "", "s"),
+        ":\n", sep="")
+    out <- makePrettyMatrixForCompactPrinting(x, .makeNakedMatFromHits)
+    if (print.classinfo) {
+        .COL2CLASS <- c(
+            queryHits="integer",
+            subjectHits="integer"
+        )
+        classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
+        ## A sanity check, but this should never happen!
+        stopifnot(identical(colnames(classinfo), colnames(out)))
+        out <- rbind(classinfo, out)
+    }
+    if (nrow(out) != 0L)
+        rownames(out) <- paste0(margin, rownames(out))
+    ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
+    ## limit that would typically be reached when 'showHeadLines' global
+    ## option is set to Inf.
+    print(out, quote=FALSE, right=TRUE, max=length(out))
+    if (print.qslengths) {
+        cat(margin, "-------\n", sep="")
+        cat(margin, "queryLength: ", queryLength(x), "\n", sep="")
+        cat(margin, "subjectLength: ", subjectLength(x), "\n", sep="")
+    }
+}
+
+setMethod("show", "Hits",
+    function(object)
+        showHits(object, margin="  ", print.classinfo=TRUE,
+                                      print.qslengths=TRUE)
 )
-
-## count up the hits for each query
-
-setMethod("as.table", "Hits", function(x, ...) {
-  tabulate(queryHits(x), queryLength(x))
-})
-
-### NOT exported (but used in IRanges).
-### TODO: Move revmap() generic from AnnotationDbi to S4Vectors, and make this
-### the "revmap" method for Hits objects.
-### Note that:
-###   - If 'x' is a valid Hits object (i.e. the hits in it are sorted by
-###     query), then 'Hits_revmap(x)' returns a Hits object where hits are
-###     "fully sorted" i.e. sorted by query first and then by subject.
-###     This is due to the fact orderInteger() produces a "stable" ordering.
-###   - Because Hits_revmap() reorders the hits by query, doing
-###     'Hits_revmap(Hits_revmap(x))' brings back 'x' but with the hits in it
-###     now "fully sorted".
-Hits_revmap <- function(x)
-{
-    tmp <- x@queryHits
-    x@queryHits <- x@subjectHits
-    x@subjectHits <- tmp
-    tmp <- x@queryLength
-    x@queryLength <- x@subjectLength
-    x@subjectLength <- tmp
-    ## We must reorder the hits by query so the returned value is a valid
-    ## Hits object.
-    oo <- orderInteger(x@queryHits)
-    extractROWS(x, oo)
-}
-
-### FIXME: Replace this with "revmap" method for Hits objects.
-setMethod("t", "Hits", Hits_revmap)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### makeAllGroupInnerHits()
-###
-### NOT exported.
-
-### About 10x faster and uses 4x less memory than my first attempt in pure
-### R below.
-makeAllGroupInnerHits <- function(group.sizes, hit.type=0L)
-{
-    if (!is.integer(group.sizes))
-        stop("'group.sizes' must be an integer vector")
-    if (!isSingleNumber(hit.type))
-        stop("'hit.type' must be a single integer")
-    if (!is.integer(hit.type))
-        hit.type <- as.integer(hit.type)
-    .Call2("make_all_group_inner_hits", group.sizes, hit.type,
-           PACKAGE="S4Vectors")
-}
-
-### TODO: Remove this.
-makeAllGroupInnerHits.old <- function(GS)
-{
-    NG <- length(GS)  # nb of groups
-    ## First Element In group i.e. first elt associated with each group.
-    FEIG <- cumsum(c(1L, GS[-NG]))
-    GSr <- c(0L, GS[-NG])
-    CGSr2 <- cumsum(GSr * GSr)
-    GS2 <- GS * GS
-    N <- sum(GS)  # length of original vector (i.e. before grouping)
-
-    ## Original Group Size Assignment i.e. group size associated with each
-    ## element in the original vector.
-    OGSA <- rep.int(GS, GS)  # has length N
-    query_hits <- rep.int(seq_len(N), OGSA)
-    NH <- length(query_hits)  # same as sum(GS2)
-
-    ## Hit Group Assignment i.e. group associated with each hit.
-    HGA <- rep.int(seq_len(NG), GS2)
-    ## Hit Group Size Assignment i.e. group size associated with each hit.
-    HGSA <- GS[HGA]
-    subject_hits <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
-    new2("Hits", queryHits=query_hits, subjectHits=subject_hits,
-                 queryLength=N, subjectLength=N, check=FALSE)
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -277,6 +265,39 @@ setMethod("selfmatch", "Hits",
     function (x, method=c("auto", "quick", "hash"))
         selfmatchIntegerPairs(queryHits(x), subjectHits(x), method=method)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### revmap()
+###
+
+### NOT exported (but used in IRanges).
+### TODO: Move revmap() generic from AnnotationDbi to S4Vectors, and make this
+### the "revmap" method for Hits objects.
+### Note that:
+###   - If 'x' is a valid Hits object (i.e. the hits in it are sorted by
+###     query), then 'Hits_revmap(x)' returns a Hits object where hits are
+###     "fully sorted" i.e. sorted by query first and then by subject.
+###     This is due to the fact orderInteger() produces a "stable" ordering.
+###   - Because Hits_revmap() reorders the hits by query, doing
+###     'Hits_revmap(Hits_revmap(x))' brings back 'x' but with the hits in it
+###     now "fully sorted".
+Hits_revmap <- function(x)
+{
+    tmp <- x@queryHits
+    x@queryHits <- x@subjectHits
+    x@subjectHits <- tmp
+    tmp <- x@queryLength
+    x@queryLength <- x@subjectLength
+    x@subjectLength <- tmp
+    ## We must reorder the hits by query so the returned value is a valid
+    ## Hits object.
+    oo <- orderInteger(x@queryHits)
+    extractROWS(x, oo)
+}
+
+### FIXME: Replace this with "revmap" method for Hits objects.
+setMethod("t", "Hits", Hits_revmap)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -364,5 +385,51 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
     oo <- orderIntegerPairs(query_hits, subject_hits)
     new("Hits", queryHits=query_hits[oo], subjectHits=subject_hits[oo],
                 queryLength=new.queryLength, subjectLength=new.subjectLength)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### makeAllGroupInnerHits()
+###
+### NOT exported.
+
+### About 10x faster and uses 4x less memory than my first attempt in pure
+### R below.
+makeAllGroupInnerHits <- function(group.sizes, hit.type=0L)
+{
+    if (!is.integer(group.sizes))
+        stop("'group.sizes' must be an integer vector")
+    if (!isSingleNumber(hit.type))
+        stop("'hit.type' must be a single integer")
+    if (!is.integer(hit.type))
+        hit.type <- as.integer(hit.type)
+    .Call2("make_all_group_inner_hits", group.sizes, hit.type,
+           PACKAGE="S4Vectors")
+}
+
+### TODO: Remove this.
+makeAllGroupInnerHits.old <- function(GS)
+{
+    NG <- length(GS)  # nb of groups
+    ## First Element In group i.e. first elt associated with each group.
+    FEIG <- cumsum(c(1L, GS[-NG]))
+    GSr <- c(0L, GS[-NG])
+    CGSr2 <- cumsum(GSr * GSr)
+    GS2 <- GS * GS
+    N <- sum(GS)  # length of original vector (i.e. before grouping)
+
+    ## Original Group Size Assignment i.e. group size associated with each
+    ## element in the original vector.
+    OGSA <- rep.int(GS, GS)  # has length N
+    query_hits <- rep.int(seq_len(N), OGSA)
+    NH <- length(query_hits)  # same as sum(GS2)
+
+    ## Hit Group Assignment i.e. group associated with each hit.
+    HGA <- rep.int(seq_len(NG), GS2)
+    ## Hit Group Size Assignment i.e. group size associated with each hit.
+    HGSA <- GS[HGA]
+    subject_hits <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
+    new2("Hits", queryHits=query_hits, subjectHits=subject_hits,
+                 queryLength=N, subjectLength=N, check=FALSE)
 }
 

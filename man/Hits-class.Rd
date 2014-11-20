@@ -1,17 +1,18 @@
 \name{Hits-class}
 \docType{class}
 
+\alias{class:Hits}
 \alias{Hits-class}
 \alias{Hits}
 
 % accessors
-\alias{subjectHits}
-\alias{subjectHits,Hits-method}
 \alias{queryHits}
 \alias{queryHits,Hits-method}
+\alias{subjectHits}
+\alias{subjectHits,Hits-method}
 \alias{queryLength}
-\alias{subjectLength}
 \alias{queryLength,Hits-method}
+\alias{subjectLength}
 \alias{subjectLength,Hits-method}
 \alias{countQueryHits}
 \alias{countQueryHits,Hits-method}
@@ -21,19 +22,21 @@
 % coercion
 \alias{as.matrix,Hits-method}
 \alias{as.table,Hits-method}
-\alias{t,Hits-method}
 
 % subsetting
 \alias{extractROWS,Hits-method}
+
+% displaying
+\alias{show,Hits-method}
 
 % comparison
 \alias{match,Hits,Hits-method}
 \alias{selfmatch,Hits-method}
 
-% show
-\alias{show,Hits-method}
-
+% other
+\alias{t,Hits-method}
 \alias{remapHits}
+
 
 \title{Hits objects}
 
@@ -161,7 +164,15 @@
 }
 
 \examples{
-## See ?`Hits-examples` in the IRanges package for examples of basic
+x <- c("a", "b", "a", "c", "d")
+y <- c("a", "e", "d", "a", "a", "d")
+hits <- findMatches(x, y)
+hits
+
+query.map=factor(c(a="A", b="B", c="C", d="D")[x] , levels=LETTERS[1:4])
+remapHits(hits, query.map=query.map)
+
+## See ?`Hits-examples` in the IRanges package for more examples of basic
 ## manipulation of Hits objects.
 }
 \keyword{methods}
