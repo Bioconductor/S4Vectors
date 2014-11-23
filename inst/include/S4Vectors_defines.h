@@ -86,4 +86,24 @@ typedef struct char_aeae {
 	int _AE_malloc_stack_idx;
 } CharAEAE; 
 
+
+/*
+ * Holder structs.
+ */
+
+typedef struct chars_holder {
+	const char *ptr;
+	int length;
+} Chars_holder;
+
+typedef struct ints_holder {
+	const int *ptr;
+	int length;
+} Ints_holder;
+
+typedef struct doubles_holder {
+	const double *ptr;
+	int length;
+} Doubles_holder;
+
 #endif
