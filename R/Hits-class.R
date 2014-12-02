@@ -1,6 +1,8 @@
 ### =========================================================================
 ### Hits objects
 ### -------------------------------------------------------------------------
+###
+
 
 setClass("Hits",
     contains="Vector",
@@ -265,6 +267,24 @@ setMethod("selfmatch", "Hits",
     function (x, method=c("auto", "quick", "hash"))
         selfmatchIntegerPairs(queryHits(x), subjectHits(x), method=method)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### selectHits()
+###
+
+selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
+                                   "count"))
+{
+    if (!is(x, "Hits"))
+        stop("'x' must be a Hits object")
+    select <- match.arg(select)
+    if (select == "all")
+        return(x)
+    .Call2("select_hits",
+           queryHits(x), subjectHits(x), queryLength(x), select,
+           PACKAGE="S4Vectors")
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

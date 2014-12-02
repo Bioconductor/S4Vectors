@@ -201,6 +201,7 @@ export(
     normalizeDoubleBracketSubscript,
 
     ## Hits-class.R:
+    selectHits,
     remapHits,
 
     ## List-class.R:
@@ -254,7 +255,6 @@ export(
     queryHits, subjectHits,
     queryLength, subjectLength,
     countQueryHits, countSubjectHits,
-    selfmatch,
 
     ## Rle-class.R:
     runLength, "runLength<-", runValue, "runValue<-", nrun,
@@ -295,7 +295,6 @@ exportMethods(
     queryHits, subjectHits,
     queryLength, subjectLength,
     countQueryHits, countSubjectHits,
-    selfmatch,
     runLength, "runLength<-", runValue, "runValue<-", nrun,
     Rle,
     findRun,

@@ -64,6 +64,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(top_prenv_dots, 1),
 
 /* Hits_class.c */
+	CALLMETHOD_DEF(select_hits, 4),
 	CALLMETHOD_DEF(make_all_group_inner_hits, 2),
 
 /* Rle_class.c */
@@ -169,6 +170,9 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_sum_non_neg_ints);
 	REGISTER_CCALLABLE(_check_integer_pairs);
 	REGISTER_CCALLABLE(_find_interv_and_start_from_width);
+
+/* Hits_class.c */
+	REGISTER_CCALLABLE(_get_select_mode);
 
 /* Rle_class.c */
 	REGISTER_CCALLABLE(_logical_Rle_constructor);

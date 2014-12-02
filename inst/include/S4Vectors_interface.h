@@ -390,6 +390,13 @@ SEXP find_interv_and_start_from_width(
 );
 
 /*
+ * Low-level manipulation of Hits objects.
+ * (see Hits_class.c)
+ */
+
+int get_select_mode(SEXP select);
+
+/*
  * Low-level manipulation of Rle objects.
  * (see Rle_class.c)
  */

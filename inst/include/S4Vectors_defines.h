@@ -106,4 +106,15 @@ typedef struct doubles_holder {
 	int length;
 } Doubles_holder;
 
+
+/*
+ * Hit selection modes.
+ */
+
+#define ALL_HITS		1
+#define FIRST_HIT		2
+#define LAST_HIT		3
+#define ARBITRARY_HIT		4
+#define COUNT_HITS		5
+
 #endif

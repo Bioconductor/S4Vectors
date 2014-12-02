@@ -169,6 +169,20 @@ y <- c("a", "e", "d", "a", "a", "d")
 hits <- findMatches(x, y)
 hits
 
+## ---------------------------------------------------------------------
+## selectHits()
+## ---------------------------------------------------------------------
+
+selectHits(hits, select="all")  # no-op
+selectHits(hits, select="first")
+selectHits(hits, select="last")
+selectHits(hits, select="arbitrary")
+selectHits(hits, select="count")
+
+## ---------------------------------------------------------------------
+## remapHits()
+## ---------------------------------------------------------------------
+
 query.map=factor(c(a="A", b="B", c="C", d="D")[x] , levels=LETTERS[1:4])
 remapHits(hits, query.map=query.map)
 

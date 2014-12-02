@@ -590,6 +590,15 @@ SEXP top_prenv_dots(SEXP env);
 
 /* Hits_class.c */
 
+int _get_select_mode(SEXP select);
+
+SEXP select_hits(
+	SEXP q_hits,
+	SEXP s_hits,
+	SEXP q_len,
+	SEXP select
+);
+
 SEXP make_all_group_inner_hits(
 	SEXP group_sizes,
 	SEXP hit_type

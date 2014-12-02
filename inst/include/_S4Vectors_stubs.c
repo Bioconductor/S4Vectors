@@ -396,6 +396,15 @@ DEFINE_CCALLABLE_STUB(SEXP, find_interv_and_start_from_width,
 )
 
 /*
+ * Stubs for callables defined in Hits_class.c
+ */
+
+DEFINE_CCALLABLE_STUB(int, get_select_mode,
+	(SEXP select),
+	(     select)
+)
+
+/*
  * Stubs for callables defined in Rle_class.c
  */
 
