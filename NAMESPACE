@@ -201,6 +201,7 @@ export(
     normalizeDoubleBracketSubscript,
 
     ## Hits-class.R:
+    Hits,
     selectHits,
     remapHits,
 

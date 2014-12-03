@@ -197,13 +197,9 @@ setGeneric("countMatches", signature=c("x", "table"),
         table_hits <- unlist(hits_per_x, use.names=FALSE)
     }
     if (transpose) {
-        new2("Hits", queryHits=table_hits, subjectHits=x_hits,
-                     queryLength=length(table), subjectLength=length(x),
-                     check=FALSE)
+        Hits(table_hits, x_hits, length(table), length(x))
     } else {
-        new2("Hits", queryHits=x_hits, subjectHits=table_hits,
-                     queryLength=length(x), subjectLength=length(table),
-                     check=FALSE)
+        Hits(x_hits, table_hits, length(x), length(table))
     }
 }
 

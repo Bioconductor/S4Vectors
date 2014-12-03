@@ -143,6 +143,30 @@ setValidity2("Hits", .valid.Hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor
+###
+
+Hits <- function(queryHits=integer(0), subjectHits=integer(0),
+                 queryLength=0L, subjectLength=0L)
+{
+    if (!(is.numeric(queryHits) && is.numeric(subjectHits)))
+        stop("'queryHits' and 'subjectHits' must be integer vectors")
+    if (!is.integer(queryHits))
+        queryHits <- as.integer(queryHits)
+    if (!is.integer(subjectHits))
+        subjectHits <- as.integer(subjectHits)
+    if (!(isSingleNumber(queryLength) && isSingleNumber(subjectLength)))
+        stop("'queryLength' and 'subjectLength' must be single integers")
+    if (!is.integer(queryLength))
+        queryLength <- as.integer(queryLength)
+    if (!is.integer(subjectLength))
+        subjectLength <- as.integer(subjectLength)
+    .Call2("Hits_new", queryHits, subjectHits, queryLength, subjectLength,
+                       PACKAGE="S4Vectors")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
 
@@ -298,23 +322,11 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
 ###   - If 'x' is a valid Hits object (i.e. the hits in it are sorted by
 ###     query), then 'Hits_revmap(x)' returns a Hits object where hits are
 ###     "fully sorted" i.e. sorted by query first and then by subject.
-###     This is due to the fact orderInteger() produces a "stable" ordering.
 ###   - Because Hits_revmap() reorders the hits by query, doing
 ###     'Hits_revmap(Hits_revmap(x))' brings back 'x' but with the hits in it
 ###     now "fully sorted".
 Hits_revmap <- function(x)
-{
-    tmp <- x@queryHits
-    x@queryHits <- x@subjectHits
-    x@subjectHits <- tmp
-    tmp <- x@queryLength
-    x@queryLength <- x@subjectLength
-    x@subjectLength <- tmp
-    ## We must reorder the hits by query so the returned value is a valid
-    ## Hits object.
-    oo <- orderInteger(x@queryHits)
-    extractROWS(x, oo)
-}
+    Hits(x@subjectHits, x@queryHits, x@subjectLength, x@queryLength)
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
 setMethod("t", "Hits", Hits_revmap)
@@ -377,8 +389,8 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
     subject.map <- .normargMap(subject.map, "subject", subjectLength(x))
     new.subjectLength <- .normargNewLength(new.subjectLength,
                                            "subject", subject.map)
-    query_hits <- queryHits(x)
-    subject_hits <- subjectHits(x)
+    q_hits <- queryHits(x)
+    s_hits <- subjectHits(x)
     if (is.null(query.map)) {
         new.queryLength <- queryLength(x)
     } else {
@@ -387,7 +399,7 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
         if (anyMissingOrOutside(query.map, 1L, new.queryLength))
             stop("'query.map' cannot contain NAs, or values that ",
                  "are < 1, or > 'new.queryLength'")
-        query_hits <- query.map[query_hits]
+        q_hits <- query.map[q_hits]
     }
     if (is.null(subject.map)) {
         new.subjectLength <- subjectLength(x)
@@ -397,14 +409,14 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
         if (anyMissingOrOutside(subject.map, 1L, new.subjectLength))
             stop("'subject.map' cannot contain NAs, or values that ",
                  "are < 1, or > 'new.subjectLength'")
-        subject_hits <- subject.map[subject_hits]
+        s_hits <- subject.map[s_hits]
     }
-    not_dup <- !duplicatedIntegerPairs(query_hits, subject_hits)
-    query_hits <- query_hits[not_dup]
-    subject_hits <- subject_hits[not_dup]
-    oo <- orderIntegerPairs(query_hits, subject_hits)
-    new("Hits", queryHits=query_hits[oo], subjectHits=subject_hits[oo],
-                queryLength=new.queryLength, subjectLength=new.subjectLength)
+    dup_idx <- which(duplicatedIntegerPairs(q_hits, s_hits))
+    if (length(dup_idx) != 0L) {
+        q_hits <- q_hits[-dup_idx]
+        s_hits <- s_hits[-dup_idx]
+    }
+    Hits(q_hits, s_hits, new.queryLength, new.subjectLength)
 }
 
 
@@ -441,15 +453,14 @@ makeAllGroupInnerHits.old <- function(GS)
     ## Original Group Size Assignment i.e. group size associated with each
     ## element in the original vector.
     OGSA <- rep.int(GS, GS)  # has length N
-    query_hits <- rep.int(seq_len(N), OGSA)
-    NH <- length(query_hits)  # same as sum(GS2)
+    q_hits <- rep.int(seq_len(N), OGSA)
+    NH <- length(q_hits)  # same as sum(GS2)
 
     ## Hit Group Assignment i.e. group associated with each hit.
     HGA <- rep.int(seq_len(NG), GS2)
     ## Hit Group Size Assignment i.e. group size associated with each hit.
     HGSA <- GS[HGA]
-    subject_hits <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
-    new2("Hits", queryHits=query_hits, subjectHits=subject_hits,
-                 queryLength=N, subjectLength=N, check=FALSE)
+    s_hits <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
+    Hits(q_hits, s_hits, N, N)
 }
 

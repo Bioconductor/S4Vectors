@@ -394,6 +394,15 @@ SEXP find_interv_and_start_from_width(
  * (see Hits_class.c)
  */
 
+SEXP new_Hits(
+	int *q_hits,
+	const int *s_hits,
+	int nhit,
+	int q_len,
+	int s_len,
+	int already_sorted
+);
+
 int get_select_mode(SEXP select);
 
 /*
