@@ -54,17 +54,19 @@ setGeneric("countQueryHits",
     function(x, ...) standardGeneric("countQueryHits")
 )
 
-setMethod("countQueryHits", "Hits",
-    function(x) tabulate(queryHits(x), nbins=queryLength(x))
-)
+.count_query_hits <- function(x)
+    tabulate(queryHits(x), nbins=queryLength(x))
+
+setMethod("countQueryHits", "Hits", .count_query_hits)
 
 setGeneric("countSubjectHits",
     function(x, ...) standardGeneric("countSubjectHits")
 )
 
-setMethod("countSubjectHits", "Hits",
-    function(x) tabulate(subjectHits(x), nbins=subjectLength(x))
-)
+.count_subject_hits <- function(x)
+    tabulate(subjectHits(x), nbins=subjectLength(x))
+
+setMethod("countSubjectHits", "Hits", .count_subject_hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -194,11 +196,7 @@ setMethod("as.matrix", "Hits",
     function(x) cbind(queryHits=queryHits(x), subjectHits=subjectHits(x))
 )
 
-## count up the hits for each query
-
-setMethod("as.table", "Hits", function(x, ...) {
-  tabulate(queryHits(x), queryLength(x))
-})
+setMethod("as.table", "Hits", .count_query_hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
