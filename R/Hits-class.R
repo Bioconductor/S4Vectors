@@ -411,11 +411,9 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
                  "are < 1, or > 'new.subjectLength'")
         s_hits <- subject.map[s_hits]
     }
-    dup_idx <- which(duplicatedIntegerPairs(q_hits, s_hits))
-    if (length(dup_idx) != 0L) {
-        q_hits <- q_hits[-dup_idx]
-        s_hits <- s_hits[-dup_idx]
-    }
+    keep_idx <- which(!duplicatedIntegerPairs(q_hits, s_hits))
+    q_hits <- q_hits[keep_idx]
+    s_hits <- s_hits[keep_idx]
     Hits(q_hits, s_hits, new.queryLength, new.subjectLength)
 }
 

@@ -5,7 +5,51 @@
 
 
 /****************************************************************************
- * Constructor
+ * C-level constructors
+ */
+
+static SEXP new_Hits0(SEXP queryHits, SEXP subjectHits,
+		      int q_len, int s_len)
+{
+	SEXP classdef, ans, ans_queryLength, ans_subjectLength;
+
+	PROTECT(classdef = MAKE_CLASS("Hits"));
+	PROTECT(ans = NEW_OBJECT(classdef));
+
+	SET_SLOT(ans, install("queryHits"), queryHits);
+	SET_SLOT(ans, install("subjectHits"), subjectHits);
+
+	PROTECT(ans_queryLength = ScalarInteger(q_len));
+	SET_SLOT(ans, install("queryLength"), ans_queryLength);
+	UNPROTECT(1);
+
+	PROTECT(ans_subjectLength = ScalarInteger(s_len));
+	SET_SLOT(ans, install("subjectLength"), ans_subjectLength);
+	UNPROTECT(1);
+
+	UNPROTECT(2);
+	return ans;
+}
+
+static SEXP new_Hits1(const int *q_hits, const int *s_hits, int nhit,
+		      int q_len, int s_len)
+{
+	SEXP ans_queryHits, ans_subjectHits, ans;
+	size_t n;
+
+	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
+	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
+	n = sizeof(int) * nhit;
+	memcpy(INTEGER(ans_queryHits), q_hits, n);
+	memcpy(INTEGER(ans_subjectHits), s_hits, n);
+	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
+	UNPROTECT(2);
+	return ans;
+}
+
+
+/****************************************************************************
+ * High-level user-friendly constructor
  */
 
 /* Based on qsort(). Time is O(nhit*log(nhit)). */
@@ -70,46 +114,18 @@ static void sort_hits(int *qh_in, const int *sh_in,
 	return;
 }
 
-/* C-level constructor. */
-static SEXP new_Hits0(SEXP queryHits, SEXP subjectHits, int q_len, int s_len)
-{
-	SEXP classdef, ans, ans_queryLength, ans_subjectLength;
-
-	PROTECT(classdef = MAKE_CLASS("Hits"));
-	PROTECT(ans = NEW_OBJECT(classdef));
-
-	SET_SLOT(ans, install("queryHits"), queryHits);
-	SET_SLOT(ans, install("subjectHits"), subjectHits);
-
-	PROTECT(ans_queryLength = ScalarInteger(q_len));
-	SET_SLOT(ans, install("queryLength"), ans_queryLength);
-	UNPROTECT(1);
-
-	PROTECT(ans_subjectLength = ScalarInteger(s_len));
-	SET_SLOT(ans, install("subjectLength"), ans_subjectLength);
-	UNPROTECT(1);
-
-	UNPROTECT(2);
-	return ans;
-}
-
 SEXP _new_Hits(int *q_hits, const int *s_hits, int nhit,
 	       int q_len, int s_len, int already_sorted)
 {
 	SEXP ans_queryHits, ans_subjectHits, ans;
-	size_t n;
 
+	if (already_sorted || nhit <= 1 || q_len <= 1)
+		return new_Hits1(q_hits, s_hits, nhit, q_len, s_len);
 	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
 	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
-	if (already_sorted || nhit <= 1 || q_len <= 1) {
-		n = sizeof(int) * nhit;
-		memcpy(INTEGER(ans_queryHits), q_hits, n);
-		memcpy(INTEGER(ans_subjectHits), s_hits, n);
-	} else {
-		sort_hits(q_hits, s_hits,
-			  INTEGER(ans_queryHits), INTEGER(ans_subjectHits),
-			  nhit, q_len);
-	}
+	sort_hits(q_hits, s_hits,
+		  INTEGER(ans_queryHits), INTEGER(ans_subjectHits),
+		  nhit, q_len);
 	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
 	UNPROTECT(2);
 	return ans;
@@ -154,9 +170,8 @@ static int check_hits(const int *q_hits, const int *s_hits, int nhit,
 /* --- .Call ENTRY POINT --- */
 SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len)
 {
-	int nhit, q_len0, s_len0, already_sorted;
+	int nhit, q_len0, s_len0, already_sorted, *q_hits_p2;
 	const int *q_hits_p, *s_hits_p;
-	SEXP ans_queryHits, ans_subjectHits, ans;
 
 	nhit = _check_integer_pairs(q_hits, s_hits,
 				    &q_hits_p, &s_hits_p,
@@ -164,19 +179,12 @@ SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len)
 	q_len0 = get_q_len_or_s_len(q_len, "queryLength");
 	s_len0 = get_q_len_or_s_len(s_len, "subjectLength");
 	already_sorted = check_hits(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
-	PROTECT(ans_queryHits = duplicate(q_hits));
-	if (already_sorted) {
-		PROTECT(ans_subjectHits = duplicate(s_hits));
-		SET_ATTRIB(ans_queryHits, R_NilValue);
-		SET_ATTRIB(ans_subjectHits, R_NilValue);
-		ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len0, s_len0);
-		UNPROTECT(1);
-	} else {
-		ans = _new_Hits(INTEGER(ans_queryHits), s_hits_p, nhit,
-				q_len0, s_len0, already_sorted);
-	}
-	UNPROTECT(1);
-	return ans;
+	if (already_sorted)
+		return new_Hits1(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
+	q_hits_p2 = (int *) R_alloc(sizeof(int), nhit);
+	memcpy(q_hits_p2, q_hits_p, sizeof(int) * nhit);
+	return _new_Hits(q_hits_p2, s_hits_p, nhit,
+			 q_len0, s_len0, already_sorted);
 }
 
 
