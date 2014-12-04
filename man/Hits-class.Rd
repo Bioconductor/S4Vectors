@@ -149,7 +149,8 @@
   }
 }
 
-\author{ Michael Lawrence }
+\author{Michael Lawrence and H. Pages}
+
 \seealso{
   \itemize{
     \item \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package,

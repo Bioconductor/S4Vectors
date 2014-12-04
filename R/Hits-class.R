@@ -376,12 +376,8 @@ setMethod("t", "Hits", Hits_revmap)
         stop("'new.", sidename, "Length' must be a single number or NA")
     if (!is.integer(arg))
         arg <- as.integer(arg)
-    if (is.null(map)) {
-        if (!is.na(arg))
-            stop("'new.", sidename, "Length' must be NA ",
-                 "when '" , sidename, ".map' is NULL")
+    if (is.null(map))
         return(arg)
-    }
     if (is.factor(map)) {
         if (is.na(arg))
             return(nlevels(map))
@@ -397,7 +393,8 @@ setMethod("t", "Hits", Hits_revmap)
 }
 
 remapHits <- function(x, query.map=NULL, new.queryLength=NA,
-                         subject.map=NULL, new.subjectLength=NA)
+                         subject.map=NULL, new.subjectLength=NA,
+                         with.counts=FALSE)
 {
     if (!is(x, "Hits"))
         stop("'x' must be a Hits object")
@@ -407,10 +404,13 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
     subject.map <- .normargMap(subject.map, "subject", subjectLength(x))
     new.subjectLength <- .normargNewLength(new.subjectLength,
                                            "subject", subject.map)
+    if (!isTRUEorFALSE(with.counts))
+        stop("'with.counts' must be TRUE or FALSE")
     q_hits <- queryHits(x)
     s_hits <- subjectHits(x)
     if (is.null(query.map)) {
-        new.queryLength <- queryLength(x)
+        if (is.na(new.queryLength))
+            new.queryLength <- queryLength(x)
     } else {
         if (is.factor(query.map))
             query.map <- as.integer(query.map)
@@ -420,7 +420,8 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
         q_hits <- query.map[q_hits]
     }
     if (is.null(subject.map)) {
-        new.subjectLength <- subjectLength(x)
+        if (is.na(new.subjectLength))
+            new.subjectLength <- subjectLength(x)
     } else {
         if (is.factor(subject.map))
             subject.map <- as.integer(subject.map)
@@ -429,10 +430,23 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
                  "are < 1, or > 'new.subjectLength'")
         s_hits <- subject.map[s_hits]
     }
-    keep_idx <- which(!duplicatedIntegerPairs(q_hits, s_hits))
-    q_hits <- q_hits[keep_idx]
-    s_hits <- s_hits[keep_idx]
-    Hits(q_hits, s_hits, new.queryLength, new.subjectLength)
+    counts <- NULL
+    if (is.null(query.map) && is.null(subject.map)) {
+        if (with.counts)
+            counts <- rep.int(1L, length(x))
+    } else {
+        sm <- selfmatchIntegerPairs(q_hits, s_hits)
+        if (with.counts) {
+            counts <- tabulate(sm, nbins=length(sm))
+            keep_idx <- which(counts != 0L)
+            counts <- counts[keep_idx]
+        } else {
+            keep_idx <- which(sm == seq_along(sm))
+        }
+        q_hits <- q_hits[keep_idx]
+        s_hits <- s_hits[keep_idx]
+    }
+    Hits(q_hits, s_hits, new.queryLength, new.subjectLength, counts)
 }
 
 
