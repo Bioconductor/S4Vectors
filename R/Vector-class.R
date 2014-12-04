@@ -258,19 +258,21 @@ setGeneric("elementMetadata<-",
            function(x, ..., value) standardGeneric("elementMetadata<-"))
 
 setReplaceMethod("elementMetadata", "Vector",
-                 function(x, ..., value) {
-                     if (!is(value, "DataTableORNULL"))
-                         stop("replacement 'elementMetadata' value must be a DataTable object or NULL")
-                     if ("elementMetadata" %in% names(attributes(x))) {
-                         if (!is.null(value) && length(x) != nrow(value))
-                             stop("the number of rows in elementMetadata 'value' ",
-                                     "(if non-NULL) must match the length of 'x'")
-                         if (!is.null(value))
-                             rownames(value) <- NULL
-                         x@elementMetadata <- value
-                     }
-                     x
-                 })
+    function(x, ..., value)
+    {
+        if (!is(value, "DataTableORNULL"))
+            stop("replacement 'elementMetadata' value must be ",
+                 "a DataTable object or NULL")
+        if ("elementMetadata" %in% names(attributes(x))) {
+            if (!is.null(value) && length(x) != nrow(value))
+                stop("supplied metadata colums must have the length of 'x'")
+            if (!is.null(value))
+                rownames(value) <- NULL
+            x@elementMetadata <- value
+        }
+        x
+    }
+)
 
 setGeneric("mcols<-", function(x, ..., value) standardGeneric("mcols<-"))
 

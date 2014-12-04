@@ -603,7 +603,8 @@ SEXP Hits_new(
 	SEXP q_hits,
 	SEXP s_hits,
 	SEXP q_len,
-	SEXP s_len
+	SEXP s_len,
+	SEXP revmap_envir
 );
 
 int _get_select_mode(SEXP select);

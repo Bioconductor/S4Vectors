@@ -147,7 +147,8 @@ setValidity2("Hits", .valid.Hits)
 ###
 
 Hits <- function(queryHits=integer(0), subjectHits=integer(0),
-                 queryLength=0L, subjectLength=0L)
+                 queryLength=0L, subjectLength=0L,
+                 ...)
 {
     if (!(is.numeric(queryHits) && is.numeric(subjectHits)))
         stop("'queryHits' and 'subjectHits' must be integer vectors")
@@ -161,8 +162,27 @@ Hits <- function(queryHits=integer(0), subjectHits=integer(0),
         queryLength <- as.integer(queryLength)
     if (!is.integer(subjectLength))
         subjectLength <- as.integer(subjectLength)
-    .Call2("Hits_new", queryHits, subjectHits, queryLength, subjectLength,
-                       PACKAGE="S4Vectors")
+    ans_mcols <- DataFrame(...)
+    if (ncol(ans_mcols) != 0L) {
+        revmap_envir <- new.env(parent=emptyenv())
+    } else {
+        revmap_envir <- NULL
+    }
+    ans <- .Call2("Hits_new", queryHits, subjectHits,
+                              queryLength, subjectLength,
+                              revmap_envir,
+                              PACKAGE="S4Vectors")
+    if (ncol(ans_mcols) != 0L) {
+        if (nrow(ans_mcols) != length(ans))
+            stop("length of supplied metadata colums ",
+                 "must equal number of hits")
+        if (exists("revmap", envir=revmap_envir)) {
+            revmap <- get("revmap", envir=revmap_envir)
+            ans_mcols <- ans_mcols[revmap, , drop=FALSE]
+        }
+        mcols(ans) <- ans_mcols
+    }
+    ans
 }
 
 

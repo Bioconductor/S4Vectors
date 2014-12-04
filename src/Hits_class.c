@@ -52,24 +52,33 @@ static SEXP new_Hits1(const int *q_hits, const int *s_hits, int nhit,
  * High-level user-friendly constructor
  */
 
-/* Based on qsort(). Time is O(nhit*log(nhit)). */
+/* Based on qsort(). Time is O(nhit*log(nhit)).
+   If 'revmap' is not NULL, then 'qh_in' is not modified. */
 static void qsort_hits(int *qh_in, const int *sh_in,
-		       int *qh_out, int *sh_out, int nhit)
+		       int *qh_out, int *sh_out, int nhit,
+		       int *revmap)
 {
 	int k;
 
-	_get_order_of_int_array(qh_in, nhit, 0, sh_out, 0);
+	if (revmap == NULL)
+		revmap = sh_out;
+	_get_order_of_int_array(qh_in, nhit, 0, revmap, 0);
 	for (k = 0; k < nhit; k++)
-		qh_out[k] = qh_in[sh_out[k]];
-	memcpy(qh_in, sh_out, sizeof(int) * nhit);
+		qh_out[k] = qh_in[revmap[k]];
+	if (revmap == sh_out) {
+		memcpy(qh_in, revmap, sizeof(int) * nhit);
+		revmap = qh_in;
+	}
 	for (k = 0; k < nhit; k++)
-		sh_out[k] = sh_in[qh_in[k]];
+		sh_out[k] = sh_in[revmap[k]++];
 	return;
 }
 
-/* Tabulated sorting. Time is O(nhit). WARNING: 'nhit' MUST be >= 'q_len'. */
+/* Tabulated sorting. Time is O(nhit).
+    WARNINGS: 'nhit' MUST be >= 'q_len'. 'qh_in' is ALWAYS modified. */
 static void tsort_hits(int *qh_in, const int *sh_in,
-		       int *qh_out, int *sh_out, int nhit, int q_len)
+		       int *qh_out, int *sh_out, int nhit, int q_len,
+		       int *revmap)
 {
 	int i, k, offset, count, prev_offset, j;
 
@@ -87,13 +96,15 @@ static void tsort_hits(int *qh_in, const int *sh_in,
 		qh_out[i] = offset;
 		offset += count;
 	}
-	/* Fill 'sh_out'. */
+	/* Fill 'sh_out' and 'revmap'. */
 	for (k = 0; k < nhit; k++) {
 		offset = qh_out[qh_in[k]]++;
 		sh_out[offset] = sh_in[k];
+		if (revmap != NULL)
+			revmap[offset] = k + 1;
 	}
 	/* Fill 'qh_out'. */
-	memcpy(qh_in, qh_out, sizeof(int) * nhit);
+	memcpy(qh_in, qh_out, sizeof(int) * q_len);
 	k = offset = 0;
 	for (i = 1; i <= q_len; i++) {
 		prev_offset = offset;
@@ -104,28 +115,51 @@ static void tsort_hits(int *qh_in, const int *sh_in,
 	return;
 }
 
-static void sort_hits(int *qh_in, const int *sh_in,
-		      int *qh_out, int *sh_out, int nhit, int q_len)
-{
-	if (nhit >= q_len)
-		tsort_hits(qh_in, sh_in, qh_out, sh_out, nhit, q_len);
-	else
-		qsort_hits(qh_in, sh_in, qh_out, sh_out, nhit);
-	return;
-}
-
 SEXP _new_Hits(int *q_hits, const int *s_hits, int nhit,
 	       int q_len, int s_len, int already_sorted)
 {
 	SEXP ans_queryHits, ans_subjectHits, ans;
+	int *qh_out, *sh_out;
 
 	if (already_sorted || nhit <= 1 || q_len <= 1)
 		return new_Hits1(q_hits, s_hits, nhit, q_len, s_len);
 	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
 	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
-	sort_hits(q_hits, s_hits,
-		  INTEGER(ans_queryHits), INTEGER(ans_subjectHits),
-		  nhit, q_len);
+	qh_out = INTEGER(ans_queryHits);
+	sh_out = INTEGER(ans_subjectHits);
+	if (nhit >= q_len)
+		tsort_hits(q_hits, s_hits, qh_out, sh_out, nhit, q_len, NULL);
+	else
+		qsort_hits(q_hits, s_hits, qh_out, sh_out, nhit, NULL);
+	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
+	UNPROTECT(2);
+	return ans;
+}
+
+static SEXP new_Hits_with_revmap(
+		const int *q_hits, const int *s_hits, int nhit,
+		int q_len, int s_len, int *revmap)
+{
+	SEXP ans_queryHits, ans_subjectHits, ans;
+	int *q_hits2, *qh_out, *sh_out;
+
+	if (revmap == NULL || nhit >= q_len) {
+		q_hits2 = (int *) R_alloc(sizeof(int), nhit);
+		memcpy(q_hits2, q_hits, sizeof(int) * nhit);
+	}
+	if (revmap == NULL)
+		return _new_Hits(q_hits2, s_hits, nhit, q_len, s_len, 0);
+	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
+	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
+	qh_out = INTEGER(ans_queryHits);
+	sh_out = INTEGER(ans_subjectHits);
+	if (nhit >= q_len) {
+		tsort_hits(q_hits2, s_hits, qh_out, sh_out, nhit,
+			   q_len, revmap);
+	} else {
+		qsort_hits((int *) q_hits, s_hits, qh_out, sh_out, nhit,
+			   revmap);
+	}
 	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
 	UNPROTECT(2);
 	return ans;
@@ -168,10 +202,12 @@ static int check_hits(const int *q_hits, const int *s_hits, int nhit,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len)
+SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len,
+	      SEXP revmap_envir)
 {
-	int nhit, q_len0, s_len0, already_sorted, *q_hits_p2;
+	int nhit, q_len0, s_len0, already_sorted, *revmap_p;
 	const int *q_hits_p, *s_hits_p;
+	SEXP ans, revmap, symbol;
 
 	nhit = _check_integer_pairs(q_hits, s_hits,
 				    &q_hits_p, &s_hits_p,
@@ -181,10 +217,22 @@ SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len)
 	already_sorted = check_hits(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
 	if (already_sorted)
 		return new_Hits1(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
-	q_hits_p2 = (int *) R_alloc(sizeof(int), nhit);
-	memcpy(q_hits_p2, q_hits_p, sizeof(int) * nhit);
-	return _new_Hits(q_hits_p2, s_hits_p, nhit,
-			 q_len0, s_len0, already_sorted);
+	if (revmap_envir == R_NilValue) {
+		revmap_p = NULL;
+	} else {
+		PROTECT(revmap = NEW_INTEGER(nhit));
+		revmap_p = INTEGER(revmap);
+	}
+	PROTECT(ans = new_Hits_with_revmap(q_hits_p, s_hits_p, nhit,
+					   q_len0, s_len0, revmap_p));
+	if (revmap_envir == R_NilValue) {
+		UNPROTECT(1);
+		return ans;
+	}
+	PROTECT(symbol = mkChar("revmap"));
+	defineVar(install(translateChar(symbol)), revmap, revmap_envir);
+	UNPROTECT(3);
+	return ans;
 }
 
 
