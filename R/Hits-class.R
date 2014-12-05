@@ -407,7 +407,6 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
     if (!isTRUEorFALSE(with.counts))
         stop("'with.counts' must be TRUE or FALSE")
     q_hits <- queryHits(x)
-    s_hits <- subjectHits(x)
     if (is.null(query.map)) {
         if (is.na(new.queryLength))
             new.queryLength <- queryLength(x)
@@ -419,6 +418,7 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
                  "are < 1, or > 'new.queryLength'")
         q_hits <- query.map[q_hits]
     }
+    s_hits <- subjectHits(x)
     if (is.null(subject.map)) {
         if (is.na(new.subjectLength))
             new.subjectLength <- subjectLength(x)
@@ -430,23 +430,36 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
                  "are < 1, or > 'new.subjectLength'")
         s_hits <- subject.map[s_hits]
     }
-    counts <- NULL
+    x_mcols <- mcols(x)
+    add_counts <- function(counts) {
+        if (is.null(x_mcols))
+            return(DataFrame(counts=counts))
+        if ("counts" %in% colnames(x_mcols))
+            warning("'x' has a \"counts\" metadata column, replacing it")
+        x_mcols$counts <- counts
+        x_mcols
+    }
     if (is.null(query.map) && is.null(subject.map)) {
-        if (with.counts)
+        if (with.counts) {
             counts <- rep.int(1L, length(x))
+            x_mcols <- add_counts(counts)
+        }
     } else {
         sm <- selfmatchIntegerPairs(q_hits, s_hits)
         if (with.counts) {
             counts <- tabulate(sm, nbins=length(sm))
+            x_mcols <- add_counts(counts)
             keep_idx <- which(counts != 0L)
-            counts <- counts[keep_idx]
         } else {
             keep_idx <- which(sm == seq_along(sm))
         }
         q_hits <- q_hits[keep_idx]
         s_hits <- s_hits[keep_idx]
+        x_mcols <- extractROWS(x_mcols, keep_idx)
     }
-    Hits(q_hits, s_hits, new.queryLength, new.subjectLength, counts)
+    do.call(Hits, c(list(q_hits, s_hits,
+                         new.queryLength, new.subjectLength),
+                    as.list(x_mcols)))
 }
 
 
