@@ -284,34 +284,6 @@ setMethod("show", "Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### match()
-###
-
-compatibleHits <- function(x, y) {
-  subjectLength(x) == subjectLength(y) && queryLength(x) == queryLength(y)
-}
-
-setMethod("match", c("Hits", "Hits"),
-    function(x, table, nomatch=NA_integer_, incomparables=NULL)
-    {
-        if (!compatibleHits(x, table))
-            stop("'x' and 'table' are incompatible by subject and query length")
-        if (!is.null(incomparables))
-            stop("\"match\" method for Hits objects ",
-                 "only accepts 'incomparables=NULL'")
-        matchIntegerPairs(queryHits(x), subjectHits(x),
-                          queryHits(table), subjectHits(table),
-                          nomatch=nomatch)
-    }
-)
-
-setMethod("selfmatch", "Hits",
-    function (x, method=c("auto", "quick", "hash"))
-        selfmatchIntegerPairs(queryHits(x), subjectHits(x), method=method)
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selectHits()
 ###
 
