@@ -139,6 +139,19 @@ orderInteger <- function(x, decreasing=FALSE, na.last=NA)
     method
 }
 
+compareIntegerPairs <- function(a1, b1, a2, b2)
+{
+    a1 <- .normargIntegerOrFactor(a1, "a1")
+    b1 <- .normargIntegerOrFactor(b1, "b1")
+    if (length(a1) != length(b1))
+        stop("'a1' and 'b1' must have the same length")
+    a2 <- .normargIntegerOrFactor(a2, "a2")
+    b2 <- .normargIntegerOrFactor(b2, "b2")
+    if (length(a2) != length(b2))
+        stop("'a2' and 'b2' must have the same length")
+    .Call2("Integer_compare2", a1, b1, a2, b2, PACKAGE="S4Vectors")
+}
+
 sortedIntegerPairs <- function(a, b, decreasing=FALSE, strictly=FALSE)
 {
     a <- .normargIntegerOrFactor(a, "a")

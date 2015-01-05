@@ -99,6 +99,54 @@ static int compar_int_pairs(int a1, int b1, int a2, int b2)
 	return ret;
 }
 
+/* Vectorized comparison of 2 vectors of integer pairs. */
+void _compare_int_pairs(const int *a1, const int *b1, int nelt1,
+			const int *a2, const int *b2, int nelt2,
+			int *out, int out_len, int with_warning)
+{
+	int i, j, k;
+
+	for (i = j = k = 0; k < out_len; i++, j++, k++) {
+		if (i >= nelt1)
+			i = 0; /* recycle i */
+		if (j >= nelt2)
+			j = 0; /* recycle j */
+		out[k] = compar_int_pairs(a1[i], b1[i], a2[j], b2[j]);
+	}
+	/* This warning message is meaningful only when 'out_len' is
+	   'max(nelt1, nelt2)' and is consistent with the warning we get from
+	   binary arithmetic/comparison operations on numeric vectors. */
+	if (with_warning && out_len != 0 && (i != nelt1 || j != nelt2))
+		warning("longer object length is not a multiple "
+			"of shorter object length");
+	return;
+}
+
+int _int_pairs_are_sorted(const int *a, const int *b, int nelt,
+		int desc, int strict)
+{
+	int a1, b1, a2, b2, i, ret;
+
+	if (nelt == 0)
+		return 1;
+	a2 = a[0];
+	b2 = b[0];
+	for (i = 1; i < nelt; i++) {
+		a1 = a2;
+		b1 = b2;
+		a2 = a[i];
+		b2 = b[i];
+		ret = compar_int_pairs(a1, b1, a2, b2);
+		if (ret == 0) {
+			if (strict) return 0;
+			continue;
+		}
+		if (desc != (ret > 0))
+			return 0;
+	}
+	return 1;
+}
+
 static int compar_aabb(int i1, int i2)
 {
 	int ret;
@@ -137,31 +185,6 @@ static int compar_aabb_for_stable_desc_order(const void *p1, const void *p2)
 		return ret;
 	/* Break tie by position so the ordering is "stable". */
 	return i1 - i2;
-}
-
-int _int_pairs_are_sorted(const int *a, const int *b, int nelt,
-		int desc, int strict)
-{
-	int a1, b1, a2, b2, i, ret;
-
-	if (nelt == 0)
-		return 1;
-	a2 = a[0];
-	b2 = b[0];
-	for (i = 1; i < nelt; i++) {
-		a1 = a2;
-		b1 = b2;
-		a2 = a[i];
-		b2 = b[i];
-		ret = compar_int_pairs(a1, b1, a2, b2);
-		if (ret == 0) {
-			if (strict) return 0;
-			continue;
-		}
-		if (desc != (ret > 0))
-			return 0;
-	}
-	return 1;
 }
 
 void _get_order_of_int_pairs(const int *a, const int *b, int nelt,

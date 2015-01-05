@@ -43,6 +43,18 @@ void _get_order_of_int_array(
 	int out_shift
 );
 
+void _compare_int_pairs(
+	const int *a1,
+	const int *b1,
+	int nelt1,
+	const int *a2,
+	const int *b2,
+	int nelt2,
+	int *out,
+	int out_len,
+	int with_warning
+);
+
 int _int_pairs_are_sorted(
 	const int *a,
 	const int *b,
@@ -427,6 +439,13 @@ int _check_integer_pairs(
 	const int **b_p,
 	const char *a_argname,
 	const char *b_argname
+);
+
+SEXP Integer_compare2(
+	SEXP a1,
+	SEXP b1,
+	SEXP a2,
+	SEXP b2
 );
 
 SEXP Integer_sorted2(

@@ -210,6 +210,34 @@ SEXP Integer_order(SEXP x, SEXP decreasing)
 	return ans;
 }
 
+/* --- .Call ENTRY POINT ---
+ * 'a1' and 'b1': integer vectors of the same length M.
+ * 'a2' and 'b2': integer vectors of the same length N.
+ * The 4 integer vectors are assumed to be NA free. For efficiency reason, this
+ * is not checked.
+ * If M != N then the shorter object is recycled to the length of the longer
+ * object, except if M or N is 0 in which case the object with length != 0 is
+ * truncated to length 0.
+ */
+SEXP Integer_compare2(SEXP a1, SEXP b1, SEXP a2, SEXP b2)
+{
+	int npair1, npair2, ans_len;
+	const int *a1_p, *b1_p, *a2_p, *b2_p;
+	SEXP ans;
+
+	npair1 = _check_integer_pairs(a1, b1, &a1_p, &b1_p, "a1", "b1");
+	npair2 = _check_integer_pairs(a2, b2, &a2_p, &b2_p, "a2", "b2");
+	if (npair1 == 0 || npair2 == 0)
+		ans_len = 0;
+	else
+		ans_len = npair1 >= npair2 ? npair1 : npair2;
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	_compare_int_pairs(a1_p, b1_p, npair1, a2_p, b2_p, npair2,
+			   INTEGER(ans), ans_len, 1);
+	UNPROTECT(1);
+	return ans;
+}
+
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
 {
