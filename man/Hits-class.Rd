@@ -29,10 +29,6 @@
 % displaying
 \alias{show,Hits-method}
 
-% comparison
-\alias{match,Hits,Hits-method}
-\alias{selfmatch,Hits-method}
-
 % other
 \alias{t,Hits-method}
 \alias{remapHits}
@@ -153,6 +149,8 @@
 
 \seealso{
   \itemize{
+    \item \link{Hits-comparison} for comparing and ordering hits.
+
     \item \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package,
           which generates an instance of this class.
 

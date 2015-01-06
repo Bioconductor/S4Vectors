@@ -274,14 +274,14 @@ setMethod(">", c("Vector", "Vector"),
     \item The \pkg{S4Vectors} package provides no \code{compare} method for
           \link{Vector} objects. Specific \code{compare} methods need to be
           implemented for specific \link{Vector} subclasses (e.g. for
-          \link[IRanges]{Ranges} objects). These specific methods must obey
-          the rules described in the Details section above.
+          \link{Hits} and \link[IRanges]{Ranges} objects). These specific
+          methods must obey the rules described in the Details section above.
 
     \item The \code{duplicated}, \code{unique}, and \code{\%in\%} methods for
           \link{Vector} objects are implemented on top of \code{selfmatch},
           \code{duplicated}, and \code{match}, respectively, so they work
           out-of-the-box on \link{Vector} objects for which \code{selfmatch},
-         \code{duplicated}, and \code{match} work the expected way.
+          \code{duplicated}, and \code{match} work the expected way.
 
     \item Also the default \code{findMatches} and \code{countMatches} methods
           are implemented on top of \code{match} and \code{selfmatch} so they
@@ -306,7 +306,7 @@ setMethod(">", c("Vector", "Vector"),
     \item The \pkg{S4Vectors} package provides no \code{match} or \code{order}
           methods for \link{Vector} objects. Specific methods need to be
           implemented for specific \link{Vector} subclasses (e.g. for
-          \link[IRanges]{Ranges} objects).
+          \link{Hits} and \link[IRanges]{Ranges} objects).
   }
 }
 
@@ -315,6 +315,8 @@ setMethod(">", c("Vector", "Vector"),
 \seealso{
   \itemize{
     \item The \link{Vector} class.
+
+    \item \link{Hits-comparison} for comparing and ordering hits.
 
     \item \link[IRanges]{Ranges-comparison} in the \pkg{IRanges} package for
           comparing and ordering ranges.

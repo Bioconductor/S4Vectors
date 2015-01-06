@@ -4,7 +4,7 @@
 ###
 
 
-### Funcions/operators for comparing, ordering, tabulating:
+### Functions/operators for comparing, ordering, tabulating:
 ###
 ###     compare
 ###     ==
