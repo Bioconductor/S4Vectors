@@ -23,19 +23,10 @@
 }
 
 \usage{
-## Element-wise (aka "parallel") comparison of 2 Hits objects
-## ----------------------------------------------------------
-
 \S4method{compare}{Hits,Hits}(x, y)
-
-## match()
-## -------
 
 \S4method{match}{Hits,Hits}(x, table, nomatch=NA_integer_, incomparables=NULL,
       method=c("auto", "quick", "hash"))
-
-## order()
-## -------
 
 \S4method{order}{Hits}(..., na.last=TRUE, decreasing=FALSE)
 }
@@ -104,6 +95,7 @@
       object) into ascending order, breaking ties by further arguments (also
       \link{Hits} objects).
     }
+  }
 }
 
 \author{H. Pages}

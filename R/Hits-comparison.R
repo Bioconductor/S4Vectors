@@ -88,8 +88,8 @@ setMethod("order", "Hits",
         args <- list(...)
         if (length(args) == 1L) {
             x <- args[[1L]]
-            return(S4Vectors:::orderIntegerPairs(queryHits(x), subjectHits(x),
-                                                 decreasing=decreasing))
+            return(orderIntegerPairs(queryHits(x), subjectHits(x),
+                                     decreasing=decreasing))
         }
         order_args <- vector("list", 2L * length(args))
         idx <- 2L * seq_along(args)
