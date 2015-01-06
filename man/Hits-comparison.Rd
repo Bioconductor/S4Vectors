@@ -33,7 +33,8 @@
 
 \arguments{
   \item{x, y, table}{
-    \link{Hits} objects.
+    \emph{Compatible} \link{Hits} objects, that is, \link{Hits} objects with
+    the same subject and query lengths.
   }
   \item{nomatch}{
     The value to be returned in the case when no match is found.

@@ -328,8 +328,8 @@ setMethod(">", c("Vector", "Vector"),
           \code{BiocGenerics::\link[BiocGenerics]{order}},
           \code{BiocGenerics::\link[BiocGenerics]{sort}},
           \code{BiocGenerics::\link[BiocGenerics]{rank}} in the
-          \pkg{BiocGenerics} package for general information about the
-          comparison/ordering operators and functions.
+          \pkg{BiocGenerics} package for general information about
+          the comparison/ordering operators and functions.
 
     \item The \link{Hits} class.
 

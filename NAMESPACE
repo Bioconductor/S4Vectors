@@ -166,6 +166,7 @@ exportMethods(
     Reduce, Filter, Find, Map, Position,
     unlist,
     do.call,
+    union, intersect, setdiff,
     xtabs,
     start, end, width
 )
