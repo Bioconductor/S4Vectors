@@ -122,9 +122,8 @@ export(
 ###
 
 exportMethods(
-    ## Generics defined in the base package:
-    length,
-    names, "names<-",
+    ## Methods for generics defined in the base package:
+    length, names, "names<-",
     nrow, ncol, dim,
     NROW, NCOL,
     rownames, "rownames<-",
@@ -149,18 +148,18 @@ exportMethods(
     "[[", "[[<-", "$", "$<-",
     eval, with, within,
 
-    ## Generics defined in the methods package:
+    ## Methods for generics defined in the methods package:
     coerce, show,
 
-    ## Generics defined in the utils package:
+    ## Methods for generics defined in the utils package:
 
-    ## Generics defined in the stats package:
+    ## Methods for generics defined in the stats package:
     aggregate, na.omit, na.exclude, complete.cases,
 
-    ## Generics defined in the stats4 package:
+    ## Methods for generics defined in the stats4 package:
     summary,
 
-    ## Generics defined in the BiocGenerics package:
+    ## Methods for generics defined in the BiocGenerics package:
     cbind, rbind,
     lapply, sapply,
     Reduce, Filter, Find, Map, Position,

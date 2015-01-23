@@ -579,13 +579,7 @@ fancy_mseq <- function(lengths, offset=0L, rev=FALSE)
 }
 
 make_XYZxyz_to_XxYyZz_subscript <- function(N)
-{
-    idx2 <- seq_len(N) * 2L
-    idx1 <- idx2 - 1L
-    ans <- integer(N * 2L)
-    ans[c(idx1, idx2)] <- seq_along(ans)
-    ans
-}
+    as.vector(matrix(seq_len(2L * N), nrow=2L, byrow=TRUE))
 
 findIntervalAndStartFromWidth <- function(x, width)
     .Call2("findIntervalAndStartFromWidth", x, width, PACKAGE="S4Vectors")
