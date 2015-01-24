@@ -376,12 +376,35 @@ setMethod("is.unsorted", "Rle",
 
 setMethod("length", "Rle", function(x) sum(runLength(x)))
 
-setMethod("match", "Rle",
-          function(x, table, nomatch = NA_integer_, incomparables = NULL)
-              Rle(values =
-                  match(runValue(x), table = table, nomatch = nomatch,
-                        incomparables = incomparables), 
-                  lengths = runLength(x), check = FALSE))
+setMethod("match", c("ANY", "Rle"),
+    function(x, table, nomatch=NA_integer_, incomparables=NULL)
+    {
+        table_run_starts <- start(table)
+        table <- runValue(table)
+        m <- callGeneric()
+        table_run_starts[m]
+    }
+)
+
+setMethod("match", c("Rle", "ANY"),
+    function(x, table, nomatch=NA_integer_, incomparables=NULL)
+    {
+        x_run_lens <- runLength(x)
+        x <- runValue(x)
+        m <- callGeneric()
+        Rle(m, x_run_lens)
+    }
+)
+
+setMethod("match", c("Rle", "Rle"),
+    function(x, table, nomatch=NA_integer_, incomparables=NULL)
+    {
+        x_run_lens <- runLength(x)
+        x <- runValue(x)
+        m <- callGeneric()
+        Rle(m, x_run_lens)
+    }
+)
 
 setMethod("rep", "Rle",
           function(x, times, length.out, each)
