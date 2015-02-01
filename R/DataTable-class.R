@@ -120,6 +120,38 @@ setMethod("rbind", "DataTable", function(..., deparse.level=1)
           stop("missing 'rbind' method for DataTable class ",
                class(list(...)[[1L]])))
 
+setMethod("cbind2", c("ANY", "DataTable"), function(x, y, ...) {
+  x <- as(x, "DataFrame")
+  cbind(x, y, ...)
+})
+
+setMethod("cbind2", c("DataTable", "ANY"), function(x, y, ...) {
+  y <- as(y, "DataFrame")
+  cbind(x, y, ...)
+})
+
+setMethod("cbind2", c("DataTable", "DataTable"), function(x, y, ...) {
+  x <- as(x, "DataFrame")
+  y <- as(y, "DataFrame")
+  cbind(x, y, ...)
+})
+
+setMethod("rbind2", c("ANY", "DataTable"), function(x, y, ...) {
+  x <- as(x, "DataFrame")
+  rbind(x, y, ...)
+})
+
+setMethod("rbind2", c("DataTable", "ANY"), function(x, y, ...) {
+  y <- as(y, "DataFrame")
+  rbind(x, y, ...)
+})
+
+setMethod("rbind2", c("DataTable", "DataTable"), function(x, y, ...) {
+  x <- as(x, "DataFrame")
+  y <- as(y, "DataFrame")
+  rbind(x, y, ...)
+})
+
 setMethod("merge", c("DataTable", "DataTable"), function(x, y, ...) {
   as(merge(as(x, "data.frame"), as(y, "data.frame"), ...), class(x))
 })
