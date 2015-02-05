@@ -64,7 +64,7 @@ C files:
   X Rle_utils.c
   X Vector_class.c (renamed List_class.c)
   X SimpleList_class.c
-    DataFrame_class.c
+  X DataFrame_class.c
 
 - 9 header files (.h files)
 

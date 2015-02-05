@@ -772,3 +772,13 @@ SEXP _new_SimpleList(
 	SEXP listData
 );
 
+
+/* DataFrame_class.c */
+
+SEXP _new_DataFrame(
+	const char *classname,
+	SEXP vars,
+	SEXP rownames,
+	SEXP nrows
+);
+
