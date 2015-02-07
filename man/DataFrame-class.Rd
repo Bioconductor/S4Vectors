@@ -39,6 +39,9 @@
 \alias{coerce,SimpleList,DataFrame-method}
 \alias{coerce,ANY,AsIs-method}
 
+% combining
+\alias{cbind,DataFrame-method}
+\alias{rbind,DataFrame-method}
 
 \title{DataFrame objects}
 
@@ -162,6 +165,30 @@
     \item{}{\code{x[[i]] <- value}: Behaves very similarly to the
       \code{\link{[[<-.data.frame}} method, except argument \code{j}
       is not supported.
+    }
+  }
+}
+
+\section{Combining}{
+  In the following code snippets, \code{x} is a \code{DataFrame}.
+
+  \describe{
+    \item{}{
+      \code{rbind(...)}: Creates a new \code{DataFrame} by
+      combining the rows of the \code{DataFrame} objects in
+      \code{...}. Very similar to \code{\link{rbind.data.frame}}, except
+      in the handling of row names. If all elements have row names, they
+      are concatenated and made unique. Otherwise, the result does not
+      have row names. Currently, factors are not handled well (their
+      levels are dropped). This is not a high priority until there is an
+      \code{XFactor} class.
+    }
+    \item{}{
+      \code{cbind(...)}: Creates a new \code{DataFrame} by
+      combining the columns of the \code{DataFrame} objects in
+      \code{...}. Very similar to \code{\link{cbind.data.frame}}, except
+      row names, if any, are dropped. Consider the \code{DataFrame}
+      as an alternative that allows one to specify row names.
     }
   }
 }
