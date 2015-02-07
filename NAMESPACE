@@ -35,6 +35,7 @@ exportClasses(
 S3method(aggregate, Rle)
 
 S3method(anyDuplicated, NSBS)
+S3method(anyDuplicated, WindowNSBS)
 
 S3method(as.data.frame, Vector)
 S3method(as.data.frame, Rle)
@@ -48,6 +49,9 @@ S3method(as.list, SimpleList)
 S3method(as.vector, Rle)
 
 S3method(diff, Rle)
+
+S3method(droplevels, Rle)
+S3method(droplevels, List)
 
 S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
@@ -72,8 +76,7 @@ S3method(unique, DataTable)
 S3method(unique, Vector)
 S3method(unique, Rle)
 
-S3method(droplevels, Rle)
-S3method(droplevels, List)
+S3method(window, Vector)
 
 ### We also export them thru the export() directive so that (a) they can be
 ### called directly, (b) tab-completion on the name of the generic shows them,
@@ -82,6 +85,7 @@ export(
     aggregate.Rle,
 
     anyDuplicated.NSBS,
+    anyDuplicated.WindowNSBS,
 
     as.data.frame.Vector,
     as.data.frame.Rle,
@@ -93,6 +97,9 @@ export(
     as.list.SimpleList,
 
     diff.Rle,
+
+    droplevels.Rle,
+    droplevels.List,
 
     duplicated.DataTable,
     duplicated.Vector,
@@ -115,7 +122,9 @@ export(
 
     unique.DataTable,
     unique.Vector,
-    unique.Rle
+    unique.Rle,
+
+    window.Vector
 )
 
 
@@ -156,7 +165,7 @@ exportMethods(
     ## Methods for generics defined in the utils package:
 
     ## Methods for generics defined in the stats package:
-    aggregate, na.omit, na.exclude, complete.cases,
+    window, aggregate, na.omit, na.exclude, complete.cases,
 
     ## Methods for generics defined in the stats4 package:
     summary,

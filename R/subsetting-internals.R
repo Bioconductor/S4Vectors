@@ -1,5 +1,5 @@
 ### =========================================================================
-### Subsetting internal utilities
+### Internal subsetting utilities
 ### -------------------------------------------------------------------------
 ###
 
@@ -15,8 +15,8 @@
 setClass("NSBS", 
     representation(
         "VIRTUAL",
-        upper_bound="integer",            # Single integer >= 0.
-        upper_bound_is_strict="logical",  # TRUE or FALSE.
+        upper_bound="integer",            # single integer >= 0
+        upper_bound_is_strict="logical",  # TRUE or FALSE
         ## 'subscript' is an object that holds integer values >= 1 and
         ## <= upper_bound. The precise type of the object depends on the NSBS
         ## subclass and is specified in the subclass definition.
@@ -28,12 +28,13 @@ setClass("NSBS",
     )
 )
 
-### There are currently 3 NSBS concrete subclasses:
+### There are currently 4 NSBS concrete subclasses:
 ### - in S4Vectors:
-###     1) NativeNSBS:  subscript="integer"
+###     1) NativeNSBS: subscript slot is a vector of positive integers
+###     2) WindowNSBS: subscript slot is c(start, end)
 ### - in IRanges:
-###     2) RleNSBS:     subscript="Rle" (must be integer-Rle)
-###     3) RangesNSBS: subscript="IRanges"
+###     3) RleNSBS:    subscript slot is an integer-Rle
+###     4) RangesNSBS: subscript slot is an IRanges
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,8 +80,8 @@ setMethod("upperBound", "NSBS", function(x) x@upper_bound)
 
 setMethod("upperBoundIsStrict", "NSBS", function(x) x@upper_bound_is_strict)
 
-### The 3 default methods below are overriden by NSBS subclasses RleNSBS and
-### RangesNSBS defined in the IRanges package.
+### The 3 default methods below are overriden by NSBS subclasses: WindowNSBS,
+### RleNSBS, and RangesNSBS.
 
 setMethod("length", "NSBS", function(x) length(as.integer(x)))
 
@@ -228,6 +229,91 @@ setMethod("as.integer", "NativeNSBS", function(x) x@subscript)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### WindowNSBS objects.
+###
+
+setClass("WindowNSBS",  # not exported
+    contains="NSBS",
+    representation(
+        subscript="integer"
+    ),
+    prototype(
+        subscript=c(1L, 0L)
+    )
+)
+
+### Constructor.
+
+.normarg_window_start <- function(start, argname="start")
+{
+    if (!isSingleNumberOrNA(start))
+        stop("'", argname, "' must be a single number or NA")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    start
+}
+
+### Replacement for IRanges:::solveUserSEWForSingleSeq()
+### TODO: Get rid of IRanges:::solveUserSEWForSingleSeq() and use WindowNSBS()
+### instead.
+WindowNSBS <- function(x, start=NA, end=NA, width=NA)
+{
+    x_NROW <- NROW(x)
+    start <- .normarg_window_start(start, "start")
+    end <- .normarg_window_start(end, "end")
+    width <- .normarg_window_start(width, "width")
+    if (is.na(width)) {
+        if (is.na(start))
+            start <- 1L
+        if (is.na(end))
+            end <- x_NROW
+    } else if (is.na(start) != is.na(end)) {
+        if (is.na(start)) {
+            start <- end - width + 1L
+        } else {
+            end <- start + width - 1L
+        }
+    } else {
+        if (is.na(start) && is.na(end)) {
+            start <- 1L
+            end <- x_NROW
+        }
+        if (width != end - start + 1L)
+            stop("the supplied 'start', 'end', and 'width' are incompatible")
+    }
+    if (!(start >= 1L && start <= x_NROW + 1L && end <= x_NROW && end >= 0L))
+        stop("the specified window is out-of-bounds")
+    if (end < start - 1L)
+        stop("the specified window has a negative width")
+    new("WindowNSBS", subscript=c(start, end), upper_bound=x_NROW)
+}
+
+setMethod("as.integer", "WindowNSBS",
+    function(x)
+    {
+        start_end <- x@subscript
+        if (diff(start_end) < 0L)
+            return(integer(0))
+        seq.int(start_end[[1L]], start_end[[2L]])
+    }
+)
+
+setMethod("length", "WindowNSBS",
+    function(x)
+    {
+        start_end <- x@subscript
+        start_end[[2L]] - start_end[[1L]] + 1L
+    }
+)
+
+## S3/S4 combo for anyDuplicated.WindowNSBS
+anyDuplicated.WindowNSBS <- function(x, incomparables=FALSE, ...) 0L
+setMethod("anyDuplicated", "WindowNSBS", anyDuplicated.WindowNSBS)
+
+setMethod("isStrictlySorted", "WindowNSBS", function(x) TRUE)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeSingleBracketSubscript()
 ###
 
@@ -317,6 +403,19 @@ setMethod("extractROWS", c("vectorORfactor", "ANY"),
     {
         i <- normalizeSingleBracketSubscript(i, x)
         x[i]
+    }
+)
+
+setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
+    function(x, i)
+    {
+        start_end <- i@subscript
+        ans <- .Call2("vector_extract_window",
+                      x, start_end[[1L]], start_end[[2L]],
+                      PACKAGE="S4Vectors")
+        if (is.factor(x))
+            attributes(ans) <- list(levels=levels(x), class="factor")
+        ans
     }
 )
 

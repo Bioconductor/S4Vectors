@@ -64,6 +64,9 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(top_prenv, 2),
 	CALLMETHOD_DEF(top_prenv_dots, 1),
 
+/* subsetting_internals.c */
+	CALLMETHOD_DEF(vector_extract_window, 3),
+
 /* Hits_class.c */
 	CALLMETHOD_DEF(Hits_new, 5),
 	CALLMETHOD_DEF(select_hits, 4),

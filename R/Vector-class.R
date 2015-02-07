@@ -309,6 +309,11 @@ setMethod("rename", "Vector", .renameVector)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
+### The "[" and "[<-" methods for Vector objects are just delegating to
+### extractROWS() and replaceROWS() for performing the real work. Most of
+### the times, the author of a Vector subclass only needs to implement an
+### "extractROWS" and "replaceROWS" method for his/her objects.
+###
 
 setMethod("[", "Vector",
     function(x, i, j, ..., drop=TRUE)
@@ -404,6 +409,15 @@ setMethod("replaceROWS", "Vector",
         ans
     }
 )
+
+### S3/S4 combo for window.Vector
+.window.Vector <- function(x, start=NA, end=NA, width=NA)
+{
+    i <- WindowNSBS(x, start=start, end=end, width=width)
+    extractROWS(x, i)
+}
+window.Vector <- function(x, ...) .window.Vector(x, ...)
+setMethod("window", "Vector", window.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

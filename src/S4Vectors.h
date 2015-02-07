@@ -607,6 +607,11 @@ SEXP top_prenv(SEXP nm, SEXP env);
 SEXP top_prenv_dots(SEXP env);
 
 
+/* subsetting_internals.c */
+
+SEXP vector_extract_window(SEXP x, SEXP start, SEXP end);
+
+
 /* Hits_class.c */
 
 SEXP _new_Hits(
