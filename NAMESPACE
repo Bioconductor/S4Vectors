@@ -57,6 +57,8 @@ S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
 S3method(duplicated, Rle)
 
+S3method(head, Vector)
+
 S3method(levels, Rle)
 
 S3method(mean, Rle)
@@ -71,6 +73,8 @@ S3method(sort, Vector)
 S3method(sort, Rle)
 
 S3method(summary, Rle)
+
+S3method(tail, Vector)
 
 S3method(unique, DataTable)
 S3method(unique, Vector)
@@ -96,6 +100,8 @@ export(
     as.list.List,
     as.list.SimpleList,
 
+    as.vector.Rle,
+
     diff.Rle,
 
     droplevels.Rle,
@@ -104,6 +110,8 @@ export(
     duplicated.DataTable,
     duplicated.Vector,
     duplicated.Rle,
+
+    head.Vector,
 
     levels.Rle,
 
@@ -119,6 +127,8 @@ export(
     sort.Rle,
 
     summary.Rle,
+
+    tail.Vector,
 
     unique.DataTable,
     unique.Vector,
@@ -163,6 +173,7 @@ exportMethods(
     coerce, show,
 
     ## Methods for generics defined in the utils package:
+    head, tail,
 
     ## Methods for generics defined in the stats package:
     window, aggregate, na.omit, na.exclude, complete.cases,

@@ -410,6 +410,11 @@ setMethod("replaceROWS", "Vector",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Convenience wrappers for common subsetting operations.
+###
+
 ### S3/S4 combo for window.Vector
 .window.Vector <- function(x, start=NA, end=NA, width=NA)
 {
@@ -418,6 +423,40 @@ setMethod("replaceROWS", "Vector",
 }
 window.Vector <- function(x, ...) .window.Vector(x, ...)
 setMethod("window", "Vector", window.Vector)
+
+### S3/S4 combo for head.Vector
+head.Vector <- function(x, n=6L, ...)
+{
+    if (!isSingleNumber(n))
+        stop("'n' must be a single integer")
+    if (!is.integer(n))
+        n <- as.integer(n)
+    x_NROW <- NROW(x)
+    if (n >= 0L) {
+        n <- min(x_NROW, n)
+    } else {
+        n <- max(0L, x_NROW + n)
+    }
+    window(x, start=1L, width=n)
+}
+setMethod("head", "Vector", head.Vector)
+
+## S3/S4 combo for tail.Vector
+tail.Vector <- function(x, n=6L, ...)
+{
+    if (!isSingleNumber(n))
+        stop("'n' must be a single integer")
+    if (!is.integer(n))
+        n <- as.integer(n)
+    x_NROW <- NROW(x)
+    if (n >= 0L) {
+        n <- min(x_NROW, n)
+    } else {
+        n <- max(0L, x_NROW + n)
+    }
+    window(x, end=x_NROW, width=n)
+}
+setMethod("tail", "Vector", tail.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
