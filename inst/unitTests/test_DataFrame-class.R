@@ -283,19 +283,12 @@ test_DataFrame_replace <- function() {
                            row.names = colnames(sw1)))
 }
 
-## splitting and combining
+## combining
 test_DataFrame_combine <- function() {
   data(swiss)
-  sw <- DataFrame(swiss, row.names=rownames(swiss))
   rn <- rownames(swiss)
- 
-  ## split
-  swsplit <- split(sw, sw[["Education"]])
-  checkTrue(validObject(swsplit))
+  sw <- DataFrame(swiss, row.names=rn)
   swisssplit <- split(swiss, swiss$Education)
-  checkIdentical(as.list(lapply(swsplit, as.data.frame)), swisssplit)
-  checkTrue(validObject(split(DataFrame(IRanges(1:26, 1:26), LETTERS),
-                              letters)))
  
   ## rbind
   checkIdentical(rbind(DataFrame(), DataFrame()), DataFrame())
@@ -305,11 +298,10 @@ test_DataFrame_combine <- function() {
   zr <- sw[FALSE,]
   checkIdentical(rbind(DataFrame(), zr, zr[,1:2]), zr)
   checkIdentical(as.data.frame(rbind(DataFrame(), zr, sw)), swiss)
-  swissrbind <- do.call(rbind, swisssplit)
-  rownames(swissrbind) <- NULL
-  rownames(sw) <- NULL
-  swsplit <- split(sw, sw[["Education"]])
-  checkIdentical(as.data.frame(do.call(rbind, as.list(swsplit))), swissrbind)
+  target <- do.call(rbind, swisssplit)
+  current <- do.call(rbind, lapply(swisssplit, DataFrame))
+  rownames(target) <- rownames(current) <- NULL
+  checkIdentical(target, as.data.frame(current))
   DF <- DataFrame(A=I(list(1:3)))
   df <- as.data.frame(DF)
   checkIdentical(as.data.frame(rbind(DF, DF)), rbind(df, df))
@@ -323,13 +315,9 @@ test_DataFrame_combine <- function() {
   rownames(df12) <- NULL
   checkIdentical(as.data.frame(rbind(DF1, DF2)), df12)
  
-  rownames(sw) <- rn
   checkIdentical(rownames(rbind(sw, DataFrame(swiss))),
                  rownames(rbind(swiss, swiss)))
-  swsplit <- split(sw, sw[["Education"]])
-  rownames(swiss) <- rn
-  swisssplit <- split(swiss, swiss$Education)
-  checkIdentical(rownames(do.call(rbind, as.list(swsplit))),
+  checkIdentical(rownames(do.call(rbind, lapply(swisssplit, DataFrame))),
                  unlist(lapply(swisssplit, rownames), use.names=FALSE))
 
   checkException(rbind(sw[,1:2], sw), silent = TRUE)
