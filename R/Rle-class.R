@@ -122,7 +122,9 @@ setAs("Rle", "factor", function(from) as.factor(from))
 setAs("Rle", "list", function(from) as.list(from))
 setAs("Rle", "data.frame", function(from) as.data.frame(from))
 
-setMethod("as.vector", "Rle", function(x, mode) rep.int(as.vector(runValue(x), mode), runLength(x)))
+as.vector.Rle <- function(x, mode)
+  rep.int(as.vector(runValue(x), mode), runLength(x))
+setMethod("as.vector", "Rle", as.vector.Rle)
 setMethod("as.factor", "Rle", function(x) rep.int(as.factor(runValue(x)), runLength(x)))
 
 asFactorOrFactorRle <- function(x) {

@@ -45,6 +45,8 @@ S3method(as.list, Rle)
 S3method(as.list, List)
 S3method(as.list, SimpleList)
 
+S3method(as.vector, Rle)
+
 S3method(diff, Rle)
 
 S3method(duplicated, DataTable)

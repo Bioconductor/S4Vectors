@@ -39,6 +39,12 @@ setClassUnion("vectorORfactor", c("vector", "factor"))
 ###   > setAs("ANY", "vector", function(from) as.vector(from))
 ###   > as(a, "vector")
 ###   [1]  3  2  1  0 -1 -2 -3 -4 -5
+###
+###   ML: The problem is that the default coercion method is defined
+###   in the methods namespace, which does not see the as.vector()
+###   generic we define. Solution in this case would probably be to
+###   make as.vector a dispatching primitive like as.character(), but
+###   the "mode" argument makes things complicated.
 setAs("ANY", "vector", function(from) as.vector(from))
 
 coercerToClass <- function(class) {
