@@ -360,15 +360,20 @@ setReplaceMethod("[", "DataFrame",
                    j <- j2
                    if (!length(j)) # nothing to replace
                      return(x)
-                   if (is(value, "list") || is(value, "List"))
+                   if (is(value, "list") || is(value, "List")) {
+                     null <- vapply(value, is.null, logical(1L))
+                     if (any(null)) { ### FIXME: data.frame handles gracefully
+                       stop("NULL elements not allowed in list value")
+                     }
                      value <- as(value, "DataFrame")
+                   }
                    if (!is(value, "DataFrame")) {
                      if (useI)
                        li <- length(i)
                      else
                        li <- nrow(x)
                      lv <- length(value)
-                     if (li != lv) {
+                     if (lv > 0L && li != lv) {
                        if (li %% lv != 0)
                          stop(paste(lv, "rows in value to replace",
                                     li, " rows"))
@@ -391,7 +396,9 @@ setReplaceMethod("[", "DataFrame",
                        x@listData[j] <-
                          lapply(x@listData[j], function(y) {y[i] <- value; y})
                      } else {
-                       x@listData[j] <- list(value)
+                       if (is.null(value))
+                         x@listData[j] <- NULL
+                       else x@listData[j] <- list(value)
                      }
                    } else {
                      vc <- seq_len(ncol(value))
