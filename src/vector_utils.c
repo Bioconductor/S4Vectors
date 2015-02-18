@@ -298,3 +298,32 @@ SEXP vector_seqselect(SEXP x, SEXP start, SEXP width)
 	return ans;
 }
 
+
+/****************************************************************************
+ * _list_as_data_frame()
+ */
+
+/* Performs IN-PLACE coercion of list 'x' into a data frame! */
+SEXP _list_as_data_frame(SEXP x, int nrow)
+{
+	SEXP rownames, class;
+	int i;
+
+	if (!IS_LIST(x) || GET_NAMES(x) == R_NilValue)
+		error("S4Vectors internal error in _list_as_data_frame(): "
+		      "'x' must be a named list");
+
+	/* Set the "row.names" attribute. */
+	PROTECT(rownames = NEW_INTEGER(nrow));
+	for (i = 0; i < nrow; i++)
+		INTEGER(rownames)[i] = i + 1;
+	SET_ATTR(x, R_RowNamesSymbol, rownames);
+	UNPROTECT(1);
+
+	/* Set the "class" attribute. */
+	PROTECT(class = mkString("data.frame"));
+	SET_CLASS(x, class);
+	UNPROTECT(1);
+	return x;
+}
+

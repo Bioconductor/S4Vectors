@@ -363,6 +363,11 @@ void vector_memcpy(
 	int nelt
 );
 
+SEXP list_as_data_frame(
+	SEXP x,
+	int nrow
+);
+
 /*
  * int_utils.c
  */

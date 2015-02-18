@@ -376,6 +376,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(vector_memcpy,
 	(     out,     out_offset,      in,     in_offset,     nelt)
 )
 
+DEFINE_CCALLABLE_STUB(SEXP, list_as_data_frame,
+	(SEXP x, int nrow),
+	(     x,     nrow)
+)
+
 /*
  * Stubs for callables defined in int_utils.c
  */

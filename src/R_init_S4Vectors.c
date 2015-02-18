@@ -170,6 +170,7 @@ void R_init_S4Vectors(DllInfo *info)
 /* vector_utils.c */
 	REGISTER_CCALLABLE(_vector_memcmp);
 	REGISTER_CCALLABLE(_vector_memcpy);
+	REGISTER_CCALLABLE(_list_as_data_frame);
 
 /* int_utils.c */
 	REGISTER_CCALLABLE(_sum_non_neg_ints);

@@ -395,6 +395,11 @@ SEXP vector_seqselect(
 	SEXP width
 );
 
+SEXP _list_as_data_frame(
+	SEXP x,
+	int nrow
+);
+
 
 /* logical_utils.c */
 
