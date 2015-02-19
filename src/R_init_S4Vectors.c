@@ -148,6 +148,11 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_IntPairAEAE_set_nelt);
 	REGISTER_CCALLABLE(_new_IntPairAEAE);
 	REGISTER_CCALLABLE(_IntPairAEAE_insert_at);
+	REGISTER_CCALLABLE(_LongLongIntAE_get_nelt);
+	REGISTER_CCALLABLE(_LongLongIntAE_set_nelt);
+	REGISTER_CCALLABLE(_LongLongIntAE_set_val);
+	REGISTER_CCALLABLE(_new_LongLongIntAE);
+	REGISTER_CCALLABLE(_LongLongIntAE_insert_at);
 	REGISTER_CCALLABLE(_CharAE_get_nelt);
 	REGISTER_CCALLABLE(_CharAE_set_nelt);
 	REGISTER_CCALLABLE(_new_CharAE);

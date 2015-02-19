@@ -114,18 +114,18 @@ DEFINE_CCALLABLE_STUB(int, get_new_buflength,
 )
 
 DEFINE_CCALLABLE_STUB(int, IntAE_get_nelt,
-	(const IntAE *int_ae),
-	(             int_ae)
+	(const IntAE *ae),
+	(             ae)
 )
 
 DEFINE_CCALLABLE_STUB(int, IntAE_set_nelt,
-	(IntAE *int_ae, int nelt),
-	(       int_ae,     nelt)
+	(IntAE *ae, int nelt),
+	(       ae,     nelt)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_set_val,
-	(const IntAE *int_ae, int val),
-	(             int_ae,     val)
+	(const IntAE *ae, int val),
+	(             ae,     val)
 )
 
 DEFINE_CCALLABLE_STUB(IntAE, new_IntAE,
@@ -134,48 +134,48 @@ DEFINE_CCALLABLE_STUB(IntAE, new_IntAE,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_insert_at,
-	(IntAE *int_ae, int at, int val),
-	(       int_ae,     at,     val)
+	(IntAE *ae, int at, int val),
+	(       ae,     at,     val)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_append,
-	(IntAE *int_ae, const int *newvals, int nnewval),
-	(       int_ae,            newvals,     nnewval)
+	(IntAE *ae, const int *newvals, int nnewval),
+	(       ae,            newvals,     nnewval)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_delete_at,
-	(IntAE *int_ae, int at),
-	(       int_ae,     at)
+	(IntAE *ae, int at),
+	(       ae,     at)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_shift,
-	(const IntAE *int_ae, int shift),
-	(             int_ae,     shift)
+	(const IntAE *ae, int shift),
+	(             ae,     shift)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_sum_and_shift,
-	(const IntAE *int_ae1, const IntAE *int_ae2, int shift),
-	(             int_ae1,              int_ae2,     shift)
+	(const IntAE *ae1, const IntAE *ae2, int shift),
+	(             ae1,              ae2,     shift)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_append_shifted_vals,
-	(IntAE *int_ae, const int *newvals, int nnewval, int shift),
-	(       int_ae,            newvals,     nnewval,     shift)
+	(IntAE *ae, const int *newvals, int nnewval, int shift),
+	(       ae,            newvals,     nnewval,     shift)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_qsort,
-	(const IntAE *int_ae, int desc),
-	(             int_ae,     desc)
+	(const IntAE *ae, int desc),
+	(             ae,     desc)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_delete_adjdups,
-	(IntAE *int_ae),
-	(       int_ae)
+	(IntAE *ae),
+	(       ae)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, new_INTEGER_from_IntAE,
-	(const IntAE *int_ae),
-	(             int_ae)
+	(const IntAE *ae),
+	(             ae)
 )
 
 DEFINE_CCALLABLE_STUB(IntAE, new_IntAE_from_INTEGER,
@@ -189,13 +189,13 @@ DEFINE_CCALLABLE_STUB(IntAE, new_IntAE_from_CHARACTER,
 )
 
 DEFINE_CCALLABLE_STUB(int, IntAEAE_get_nelt,
-	(const IntAEAE *int_aeae),
-	(               int_aeae)
+	(const IntAEAE *aeae),
+	(               aeae)
 )
 
 DEFINE_CCALLABLE_STUB(int, IntAEAE_set_nelt,
-	(IntAEAE *int_aeae, int nelt),
-	(         int_aeae,     nelt)
+	(IntAEAE *aeae, int nelt),
+	(         aeae,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(IntAEAE, new_IntAEAE,
@@ -204,28 +204,28 @@ DEFINE_CCALLABLE_STUB(IntAEAE, new_IntAEAE,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAEAE_insert_at,
-	(IntAEAE *int_aeae, int at, const IntAE *int_ae),
-	(         int_aeae,     at,              int_ae)
+	(IntAEAE *aeae, int at, const IntAE *ae),
+	(         aeae,     at,              ae)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAEAE_eltwise_append,
-	(const IntAEAE *int_aeae1, const IntAEAE *int_aeae2),
-	(               int_aeae1,                int_aeae2)
+	(const IntAEAE *aeae1, const IntAEAE *aeae2),
+	(               aeae1,                aeae2)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAEAE_shift,
-	(const IntAEAE *int_aeae, int shift),
-	(               int_aeae,     shift)
+	(const IntAEAE *aeae, int shift),
+	(               aeae,     shift)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAEAE_sum_and_shift,
-	(const IntAEAE *int_aeae1, const IntAEAE *int_aeae2, int shift),
-	(               int_aeae1,                int_aeae2,     shift)
+	(const IntAEAE *aeae1, const IntAEAE *aeae2, int shift),
+	(               aeae1,                aeae2,     shift)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, new_LIST_from_IntAEAE,
-	(const IntAEAE *int_aeae, int mode),
-	(               int_aeae,     mode)
+	(const IntAEAE *aeae, int mode),
+	(               aeae,     mode)
 )
 
 DEFINE_CCALLABLE_STUB(IntAEAE, new_IntAEAE_from_LIST,
@@ -234,18 +234,18 @@ DEFINE_CCALLABLE_STUB(IntAEAE, new_IntAEAE_from_LIST,
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, IntAEAE_toEnvir,
-	(const IntAEAE *int_aeae, SEXP envir, int keyshift),
-	(               int_aeae,      envir,     keyshift)
+	(const IntAEAE *aeae, SEXP envir, int keyshift),
+	(               aeae,      envir,     keyshift)
 )
 
 DEFINE_CCALLABLE_STUB(int, IntPairAE_get_nelt,
-	(const IntPairAE *intpair_ae),
-	(                 intpair_ae)
+	(const IntPairAE *ae),
+	(                 ae)
 )
 
 DEFINE_CCALLABLE_STUB(int, IntPairAE_set_nelt,
-	(IntPairAE *intpair_ae, int nelt),
-	(           intpair_ae,     nelt)
+	(IntPairAE *ae, int nelt),
+	(           ae,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(IntPairAE, new_IntPairAE,
@@ -254,18 +254,18 @@ DEFINE_CCALLABLE_STUB(IntPairAE, new_IntPairAE,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAE_insert_at,
-	(IntPairAE *intpair_ae, int at, int a, int b),
-	(           intpair_ae,     at,     a,     b)
+	(IntPairAE *ae, int at, int a, int b),
+	(           ae,     at,     a,     b)
 )
 
 DEFINE_CCALLABLE_STUB(int, IntPairAEAE_get_nelt,
-	(const IntPairAEAE *intpair_aeae),
-	(                   intpair_aeae)
+	(const IntPairAEAE *aeae),
+	(                   aeae)
 )
 
 DEFINE_CCALLABLE_STUB(int, IntPairAEAE_set_nelt,
-	(IntPairAEAE *intpair_aeae, int nelt),
-	(             intpair_aeae,     nelt)
+	(IntPairAEAE *aeae, int nelt),
+	(             aeae,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(IntPairAEAE, new_IntPairAEAE,
@@ -274,18 +274,43 @@ DEFINE_CCALLABLE_STUB(IntPairAEAE, new_IntPairAEAE,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAEAE_insert_at,
-	(IntPairAEAE *intpair_aeae, int at, const IntPairAE *intpair_ae),
-	(             intpair_aeae,     at,                  intpair_ae)
+	(IntPairAEAE *aeae, int at, const IntPairAE *ae),
+	(             aeae,     at,                  ae)
+)
+
+DEFINE_CCALLABLE_STUB(int, LongLongIntAE_get_nelt,
+	(const LongLongIntAE *ae),
+	(                     ae)
+)
+
+DEFINE_CCALLABLE_STUB(int, LongLongIntAE_set_nelt,
+	(LongLongIntAE *ae, int nelt),
+	(               ae,     nelt)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(LongLongIntAE_set_val,
+	(const LongLongIntAE *ae, long long int val),
+	(                     ae,               val)
+)
+
+DEFINE_CCALLABLE_STUB(LongLongIntAE, new_LongLongIntAE,
+	(int buflength, int nelt, long long int val),
+	(    buflength,     nelt,               val)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(LongLongIntAE_insert_at,
+	(LongLongIntAE *ae, int at, long long int val),
+	(               ae,     at,               val)
 )
 
 DEFINE_CCALLABLE_STUB(int, CharAE_get_nelt,
-	(const CharAE *char_ae),
-	(              char_ae)
+	(const CharAE *ae),
+	(              ae)
 )
 
 DEFINE_CCALLABLE_STUB(int, CharAE_set_nelt,
-	(CharAE *char_ae, int nelt),
-	(        char_ae,     nelt)
+	(CharAE *ae, int nelt),
+	(        ae,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(CharAE, new_CharAE,
@@ -299,38 +324,38 @@ DEFINE_CCALLABLE_STUB(CharAE, new_CharAE_from_string,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(CharAE_insert_at,
-	(CharAE *char_ae, int at, char c),
-	(        char_ae,     at,      c)
+	(CharAE *ae, int at, char c),
+	(        ae,     at,      c)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(append_string_to_CharAE,
-	(CharAE *char_ae, const char *string),
-	(        char_ae,             string)
+	(CharAE *ae, const char *string),
+	(        ae,             string)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(CharAE_delete_at,
-	(CharAE *char_ae, int at, int nelt),
-	(        char_ae,     at,     nelt)
+	(CharAE *ae, int at, int nelt),
+	(        ae,     at,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, new_RAW_from_CharAE,
-	(const CharAE *char_ae),
-	(              char_ae)
+	(const CharAE *ae),
+	(              ae)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, new_LOGICAL_from_CharAE,
-	(const CharAE *char_ae),
-	(              char_ae)
+	(const CharAE *ae),
+	(              ae)
 )
 
 DEFINE_CCALLABLE_STUB(int, CharAEAE_get_nelt,
-	(const CharAEAE *char_aeae),
-	(                char_aeae)
+	(const CharAEAE *aeae),
+	(                aeae)
 )
 
 DEFINE_CCALLABLE_STUB(int, CharAEAE_set_nelt,
-	(CharAEAE *char_aeae, int nelt),
-	(          char_aeae,     nelt)
+	(CharAEAE *aeae, int nelt),
+	(          aeae,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(CharAEAE, new_CharAEAE,
@@ -339,18 +364,18 @@ DEFINE_CCALLABLE_STUB(CharAEAE, new_CharAEAE,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(CharAEAE_insert_at,
-	(CharAEAE *char_aeae, int at, const CharAE *char_ae),
-	(          char_aeae,     at,               char_ae)
+	(CharAEAE *aeae, int at, const CharAE *ae),
+	(          aeae,     at,               ae)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(append_string_to_CharAEAE,
-	(CharAEAE *char_aeae, const char *string),
-	(          char_aeae,             string)
+	(CharAEAE *aeae, const char *string),
+	(          aeae,             string)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, new_CHARACTER_from_CharAEAE,
-	(const CharAEAE *char_aeae),
-	(                char_aeae)
+	(const CharAEAE *aeae),
+	(                aeae)
 )
 
 /*
