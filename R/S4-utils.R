@@ -5,6 +5,19 @@
 
 
 setClassUnion("characterORNULL", c("character", "NULL"))
+
+### WARNING: is.vector() and is(, "vector") are broken and the union class
+### we define below is even more broken:
+###   1. is.vector(data.frame()) is FALSE but is.list(data.frame()) and
+###      is.vector(list()) are both TRUE. In other words: a data frame is a
+###      list and a list is a vector but a data frame is not a vector.
+###   2. is.vector(matrix()) is FALSE but is(matrix(), "vector") is TRUE.
+###   3. is(data.frame(), "vectorORfactor") is TRUE even though
+###      is(data.frame(), "vector") and is(data.frame(), "factor") are both
+###      FALSE.
+###   4. I'm sure there is more but you get it!
+### Results above obtained with R-3.1.2 and R-3.2.0.
+### TODO: Be brave and report this craziness to the R bug tracker.
 setClassUnion("vectorORfactor", c("vector", "factor"))
 
 
