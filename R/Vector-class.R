@@ -326,24 +326,6 @@ setMethod("[", "Vector",
     }
 )
 
-### Used in IRanges!
-extractROWSWithBracket <- function(x, i) {
-  if (missing(i))
-    return(x)
-  ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
-  ndim <- max(length(dim(x)), 1L)
-  i <- normalizeSingleBracketSubscript(i, x)
-  args <- rep(alist(foo=), ndim)
-  names(args) <- NULL
-  args[[1]] <- i
-  args <- c(list(x), args, list(drop = FALSE))
-  do.call(`[`, args)
-}
-
-setMethod("extractROWS", "ANY", extractROWSWithBracket)
-
-setMethod("extractROWS", "matrix", extractROWSWithBracket)
-
 ### We provide a default "extractROWS" method for Vector objects that only
 ### subsets the individual parallel slots. That should be enough for most
 ### Vector derivatives that have parallelSlotNames() properly set.

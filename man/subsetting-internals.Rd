@@ -27,10 +27,11 @@
 \alias{normalizeSingleBracketReplacementValue,ANY-method}
 
 \alias{extractROWS}
-\alias{extractROWS,NULL-method}
-\alias{extractROWS,vectorORfactor-method}
 \alias{replaceROWS}
-\alias{replaceROWS,vectorORfactor-method}
+\alias{extractROWS,ANY-method}
+\alias{replaceROWS,ANY-method}
+\alias{extractROWS,NULL-method}
+\alias{replaceROWS,NULL-method}
 
 \alias{normalizeDoubleBracketSubscript}
 

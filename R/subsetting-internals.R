@@ -395,16 +395,36 @@ setGeneric("replaceROWS", signature="x",
     function(x, i, value) standardGeneric("replaceROWS")
 )
 
+### Used in IRanges!
+extractROWSWithBracket <- function(x, i)
+{
+  if (missing(i))
+    return(x)
+  ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
+  ndim <- max(length(dim(x)), 1L)
+  i <- normalizeSingleBracketSubscript(i, x)
+  args <- rep(alist(foo=), ndim)
+  names(args) <- NULL
+  args[[1]] <- i
+  args <- c(list(x), args, list(drop=FALSE))
+  do.call(`[`, args)
+}
 
+replaceROWSWithBracket <- function(x, i, value)
+{
+  ndim <- max(length(dim(x)), 1L)
+  i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
+  args <- rep(alist(foo=), ndim)
+  names(args) <- NULL
+  args[[1]] <- i
+  args <- c(list(x), args, list(value=value))
+  do.call(`[<-`, args)
+}
+
+setMethod("extractROWS", "ANY", extractROWSWithBracket)
+setMethod("replaceROWS", "ANY", replaceROWSWithBracket)
 setMethod("extractROWS", "NULL", function(x, i) NULL)
-
-setMethod("extractROWS", c("vectorORfactor", "ANY"),
-    function(x, i)
-    {
-        i <- normalizeSingleBracketSubscript(i, x)
-        x[i]
-    }
-)
+setMethod("replaceROWS", "NULL", function(x, i, value) NULL)
 
 setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
     function(x, i)
@@ -419,30 +439,6 @@ setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
     }
 )
 
-setMethod("replaceROWS", "vectorORfactor",
-    function(x, i, value)
-    {
-        i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
-        x[i] <- value
-        x
-    }
-)
-
-setMethod("replaceROWS", "matrix",
-          function(x, i, value)
-          {
-            i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
-            x[i,] <- value
-            x
-          }
-          )
-
-setMethod("replaceROWS",
-          "NULL",
-          function(x, i, value) {
-            NULL
-          }
-          )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()

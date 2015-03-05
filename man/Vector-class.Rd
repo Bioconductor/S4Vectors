@@ -52,8 +52,6 @@
 
 \alias{[,Vector-method}
 \alias{[<-,Vector-method}
-\alias{extractROWS,ANY-method}
-\alias{extractROWS,matrix-method}
 \alias{replaceROWS,Vector-method}
 
 \alias{append,Vector,Vector-method}
