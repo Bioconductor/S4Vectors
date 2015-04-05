@@ -265,7 +265,7 @@ setReplaceMethod("elementMetadata", "Vector",
                  "a DataTable object or NULL")
         if ("elementMetadata" %in% names(attributes(x))) {
             if (!is.null(value) && length(x) != nrow(value))
-                stop("supplied metadata colums must have the length of 'x'")
+                stop("supplied metadata columns must have the length of 'x'")
             if (!is.null(value))
                 rownames(value) <- NULL
             x@elementMetadata <- value

@@ -176,7 +176,7 @@ Hits <- function(queryHits=integer(0), subjectHits=integer(0),
                               PACKAGE="S4Vectors")
     if (ncol(ans_mcols) != 0L) {
         if (nrow(ans_mcols) != length(ans))
-            stop("length of supplied metadata colums ",
+            stop("length of supplied metadata columns ",
                  "must equal number of hits")
         if (exists("revmap", envir=revmap_envir)) {
             revmap <- get("revmap", envir=revmap_envir)
