@@ -7,7 +7,7 @@
 setClassUnion("characterORNULL", c("character", "NULL"))
 
 ### WARNING: The behavior of is.vector(), is( , "vector"), is.list(), and
-### is( ,"list")  make no sense:
+### is( ,"list") makes no sense:
 ###   1. is.vector(matrix()) is FALSE but is(matrix(), "vector") is TRUE.
 ###   2. is.list(data.frame()) is TRUE but is(data.frame(), "list") is FALSE.
 ###   3. is.vector(data.frame()) is FALSE but is.list(data.frame()) and
