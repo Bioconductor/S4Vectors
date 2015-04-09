@@ -498,6 +498,17 @@ setMethod("showAsCell", "POSIXt", function(object) object)
 ### Combining.
 ###
 
+makeZeroColDataFrame <- function(x) new("DataFrame", nrows=length(x))
+
+### Somewhat painful that we do not always have a DataFrame in elementMetadata
+ensureMcols <- function(x) {
+  mc <- mcols(x)
+  if (is.null(mc)) {
+    mc <- makeZeroColDataFrame(x)
+  }
+  mc
+}
+
 rbind_mcols <- function(x, ...)
 {
     args <- list(x, ...)
@@ -506,8 +517,7 @@ rbind_mcols <- function(x, ...)
         return(mcols_list[[1L]])
     mcols_is_null <- sapply(mcols_list, is.null)
     if (all(mcols_is_null))
-        return(NULL)
-    makeZeroColDataFrame <- function(xi) new("DataFrame", nrows=length(xi))
+        return(NULL)    
     mcols_list[mcols_is_null] <- lapply(args[mcols_is_null],
                                         makeZeroColDataFrame)
     colnames_list <- lapply(mcols_list, colnames)
