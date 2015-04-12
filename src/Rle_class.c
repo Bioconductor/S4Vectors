@@ -119,7 +119,7 @@ static int compute_CHARSXP_runs(SEXP values,
 		SEXP run_values, int *run_lengths)
 {
 	int nvalues, i, nrun, lengths_elt;
-	SEXP values_elt, val0;
+	SEXP values_elt, val0 = NULL;
 
 	nvalues = LENGTH(values);
 	for (i = nrun = 0, lengths_elt = 1; i < nvalues; i++) {
