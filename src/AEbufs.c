@@ -1,6 +1,7 @@
 /****************************************************************************
- *           Low-level manipulation of the Auto-Extending buffers           *
- *           ----------------------------------------------------           *
+ *                          Auto-Extending buffers                          *
+ *                                                                          *
+ *                           Author: Herve Pages                            *
  ****************************************************************************/
 #include "S4Vectors.h"
 #include <stdlib.h>  /* for malloc, free, realloc */
@@ -25,7 +26,7 @@ SEXP debug_AEbufs()
 
 
 /****************************************************************************
- * Core helper functions used for allocation/reallocation of the AEbufs.
+ * Low-level memory management.
  */
 
 static int use_malloc = 0;
@@ -34,6 +35,40 @@ SEXP AEbufs_use_malloc(SEXP x)
 {
 	use_malloc = LOGICAL(x)[0];
 	return R_NilValue;
+}
+
+static void *alloc2(int nmemb, size_t size)
+{
+	void *ptr;
+
+	if (nmemb == 0)
+		return NULL;
+	if (use_malloc) {
+		ptr = malloc(size * nmemb);
+		if (ptr == NULL)
+			error("S4Vectors internal error in alloc2(): "
+			      "cannot allocate memory");
+	} else {
+		ptr = (void *) R_alloc(size, nmemb);
+	}
+	return ptr;
+}
+
+/* 'new_nmemb' must be != 0 and >= 'old_nmemb'. This is NOT checked! */
+static void *realloc2(void *ptr, int new_nmemb, int old_nmemb, size_t size)
+{
+	void *new_ptr;
+
+	if (use_malloc) {
+		new_ptr = realloc(ptr, size * new_nmemb);
+		if (new_ptr == NULL)
+			error("S4Vectors internal error in realloc2(): "
+			      "cannot reallocate memory");
+	} else {
+		new_ptr = (void *) R_alloc(size, new_nmemb);
+		memcpy(new_ptr, ptr, size * old_nmemb);
+	}
+	return new_ptr;
 }
 
 /* Guaranteed to return a new buflength > 'buflength', or to raise an error. */
@@ -51,82 +86,14 @@ int _get_new_buflength(int buflength)
 	return MAX_BUFLENGTH;
 }
 
-static void *malloc_AEbuf(int buflength, size_t size)
-{
-	void *elts;
-
-	if (buflength == 0)
-		return NULL;
-	elts = malloc((size_t) buflength * size);
-	if (elts == NULL)
-		error("S4Vectors internal error in malloc_AEbuf(): "
-		      "cannot allocate memory");
-	return elts;
-}
-
-static void *alloc_AEbuf(int buflength, size_t size)
-{
-	if (use_malloc)
-		return malloc_AEbuf(buflength, size);
-	if (buflength == 0)
-		return NULL;
-	return (void *) R_alloc(buflength, size);
-}
-
-static void *realloc_AEbuf(void *elts, int new_buflength,
-		int buflength, size_t size)
-{
-	void *new_elts;
-
-	if (use_malloc) {
-		new_elts = realloc(elts, (size_t) new_buflength * size);
-		if (new_elts == NULL)
-			error("S4Vectors internal error in realloc_AEbuf(): "
-			      "cannot reallocate memory");
-		return new_elts;
-	}
-	new_elts = (void *) R_alloc(new_buflength, size);
-	return memcpy(new_elts, elts, (size_t) buflength * size);
-}
-
 
 /****************************************************************************
  * IntAE buffers
- *
- * We use a "global IntAE malloc stack" to store a copy of each top-level
- * malloc-based IntAE that is created during the execution of a .Call entry
- * point. The copy must be modified at every reallocation or every time the
- * nb of elements in the buffer (_nelt member) is modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	INTAE_MALLOC_STACK_NELT_MAX 2048
-static IntAE IntAE_malloc_stack[INTAE_MALLOC_STACK_NELT_MAX];
-static int IntAE_malloc_stack_nelt = 0;
-
-static void IntAE_alloc(IntAE *ae, int buflength)
-{
-	ae->elts = (int *) alloc_AEbuf(buflength, sizeof(int));
-	ae->buflength = buflength;
-	ae->_AE_malloc_stack_idx = -1;
-	return;
-}
-
-static void IntAE_realloc(IntAE *ae)
-{
-	int new_buflength, idx;
-
-	new_buflength = _get_new_buflength(ae->buflength);
-	ae->elts = (int *) realloc_AEbuf(ae->elts, new_buflength,
-					ae->buflength, sizeof(int));
-	ae->buflength = new_buflength;
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntAE_malloc_stack[idx] = *ae;
-	return;
-}
+#define	INTAE_POOL_MAXLEN 256
+static IntAE *IntAE_pool[INTAE_POOL_MAXLEN];
+static int IntAE_pool_len = 0;
 
 int _IntAE_get_nelt(const IntAE *ae)
 {
@@ -135,55 +102,21 @@ int _IntAE_get_nelt(const IntAE *ae)
 
 int _IntAE_set_nelt(IntAE *ae, int nelt)
 {
-	int idx;
-
-	ae->_nelt = nelt;
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntAE_malloc_stack[idx] = *ae;
-	return nelt;
+	return ae->_nelt = nelt;
 }
 
-#ifdef DEBUG_S4VECTORS
-static void IntAE_print(const IntAE *ae)
+static IntAE *new_empty_IntAE()
 {
-	Rprintf("buflength=%d elts=%p _nelt=%d _AE_malloc_stack_idx=%d",
-		ae->buflength,
-		ae->elts,
-		ae->_nelt,
-		ae->_AE_malloc_stack_idx);
-	return;
-}
-#endif
+	IntAE *ae;
 
-/* Must be used on a malloc-based IntAE */
-static void IntAE_free(const IntAE *ae)
-{
-	if (ae->elts != NULL)
-		free(ae->elts);
-	return;
-}
-
-static void reset_IntAE_malloc_stack()
-{
-	int i;
-	const IntAE *ae;
-
-	for (i = 0, ae = IntAE_malloc_stack;
-	     i < IntAE_malloc_stack_nelt;
-	     i++, ae++)
-	{
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			Rprintf("IntAE_malloc_stack[%d]: ", i);
-			IntAE_print(ae);
-			Rprintf("\n");
-		}
-#endif
-		IntAE_free(ae);
-	}
-	IntAE_malloc_stack_nelt = 0;
-	return;
+	if (use_malloc && IntAE_pool_len >= INTAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_IntAE(): "
+		      "IntAE pool is full");
+	ae = (IntAE *) alloc2(1, sizeof(IntAE));
+	ae->_buflength = ae->_nelt = 0;
+	if (use_malloc)
+		IntAE_pool[IntAE_pool_len++] = ae;
+	return ae;
 }
 
 void _IntAE_set_val(const IntAE *ae, int val)
@@ -196,43 +129,46 @@ void _IntAE_set_val(const IntAE *ae, int val)
 	return;
 }
 
-IntAE _new_IntAE(int buflength, int nelt, int val)
+static void IntAE_extend(IntAE *ae)
 {
-	IntAE ae;
-	int idx;
+	int old_buflength, new_buflength;
 
-	/* Allocation */
-	IntAE_alloc(&ae, buflength);
-	if (use_malloc) {
-		if (IntAE_malloc_stack_nelt >= INTAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_IntAE(): "
-			      "the \"global IntAE malloc stack\" is full");
-		idx = IntAE_malloc_stack_nelt++;
-		ae._AE_malloc_stack_idx = idx;
-		IntAE_malloc_stack[idx] = ae;
-	}
-	/* Initialization */
-	_IntAE_set_nelt(&ae, nelt);
-	_IntAE_set_val(&ae, val);
-	return ae;
+	old_buflength = ae->_buflength;
+	new_buflength = _get_new_buflength(old_buflength);
+	ae->elts = (int *) realloc2(ae->elts, new_buflength,
+				    old_buflength, sizeof(int));
+	ae->_buflength = new_buflength;
+	return;
 }
 
 void _IntAE_insert_at(IntAE *ae, int at, int val)
 {
 	int nelt, i;
-	int *elt1;
-	const int *elt2;
+	int *elt1_p;
+	const int *elt2_p;
 
 	nelt = _IntAE_get_nelt(ae);
-	if (nelt >= ae->buflength)
-		IntAE_realloc(ae);
-	elt1 = ae->elts + nelt;
-	elt2 = elt1 - 1;
+	if (nelt >= ae->_buflength)
+		IntAE_extend(ae);
+	elt1_p = ae->elts + nelt;
+	elt2_p = elt1_p - 1;
 	for (i = nelt; i > at; i--)
-		*(elt1--) = *(elt2--);
-	*elt1 = val;
+		*(elt1_p--) = *(elt2_p--);
+	*elt1_p = val;
 	_IntAE_set_nelt(ae, nelt + 1);
 	return;
+}
+
+IntAE *_new_IntAE(int buflength, int nelt, int val)
+{
+	IntAE *ae;
+
+	ae = new_empty_IntAE();
+	ae->elts = (int *) alloc2(buflength, sizeof(int));
+	ae->_buflength = buflength;
+	_IntAE_set_nelt(ae, nelt);
+	_IntAE_set_val(ae, val);
+	return ae;
 }
 
 void _IntAE_append(IntAE *ae, const int *newvals, int nnewval)
@@ -240,8 +176,8 @@ void _IntAE_append(IntAE *ae, const int *newvals, int nnewval)
 	int new_nelt, *dest;
 
 	new_nelt = _IntAE_get_nelt(ae) + nnewval;
-	while (ae->buflength < new_nelt)
-		IntAE_realloc(ae);
+	while (ae->_buflength < new_nelt)
+		IntAE_extend(ae);
 	dest = ae->elts + _IntAE_get_nelt(ae);
 	memcpy(dest, newvals, nnewval * sizeof(int));
 	_IntAE_set_nelt(ae, new_nelt);
@@ -250,15 +186,15 @@ void _IntAE_append(IntAE *ae, const int *newvals, int nnewval)
 
 void _IntAE_delete_at(IntAE *ae, int at)
 {
-	int *elt1;
-	const int *elt2;
+	int *elt1_p;
+	const int *elt2_p;
 	int nelt0, i2;
 
-	elt1 = ae->elts + at;
-	elt2 = elt1 + 1;
+	elt1_p = ae->elts + at;
+	elt2_p = elt1_p + 1;
 	nelt0 = _IntAE_get_nelt(ae);
 	for (i2 = at + 1; i2 < nelt0; i2++)
-		*(elt1++) = *(elt2++);
+		*(elt1_p++) = *(elt2_p++);
 	_IntAE_set_nelt(ae, nelt0 - 1);
 	return;
 }
@@ -297,8 +233,8 @@ void _IntAE_append_shifted_vals(IntAE *ae, const int *newvals,
 
 	nelt = _IntAE_get_nelt(ae);
 	new_nelt = nelt + nnewval;
-	while (ae->buflength < new_nelt)
-		IntAE_realloc(ae);
+	while (ae->_buflength < new_nelt)
+		IntAE_extend(ae);
 	for (i = 0, elt1 = ae->elts + nelt, elt2 = newvals;
 	     i < nnewval;
 	     i++, elt1++, elt2++)
@@ -354,18 +290,18 @@ static void copy_INTEGER_to_IntAE(SEXP x, IntAE *ae)
 	return;
 }
 
-IntAE _new_IntAE_from_INTEGER(SEXP x)
+IntAE *_new_IntAE_from_INTEGER(SEXP x)
 {
-	IntAE ae;
+	IntAE *ae;
 
 	ae = _new_IntAE(LENGTH(x), 0, 0);
-	copy_INTEGER_to_IntAE(x, &ae);
+	copy_INTEGER_to_IntAE(x, ae);
 	return ae;
 }
 
-IntAE _new_IntAE_from_CHARACTER(SEXP x, int keyshift)
+IntAE *_new_IntAE_from_CHARACTER(SEXP x, int keyshift)
 {
-	IntAE ae;
+	IntAE *ae;
 	int i, *elt;
 
 #ifdef DEBUG_S4VECTORS
@@ -376,14 +312,14 @@ IntAE _new_IntAE_from_CHARACTER(SEXP x, int keyshift)
 	}
 #endif
 	ae = _new_IntAE(LENGTH(x), 0, 0);
-	_IntAE_set_nelt(&ae, ae.buflength);
-	for (i = 0, elt = ae.elts; i < ae.buflength; i++, elt++) {
+	_IntAE_set_nelt(ae, ae->_buflength);
+	for (i = 0, elt = ae->elts; i < ae->_buflength; i++, elt++) {
 		sscanf(CHAR(STRING_ELT(x, i)), "%d", elt);
 		*elt += keyshift;
 #ifdef DEBUG_S4VECTORS
 		if (debug) {
 			if (i < 100
-			 || i >= ae.buflength - 100)
+			 || i >= ae->_buflength - 100)
 				Rprintf("[DEBUG] _new_IntAE_from_CHARACTER(): "
 					"i=%d key=%s *elt=%d\n",
 					i,
@@ -399,44 +335,70 @@ IntAE _new_IntAE_from_CHARACTER(SEXP x, int keyshift)
 	return ae;
 }
 
+#ifdef DEBUG_S4VECTORS
+static void IntAE_print(const IntAE *ae)
+{
+	Rprintf("_buflength=%d _nelt=%d elts=%p",
+		ae->_buflength,
+		ae->_nelt,
+		ae->elts);
+	return;
+}
+#endif
+
+/* Must be used on a malloc-based IntAE */
+static void IntAE_free(IntAE *ae)
+{
+	if (ae->_buflength != 0)
+		free(ae->elts);
+	free(ae);
+	return;
+}
+
+static void flush_IntAE_pool()
+{
+	IntAE *ae;
+
+	while (IntAE_pool_len > 0) {
+		IntAE_pool_len--;
+		ae = IntAE_pool[IntAE_pool_len];
+#ifdef DEBUG_S4VECTORS
+		if (debug) {
+			Rprintf("IntAE_pool[%d]: ", IntAE_pool_len);
+			IntAE_print(ae);
+			Rprintf("\n");
+		}
+#endif
+		IntAE_free(ae);
+	}
+	return;
+}
+
+static int remove_from_IntAE_pool(const IntAE *ae)
+{
+	int i;
+	IntAE **ae1_p, **ae2_p;
+
+	i = IntAE_pool_len;
+	while (--i >= 0 && IntAE_pool[i] != ae) {;}
+	if (i < 0)
+		return -1;
+	ae1_p = IntAE_pool + i;
+	ae2_p = ae1_p + 1;
+	for (i = i + 1; i < IntAE_pool_len; i++)
+		*(ae1_p++) = *(ae2_p++);
+	IntAE_pool_len--;
+	return 0;
+}
+
 
 /****************************************************************************
  * IntAEAE buffers
- *
- * We use a "global IntAEAE malloc stack" to store a copy of each top-level
- * malloc-based IntAEAE that is created during the execution of a .Call entry
- * point. The copy must be modified at every reallocation or every time the
- * nb of elements in the buffer (nelt member) is modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	INTAEAE_MALLOC_STACK_NELT_MAX 2048
-static IntAEAE IntAEAE_malloc_stack[INTAEAE_MALLOC_STACK_NELT_MAX];
-static int IntAEAE_malloc_stack_nelt = 0;
-
-static void IntAEAE_alloc(IntAEAE *aeae, int buflength)
-{
-	aeae->elts = (IntAE *) alloc_AEbuf(buflength, sizeof(IntAE));
-	aeae->buflength = buflength;
-	aeae->_AE_malloc_stack_idx = -1;
-	return;
-}
-
-static void IntAEAE_realloc(IntAEAE *aeae)
-{
-	int new_buflength, idx;
-
-	new_buflength = _get_new_buflength(aeae->buflength);
-	aeae->elts = (IntAE *) realloc_AEbuf(aeae->elts, new_buflength,
-					aeae->buflength, sizeof(IntAE));
-	aeae->buflength = new_buflength;
-	idx = aeae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntAEAE_malloc_stack[idx] = *aeae;
-	return;
-}
+#define	INTAEAE_POOL_MAXLEN 256
+static IntAEAE *IntAEAE_pool[INTAEAE_POOL_MAXLEN];
+static int IntAEAE_pool_len = 0;
 
 int _IntAEAE_get_nelt(const IntAEAE *aeae)
 {
@@ -445,89 +407,73 @@ int _IntAEAE_get_nelt(const IntAEAE *aeae)
 
 int _IntAEAE_set_nelt(IntAEAE *aeae, int nelt)
 {
-	int idx;
-
-	aeae->_nelt = nelt;
-	idx = aeae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntAEAE_malloc_stack[idx] = *aeae;
-	return nelt;
+	return aeae->_nelt = nelt;
 }
 
-/* Must be used on a malloc-based IntAEAE */
-static void IntAEAE_free(const IntAEAE *aeae)
+static IntAEAE *new_empty_IntAEAE()
 {
-	int nelt, i;
-	IntAE *elt;
+	IntAEAE *aeae;
 
-	nelt = _IntAEAE_get_nelt(aeae);
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++)
-		IntAE_free(elt);
-	if (aeae->elts != NULL)
-		free(aeae->elts);
-	return;
-}
-
-static void reset_IntAEAE_malloc_stack()
-{
-	int i;
-	const IntAEAE *aeae;
-
-	for (i = 0, aeae = IntAEAE_malloc_stack;
-	     i < IntAEAE_malloc_stack_nelt;
-	     i++, aeae++)
-	{
-		IntAEAE_free(aeae);
-	}
-	IntAEAE_malloc_stack_nelt = 0;
-	return;
-}
-
-IntAEAE _new_IntAEAE(int buflength, int nelt)
-{
-	IntAEAE aeae;
-	int idx, i;
-	IntAE *elt;
-
-	/* Allocation */
-	IntAEAE_alloc(&aeae, buflength);
-	if (use_malloc) {
-		if (IntAEAE_malloc_stack_nelt >= INTAEAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_IntAEAE(): "
-			      "the \"global IntAEAE malloc stack\" is full");
-		idx = IntAEAE_malloc_stack_nelt++;
-		aeae._AE_malloc_stack_idx = idx;
-		IntAEAE_malloc_stack[idx] = aeae;
-	}
-	/* Initialization */
-	_IntAEAE_set_nelt(&aeae, nelt);
-	for (i = 0, elt = aeae.elts; i < nelt; i++, elt++) {
-		IntAE_alloc(elt, 0);
-		_IntAE_set_nelt(elt, 0);
-	}
+	if (use_malloc && IntAEAE_pool_len >= INTAEAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_IntAEAE(): "
+		      "IntAEAE pool is full");
+	aeae = (IntAEAE *) alloc2(1, sizeof(IntAEAE));
+	aeae->_buflength = aeae->_nelt = 0;
+	if (use_malloc)
+		IntAEAE_pool[IntAEAE_pool_len++] = aeae;
 	return aeae;
 }
 
-void _IntAEAE_insert_at(IntAEAE *aeae, int at, const IntAE *ae)
+static void IntAEAE_extend(IntAEAE *aeae)
+{
+	int old_buflength, new_buflength, i;
+
+	old_buflength = aeae->_buflength;
+	new_buflength = _get_new_buflength(old_buflength);
+	aeae->elts = (IntAE **) realloc2(aeae->elts, new_buflength,
+					 old_buflength, sizeof(IntAE *));
+	for (i = old_buflength; i < new_buflength; i++)
+		aeae->elts[i] = NULL;
+	aeae->_buflength = new_buflength;
+	return;
+}
+
+void _IntAEAE_insert_at(IntAEAE *aeae, int at, IntAE *ae)
 {
 	int nelt, i;
-	IntAE *elt1;
-	const IntAE *elt2;
+	IntAE **ae1_p, **ae2_p;
 
-	if (ae->_AE_malloc_stack_idx >= 0)
-		error("S4Vectors internal error in _IntAEAE_insert_at(): "
-		      "cannot insert an IntAE that is in the "
-		      "\"global IntAE malloc stack\"");
 	nelt = _IntAEAE_get_nelt(aeae);
-	if (nelt >= aeae->buflength)
-		IntAEAE_realloc(aeae);
-	elt1 = aeae->elts + nelt;
-	elt2 = elt1 - 1;
+	if (nelt >= aeae->_buflength)
+		IntAEAE_extend(aeae);
+	if (use_malloc && remove_from_IntAE_pool(ae) == -1)
+		error("S4Vectors internal error in _IntAEAE_insert_at(): "
+		      "IntAE to insert cannot be found in pool for removal");
+	ae1_p = aeae->elts + nelt;
+	ae2_p = ae1_p - 1;
 	for (i = nelt; i > at; i--)
-		*(elt1--) = *(elt2--);
-	*elt1 = *ae;
+		*(ae1_p--) = *(ae2_p--);
+	*ae1_p = ae;
 	_IntAEAE_set_nelt(aeae, nelt + 1);
 	return;
+}
+
+IntAEAE *_new_IntAEAE(int buflength, int nelt)
+{
+	IntAEAE *aeae;
+	int i;
+	IntAE *ae;
+
+	aeae = new_empty_IntAEAE();
+	aeae->elts = (IntAE **) alloc2(buflength, sizeof(IntAE *));
+	aeae->_buflength = buflength;
+	for (i = 0; i < buflength; i++)
+		aeae->elts[i] = NULL;
+	for (i = 0; i < nelt; i++) {
+		ae = new_empty_IntAE();
+		_IntAEAE_insert_at(aeae, i, ae);
+	}
+	return aeae;
 }
 
 /*
@@ -537,25 +483,28 @@ void _IntAEAE_insert_at(IntAEAE *aeae, int at, const IntAE *ae)
 void _IntAEAE_eltwise_append(const IntAEAE *aeae1, const IntAEAE *aeae2)
 {
 	int nelt, i;
-	IntAE *elt1;
-	const IntAE *elt2;
+	IntAE *ae1;
+	const IntAE *ae2;
 
 	nelt = _IntAEAE_get_nelt(aeae1);
-	for (i = 0, elt1 = aeae1->elts, elt2 = aeae2->elts;
-	     i < nelt;
-	     i++, elt1++, elt2++)
-		_IntAE_append(elt1, elt2->elts, _IntAE_get_nelt(elt2));
+	for (i = 0; i < nelt; i++) {
+		ae1 = aeae1->elts[i];
+		ae2 = aeae2->elts[i];
+		_IntAE_append(ae1, ae2->elts, _IntAE_get_nelt(ae2));
+	}
 	return;
 }
 
 void _IntAEAE_shift(const IntAEAE *aeae, int shift)
 {
 	int nelt, i;
-	IntAE *elt;
+	IntAE *ae;
 
 	nelt = _IntAEAE_get_nelt(aeae);
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++)
-		_IntAE_shift(elt, shift);
+	for (i = 0; i < nelt; i++) {
+		ae = aeae->elts[i];
+		_IntAE_shift(ae, shift);
+	}
 	return;
 }
 
@@ -567,14 +516,15 @@ void _IntAEAE_sum_and_shift(const IntAEAE *aeae1, const IntAEAE *aeae2,
 		int shift)
 {
 	int nelt, i;
-	IntAE *elt1;
-	const IntAE *elt2;
+	IntAE *ae1;
+	const IntAE *ae2;
 
 	nelt = _IntAEAE_get_nelt(aeae1);
-	for (i = 0, elt1 = aeae1->elts, elt2 = aeae2->elts;
-	     i < nelt;
-	     i++, elt1++, elt2++)
-		_IntAE_sum_and_shift(elt1, elt2, shift);
+	for (i = 0; i < nelt; i++) {
+		ae1 = aeae1->elts[i];
+		ae2 = aeae2->elts[i];
+		_IntAE_sum_and_shift(ae1, ae2, shift);
+	}
 	return;
 }
 
@@ -586,13 +536,14 @@ SEXP _new_LIST_from_IntAEAE(const IntAEAE *aeae, int mode)
 {
 	int nelt, i;
 	SEXP ans, ans_elt;
-	const IntAE *elt;
+	const IntAE *ae;
 
 	nelt = _IntAEAE_get_nelt(aeae);
 	PROTECT(ans = NEW_LIST(nelt));
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++) {
-		if (_IntAE_get_nelt(elt) != 0 || mode == 0) {
-			PROTECT(ans_elt = _new_INTEGER_from_IntAE(elt));
+	for (i = 0; i < nelt; i++) {
+		ae = aeae->elts[i];
+		if (_IntAE_get_nelt(ae) != 0 || mode == 0) {
+			PROTECT(ans_elt = _new_INTEGER_from_IntAE(ae));
 		} else if (mode == 1) {
 			continue;
 		} else {
@@ -608,24 +559,23 @@ SEXP _new_LIST_from_IntAEAE(const IntAEAE *aeae, int mode)
 	return ans;
 }
 
-IntAEAE _new_IntAEAE_from_LIST(SEXP x)
+IntAEAE *_new_IntAEAE_from_LIST(SEXP x)
 {
-	IntAEAE aeae;
+	IntAEAE *aeae;
 	int i;
-	IntAE *elt;
 	SEXP x_elt;
+	IntAE *ae;
 
 	aeae = _new_IntAEAE(LENGTH(x), 0);
-	_IntAEAE_set_nelt(&aeae, aeae.buflength);
-	for (i = 0, elt = aeae.elts; i < aeae.buflength; i++, elt++) {
+	for (i = 0; i < aeae->_buflength; i++) {
 		x_elt = VECTOR_ELT(x, i);
 		if (TYPEOF(x_elt) != INTSXP)
 			error("S4Vectors internal error in "
 			      "_new_IntAEAE_from_LIST(): "
 			      "not all elements in the list "
 			      "are integer vectors");
-		IntAE_alloc(elt, LENGTH(x_elt));
-		copy_INTEGER_to_IntAE(x_elt, elt);
+		ae = _new_IntAE_from_INTEGER(x_elt);
+		_IntAEAE_insert_at(aeae, i, ae);
 	}
 	return aeae;
 }
@@ -633,7 +583,7 @@ IntAEAE _new_IntAEAE_from_LIST(SEXP x)
 SEXP _IntAEAE_toEnvir(const IntAEAE *aeae, SEXP envir, int keyshift)
 {
 	int nelt, i;
-	const IntAE *elt;
+	const IntAE *ae;
 	char key[11];
 	SEXP value;
 
@@ -646,16 +596,17 @@ SEXP _IntAEAE_toEnvir(const IntAEAE *aeae, SEXP envir, int keyshift)
 			nelt, keyshift);
 	}
 #endif
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++) {
+	for (i = 0; i < nelt; i++) {
+		ae = aeae->elts[i];
 #ifdef DEBUG_S4VECTORS
 		if (debug) {
 			if (i < 100 || i >= nelt - 100)
 				Rprintf("[DEBUG] _IntAEAE_toEnvir(): "
 					"nkey=%d aeae->elts[%d]._nelt=%d\n",
-					nkey, i, _IntAE_get_nelt(elt));
+					nkey, i, _IntAE_get_nelt(ae));
 		}
 #endif
-		if (_IntAE_get_nelt(elt) == 0)
+		if (_IntAE_get_nelt(ae) == 0)
 			continue;
 		//snprintf(key, sizeof(key), "%d", i + keyshift);
 		snprintf(key, sizeof(key), "%010d", i + keyshift);
@@ -666,13 +617,13 @@ SEXP _IntAEAE_toEnvir(const IntAEAE *aeae, SEXP envir, int keyshift)
 					"installing key=%s ... ", key);
 		}
 #endif
-		PROTECT(value = _new_INTEGER_from_IntAE(elt));
+		PROTECT(value = _new_INTEGER_from_IntAE(ae));
 		defineVar(install(key), value, envir);
 		UNPROTECT(1);
 #ifdef DEBUG_S4VECTORS
 		if (debug) {
 			nkey++;
-			cum_length += _IntAE_get_nelt(elt);
+			cum_length += _IntAE_get_nelt(ae);
 			if (i < 100 || i >= nelt - 100)
 				Rprintf("OK (nkey=%d cum_length=%d)\n",
 					nkey, cum_length);
@@ -688,162 +639,154 @@ SEXP _IntAEAE_toEnvir(const IntAEAE *aeae, SEXP envir, int keyshift)
 	return envir;
 }
 
-
-/****************************************************************************
- * IntPairAE buffers
- *
- * We use a "global IntPairAE malloc stack" to store a copy of each top-level
- * malloc-based IntPairAE that is created during the execution of a .Call
- * entry point. The copy must be modified every time the a or b members are
- * modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
- */
-
-#define	INTPAIRAE_MALLOC_STACK_NELT_MAX 2048
-static IntPairAE IntPairAE_malloc_stack[INTPAIRAE_MALLOC_STACK_NELT_MAX];
-static int IntPairAE_malloc_stack_nelt = 0;
-
-static void IntPairAE_alloc(IntPairAE *ae, int buflength)
+/* Must be used on a malloc-based IntAEAE */
+static void IntAEAE_free(IntAEAE *aeae)
 {
-	IntAE_alloc(&(ae->a), buflength);
-	IntAE_alloc(&(ae->b), buflength);
-	ae->_AE_malloc_stack_idx = -1;
+	int buflength, i;
+	IntAE *ae;
+
+	buflength = aeae->_buflength;
+	for (i = 0; i < buflength; i++) {
+		ae = aeae->elts[i];
+		if (ae != NULL)
+			IntAE_free(ae);
+	}
+	if (buflength != 0)
+		free(aeae->elts);
+	free(aeae);
 	return;
 }
 
+static void flush_IntAEAE_pool()
+{
+	IntAEAE *aeae;
+
+	while (IntAEAE_pool_len > 0) {
+		IntAEAE_pool_len--;
+		aeae = IntAEAE_pool[IntAEAE_pool_len];
+		IntAEAE_free(aeae);
+	}
+	return;
+}
+
+
+/****************************************************************************
+ * IntPairAE buffers
+ */
+
+#define	INTPAIRAE_POOL_MAXLEN 256
+static IntPairAE *IntPairAE_pool[INTPAIRAE_POOL_MAXLEN];
+static int IntPairAE_pool_len = 0;
+
 int _IntPairAE_get_nelt(const IntPairAE *ae)
 {
-	return _IntAE_get_nelt(&(ae->a));
+	return _IntAE_get_nelt(ae->a);
 }
 
 int _IntPairAE_set_nelt(IntPairAE *ae, int nelt)
 {
-	int idx;
-
-	_IntAE_set_nelt(&(ae->a), nelt);
-	_IntAE_set_nelt(&(ae->b), nelt);
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntPairAE_malloc_stack[idx] = *ae;
+	_IntAE_set_nelt(ae->a, nelt);
+	_IntAE_set_nelt(ae->b, nelt);
 	return nelt;
+}
+
+static IntPairAE *new_empty_IntPairAE()
+{
+	IntAE *a, *b;
+	IntPairAE *ae;
+
+	if (use_malloc && IntPairAE_pool_len >= INTPAIRAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_IntPairAE(): "
+		      "IntPairAE pool is full");
+	a = new_empty_IntAE();
+	b = new_empty_IntAE();
+	ae = (IntPairAE *) alloc2(1, sizeof(IntPairAE));
+	ae->a = a;
+	ae->b = b;
+	if (use_malloc)
+		IntPairAE_pool[IntPairAE_pool_len++] = ae;
+	return ae;
+}
+
+void _IntPairAE_insert_at(IntPairAE *ae, int at, int a, int b)
+{
+	_IntAE_insert_at(ae->a, at, a);
+	_IntAE_insert_at(ae->b, at, b);
+	return;
+}
+
+IntPairAE *_new_IntPairAE(int buflength, int nelt)
+{
+	IntPairAE *ae;
+
+	ae = new_empty_IntPairAE();
+	_IntPairAE_set_nelt(ae, nelt);  /* elements are NOT initialized */
+	return ae;
 }
 
 #ifdef DEBUG_S4VECTORS
 static void IntPairAE_print(const IntPairAE *ae)
 {
-	IntAE_print(&(ae->a));
+	IntAE_print(ae->a);
 	Rprintf(" ");
-	IntAE_print(&(ae->b));
-	Rprintf(" _AE_malloc_stack_idx=%d", ae->_AE_malloc_stack_idx);
+	IntAE_print(ae->b);
 	return;
 }
 #endif
 
 /* Must be used on a malloc-based IntPairAE */
-static void IntPairAE_free(const IntPairAE *ae)
+static void IntPairAE_free(IntPairAE *ae)
 {
-	IntAE_free(&(ae->a));
-	IntAE_free(&(ae->b));
+	IntAE_free(ae->a);
+	IntAE_free(ae->b);
+	free(ae);
 	return;
 }
 
-static void reset_IntPairAE_malloc_stack()
+static void flush_IntPairAE_pool()
 {
-	int i;
-	const IntPairAE *ae;
+	IntPairAE *ae;
 
-	for (i = 0, ae = IntPairAE_malloc_stack;
-	     i < IntPairAE_malloc_stack_nelt;
-	     i++, ae++)
-	{
+	while (IntPairAE_pool_len > 0) {
+		IntPairAE_pool_len--;
+		ae = IntPairAE_pool[IntPairAE_pool_len];
 #ifdef DEBUG_S4VECTORS
 		if (debug) {
-			Rprintf("IntPairAE_malloc_stack[%d]: ", i);
+			Rprintf("IntPairAE_pool[%d]: ", IntPairAE_pool_len);
 			IntPairAE_print(ae);
 			Rprintf("\n");
 		}
 #endif
 		IntPairAE_free(ae);
 	}
-	IntPairAE_malloc_stack_nelt = 0;
 	return;
 }
 
-IntPairAE _new_IntPairAE(int buflength, int nelt)
+static int remove_from_IntPairAE_pool(const IntPairAE *ae)
 {
-	IntPairAE ae;
-	int idx;
+	int i;
+	IntPairAE **ae1_p, **ae2_p;
 
-	/* Allocation */
-	IntPairAE_alloc(&ae, buflength);
-	if (use_malloc) {
-		if (IntPairAE_malloc_stack_nelt >=
-		    INTPAIRAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_IntPairAE(): "
-			      "the \"global IntPairAE malloc stack\" is full");
-		idx = IntPairAE_malloc_stack_nelt++;
-		ae._AE_malloc_stack_idx = idx;
-		IntPairAE_malloc_stack[idx] = ae;
-	}
-	/* Elements are NOT initialized */
-	_IntPairAE_set_nelt(&ae, nelt);
-	return ae;
-}
-
-void _IntPairAE_insert_at(IntPairAE *ae, int at, int a, int b)
-{
-	int idx;
-
-	_IntAE_insert_at(&(ae->a), at, a);
-	_IntAE_insert_at(&(ae->b), at, b);
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntPairAE_malloc_stack[idx] = *ae;
-	return;
+	i = IntPairAE_pool_len;
+	while (--i >= 0 && IntPairAE_pool[i] != ae) {;}
+	if (i < 0)
+		return -1;
+	ae1_p = IntPairAE_pool + i;
+	ae2_p = ae1_p + 1;
+	for (i = i + 1; i < IntPairAE_pool_len; i++)
+		*(ae1_p++) = *(ae2_p++);
+	IntPairAE_pool_len--;
+	return 0;
 }
 
 
 /****************************************************************************
  * IntPairAEAE buffers
- *
- * We use a "global IntPairAEAE malloc stack" to store a copy of each
- * top-level malloc-based IntPairAEAE that is created during the execution of
- * a .Call entry point. The copy must be modified at every reallocation or
- * every time the nb of elements in the buffer (nelt member) is modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	INTPAIRAEAE_MALLOC_STACK_NELT_MAX 2048
-static IntPairAEAE IntPairAEAE_malloc_stack[INTPAIRAEAE_MALLOC_STACK_NELT_MAX];
-static int IntPairAEAE_malloc_stack_nelt = 0;
-
-static void IntPairAEAE_alloc(IntPairAEAE *aeae, int buflength)
-{
-	aeae->elts = (IntPairAE *) alloc_AEbuf(buflength,
-							sizeof(IntPairAE));
-	aeae->buflength = buflength;
-	aeae->_AE_malloc_stack_idx = -1;
-	return;
-}
-
-static void IntPairAEAE_realloc(IntPairAEAE *aeae)
-{
-	int new_buflength, idx;
-
-	new_buflength = _get_new_buflength(aeae->buflength);
-	aeae->elts = (IntPairAE *) realloc_AEbuf(aeae->elts,
-					new_buflength, aeae->buflength,
-					sizeof(IntPairAE));
-	aeae->buflength = new_buflength;
-	idx = aeae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntPairAEAE_malloc_stack[idx] = *aeae;
-	return;
-}
+#define	INTPAIRAEAE_POOL_MAXLEN 256
+static IntPairAEAE *IntPairAEAE_pool[INTPAIRAEAE_POOL_MAXLEN];
+static int IntPairAEAE_pool_len = 0;
 
 int _IntPairAEAE_get_nelt(const IntPairAEAE *aeae)
 {
@@ -852,284 +795,237 @@ int _IntPairAEAE_get_nelt(const IntPairAEAE *aeae)
 
 int _IntPairAEAE_set_nelt(IntPairAEAE *aeae, int nelt)
 {
-	int idx;
-
-	aeae->_nelt = nelt;
-	idx = aeae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		IntPairAEAE_malloc_stack[idx] = *aeae;
-	return nelt;
+	return aeae->_nelt = nelt;
 }
 
-/* Must be used on a malloc-based IntPairAEAE */
-static void IntPairAEAE_free(const IntPairAEAE *aeae)
+static IntPairAEAE *new_empty_IntPairAEAE()
+{
+	IntPairAEAE *aeae;
+
+	if (use_malloc && IntPairAEAE_pool_len >= INTPAIRAEAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_IntPairAEAE(): "
+		      "IntPairAEAE pool is full");
+	aeae = (IntPairAEAE *) alloc2(1, sizeof(IntPairAEAE));
+	aeae->_buflength = aeae->_nelt = 0;
+	if (use_malloc)
+		IntPairAEAE_pool[IntPairAEAE_pool_len++] = aeae;
+	return aeae;
+}
+
+static void IntPairAEAE_extend(IntPairAEAE *aeae)
+{
+	int old_buflength, new_buflength;
+
+	old_buflength = aeae->_buflength;
+	new_buflength = _get_new_buflength(old_buflength);
+	aeae->elts = (IntPairAE **) realloc2(aeae->elts, new_buflength,
+					old_buflength, sizeof(IntPairAE *));
+	aeae->_buflength = new_buflength;
+	return;
+}
+
+void _IntPairAEAE_insert_at(IntPairAEAE *aeae, int at, IntPairAE *ae)
 {
 	int nelt, i;
-	IntPairAE *elt;
+	IntPairAE **ae1_p, **ae2_p;
 
 	nelt = _IntPairAEAE_get_nelt(aeae);
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++)
-		IntPairAE_free(elt);
-	if (aeae->elts != NULL)
-		free(aeae->elts);
+	if (nelt >= aeae->_buflength)
+		IntPairAEAE_extend(aeae);
+	if (use_malloc && remove_from_IntPairAE_pool(ae) == -1)
+		error("S4Vectors internal error in _IntPairAEAE_insert_at(): "
+		      "IntPairAE to insert cannot be found in pool for "
+		      "removal");
+	ae1_p = aeae->elts + nelt;
+	ae2_p = ae1_p - 1;
+	for (i = nelt; i > at; i--)
+		*(ae1_p--) = *(ae2_p--);
+	*ae1_p = ae;
+	_IntPairAEAE_set_nelt(aeae, nelt + 1);
 	return;
 }
 
-static void reset_IntPairAEAE_malloc_stack()
+IntPairAEAE *_new_IntPairAEAE(int buflength, int nelt)
 {
+	IntPairAEAE *aeae;
 	int i;
-	const IntPairAEAE *aeae;
+	IntPairAE *ae;
 
-	for (i = 0, aeae = IntPairAEAE_malloc_stack;
-	     i < IntPairAEAE_malloc_stack_nelt;
-	     i++, aeae++)
-	{
-		IntPairAEAE_free(aeae);
-	}
-	IntPairAEAE_malloc_stack_nelt = 0;
-	return;
-}
-
-IntPairAEAE _new_IntPairAEAE(int buflength, int nelt)
-{
-	IntPairAEAE aeae;
-	int idx, i;
-	IntPairAE *elt;
-
-	/* Allocation */
-	IntPairAEAE_alloc(&aeae, buflength);
-	if (use_malloc) {
-		if (IntPairAEAE_malloc_stack_nelt >=
-		    INTPAIRAEAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in "
-			      "_new_IntPairAEAE(): the \"global "
-			      "IntPairAEAE malloc stack\" is full");
-		idx = IntPairAEAE_malloc_stack_nelt++;
-		aeae._AE_malloc_stack_idx = idx;
-		IntPairAEAE_malloc_stack[idx] = aeae;
-	}
-	/* Initialization */
-	_IntPairAEAE_set_nelt(&aeae, nelt);
-	for (i = 0, elt = aeae.elts; i < nelt; i++, elt++) {
-		IntPairAE_alloc(elt, 0);
-		_IntPairAE_set_nelt(elt, 0);
+	aeae = new_empty_IntPairAEAE();
+	aeae->elts = (IntPairAE **) alloc2(buflength, sizeof(IntPairAE *));
+	aeae->_buflength = buflength;
+	for (i = 0; i < buflength; i++)
+		aeae->elts[i] = NULL;
+	for (i = 0; i < nelt; i++) {
+		ae = new_empty_IntPairAE();
+		_IntPairAEAE_insert_at(aeae, i, ae);
 	}
 	return aeae;
 }
 
-void _IntPairAEAE_insert_at(IntPairAEAE *aeae, int at,
-		const IntPairAE *ae)
+/* Must be used on a malloc-based IntPairAEAE */
+static void IntPairAEAE_free(IntPairAEAE *aeae)
 {
-	int nelt, i;
-	IntPairAE *elt1;
-	const IntPairAE *elt2;
+	int buflength, i;
+	IntPairAE *ae;
 
-	if (ae->_AE_malloc_stack_idx >= 0)
-		error("S4Vectors internal error in _IntPairAEAE_insert_at(): "
-		      "cannot insert a IntPairAE that is in the "
-		      "\"global IntPairAE malloc stack\"");
-	nelt = _IntPairAEAE_get_nelt(aeae);
-	if (nelt >= aeae->buflength)
-		IntPairAEAE_realloc(aeae);
-	elt1 = aeae->elts + nelt;
-	elt2 = elt1 - 1;
-	for (i = nelt; i > at; i--)
-		*(elt1--) = *(elt2--);
-	*elt1 = *ae;
-	_IntPairAEAE_set_nelt(aeae, nelt + 1);
+	buflength = aeae->_buflength;
+	for (i = 0; i < buflength; i++) {
+		ae = aeae->elts[i];
+		if (ae != NULL)
+			IntPairAE_free(ae);
+	}
+	if (buflength != 0)
+		free(aeae->elts);
+	free(aeae);
+	return;
+}
+
+static void flush_IntPairAEAE_pool()
+{
+	IntPairAEAE *aeae;
+
+	while (IntPairAEAE_pool_len > 0) {
+		IntPairAEAE_pool_len--;
+		aeae = IntPairAEAE_pool[IntPairAEAE_pool_len];
+		IntPairAEAE_free(aeae);
+	}
 	return;
 }
 
 
 /****************************************************************************
- * LongLongIntAE buffers
- *
- * We use a "global LongLongIntAE malloc stack" to store a copy of each
- * top-level malloc-based LongLongIntAE that is created during the execution
- * of a .Call entry point. The copy must be modified at every reallocation or
- * every time the nb of elements in the buffer (_nelt member) is modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
+ * LLongAE buffers
  */
 
-#define	LONGLONGINTAE_MALLOC_STACK_NELT_MAX 2048
-static LongLongIntAE
-	LongLongIntAE_malloc_stack[LONGLONGINTAE_MALLOC_STACK_NELT_MAX];
-static int LongLongIntAE_malloc_stack_nelt = 0;
+#define	LLONGAE_POOL_MAXLEN 256
+static LLongAE *LLongAE_pool[LLONGAE_POOL_MAXLEN];
+static int LLongAE_pool_len = 0;
 
-static void LongLongIntAE_alloc(LongLongIntAE *ae, int buflength)
-{
-	ae->elts = (long long int *) alloc_AEbuf(buflength,
-						 sizeof(long long int));
-	ae->buflength = buflength;
-	ae->_AE_malloc_stack_idx = -1;
-	return;
-}
-
-static void LongLongIntAE_realloc(LongLongIntAE *ae)
-{
-	int new_buflength, idx;
-
-	new_buflength = _get_new_buflength(ae->buflength);
-	ae->elts = (long long int *) realloc_AEbuf(ae->elts, new_buflength,
-						   ae->buflength,
-						   sizeof(long long int));
-	ae->buflength = new_buflength;
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		LongLongIntAE_malloc_stack[idx] = *ae;
-	return;
-}
-
-int _LongLongIntAE_get_nelt(const LongLongIntAE *ae)
+int _LLongAE_get_nelt(const LLongAE *ae)
 {
 	return ae->_nelt;
 }
 
-int _LongLongIntAE_set_nelt(LongLongIntAE *ae, int nelt)
+int _LLongAE_set_nelt(LLongAE *ae, int nelt)
 {
-	int idx;
-
-	ae->_nelt = nelt;
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		LongLongIntAE_malloc_stack[idx] = *ae;
-	return nelt;
+	return ae->_nelt = nelt;
 }
 
-#ifdef DEBUG_S4VECTORS
-static void LongLongIntAE_print(const LongLongIntAE *ae)
+static LLongAE *new_empty_LLongAE()
 {
-	Rprintf("buflength=%d elts=%p _nelt=%d _AE_malloc_stack_idx=%d",
-		ae->buflength,
-		ae->elts,
-		ae->_nelt,
-		ae->_AE_malloc_stack_idx);
-	return;
-}
-#endif
+	LLongAE *ae;
 
-/* Must be used on a malloc-based LongLongIntAE */
-static void LongLongIntAE_free(const LongLongIntAE *ae)
-{
-	if (ae->elts != NULL)
-		free(ae->elts);
-	return;
+	if (use_malloc && LLongAE_pool_len >= LLONGAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_LLongAE(): "
+		      "LLongAE pool is full");
+	ae = (LLongAE *) alloc2(1, sizeof(LLongAE));
+	ae->_buflength = ae->_nelt = 0;
+	if (use_malloc)
+		LLongAE_pool[LLongAE_pool_len++] = ae;
+	return ae;
 }
 
-static void reset_LongLongIntAE_malloc_stack()
-{
-	int i;
-	const LongLongIntAE *ae;
-
-	for (i = 0, ae = LongLongIntAE_malloc_stack;
-	     i < LongLongIntAE_malloc_stack_nelt;
-	     i++, ae++)
-	{
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			Rprintf("LongLongIntAE_malloc_stack[%d]: ", i);
-			LongLongIntAE_print(ae);
-			Rprintf("\n");
-		}
-#endif
-		LongLongIntAE_free(ae);
-	}
-	LongLongIntAE_malloc_stack_nelt = 0;
-	return;
-}
-
-void _LongLongIntAE_set_val(const LongLongIntAE *ae, long long int val)
+void _LLongAE_set_val(const LLongAE *ae, long long val)
 {
 	int nelt, i;
-	long long int *elt;
+	long long *elt;
 
-	nelt = _LongLongIntAE_get_nelt(ae);
+	nelt = _LLongAE_get_nelt(ae);
 	for (i = 0, elt = ae->elts; i < nelt; i++, elt++)
 		*elt = val;
 	return;
 }
 
-LongLongIntAE _new_LongLongIntAE(int buflength, int nelt, long long int val)
+static void LLongAE_extend(LLongAE *ae)
 {
-	LongLongIntAE ae;
-	int idx;
+	int old_buflength, new_buflength;
 
-	/* Allocation */
-	LongLongIntAE_alloc(&ae, buflength);
-	if (use_malloc) {
-		if (LongLongIntAE_malloc_stack_nelt >=
-		    LONGLONGINTAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in "
-			      "_new_LongLongIntAE(): the \"global "
-			      "LongLongIntAE malloc stack\" is full");
-		idx = LongLongIntAE_malloc_stack_nelt++;
-		ae._AE_malloc_stack_idx = idx;
-		LongLongIntAE_malloc_stack[idx] = ae;
-	}
-	/* Initialization */
-	_LongLongIntAE_set_nelt(&ae, nelt);
-	_LongLongIntAE_set_val(&ae, val);
+	old_buflength = ae->_buflength;
+	new_buflength = _get_new_buflength(old_buflength);
+	ae->elts = (long long *) realloc2(ae->elts, new_buflength,
+					  old_buflength, sizeof(long long));
+	ae->_buflength = new_buflength;
+	return;
+}
+
+void _LLongAE_insert_at(LLongAE *ae, int at, long long val)
+{
+	int nelt, i;
+	long long *elt1_p;
+	const long long *elt2_p;
+
+	nelt = _LLongAE_get_nelt(ae);
+	if (nelt >= ae->_buflength)
+		LLongAE_extend(ae);
+	elt1_p = ae->elts + nelt;
+	elt2_p = elt1_p - 1;
+	for (i = nelt; i > at; i--)
+		*(elt1_p--) = *(elt2_p--);
+	*elt1_p = val;
+	_LLongAE_set_nelt(ae, nelt + 1);
+	return;
+}
+
+LLongAE *_new_LLongAE(int buflength, int nelt, long long val)
+{
+	LLongAE *ae;
+
+	ae = new_empty_LLongAE();
+	ae->elts = (long long *) alloc2(buflength, sizeof(long long));
+	ae->_buflength = buflength;
+	_LLongAE_set_nelt(ae, nelt);
+	_LLongAE_set_val(ae, val);
 	return ae;
 }
 
-void _LongLongIntAE_insert_at(LongLongIntAE *ae, int at, long long int val)
+#ifdef DEBUG_S4VECTORS
+static void LLongAE_print(const LLongAE *ae)
 {
-	int nelt, i;
-	long long int *elt1;
-	const long long int *elt2;
+	Rprintf("_buflength=%d _nelt=%d elts=%p",
+		ae->_buflength,
+		ae->_nelt,
+		ae->elts);
+	return;
+}
+#endif
 
-	nelt = _LongLongIntAE_get_nelt(ae);
-	if (nelt >= ae->buflength)
-		LongLongIntAE_realloc(ae);
-	elt1 = ae->elts + nelt;
-	elt2 = elt1 - 1;
-	for (i = nelt; i > at; i--)
-		*(elt1--) = *(elt2--);
-	*elt1 = val;
-	_LongLongIntAE_set_nelt(ae, nelt + 1);
+/* Must be used on a malloc-based LLongAE */
+static void LLongAE_free(LLongAE *ae)
+{
+	if (ae->_buflength != 0)
+		free(ae->elts);
+	free(ae);
+	return;
+}
+
+static void flush_LLongAE_pool()
+{
+	LLongAE *ae;
+
+	while (LLongAE_pool_len > 0) {
+		LLongAE_pool_len--;
+		ae = LLongAE_pool[LLongAE_pool_len];
+#ifdef DEBUG_S4VECTORS
+		if (debug) {
+			Rprintf("LLongAE_pool[%d]: ", LLongAE_pool_len);
+			LLongAE_print(ae);
+			Rprintf("\n");
+		}
+#endif
+		LLongAE_free(ae);
+	}
 	return;
 }
 
 
 /****************************************************************************
  * CharAE buffers
- *
- * We use a "global CharAE malloc stack" to store a copy of each top-level
- * malloc-based CharAE that is created during the execution of a .Call entry
- * point. The copy must be modified at every reallocation or every time the
- * nb of elements in the buffer (nelt member) is modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	CHARAE_MALLOC_STACK_NELT_MAX 2048
-static CharAE CharAE_malloc_stack[CHARAE_MALLOC_STACK_NELT_MAX];
-static int CharAE_malloc_stack_nelt = 0;
-
-static void CharAE_alloc(CharAE *ae, int buflength)
-{
-	ae->elts = (char *) alloc_AEbuf(buflength, sizeof(char));
-	ae->buflength = buflength;
-	ae->_AE_malloc_stack_idx = -1;
-	return;
-}
-
-static void CharAE_realloc(CharAE *ae)
-{
-	int new_buflength, idx;
-
-	new_buflength = _get_new_buflength(ae->buflength);
-	ae->elts = (char *) realloc_AEbuf(ae->elts, new_buflength,
-					ae->buflength, sizeof(char));
-	ae->buflength = new_buflength;
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		CharAE_malloc_stack[idx] = *ae;
-	return;
-}
+#define	CHARAE_POOL_MAXLEN 256
+static CharAE *CharAE_pool[CHARAE_POOL_MAXLEN];
+static int CharAE_pool_len = 0;
 
 int _CharAE_get_nelt(const CharAE *ae)
 {
@@ -1138,84 +1034,71 @@ int _CharAE_get_nelt(const CharAE *ae)
 
 int _CharAE_set_nelt(CharAE *ae, int nelt)
 {
-	int idx;
-
-	ae->_nelt = nelt;
-	idx = ae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		CharAE_malloc_stack[idx] = *ae;
-	return nelt;
+	return ae->_nelt = nelt;
 }
 
-/* Must be used on a malloc-based CharAE */
-static void CharAE_free(const CharAE *ae)
+static CharAE *new_empty_CharAE()
 {
-	if (ae->elts != NULL)
-		free(ae->elts);
-	return;
-}
+	CharAE *ae;
 
-static void reset_CharAE_malloc_stack()
-{
-	int i;
-	const CharAE *ae;
-
-	for (i = 0, ae = CharAE_malloc_stack;
-	     i < CharAE_malloc_stack_nelt;
-	     i++, ae++)
-	{
-		CharAE_free(ae);
-	}
-	CharAE_malloc_stack_nelt = 0;
-	return;
-}
-
-CharAE _new_CharAE(int buflength)
-{
-	CharAE ae;
-	int idx;
-
-	/* Allocation */
-	CharAE_alloc(&ae, buflength);
-	if (use_malloc) {
-		if (CharAE_malloc_stack_nelt >= CHARAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_CharAE(): "
-			      "the \"global CharAE malloc stack\" is full");
-		idx = CharAE_malloc_stack_nelt++;
-		ae._AE_malloc_stack_idx = idx;
-		CharAE_malloc_stack[idx] = ae;
-	}
-	/* Initialization */
-	_CharAE_set_nelt(&ae, 0);
+	if (use_malloc && CharAE_pool_len >= CHARAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_CharAE(): "
+		      "CharAE pool is full");
+	ae = (CharAE *) alloc2(1, sizeof(CharAE));
+	ae->_buflength = ae->_nelt = 0;
+	if (use_malloc)
+		CharAE_pool[CharAE_pool_len++] = ae;
 	return ae;
 }
 
-CharAE _new_CharAE_from_string(const char *string)
+static void CharAE_extend(CharAE *ae)
 {
-	CharAE ae;
+	int old_buflength, new_buflength;
 
-	ae = _new_CharAE(strlen(string));
-	_CharAE_set_nelt(&ae, ae.buflength);
-	memcpy(ae.elts, string, ae.buflength);
-	return ae;
+	old_buflength = ae->_buflength;
+	new_buflength = _get_new_buflength(old_buflength);
+	ae->elts = (char *) realloc2(ae->elts, new_buflength,
+				     old_buflength, sizeof(char));
+	ae->_buflength = new_buflength;
+	return;
 }
 
 void _CharAE_insert_at(CharAE *ae, int at, char c)
 {
 	int nelt, i;
-	char *elt1;
-	const char *elt2;
+	char *elt1_p;
+	const char *elt2_p;
 
 	nelt = _CharAE_get_nelt(ae);
-	if (nelt >= ae->buflength)
-		CharAE_realloc(ae);
-	elt1 = ae->elts + nelt;
-	elt2 = elt1 - 1;
+	if (nelt >= ae->_buflength)
+		CharAE_extend(ae);
+	elt1_p = ae->elts + nelt;
+	elt2_p = elt1_p - 1;
 	for (i = nelt; i > at; i--)
-		*(elt1--) = *(elt2--);
-	*elt1 = c;
+		*(elt1_p--) = *(elt2_p--);
+	*elt1_p = c;
 	_CharAE_set_nelt(ae, nelt + 1);
 	return;
+}
+
+CharAE *_new_CharAE(int buflength)
+{
+	CharAE *ae;
+
+	ae = new_empty_CharAE();
+	ae->elts = (char *) alloc2(buflength, sizeof(char));
+	ae->_buflength = buflength;
+	return ae;
+}
+
+CharAE *_new_CharAE_from_string(const char *string)
+{
+	CharAE *ae;
+
+	ae = _new_CharAE(strlen(string));
+	_CharAE_set_nelt(ae, ae->_buflength);
+	memcpy(ae->elts, string, ae->_buflength);
+	return ae;
 }
 
 void _append_string_to_CharAE(CharAE *ae, const char *string)
@@ -1226,10 +1109,10 @@ void _append_string_to_CharAE(CharAE *ae, const char *string)
 	nnewval = strlen(string);
 	nelt = _CharAE_get_nelt(ae);
 	new_nelt = nelt + nnewval;
-	while (ae->buflength < new_nelt)
-		CharAE_realloc(ae);
+	while (ae->_buflength < new_nelt)
+		CharAE_extend(ae);
 	dest = ae->elts + nelt;
-	memcpy(dest, string, nnewval * sizeof(char));
+	memcpy(dest, string, sizeof(char) * nnewval);
 	_CharAE_set_nelt(ae, new_nelt);
 	return;
 }
@@ -1241,17 +1124,17 @@ void _append_string_to_CharAE(CharAE *ae, const char *string)
  */
 void _CharAE_delete_at(CharAE *ae, int at, int nelt)
 {
-	char *elt1;
-	const char *elt2;
+	char *c1_p;
+	const char *c2_p;
 	int nelt0, i2;
 
 	if (nelt == 0)
 		return;
-	elt1 = ae->elts + at;
-	elt2 = elt1 + nelt;
+	c1_p = ae->elts + at;
+	c2_p = c1_p + nelt;
 	nelt0 = _CharAE_get_nelt(ae);
 	for (i2 = at + nelt; i2 < nelt0; i2++)
-		*(elt1++) = *(elt2++);
+		*(c1_p++) = *(c2_p++);
 	_CharAE_set_nelt(ae, nelt0 - nelt);
 	return;
 }
@@ -1289,45 +1172,52 @@ SEXP _new_LOGICAL_from_CharAE(const CharAE *ae)
 	return ans;
 }
 
+/* Must be used on a malloc-based CharAE */
+static void CharAE_free(CharAE *ae)
+{
+	if (ae->_buflength != 0)
+		free(ae->elts);
+	free(ae);
+	return;
+}
+
+static void flush_CharAE_pool()
+{
+	CharAE *ae;
+
+	while (CharAE_pool_len > 0) {
+		CharAE_pool_len--;
+		ae = CharAE_pool[CharAE_pool_len];
+		CharAE_free(ae);
+	}
+	return;
+}
+
+static int remove_from_CharAE_pool(const CharAE *ae)
+{
+	int i;
+	CharAE **ae1_p, **ae2_p;
+
+	i = CharAE_pool_len;
+	while (--i >= 0 && CharAE_pool[i] != ae) {;}
+	if (i < 0)
+		return -1;
+	ae1_p = CharAE_pool + i;
+	ae2_p = ae1_p + 1;
+	for (i = i + 1; i < CharAE_pool_len; i++)
+		*(ae1_p++) = *(ae2_p++);
+	CharAE_pool_len--;
+	return 0;
+}
+
 
 /****************************************************************************
  * CharAEAE buffers
- *
- * We use a "global CharAEAE malloc stack" to store a copy of each top-level
- * malloc-based CharAEAE that is created during the execution of a .Call entry
- * point. The copy must be modified at every reallocation or every time the
- * nb of elements in the buffer (nelt member) is modified.
- * Every .Call() should start with an empty stack.
- * After the .Call() has returned, the stack must be emptied with
- *     .Call("AEbufs_free", PACKAGE="S4Vectors")
  */
 
-#define	CHARAEAE_MALLOC_STACK_NELT_MAX 2048
-static CharAEAE CharAEAE_malloc_stack[CHARAEAE_MALLOC_STACK_NELT_MAX];
-static int CharAEAE_malloc_stack_nelt = 0;
-
-static void CharAEAE_alloc(CharAEAE *aeae, int buflength)
-{
-	aeae->elts = (CharAE *) alloc_AEbuf(buflength, sizeof(CharAE));
-	aeae->buflength = buflength;
-	aeae->_AE_malloc_stack_idx = -1;
-	return;
-}
-
-static void CharAEAE_realloc(CharAEAE *aeae)
-{
-	int new_buflength, idx;
-
-	new_buflength = _get_new_buflength(aeae->buflength);
-	aeae->elts = (CharAE *) realloc_AEbuf(aeae->elts,
-					new_buflength,
-					aeae->buflength, sizeof(CharAE));
-	aeae->buflength = new_buflength;
-	idx = aeae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		CharAEAE_malloc_stack[idx] = *aeae;
-	return;
-}
+#define	CHARAEAE_POOL_MAXLEN 256
+static CharAEAE *CharAEAE_pool[CHARAEAE_POOL_MAXLEN];
+static int CharAEAE_pool_len = 0;
 
 int _CharAEAE_get_nelt(const CharAEAE *aeae)
 {
@@ -1336,100 +1226,81 @@ int _CharAEAE_get_nelt(const CharAEAE *aeae)
 
 int _CharAEAE_set_nelt(CharAEAE *aeae, int nelt)
 {
-	int idx;
-
-	aeae->_nelt = nelt;
-	idx = aeae->_AE_malloc_stack_idx;
-	if (idx >= 0)
-		CharAEAE_malloc_stack[idx] = *aeae;
-	return nelt;
+	return aeae->_nelt = nelt;
 }
 
-/* Must be used on a malloc-based CharAEAE */
-static void CharAEAE_free(const CharAEAE *aeae)
+static CharAEAE *new_empty_CharAEAE()
 {
-	int nelt, i;
-	CharAE *elt;
+	CharAEAE *aeae;
 
-	nelt = _CharAEAE_get_nelt(aeae);
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++)
-		CharAE_free(elt);
-	if (aeae->elts != NULL)
-		free(aeae->elts);
-	return;
-}
-
-static void reset_CharAEAE_malloc_stack()
-{
-	int i;
-	const CharAEAE *aeae;
-
-	for (i = 0, aeae = CharAEAE_malloc_stack;
-	     i < CharAEAE_malloc_stack_nelt;
-	     i++, aeae++)
-	{
-		CharAEAE_free(aeae);
-	}
-	CharAEAE_malloc_stack_nelt = 0;
-	return;
-}
-
-CharAEAE _new_CharAEAE(int buflength, int nelt)
-{
-	CharAEAE aeae;
-	int idx, i;
-	CharAE *elt;
-
-	/* Allocation */
-	CharAEAE_alloc(&aeae, buflength);
-	if (use_malloc) {
-		if (CharAEAE_malloc_stack_nelt >=
-		    CHARAEAE_MALLOC_STACK_NELT_MAX)
-			error("S4Vectors internal error in _new_CharAEAE(): "
-			      "the \"global CharAEAE malloc stack\" is full");
-		idx = CharAEAE_malloc_stack_nelt++;
-		aeae._AE_malloc_stack_idx = idx;
-		CharAEAE_malloc_stack[idx] = aeae;
-	}
-	/* Initialization */
-	_CharAEAE_set_nelt(&aeae, nelt);
-	for (i = 0, elt = aeae.elts; i < nelt; i++, elt++) {
-		CharAE_alloc(elt, 0);
-		_CharAE_set_nelt(elt, 0);
-	}
+	if (use_malloc && CharAEAE_pool_len >= CHARAEAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_CharAEAE(): "
+		      "CharAEAE pool is full");
+	aeae = (CharAEAE *) alloc2(1, sizeof(CharAEAE));
+	aeae->_buflength = aeae->_nelt = 0;
+	if (use_malloc)
+		CharAEAE_pool[CharAEAE_pool_len++] = aeae;
 	return aeae;
 }
 
-void _CharAEAE_insert_at(CharAEAE *aeae, int at, const CharAE *ae)
+static void CharAEAE_extend(CharAEAE *aeae)
+{
+	int old_buflength, new_buflength, i;
+
+	old_buflength = aeae->_buflength;
+	new_buflength = _get_new_buflength(old_buflength);
+	aeae->elts = (CharAE **) realloc2(aeae->elts, new_buflength,
+					  old_buflength, sizeof(CharAE *));
+	for (i = old_buflength; i < new_buflength; i++)
+		aeae->elts[i] = NULL;
+	aeae->_buflength = new_buflength;
+	return;
+}
+
+void _CharAEAE_insert_at(CharAEAE *aeae, int at, CharAE *ae)
 {
 	int nelt, i;
-	CharAE *elt1;
-	const CharAE *elt2;
+	CharAE **ae1_p, **ae2_p;
 
-	if (ae->_AE_malloc_stack_idx >= 0)
-		error("S4Vectors internal error in _CharAEAE_insert_at(): "
-		      "cannot insert a CharAE that is in the "
-		      "\"global CharAE malloc stack\"");
 	nelt = _CharAEAE_get_nelt(aeae);
-	if (nelt >= aeae->buflength)
-		CharAEAE_realloc(aeae);
-	elt1 = aeae->elts + nelt;
-	elt2 = elt1 - 1;
+	if (nelt >= aeae->_buflength)
+		CharAEAE_extend(aeae);
+	if (use_malloc && remove_from_CharAE_pool(ae) == -1)
+		error("S4Vectors internal error in _CharAEAE_insert_at(): "
+		      "CharAE to insert cannot be found in pool for removal");
+	ae1_p = aeae->elts + nelt;
+	ae2_p = ae1_p - 1;
 	for (i = nelt; i > at; i--)
-		*(elt1--) = *(elt2--);
-	*elt1 = *ae;
+		*(ae1_p--) = *(ae2_p--);
+	*ae1_p = ae;
 	_CharAEAE_set_nelt(aeae, nelt + 1);
 	return;
 }
 
+CharAEAE *_new_CharAEAE(int buflength, int nelt)
+{
+	CharAEAE *aeae;
+	int i;
+	CharAE *ae;
+
+	aeae = new_empty_CharAEAE();
+	aeae->elts = (CharAE **) alloc2(buflength, sizeof(CharAE *));
+	aeae->_buflength = buflength;
+	for (i = 0; i < buflength; i++)
+		aeae->elts[i] = NULL;
+	for (i = 0; i < nelt; i++) {
+		ae = new_empty_CharAE();
+		_CharAEAE_insert_at(aeae, i, ae);
+	}
+	return aeae;
+}
+
 void _append_string_to_CharAEAE(CharAEAE *aeae, const char *string)
 {
-	CharAE ae;
+	CharAE *ae;
 
-	CharAE_alloc(&ae, strlen(string));
-	_CharAE_set_nelt(&ae, ae.buflength);
-	memcpy(ae.elts, string, ae.buflength);
-	_CharAEAE_insert_at(aeae, _CharAEAE_get_nelt(aeae), &ae);
+	ae = _new_CharAE_from_string(string);
+	_CharAEAE_insert_at(aeae, _CharAEAE_get_nelt(aeae), ae);
 	return;
 }
 
@@ -1437,17 +1308,48 @@ SEXP _new_CHARACTER_from_CharAEAE(const CharAEAE *aeae)
 {
 	int nelt, i;
 	SEXP ans, ans_elt;
-	CharAE *elt;
+	CharAE *ae;
 
 	nelt = _CharAEAE_get_nelt(aeae);
 	PROTECT(ans = NEW_CHARACTER(nelt));
-	for (i = 0, elt = aeae->elts; i < nelt; i++, elt++) {
-		PROTECT(ans_elt = mkCharLen(elt->elts, _CharAE_get_nelt(elt)));
+	for (i = 0; i < nelt; i++) {
+		ae = aeae->elts[i];
+		PROTECT(ans_elt = mkCharLen(ae->elts, _CharAE_get_nelt(ae)));
 		SET_STRING_ELT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}
 	UNPROTECT(1);
 	return ans;
+}
+
+/* Must be used on a malloc-based CharAEAE */
+static void CharAEAE_free(CharAEAE *aeae)
+{
+	int buflength, i;
+	CharAE *ae;
+
+	buflength = aeae->_buflength;
+	for (i = 0; i < buflength; i++) {
+		ae = aeae->elts[i];
+		if (ae != NULL)
+			CharAE_free(ae);
+	}
+	if (buflength != 0)
+		free(aeae->elts);
+	free(aeae);
+	return;
+}
+
+static void flush_CharAEAE_pool()
+{
+	CharAEAE *aeae;
+
+	while (CharAEAE_pool_len > 0) {
+		CharAEAE_pool_len--;
+		aeae = CharAEAE_pool[CharAEAE_pool_len];
+		CharAEAE_free(aeae);
+	}
+	return;
 }
 
 
@@ -1457,13 +1359,13 @@ SEXP _new_CHARACTER_from_CharAEAE(const CharAEAE *aeae)
 
 SEXP AEbufs_free()
 {
-	reset_IntAE_malloc_stack();
-	reset_IntAEAE_malloc_stack();
-	reset_IntPairAE_malloc_stack();
-	reset_IntPairAEAE_malloc_stack();
-	reset_LongLongIntAE_malloc_stack();
-	reset_CharAE_malloc_stack();
-	reset_CharAEAE_malloc_stack();
+	flush_IntAE_pool();
+	flush_IntAEAE_pool();
+	flush_IntPairAE_pool();
+	flush_IntPairAEAE_pool();
+	flush_LLongAE_pool();
+	flush_CharAE_pool();
+	flush_CharAEAE_pool();
 	return R_NilValue;
 }
 

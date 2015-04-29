@@ -152,15 +152,15 @@ void _IntAE_set_val(
 	int val
 );
 
-IntAE _new_IntAE(
-	int buflength,
-	int nelt,
-	int val
-);
-
 void _IntAE_insert_at(
 	IntAE *ae,
 	int at,
+	int val
+);
+
+IntAE *_new_IntAE(
+	int buflength,
+	int nelt,
 	int val
 );
 
@@ -202,9 +202,9 @@ void _IntAE_delete_adjdups(IntAE *ae);
 
 SEXP _new_INTEGER_from_IntAE(const IntAE *ae);
 
-IntAE _new_IntAE_from_INTEGER(SEXP x);
+IntAE *_new_IntAE_from_INTEGER(SEXP x);
 
-IntAE _new_IntAE_from_CHARACTER(
+IntAE *_new_IntAE_from_CHARACTER(
 	SEXP x,
 	int keyshift
 );
@@ -216,15 +216,15 @@ int _IntAEAE_set_nelt(
 	int nelt
 );
 
-IntAEAE _new_IntAEAE(
-	int buflength,
-	int nelt
-);
-
 void _IntAEAE_insert_at(
 	IntAEAE *aeae,
 	int at,
-	const IntAE *ae
+	IntAE *ae
+);
+
+IntAEAE *_new_IntAEAE(
+	int buflength,
+	int nelt
 );
 
 void _IntAEAE_eltwise_append(
@@ -248,7 +248,7 @@ SEXP _new_LIST_from_IntAEAE(
 	int mode
 );
 
-IntAEAE _new_IntAEAE_from_LIST(SEXP x);
+IntAEAE *_new_IntAEAE_from_LIST(SEXP x);
 
 SEXP _IntAEAE_toEnvir(
 	const IntAEAE *aeae,
@@ -263,16 +263,16 @@ int _IntPairAE_set_nelt(
 	int nelt
 );
 
-IntPairAE _new_IntPairAE(
-	int buflength,
-	int nelt
-);
-
 void _IntPairAE_insert_at(
 	IntPairAE *ae,
 	int at,
 	int a,
 	int b
+);
+
+IntPairAE *_new_IntPairAE(
+	int buflength,
+	int nelt
 );
 
 int _IntPairAEAE_get_nelt(const IntPairAEAE *aeae);
@@ -282,39 +282,39 @@ int _IntPairAEAE_set_nelt(
 	int nelt
 );
 
-IntPairAEAE _new_IntPairAEAE(
-	int buflength,
-	int nelt
-);
-
 void _IntPairAEAE_insert_at(
 	IntPairAEAE *aeae,
 	int at,
-	const IntPairAE *ae
+	IntPairAE *ae
 );
 
-int _LongLongIntAE_get_nelt(const LongLongIntAE *ae);
-
-int _LongLongIntAE_set_nelt(
-	LongLongIntAE *ae,
+IntPairAEAE *_new_IntPairAEAE(
+	int buflength,
 	int nelt
 );
 
-void _LongLongIntAE_set_val(
-	const LongLongIntAE *ae,
-	long long int val
+int _LLongAE_get_nelt(const LLongAE *ae);
+
+int _LLongAE_set_nelt(
+	LLongAE *ae,
+	int nelt
 );
 
-LongLongIntAE _new_LongLongIntAE(
+void _LLongAE_set_val(
+	const LLongAE *ae,
+	long long val
+);
+
+void _LLongAE_insert_at(
+	LLongAE *ae,
+	int at,
+	long long val
+);
+
+LLongAE *_new_LLongAE(
 	int buflength,
 	int nelt,
-	long long int val
-);
-
-void _LongLongIntAE_insert_at(
-	LongLongIntAE *ae,
-	int at,
-	long long int val
+	long long val
 );
 
 int _CharAE_get_nelt(const CharAE *ae);
@@ -324,15 +324,15 @@ int _CharAE_set_nelt(
 	int nelt
 );
 
-CharAE _new_CharAE(int buflength);
-
-CharAE _new_CharAE_from_string(const char *string);
-
 void _CharAE_insert_at(
 	CharAE *ae,
 	int at,
 	char c
 );
+
+CharAE *_new_CharAE(int buflength);
+
+CharAE *_new_CharAE_from_string(const char *string);
 
 void _append_string_to_CharAE(
 	CharAE *ae,
@@ -356,15 +356,15 @@ int _CharAEAE_set_nelt(
 	int nelt
 );
 
-CharAEAE _new_CharAEAE(
-	int buflength,
-	int nelt
-);
-
 void _CharAEAE_insert_at(
 	CharAEAE *aeae,
 	int at,
-	const CharAE *ae
+	CharAE *ae
+);
+
+CharAEAE *_new_CharAEAE(
+	int buflength,
+	int nelt
 );
 
 void _append_string_to_CharAEAE(

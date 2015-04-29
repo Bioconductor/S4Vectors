@@ -31,14 +31,14 @@ struct htab {
  * Auto-Extending buffers used for temporary storage of incoming data whose
  * size is not known in advance:
  *
- *   o IntAE:         Auto-Extending buffer of ints;
- *   o IntAEAE:       Auto-Extending buffer of Auto-Extending buffers of ints;
- *   o IntPairAE:     Auto-Extending buffer of pairs of ints;
- *   o IntPairAEAE:   Auto-Extending buffer of Auto-Extending buffers of pairs
- *                    of ints;
- *   o LongLongIntAE: Auto-Extending buffer of long long ints;
- *   o CharAE:        Auto-Extending buffer of chars;
- *   o CharAEAE:      Auto-Extending buffer of Auto-Extending buffers of chars.
+ *   o IntAE:       Auto-Extending buffer of ints;
+ *   o IntAEAE:     Auto-Extending buffer of Auto-Extending buffers of ints;
+ *   o IntPairAE:   Auto-Extending buffer of pairs of ints;
+ *   o IntPairAEAE: Auto-Extending buffer of Auto-Extending buffers of pairs
+ *                  of ints;
+ *   o LLongAE:     Auto-Extending buffer of long long ints;
+ *   o CharAE:      Auto-Extending buffer of chars;
+ *   o CharAEAE:    Auto-Extending buffer of Auto-Extending buffers of chars.
  *
  * Some differences between AE buffers and SEXP: (a) AE buffers auto-extend
  * i.e. they automatically reallocate when more room is needed to add a new
@@ -47,51 +47,44 @@ struct htab {
  */
 
 typedef struct int_ae {
-	int buflength;
-	int *elts;
+	int _buflength;
 	int _nelt;
-	int _AE_malloc_stack_idx;
+	int *elts;
 } IntAE;
 
 typedef struct int_aeae {
-	int buflength;
-	IntAE *elts;
+	int _buflength;
 	int _nelt;
-	int _AE_malloc_stack_idx;
+	IntAE **elts;
 } IntAEAE; 
 
 typedef struct intpair_ae {
-	IntAE a;
-	IntAE b;
-	int _AE_malloc_stack_idx;
+	IntAE *a;
+	IntAE *b;
 } IntPairAE;
 
 typedef struct intpair_aeae {
-	int buflength;
-	IntPairAE *elts;
+	int _buflength;
 	int _nelt;
-	int _AE_malloc_stack_idx;
+	IntPairAE **elts;
 } IntPairAEAE;
 
-typedef struct longlongint_ae {
-	int buflength;
-	long long int *elts;
+typedef struct longlong_ae {
+	int _buflength;
 	int _nelt;
-	int _AE_malloc_stack_idx;
-} LongLongIntAE;
+	long long *elts;
+} LLongAE;
 
 typedef struct char_ae {
-	int buflength;
-	char *elts;
+	int _buflength;
 	int _nelt;
-	int _AE_malloc_stack_idx;
+	char *elts;
 } CharAE; 
 
 typedef struct char_aeae {
-	int buflength;
-	CharAE *elts;
+	int _buflength;
 	int _nelt;
-	int _AE_malloc_stack_idx;
+	CharAE **elts;
 } CharAEAE; 
 
 
