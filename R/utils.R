@@ -19,19 +19,19 @@ errorIfWarning <- function(expr)
     eval(expr)
 }
 
-AEbufs.use.malloc <- function(x)
+.AEbufs_use_malloc <- function(x)
     .Call("AEbufs_use_malloc", x, PACKAGE="S4Vectors")
 
-AEbufs.free <- function()
+.AEbufs_free <- function()
     .Call("AEbufs_free", PACKAGE="S4Vectors")
 
 ### Exported!
 .Call2 <- function(.NAME, ..., PACKAGE)
 {
-    #Turning off malloc-based Auto-Extending buffers again until I find the
-    #time to troubleshoot 'R CMD check' segfault on moscato1 and pitt. 
-    #AEbufs.use.malloc(TRUE)
-    #on.exit({AEbufs.free(); AEbufs.use.malloc(FALSE)})    
+    ## Uncomment the 2 lines below to switch from R_alloc- to malloc-based
+    ## Auto-Extending buffers.
+    #.AEbufs_use_malloc(TRUE)
+    #on.exit({.AEbufs_free(); .AEbufs_use_malloc(FALSE)})    
     .Call(.NAME, ..., PACKAGE=PACKAGE)
 }
 

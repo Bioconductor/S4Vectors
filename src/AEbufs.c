@@ -37,14 +37,15 @@ SEXP AEbufs_use_malloc(SEXP x)
 	return R_NilValue;
 }
 
+/* 'nmemb' must be > 0. This is NOT checked! */
 static void *alloc2(int nmemb, size_t size)
 {
 	void *ptr;
 
-	if (nmemb == 0)
-		return NULL;
 	if (use_malloc) {
-		ptr = malloc(size * nmemb);
+		//printf("alloc2: nmemb=%d\n", nmemb);
+		size *= nmemb;
+		ptr = malloc(size);
 		if (ptr == NULL)
 			error("S4Vectors internal error in alloc2(): "
 			      "cannot allocate memory");
@@ -54,13 +55,21 @@ static void *alloc2(int nmemb, size_t size)
 	return ptr;
 }
 
-/* 'new_nmemb' must be != 0 and >= 'old_nmemb'. This is NOT checked! */
+/* 'new_nmemb' must be > 'old_nmemb'. */
 static void *realloc2(void *ptr, int new_nmemb, int old_nmemb, size_t size)
 {
 	void *new_ptr;
 
+	if (new_nmemb <= old_nmemb)
+		error("S4Vectors internal error in realloc2(): "
+		      "'new_nmemb' <= 'old_nmemb'");
+	if (old_nmemb == 0)
+		return alloc2(new_nmemb, size);
 	if (use_malloc) {
-		new_ptr = realloc(ptr, size * new_nmemb);
+		//printf("realloc2: new_nmemb=%d old_nmemb=%d\n",
+		//       new_nmemb, old_nmemb);
+		size *= new_nmemb;
+		new_ptr = realloc(ptr, size);
 		if (new_ptr == NULL)
 			error("S4Vectors internal error in realloc2(): "
 			      "cannot reallocate memory");
@@ -129,12 +138,13 @@ void _IntAE_set_val(const IntAE *ae, int val)
 	return;
 }
 
-static void IntAE_extend(IntAE *ae)
+static void IntAE_extend(IntAE *ae, int new_buflength)
 {
-	int old_buflength, new_buflength;
+	int old_buflength;
 
 	old_buflength = ae->_buflength;
-	new_buflength = _get_new_buflength(old_buflength);
+	if (new_buflength == -1)
+		new_buflength = _get_new_buflength(old_buflength);
 	ae->elts = (int *) realloc2(ae->elts, new_buflength,
 				    old_buflength, sizeof(int));
 	ae->_buflength = new_buflength;
@@ -149,7 +159,7 @@ void _IntAE_insert_at(IntAE *ae, int at, int val)
 
 	nelt = _IntAE_get_nelt(ae);
 	if (nelt >= ae->_buflength)
-		IntAE_extend(ae);
+		IntAE_extend(ae, -1);
 	elt1_p = ae->elts + nelt;
 	elt2_p = elt1_p - 1;
 	for (i = nelt; i > at; i--)
@@ -164,10 +174,11 @@ IntAE *_new_IntAE(int buflength, int nelt, int val)
 	IntAE *ae;
 
 	ae = new_empty_IntAE();
-	ae->elts = (int *) alloc2(buflength, sizeof(int));
-	ae->_buflength = buflength;
-	_IntAE_set_nelt(ae, nelt);
-	_IntAE_set_val(ae, val);
+	if (buflength != 0) {
+		IntAE_extend(ae, buflength);
+		_IntAE_set_nelt(ae, nelt);
+		_IntAE_set_val(ae, val);
+	}
 	return ae;
 }
 
@@ -176,8 +187,8 @@ void _IntAE_append(IntAE *ae, const int *newvals, int nnewval)
 	int new_nelt, *dest;
 
 	new_nelt = _IntAE_get_nelt(ae) + nnewval;
-	while (ae->_buflength < new_nelt)
-		IntAE_extend(ae);
+	if (new_nelt > ae->_buflength)
+		IntAE_extend(ae, new_nelt);
 	dest = ae->elts + _IntAE_get_nelt(ae);
 	memcpy(dest, newvals, nnewval * sizeof(int));
 	_IntAE_set_nelt(ae, new_nelt);
@@ -233,8 +244,8 @@ void _IntAE_append_shifted_vals(IntAE *ae, const int *newvals,
 
 	nelt = _IntAE_get_nelt(ae);
 	new_nelt = nelt + nnewval;
-	while (ae->_buflength < new_nelt)
-		IntAE_extend(ae);
+	if (new_nelt > ae->_buflength)
+		IntAE_extend(ae, new_nelt);
 	for (i = 0, elt1 = ae->elts + nelt, elt2 = newvals;
 	     i < nnewval;
 	     i++, elt1++, elt2++)
@@ -335,17 +346,6 @@ IntAE *_new_IntAE_from_CHARACTER(SEXP x, int keyshift)
 	return ae;
 }
 
-#ifdef DEBUG_S4VECTORS
-static void IntAE_print(const IntAE *ae)
-{
-	Rprintf("_buflength=%d _nelt=%d elts=%p",
-		ae->_buflength,
-		ae->_nelt,
-		ae->elts);
-	return;
-}
-#endif
-
 /* Must be used on a malloc-based IntAE */
 static void IntAE_free(IntAE *ae)
 {
@@ -359,16 +359,17 @@ static void flush_IntAE_pool()
 {
 	IntAE *ae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && IntAE_pool_len != 0) {
+		printf("flush_IntAE_pool: "
+		       "flushing %d IntAE buffers\n",
+		       IntAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (IntAE_pool_len > 0) {
 		IntAE_pool_len--;
 		ae = IntAE_pool[IntAE_pool_len];
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			Rprintf("IntAE_pool[%d]: ", IntAE_pool_len);
-			IntAE_print(ae);
-			Rprintf("\n");
-		}
-#endif
 		IntAE_free(ae);
 	}
 	return;
@@ -424,12 +425,13 @@ static IntAEAE *new_empty_IntAEAE()
 	return aeae;
 }
 
-static void IntAEAE_extend(IntAEAE *aeae)
+static void IntAEAE_extend(IntAEAE *aeae, int new_buflength)
 {
-	int old_buflength, new_buflength, i;
+	int old_buflength, i;
 
 	old_buflength = aeae->_buflength;
-	new_buflength = _get_new_buflength(old_buflength);
+	if (new_buflength == -1)
+		new_buflength = _get_new_buflength(old_buflength);
 	aeae->elts = (IntAE **) realloc2(aeae->elts, new_buflength,
 					 old_buflength, sizeof(IntAE *));
 	for (i = old_buflength; i < new_buflength; i++)
@@ -445,7 +447,7 @@ void _IntAEAE_insert_at(IntAEAE *aeae, int at, IntAE *ae)
 
 	nelt = _IntAEAE_get_nelt(aeae);
 	if (nelt >= aeae->_buflength)
-		IntAEAE_extend(aeae);
+		IntAEAE_extend(aeae, -1);
 	if (use_malloc && remove_from_IntAE_pool(ae) == -1)
 		error("S4Vectors internal error in _IntAEAE_insert_at(): "
 		      "IntAE to insert cannot be found in pool for removal");
@@ -465,13 +467,12 @@ IntAEAE *_new_IntAEAE(int buflength, int nelt)
 	IntAE *ae;
 
 	aeae = new_empty_IntAEAE();
-	aeae->elts = (IntAE **) alloc2(buflength, sizeof(IntAE *));
-	aeae->_buflength = buflength;
-	for (i = 0; i < buflength; i++)
-		aeae->elts[i] = NULL;
-	for (i = 0; i < nelt; i++) {
-		ae = new_empty_IntAE();
-		_IntAEAE_insert_at(aeae, i, ae);
+	if (buflength != 0) {
+		IntAEAE_extend(aeae, buflength);
+		for (i = 0; i < nelt; i++) {
+			ae = new_empty_IntAE();
+			_IntAEAE_insert_at(aeae, i, ae);
+		}
 	}
 	return aeae;
 }
@@ -661,6 +662,14 @@ static void flush_IntAEAE_pool()
 {
 	IntAEAE *aeae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && IntAEAE_pool_len != 0) {
+		printf("flush_IntAEAE_pool: "
+		       "flushing %d IntAEAE buffers\n",
+		       IntAEAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (IntAEAE_pool_len > 0) {
 		IntAEAE_pool_len--;
 		aeae = IntAEAE_pool[IntAEAE_pool_len];
@@ -703,9 +712,23 @@ static IntPairAE *new_empty_IntPairAE()
 	ae = (IntPairAE *) alloc2(1, sizeof(IntPairAE));
 	ae->a = a;
 	ae->b = b;
-	if (use_malloc)
+	if (use_malloc) {
+		if (remove_from_IntAE_pool(a) == -1 ||
+		    remove_from_IntAE_pool(b) == -1)
+			error("S4Vectors internal error "
+			      "in new_empty_IntPairAE(): "
+			      "IntAEs to stick in IntPairAE cannot be found "
+			      "in pool for removal");
 		IntPairAE_pool[IntPairAE_pool_len++] = ae;
+	}
 	return ae;
+}
+
+static void IntPairAE_extend(IntPairAE *ae, int new_buflength)
+{
+	IntAE_extend(ae->a, new_buflength);
+	IntAE_extend(ae->b, new_buflength);
+	return;
 }
 
 void _IntPairAE_insert_at(IntPairAE *ae, int at, int a, int b)
@@ -720,19 +743,13 @@ IntPairAE *_new_IntPairAE(int buflength, int nelt)
 	IntPairAE *ae;
 
 	ae = new_empty_IntPairAE();
-	_IntPairAE_set_nelt(ae, nelt);  /* elements are NOT initialized */
+	if (buflength != 0) {
+		IntPairAE_extend(ae, buflength);
+		/* Elements are NOT initialized. */
+		_IntPairAE_set_nelt(ae, nelt);
+	}
 	return ae;
 }
-
-#ifdef DEBUG_S4VECTORS
-static void IntPairAE_print(const IntPairAE *ae)
-{
-	IntAE_print(ae->a);
-	Rprintf(" ");
-	IntAE_print(ae->b);
-	return;
-}
-#endif
 
 /* Must be used on a malloc-based IntPairAE */
 static void IntPairAE_free(IntPairAE *ae)
@@ -747,16 +764,17 @@ static void flush_IntPairAE_pool()
 {
 	IntPairAE *ae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && IntPairAE_pool_len != 0) {
+		printf("flush_IntPairAE_pool: "
+		       "flushing %d IntPairAE buffers\n",
+		       IntPairAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (IntPairAE_pool_len > 0) {
 		IntPairAE_pool_len--;
 		ae = IntPairAE_pool[IntPairAE_pool_len];
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			Rprintf("IntPairAE_pool[%d]: ", IntPairAE_pool_len);
-			IntPairAE_print(ae);
-			Rprintf("\n");
-		}
-#endif
 		IntPairAE_free(ae);
 	}
 	return;
@@ -812,14 +830,17 @@ static IntPairAEAE *new_empty_IntPairAEAE()
 	return aeae;
 }
 
-static void IntPairAEAE_extend(IntPairAEAE *aeae)
+static void IntPairAEAE_extend(IntPairAEAE *aeae, int new_buflength)
 {
-	int old_buflength, new_buflength;
+	int old_buflength, i;
 
 	old_buflength = aeae->_buflength;
-	new_buflength = _get_new_buflength(old_buflength);
+	if (new_buflength == -1)
+		new_buflength = _get_new_buflength(old_buflength);
 	aeae->elts = (IntPairAE **) realloc2(aeae->elts, new_buflength,
 					old_buflength, sizeof(IntPairAE *));
+	for (i = old_buflength; i < new_buflength; i++)
+		aeae->elts[i] = NULL;
 	aeae->_buflength = new_buflength;
 	return;
 }
@@ -831,7 +852,7 @@ void _IntPairAEAE_insert_at(IntPairAEAE *aeae, int at, IntPairAE *ae)
 
 	nelt = _IntPairAEAE_get_nelt(aeae);
 	if (nelt >= aeae->_buflength)
-		IntPairAEAE_extend(aeae);
+		IntPairAEAE_extend(aeae, -1);
 	if (use_malloc && remove_from_IntPairAE_pool(ae) == -1)
 		error("S4Vectors internal error in _IntPairAEAE_insert_at(): "
 		      "IntPairAE to insert cannot be found in pool for "
@@ -852,13 +873,12 @@ IntPairAEAE *_new_IntPairAEAE(int buflength, int nelt)
 	IntPairAE *ae;
 
 	aeae = new_empty_IntPairAEAE();
-	aeae->elts = (IntPairAE **) alloc2(buflength, sizeof(IntPairAE *));
-	aeae->_buflength = buflength;
-	for (i = 0; i < buflength; i++)
-		aeae->elts[i] = NULL;
-	for (i = 0; i < nelt; i++) {
-		ae = new_empty_IntPairAE();
-		_IntPairAEAE_insert_at(aeae, i, ae);
+	if (buflength != 0) {
+		IntPairAEAE_extend(aeae, buflength);
+		for (i = 0; i < nelt; i++) {
+			ae = new_empty_IntPairAE();
+			_IntPairAEAE_insert_at(aeae, i, ae);
+		}
 	}
 	return aeae;
 }
@@ -885,6 +905,14 @@ static void flush_IntPairAEAE_pool()
 {
 	IntPairAEAE *aeae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && IntPairAEAE_pool_len != 0) {
+		printf("flush_IntPairAEAE_pool: "
+		       "flushing %d IntPairAEAE buffers\n",
+		       IntPairAEAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (IntPairAEAE_pool_len > 0) {
 		IntPairAEAE_pool_len--;
 		aeae = IntPairAEAE_pool[IntPairAEAE_pool_len];
@@ -937,12 +965,13 @@ void _LLongAE_set_val(const LLongAE *ae, long long val)
 	return;
 }
 
-static void LLongAE_extend(LLongAE *ae)
+static void LLongAE_extend(LLongAE *ae, int new_buflength)
 {
-	int old_buflength, new_buflength;
+	int old_buflength;
 
 	old_buflength = ae->_buflength;
-	new_buflength = _get_new_buflength(old_buflength);
+	if (new_buflength == -1)
+		new_buflength = _get_new_buflength(old_buflength);
 	ae->elts = (long long *) realloc2(ae->elts, new_buflength,
 					  old_buflength, sizeof(long long));
 	ae->_buflength = new_buflength;
@@ -957,7 +986,7 @@ void _LLongAE_insert_at(LLongAE *ae, int at, long long val)
 
 	nelt = _LLongAE_get_nelt(ae);
 	if (nelt >= ae->_buflength)
-		LLongAE_extend(ae);
+		LLongAE_extend(ae, -1);
 	elt1_p = ae->elts + nelt;
 	elt2_p = elt1_p - 1;
 	for (i = nelt; i > at; i--)
@@ -972,23 +1001,13 @@ LLongAE *_new_LLongAE(int buflength, int nelt, long long val)
 	LLongAE *ae;
 
 	ae = new_empty_LLongAE();
-	ae->elts = (long long *) alloc2(buflength, sizeof(long long));
-	ae->_buflength = buflength;
-	_LLongAE_set_nelt(ae, nelt);
-	_LLongAE_set_val(ae, val);
+	if (buflength != 0) {
+		LLongAE_extend(ae, buflength);
+		_LLongAE_set_nelt(ae, nelt);
+		_LLongAE_set_val(ae, val);
+	}
 	return ae;
 }
-
-#ifdef DEBUG_S4VECTORS
-static void LLongAE_print(const LLongAE *ae)
-{
-	Rprintf("_buflength=%d _nelt=%d elts=%p",
-		ae->_buflength,
-		ae->_nelt,
-		ae->elts);
-	return;
-}
-#endif
 
 /* Must be used on a malloc-based LLongAE */
 static void LLongAE_free(LLongAE *ae)
@@ -1003,16 +1022,17 @@ static void flush_LLongAE_pool()
 {
 	LLongAE *ae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && LLongAE_pool_len != 0) {
+		printf("flush_LLongAE_pool: "
+		       "flushing %d LLongAE buffers\n",
+		       LLongAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (LLongAE_pool_len > 0) {
 		LLongAE_pool_len--;
 		ae = LLongAE_pool[LLongAE_pool_len];
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			Rprintf("LLongAE_pool[%d]: ", LLongAE_pool_len);
-			LLongAE_print(ae);
-			Rprintf("\n");
-		}
-#endif
 		LLongAE_free(ae);
 	}
 	return;
@@ -1051,12 +1071,13 @@ static CharAE *new_empty_CharAE()
 	return ae;
 }
 
-static void CharAE_extend(CharAE *ae)
+static void CharAE_extend(CharAE *ae, int new_buflength)
 {
-	int old_buflength, new_buflength;
+	int old_buflength;
 
 	old_buflength = ae->_buflength;
-	new_buflength = _get_new_buflength(old_buflength);
+	if (new_buflength == -1)
+		new_buflength = _get_new_buflength(old_buflength);
 	ae->elts = (char *) realloc2(ae->elts, new_buflength,
 				     old_buflength, sizeof(char));
 	ae->_buflength = new_buflength;
@@ -1071,7 +1092,7 @@ void _CharAE_insert_at(CharAE *ae, int at, char c)
 
 	nelt = _CharAE_get_nelt(ae);
 	if (nelt >= ae->_buflength)
-		CharAE_extend(ae);
+		CharAE_extend(ae, -1);
 	elt1_p = ae->elts + nelt;
 	elt2_p = elt1_p - 1;
 	for (i = nelt; i > at; i--)
@@ -1086,8 +1107,8 @@ CharAE *_new_CharAE(int buflength)
 	CharAE *ae;
 
 	ae = new_empty_CharAE();
-	ae->elts = (char *) alloc2(buflength, sizeof(char));
-	ae->_buflength = buflength;
+	if (buflength != 0)
+		CharAE_extend(ae, buflength);
 	return ae;
 }
 
@@ -1109,8 +1130,8 @@ void _append_string_to_CharAE(CharAE *ae, const char *string)
 	nnewval = strlen(string);
 	nelt = _CharAE_get_nelt(ae);
 	new_nelt = nelt + nnewval;
-	while (ae->_buflength < new_nelt)
-		CharAE_extend(ae);
+	if (new_nelt > ae->_buflength)
+		CharAE_extend(ae, new_nelt);
 	dest = ae->elts + nelt;
 	memcpy(dest, string, sizeof(char) * nnewval);
 	_CharAE_set_nelt(ae, new_nelt);
@@ -1185,6 +1206,14 @@ static void flush_CharAE_pool()
 {
 	CharAE *ae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && CharAE_pool_len != 0) {
+		printf("flush_CharAE_pool: "
+		       "flushing %d CharAE buffers\n",
+		       CharAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (CharAE_pool_len > 0) {
 		CharAE_pool_len--;
 		ae = CharAE_pool[CharAE_pool_len];
@@ -1243,12 +1272,13 @@ static CharAEAE *new_empty_CharAEAE()
 	return aeae;
 }
 
-static void CharAEAE_extend(CharAEAE *aeae)
+static void CharAEAE_extend(CharAEAE *aeae, int new_buflength)
 {
-	int old_buflength, new_buflength, i;
+	int old_buflength, i;
 
 	old_buflength = aeae->_buflength;
-	new_buflength = _get_new_buflength(old_buflength);
+	if (new_buflength == -1)
+		new_buflength = _get_new_buflength(old_buflength);
 	aeae->elts = (CharAE **) realloc2(aeae->elts, new_buflength,
 					  old_buflength, sizeof(CharAE *));
 	for (i = old_buflength; i < new_buflength; i++)
@@ -1264,7 +1294,7 @@ void _CharAEAE_insert_at(CharAEAE *aeae, int at, CharAE *ae)
 
 	nelt = _CharAEAE_get_nelt(aeae);
 	if (nelt >= aeae->_buflength)
-		CharAEAE_extend(aeae);
+		CharAEAE_extend(aeae, -1);
 	if (use_malloc && remove_from_CharAE_pool(ae) == -1)
 		error("S4Vectors internal error in _CharAEAE_insert_at(): "
 		      "CharAE to insert cannot be found in pool for removal");
@@ -1284,13 +1314,12 @@ CharAEAE *_new_CharAEAE(int buflength, int nelt)
 	CharAE *ae;
 
 	aeae = new_empty_CharAEAE();
-	aeae->elts = (CharAE **) alloc2(buflength, sizeof(CharAE *));
-	aeae->_buflength = buflength;
-	for (i = 0; i < buflength; i++)
-		aeae->elts[i] = NULL;
-	for (i = 0; i < nelt; i++) {
-		ae = new_empty_CharAE();
-		_CharAEAE_insert_at(aeae, i, ae);
+	if (buflength != 0) {
+		CharAEAE_extend(aeae, buflength);
+		for (i = 0; i < nelt; i++) {
+			ae = new_empty_CharAE();
+			_CharAEAE_insert_at(aeae, i, ae);
+		}
 	}
 	return aeae;
 }
@@ -1344,6 +1373,14 @@ static void flush_CharAEAE_pool()
 {
 	CharAEAE *aeae;
 
+#ifdef DEBUG_S4VECTORS
+	if (debug && CharAEAE_pool_len != 0) {
+		printf("flush_CharAEAE_pool: "
+		       "flushing %d CharAEAE buffers\n",
+		       CharAEAE_pool_len);
+		fflush(stdout);
+	}
+#endif
 	while (CharAEAE_pool_len > 0) {
 		CharAEAE_pool_len--;
 		aeae = CharAEAE_pool[CharAEAE_pool_len];
