@@ -267,7 +267,7 @@ export(
     metadata, "metadata<-",
 
     ## Vector-class.R:
-    parallelSlotNames, fixedColumnNames,
+    parallelSlotNames, parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
@@ -311,7 +311,7 @@ exportMethods(
     extractROWS, replaceROWS,
     getListElement, setListElement,
     metadata, "metadata<-",
-    fixedColumnNames,
+    parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,

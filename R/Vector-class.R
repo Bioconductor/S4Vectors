@@ -45,10 +45,10 @@ setMethod("parallelSlotNames", "Vector", function(x) "elementMetadata")
 ### Methods for Vector subclasses only need to specify the parallel slots they
 ### add to their parent class. See Hits-class.R file for an example.
 
-### fixedColumnNames() is for internal use only.
-### TODO: Deprecate fixedColumnNames(). Use parallelSlotNames() instead.
-setGeneric("fixedColumnNames", function(x) standardGeneric("fixedColumnNames"))
-setMethod("fixedColumnNames", "ANY", function(x) character())
+### parallelVectorNames() is for internal use only.
+setGeneric("parallelVectorNames",
+           function(x) standardGeneric("parallelVectorNames"))
+setMethod("parallelVectorNames", "ANY", function(x) character())
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -233,8 +233,9 @@ setMethod("as.data.frame", "Vector", as.data.frame.Vector)
 
 makeFixedColumnEnv <- function(x, parent, tform = identity) {
   env <- new.env(parent=parent)
-  lapply(fixedColumnNames(x), function(nm) {
-    accessor <- get(nm, parent, mode="function")
+  pvnEnv <- environment(selectMethod("parallelVectorNames", class(x)))
+  lapply(parallelVectorNames(x), function(nm) {
+    accessor <- get(nm, pvnEnv, mode="function")
     makeActiveBinding(nm, function() {
       val <- tform(accessor(x))
       rm(list=nm, envir=env)
@@ -288,12 +289,13 @@ setReplaceMethod("values", "Vector",
                      x
                  })
 
-setGeneric("rename", function(x, value, ...) standardGeneric("rename"))
+setGeneric("rename", function(x, ...) standardGeneric("rename"))
 
-.renameVector <- function(x, value, ...) {
-  if (missing(value))
-    newNames <- c(...)
-  else newNames <- c(value, ...)
+.renameVector <- function(x, ...) {
+  newNames <- c(...)
+  if (!is.character(newNames) || any(is.na(newNames))) {
+      stop("arguments in '...' must be character and not NA")
+  }
   badOldNames <- setdiff(names(newNames), names(x))
   if (length(badOldNames))
     stop("Some 'from' names in value not found on 'x': ",

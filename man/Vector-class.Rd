@@ -63,8 +63,8 @@
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,Vector-method}
 
-\alias{fixedColumnNames}
-\alias{fixedColumnNames,ANY-method}
+\alias{parallelVectorNames}
+\alias{parallelVectorNames,ANY-method}
 
 
 \title{Vector objects}
