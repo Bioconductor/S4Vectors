@@ -560,11 +560,11 @@ setMethod("shiftApply", signature(X = "Rle", Y = "Rle"),
               ans
           })
 
+### FIXME: Remove in R 3.3
 setMethod("order", "Rle",
     function(..., na.last=TRUE, decreasing=FALSE)
     {
-        args <- lapply(unname(list(...)),
-                       function(x) {if (is(x, "Rle")) decodeRle(x) else x})
+        args <- lapply(unname(list(...)), decodeRle)
         do.call(order, c(args, list(na.last=na.last, decreasing=decreasing)))
     }
 )
@@ -591,7 +591,7 @@ sort.Rle <- function(x, decreasing=FALSE, ...)
 setMethod("sort", "Rle", sort.Rle)
 
 setMethod("xtfrm", "Rle", function(x) {
-    initialize(x, runValue=xtfrm(runValue(x)))
+    initialize(x, values=xtfrm(runValue(x)))
 })
 
 setMethod("rank", "Rle", function (x, na.last = TRUE,
