@@ -22,7 +22,7 @@ setClass("List",
 
 setGeneric("elementType", function(x, ...) standardGeneric("elementType"))
 setMethod("elementType", "List", function(x) x@elementType)
-setMethod("elementType", "vector", function(x) mode(x))
+setMethod("elementType", "vector", function(x) storage.mode(x))
 
 setGeneric("elementLengths", function(x) standardGeneric("elementLengths"))
 
