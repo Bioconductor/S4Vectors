@@ -734,6 +734,26 @@ setMethod("paste", "Rle",
               ans
           })
 
+setMethod("grepl", c("ANY", "Rle"),
+          function(pattern, x, ignore.case = FALSE, perl = FALSE,
+                   fixed = FALSE, useBytes = FALSE) {
+              v <- grepl(pattern, runValue(x), ignore.case, perl, fixed,
+                         useBytes)
+              Rle(v, runLength(x))
+          })
+
+setMethod("grep", c("ANY", "Rle"),
+          function(pattern, x, ignore.case = FALSE, perl = FALSE, value = FALSE,
+                   fixed = FALSE, useBytes = FALSE, invert = FALSE) {
+              if (isTRUE(value)) {
+                  v <- grep(pattern, x, ignore.case, perl, value=TRUE, fixed,
+                            useBytes, invert)
+                  Rle(v, runLength(x))
+              } else { # obviously inefficient
+                  Rle(callNextMethod())
+              }
+          })
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other factor data methods
 ###

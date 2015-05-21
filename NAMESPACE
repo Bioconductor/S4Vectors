@@ -193,7 +193,8 @@ exportMethods(
     do.call,
     union, intersect, setdiff,
     xtabs,
-    start, end, width
+    start, end, width,
+    grep, grepl
 )
 
 
