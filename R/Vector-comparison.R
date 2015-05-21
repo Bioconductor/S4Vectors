@@ -264,9 +264,8 @@ setMethod("sort", "Vector", sort.Vector)
 
 formulaAsListCall <- function(formula) attr(terms(formula), "variables")
 
-orderBy <- function(formula, x, decreasing=FALSE, na.last=NA) {
-  terms <- eval(formulaAsListCall(formula),
-                as.env(x, emptyenv()), environment(formula))
+orderBy <- function(formula, x, decreasing=FALSE, na.last=TRUE) {
+  terms <- eval(formulaAsListCall(formula), as.env(x, environment(formula)))
   do.call(order, c(decreasing=decreasing, na.last=na.last, terms))
 }
 
