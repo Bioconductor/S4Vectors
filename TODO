@@ -69,5 +69,4 @@ C files:
 - 9 header files (.h files)
 
   None goes to S4Vectors.
-  Seems like errCatch.h isn't used and could be removed.
 
