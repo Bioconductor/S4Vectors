@@ -205,7 +205,7 @@ canonical_replace_as <- function(from, to, value)
 
 ### Does the same as canonical_replace_as() but tries to generate only one
 ### copy of 'from' instead of one copy each time one of its slots is modified.
-canonical_replace_as2 <- function(from, to, value)
+canonical_replace_as_2 <- function(from, to, value)
 {
     firstTime <- TRUE
     for (what in slotNames(to)) {
@@ -222,7 +222,7 @@ canonical_replace_as2 <- function(from, to, value)
 
 ### Usage (assuming B is a subclass of A):
 ###
-###   setReplaceAs("B", "A", canonical_replace_as2)
+###   setReplaceAs("B", "A", canonical_replace_as_2)
 ###
 ### Note that this is used in the VariantAnnotation package.
 
