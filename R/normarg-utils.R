@@ -231,8 +231,8 @@ normalize_names_replacement_value <- function(value, x)
     value_len <- length(value)
     x_len <- length(x)
     if (value_len > x_len)
-        stop("attempt to set too many names (", value_len, ") ",
-             "on ", class(x), " object of length ", x_len)
+        stop(wmsg("attempt to set too many names (", value_len, ") ",
+                  "on ", class(x), " object of length ", x_len))
     if (value_len < x_len) {
         ## We pad with NA's to mimic what 'names(x) <- value' does on an
         ## ordinary vector.
