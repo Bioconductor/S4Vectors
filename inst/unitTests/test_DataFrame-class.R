@@ -89,11 +89,11 @@ test_DataFrame_subset <- function() {
   checkException(sw[100], silent = TRUE) # out of bounds col
   checkException(sw[,100], silent = TRUE)
   checkException(sw[1000,], silent = TRUE) # out of bounds row
-  options(warn=2)
+  oldOpts <- options(warn=2)
   checkException(sw[1:3, drop=TRUE], silent = TRUE) # drop ignored
   checkException(sw[drop=TRUE], silent = TRUE)
   checkException(sw[foo = "bar"], silent = TRUE) # invalid argument
-  ##options(warn=0)
+  options(oldOpts)
   checkException(sw[,"Fert"], silent = TRUE) # bad column name
 
   sw <- DataFrame(swiss)
