@@ -67,7 +67,7 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                              simplify=simplify)
             return(ans)
         }
-        start <- start(by)
+        start <- structure(start(by), names=names(by))
         end <- end(by)
     } else {
         if (!is.null(width)) {
@@ -76,6 +76,7 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
             else if (is.null(end))
                 end <- start + width - 1L
         }
+        ## Unlike as.integer(), as( , "integer") propagates the names.
         start <- as(start, "integer")
         end <- as(end, "integer")
     }
@@ -118,7 +119,7 @@ aggregate.Rle <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
 {
     FUN <- match.fun(FUN)
     if (!missing(by)) {
-        start <- start(by)
+        start <- structure(start(by), names=names(by))
         end <- end(by)
     } else {
         if (!is.null(width)) {

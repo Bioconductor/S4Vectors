@@ -102,14 +102,18 @@
 }
 
 \examples{
-x <- Rle(10:1, 1:10)
+x <- Rle(10:2, 1:9)
 aggregate(x, x > 4, mean)
-aggregate(x, FUN=mean, start=1:(length(x)-50), end=51:length(x))
+aggregate(x, FUN=mean, start=1:26, width=20)
 
 ## Note that aggregate() works on a DataFrame object the same way it
 ## works on an ordinary data frame:
 aggregate(DataFrame(state.x77), list(Region=state.region), mean)
 aggregate(weight ~ feed, data=DataFrame(chickwts), mean)
+
+library(IRanges)
+by <- IRanges(start=1:26, width=20, names=LETTERS)
+aggregate(x, by, is.unsorted)
 }
 
 \keyword{methods}
