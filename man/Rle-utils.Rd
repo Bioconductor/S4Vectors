@@ -10,8 +10,6 @@
 \alias{Summary,Rle-method}
 \alias{Complex,Rle-method}
 
-\alias{aggregate.Rle}
-\alias{aggregate,Rle-method}
 \alias{summary.Rle}
 \alias{summary,Rle-method}
 
@@ -89,30 +87,10 @@
   See \link[methods]{S4groupGeneric} for more details.
 }
 
-\section{General Methods}{
+\section{Summary}{
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{aggregate(x, by, FUN, start = NULL, end = NULL, width = NULL,
-                      frequency = NULL, delta = NULL, ..., simplify = TRUE))}:
-      Generates summaries on the specified windows and returns the result in a
-      convenient form:
-      \describe{
-        \item{\code{by}}{An object with \code{start}, \code{end}, and
-          \code{width} methods.}
-        \item{\code{FUN}}{The function, found via \code{match.fun}, to be
-          applied to each window of \code{x}.}
-        \item{\code{start}, \code{end}, \code{width}}{the start, end, or width
-          of the window. If \code{by} is missing, then must supply two of the
-          three.}
-        \item{\code{frequency}, \code{delta}}{Optional arguments that specify
-          the sampling frequency and increment within the window.}
-        \item{\dots}{Further arguments for \code{FUN}.}
-        \item{\code{simplify}}{A logical value specifying whether or not the
-          result should be simplified to a vector or matrix if possible.}
-      }
-    }
     \item{}{
       \code{summary(object, ..., digits = max(3, getOption("digits") - 3))}:
       Summarizes the Rle object using an atomic vector convention. The
@@ -343,8 +321,6 @@ x^2 + 2 * x + 1
 range(x)
 sum(x)
 mean(x)
-aggregate(x, x > 4, mean)
-aggregate(x, FUN = mean, start = 1:(length(x) - 50), end = 51:length(x))
 
 z <- c("the", "quick", "red", "fox", "jumps", "over", "the", "lazy", "brown", "dog")
 z <- Rle(z, seq_len(length(z)))

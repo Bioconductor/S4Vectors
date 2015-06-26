@@ -137,61 +137,6 @@ setMethod("Complex", "Rle",
               Rle(values = callGeneric(runValue(z)), lengths = runLength(z),
                   check = FALSE))
 
-### S3/S4 combo for aggregate.Rle
-aggregate.Rle <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
-                          frequency=NULL, delta=NULL, ..., simplify=TRUE)
-{
-    FUN <- match.fun(FUN)
-    if (!missing(by)) {
-        start <- start(by)
-        end <- end(by)
-    } else {
-        if (!is.null(width)) {
-            if (is.null(start))
-                start <- end - width + 1L
-            else if (is.null(end))
-                end <- start + width - 1L
-        }
-        start <- as(start, "integer")
-        end <- as(end, "integer")
-    }
-    if (length(start) != length(end))
-        stop("'start', 'end', and 'width' arguments have unequal length")
-    n <- length(start)
-    if (!is.null(names(start)))
-        indices <- structure(seq_len(n), names = names(start))
-    else
-        indices <- structure(seq_len(n), names = names(end))
-    if (is.null(frequency) && is.null(delta)) {
-        info <- getStartEndRunAndOffset(x, start, end)
-        runStart <- info[["start"]][["run"]]
-        offsetStart <- info[["start"]][["offset"]]
-        runEnd <- info[["end"]][["run"]]
-        offsetEnd <- info[["end"]][["offset"]]
-        ## Performance Optimization
-        ## Use a stripped down loop with empty Rle object
-        newRle <- new(class(x))
-        sapply(indices,
-               function(i)
-               FUN(.Call2("Rle_window",
-                          x, runStart[i], runEnd[i],
-                          offsetStart[i], offsetEnd[i],
-                          newRle, PACKAGE = "S4Vectors"),
-                   ...),
-               simplify = simplify)
-    } else {
-        frequency <- rep(frequency, length.out = n)
-        delta <- rep(delta, length.out = n)
-        sapply(indices,
-               function(i)
-               FUN(window(x, start = start[i], end = end[i],
-                          frequency = frequency[i], delta = delta[i]),
-                   ...),
-               simplify = simplify)
-    }
-}
-setMethod("aggregate", "Rle", aggregate.Rle)
-
 ### S3/S4 combo for summary.Rle
 summary.Rle <- function(object, ..., digits=max(3, getOption("digits") - 3)) 
 {

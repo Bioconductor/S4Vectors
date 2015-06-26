@@ -377,7 +377,8 @@
 \author{P. Aboyoun}
 
 \seealso{
-  \link{Rle-utils} and \link{Rle-runstat} for more operations on Rle objects.
+  \link{Rle-utils}, \link{Rle-runstat}, and \link[S4Vectors]{aggregate}
+  for more operations on Rle objects.
 
   \code{\link[base]{rle}}
 

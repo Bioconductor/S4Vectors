@@ -32,7 +32,9 @@ exportClasses(
 ### Export S3 methods
 ###
 
+S3method(aggregate, Vector)
 S3method(aggregate, Rle)
+S3method(aggregate, List)
 
 S3method(anyDuplicated, NSBS)
 S3method(anyDuplicated, WindowNSBS)
@@ -90,7 +92,9 @@ S3method(window, Vector)
 ### called directly, (b) tab-completion on the name of the generic shows them,
 ### and (c) methods() doesn't asterisk them.
 export(
+    aggregate.Vector,
     aggregate.Rle,
+    aggregate.List,
 
     anyDuplicated.NSBS,
     anyDuplicated.WindowNSBS,
