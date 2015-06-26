@@ -15,11 +15,16 @@
 ###   aggregate(rep(2:-2, 5:9), FUN=mean, start=1:20, width=17)
 ###
 ### FIXME: Fix the aggregate() mess (may be simplify it first by gettting
-### rid of the 'frequency' and 'delta' args). Alternatively deprecate these
-### "aggregate" methods (except the method for Rle objects, but it should have
-### the same arguments as stats:::aggregate.data.frame and behave exactly like
-### stats::aggregate on atomic vectors), and replace with aggregateByRanges()
-### new generic.
+### rid of the 'frequency' and 'delta' args).
+### Alternatively deprecate these "aggregate" methods (except the
+### method for Rle objects, but it should have the same arguments as
+### stats:::aggregate.data.frame and behave exactly like stats::aggregate
+### on atomic vectors), and replace with the following:
+###   (a) aggregateByRanges() new generic (should go in IRanges).
+###   (b) lapply/sapply on Views objects (but only works if Views(x, ...)
+###       works and views can only be created on a few specific types of
+###       objects).
+### We could have both.
 ###
 
 setMethod("aggregate", "matrix", stats:::aggregate.default)
@@ -58,7 +63,7 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
         indices <- structure(seq_len(n), names = names(end))
     if (is.null(frequency) && is.null(delta)) {
         sapply(indices, function(i)
-               FUN(window(x, start = start[i], end = end[i]), ...),
+               FUN(window.Vector(x, start = start[i], end = end[i]), ...),
                simplify = simplify)
     } else {
         frequency <- rep(frequency, length.out = n)

@@ -74,15 +74,17 @@
   or via the \code{start}, \code{end}, \code{width}, \code{frequency}, and
   \code{delta} arguments.
 
-  For example, if \code{start} and \code{end} are specified, then
+  For example, if \code{start} and \code{end} are specified, then:
 \preformatted{
   aggregate(x, FUN=FUN, start=start, end=end, ..., simplify=simplify)
 }
-  is equivalent to
+  is equivalent to:
 \preformatted{
   sapply(seq_along(start),
          function(i) FUN(x[start[i]:end[i]], ...), simplify=simplify)
 }
+  (replace \code{x[start[i]:end[i]]} with 2D-style subsetting
+  \code{x[start[i]:end[i], ]} if \code{x} is a \link{DataFrame} object).
 }
 
 \seealso{
