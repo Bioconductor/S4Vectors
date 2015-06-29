@@ -342,9 +342,8 @@ setMethod("extractROWS", "Vector",
         ## Does NOT validate the object before returning it, because, most of
         ## the times, this is not needed. There are exceptions though. See
         ## for example the "extractROWS" method for Hits objects.
-        do.call(BiocGenerics:::updateS4, c(list(x),
-                                           ans_pslots,
-                                           list(check=FALSE)))
+        do.call(BiocGenerics:::replaceSlots,
+                c(list(x), ans_pslots, list(check=FALSE)))
     }
 )
 
