@@ -24,7 +24,8 @@ exportClasses(
     Rle,
     List,
     SimpleList,
-    DataFrame
+    DataFrame,
+    expressionORfunction, FilterRules, FilterMatrix
 )
 
 
@@ -243,7 +244,10 @@ export(
     SimpleList,
 
     ## DataFrame-class.R:
-    DataFrame
+    DataFrame,
+
+    ## FilterRules-class.R:
+    FilterRules, FilterMatrix
 )
 
 
@@ -302,7 +306,10 @@ export(
     isEmpty, revElements,
 
     ## List-utils.R:
-    endoapply, mendoapply
+    endoapply, mendoapply,
+
+    ## FilterRules-class.R:
+    active, "active<-", evalSeparately, subsetByFilter, params, filterRules
 )
 
 ### Exactly the same list as above.
@@ -334,6 +341,7 @@ exportMethods(
     runsum, runmean, runwtsum, runq,
     elementType, elementLengths,
     isEmpty, revElements,
-    endoapply, mendoapply
+    endoapply, mendoapply,
+    active, "active<-", evalSeparately, subsetByFilter, params, filterRules
 )
 

@@ -38,7 +38,7 @@ R files: 73 files
     DataFrame-utils.R
     expand-methods.R    (merge with DataFrame-utils.R)
 
-    FilterRules-class.R
+  X FilterRules-class.R
 
     classNameForDisplay-methods.R (no more, has been diluted in other files)
     updateObject-methods.R (need to remove methods for range-based objects)
@@ -68,4 +68,12 @@ C files:
 - 9 header files (.h files)
 
   None goes to S4Vectors.
+
+
+Other TODO items that originated in the IRanges package
+-------------------------------------------------------
+
+o FilterRules:
+  - refactor, using ShortRead filter framework (becomes FilterList)
+  - support subsetting DataFrame/RangedData directly
 
