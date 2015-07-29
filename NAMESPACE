@@ -2,8 +2,8 @@ useDynLib(S4Vectors)
 
 import(methods)
 importFrom(utils, head, tail)
-importFrom(stats, var, cov, cor, sd, median, quantile, mad,
-           IQR, smoothEnds, runmed, window, "window<-", aggregate,
+importFrom(stats, var, cov, cor, sd, median, quantile,
+           smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames)
 importFrom(stats4, summary, update)
 
