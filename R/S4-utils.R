@@ -10,14 +10,16 @@ setClassUnion("characterORNULL", c("character", "NULL"))
 ### is( ,"list") makes no sense:
 ###   1. is.vector(matrix()) is FALSE but is(matrix(), "vector") is TRUE.
 ###   2. is.list(data.frame()) is TRUE but is(data.frame(), "list") is FALSE.
-###   3. is.vector(data.frame()) is FALSE but is.list(data.frame()) and
+###   3. is(data.frame(), "list") is FALSE but extends("data.frame", "list")
+###      is TRUE.
+###   4. is.vector(data.frame()) is FALSE but is.list(data.frame()) and
 ###      is.vector(list()) are both TRUE. In other words: a data frame is a
 ###      list and a list is a vector but a data frame is not a vector.
-###   4. I'm sure there is more but you get it!
+###   5. I'm sure there is more but you get it!
 ### Building our software on top of such a mess won't give us anything good.
 ### For example, it's not too surprising that the union class we define below
 ### is broken:
-###   5. is(data.frame(), "vectorORfactor") is TRUE even though
+###   6. is(data.frame(), "vectorORfactor") is TRUE even though
 ###      is(data.frame(), "vector") and is(data.frame(), "factor") are both
 ###      FALSE.
 ### Results above obtained with R-3.1.2 and R-3.2.0.

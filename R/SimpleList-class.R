@@ -56,7 +56,19 @@ new_SimpleList_from_list <- function(Class, x, ..., mcols)
 SimpleList <- function(...)
 {
     args <- list(...)
-    if (length(args) == 1L && is.list(args[[1L]]))
+    ## The extends(class(x), "list") test is NOT equivalent to is.list(x) or
+    ## to is(x, "list") or to inherits(x, "list"). Try for example with
+    ## x <- data.frame() or x <- matrix(list()). We use the former below
+    ## because it seems to closely mimic what the methods package uses for
+    ## checking the "listData" slot of the SimpleList object that we try to
+    ## create later with new(). For example if we were using is.list() instead
+    ## of extends(), the test would pass on matrix(list()) but new() then would
+    ## fail with the following message:
+    ## Error in validObject(.Object) : 
+    ##   invalid class “SimpleList” object: invalid object for slot "listData"
+    ##   in class "SimpleList": got class "matrix", should be or extend class
+    ##   "list"
+    if (length(args) == 1L && extends(class(args[[1L]]), "list"))
         args <- args[[1L]]
     new("SimpleList", listData=args)
 }
