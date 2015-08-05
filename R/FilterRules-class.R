@@ -66,7 +66,7 @@ FilterRules.parseRule <- function(expr) {
   } else if (is.language(expr) || is.logical(expr))
     as.expression(expr)
   else if (is.function(expr))
-    new("FilterClosure", expr)
+    as(expr, "FilterClosure")
   else stop("would not evaluate to logical: ", expr)
 }
 
@@ -296,6 +296,13 @@ setMethod("summary", "FilterRules",
 ###
 
 setClass("FilterClosure", contains = "function")
+
+setClass("StandardGenericFilterClosure",
+         contains = c("FilterClosure", "standardGeneric"))
+
+setAs("standardGeneric", "FilterClosure", function(from) {
+          new("StandardGenericFilterClosure", from)
+      })
 
 setGeneric("params", function(x, ...) standardGeneric("params"))
 
