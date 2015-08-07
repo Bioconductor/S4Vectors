@@ -8,24 +8,10 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### labeledLine()
+### selectSome()
 ###
 
-.qualifyByName <- function(x, qualifier="=") {
-    nms <- names(x)
-    x <- as.character(x)
-    aliased <- nzchar(nms)
-    x[aliased] <- paste0(nms[aliased], qualifier, x[aliased])
-    x
-}
-
-.padToAlign <- function(x) {
-    whitespace <- paste(rep(" ", getOption("width")), collapse="")
-    padlen <- max(nchar(x)) - nchar(x)
-    substring(whitespace, 1L, padlen)
-}
-
-## taken directly from Biobase, then added 'ellipsisPos' argument
+### taken directly from Biobase, then added 'ellipsisPos' argument
 selectSome <- function(obj, maxToShow = 5, ellipsis = "...",
                        ellipsisPos = c("middle", "end", "start"), quote=FALSE) 
 {
@@ -50,6 +36,25 @@ selectSome <- function(obj, maxToShow = 5, ellipsis = "...",
   } else {
     obj
   }
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### labeledLine()
+###
+
+.qualifyByName <- function(x, qualifier="=") {
+    nms <- names(x)
+    x <- as.character(x)
+    aliased <- nzchar(nms)
+    x[aliased] <- paste0(nms[aliased], qualifier, x[aliased])
+    x
+}
+
+.padToAlign <- function(x) {
+    whitespace <- paste(rep(" ", getOption("width")), collapse="")
+    padlen <- max(nchar(x)) - nchar(x)
+    substring(whitespace, 1L, padlen)
 }
 
 .ellipsize <-
