@@ -751,12 +751,10 @@ setMethod("show", "Rle",
                     paste("\"", showMatrix[2L,], "\"", sep = "")
               }
               showMatrix <- format(showMatrix, justify = "right")
-              cat(BiocGenerics:::labeledLine("  Lengths", showMatrix[1L,],
-                                             count = FALSE))
-              cat(BiocGenerics:::labeledLine("  Values ", showMatrix[2L,],
-                                             count = FALSE))
+              cat(labeledLine("  Lengths", showMatrix[1L,], count = FALSE))
+              cat(labeledLine("  Values ", showMatrix[2L,], count = FALSE))
               if (is.factor(runValue(object)))
-                  cat(BiocGenerics:::labeledLine("Levels", levels(object)))
+                  cat(labeledLine("Levels", levels(object)))
           })
 
 setMethod("showAsCell", "Rle", function(object) as.vector(object))
