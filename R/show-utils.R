@@ -26,8 +26,8 @@
 }
 
 ## taken directly from Biobase, then added 'ellipsisPos' argument
-.selectSome <- function(obj, maxToShow = 5, ellipsis = "...",
-                        ellipsisPos = c("middle", "end", "start"), quote=FALSE) 
+selectSome <- function(obj, maxToShow = 5, ellipsis = "...",
+                       ellipsisPos = c("middle", "end", "start"), quote=FALSE) 
 {
   if(is.character(obj) && quote)
       obj <- sQuote(obj)
@@ -61,7 +61,7 @@
     obj <- "NULL"
   if (is.factor(obj))
     obj <- as.character(obj)
-  ## get order .selectSome() would print
+  ## get order selectSome() would print
   if (pos == "middle") {
     if (length(obj) > 2 * width)
       obj <- c(head(obj, width), tail(obj, width))
@@ -102,7 +102,7 @@
       else str <- c(str[1L], ellipsis)
     }
     else {
-      str <- .selectSome(str, last + 1L, ellipsis, pos)
+      str <- selectSome(str, last + 1L, ellipsis, pos)
     }
   }
   paste(str, collapse = sep)
