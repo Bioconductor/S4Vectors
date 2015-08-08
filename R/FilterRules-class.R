@@ -304,6 +304,10 @@ setAs("standardGeneric", "FilterClosure", function(from) {
           new("StandardGenericFilterClosure", from)
       })
 
+setAs("function", "FilterClosure", function(from) {
+          new("FilterClosure", from)
+      })
+
 setGeneric("params", function(x, ...) standardGeneric("params"))
 
 setMethod("params", "FilterClosure", 
