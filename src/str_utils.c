@@ -1,3 +1,5 @@
+#define	_XOPEN_SOURCE
+
 #include "S4Vectors.h"
 
 #include <limits.h>  /* for UINT_MAX and UINT_MIN */
@@ -235,9 +237,9 @@ SEXP strsplit_as_list_of_ints(SEXP x, SEXP sep)
  */
 static int get_svn_time(time_t t, char *out, size_t out_size)
 {
-#if defined(__INTEL_COMPILER)
-	return -1;
-#else /* defined(__INTEL_COMPILER) */
+//#if defined(__INTEL_COMPILER)
+//	return -1;
+//#else /* defined(__INTEL_COMPILER) */
 	struct tm result;
 	int utc_offset, n;
 
@@ -273,7 +275,7 @@ static int get_svn_time(time_t t, char *out, size_t out_size)
 		mon2str[result.tm_mon],
 		result.tm_year + 1900);
 	return n >= out_size ? -1 : 0;
-#endif /* defined(__INTEL_COMPILER) */
+//#endif /* defined(__INTEL_COMPILER) */
 }
 
 /* --- .Call ENTRY POINT --- */
