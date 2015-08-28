@@ -297,8 +297,10 @@ setMethod("summary", "FilterRules",
 
 setClass("FilterClosure", contains = "function")
 
+setClass("GenericFilterClosure", contains = "FilterClosure")
+
 setClass("StandardGenericFilterClosure",
-         contains = c("FilterClosure", "standardGeneric"))
+         contains = c("GenericFilterClosure", "standardGeneric"))
 
 setAs("standardGeneric", "FilterClosure", function(from) {
           new("StandardGenericFilterClosure", from)
