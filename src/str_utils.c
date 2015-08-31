@@ -1,4 +1,10 @@
-#define	_XOPEN_SOURCE
+/*
+ * Defining the _XOPEN_SOURCE feature test macro is required in order to obtain
+ * declaration of tzset() and 'timezone' from <time.h> (see man tzset).
+ * However, it seems that Solaris wants it to have a value (as reported by
+ * Brian D. Ripley to maintainer@bioconductor.org on 2015-29-08).
+ */
+#define	_XOPEN_SOURCE 600
 
 #include "S4Vectors.h"
 
