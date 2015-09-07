@@ -4,20 +4,17 @@ HTS core package stack
   as of August 2015
 
                    VariantAnnotation
-                           |
-                           v
-                    GenomicFeatures
-                           |
-                           v
-                       BSgenome
-                           |
-                           v
+                        |     |
+                        v     v
+           GenomicFeatures   BSgenome
+                        |     |
+                        v     v
                       rtracklayer
                            |
                            v
-                    GenomicAlignments
-                      |           |
-                      v           v
+                   GenomicAlignments
+                      |         |
+                      v         v
      SummarizedExperiment   Rsamtools
                     |       |      |
                     v       v      v
