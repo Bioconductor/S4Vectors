@@ -482,7 +482,9 @@ phead <- function(x, n=6L)
     n <- .normarg_n(n, x_eltlens)
     unlisted_i <- IRanges(start=rep.int(1L, length(n)), width=n)
     i <- relist(unlisted_i, PartitioningByEnd(seq_along(x)))
-    x[i]
+    ans <- x[i]
+    mcols(ans) <- mcols(x)
+    ans
 }
 
 ptail <- function(x, n=6L)
@@ -491,7 +493,9 @@ ptail <- function(x, n=6L)
     n <- .normarg_n(n, x_eltlens)
     unlisted_i <- IRanges(end=x_eltlens, width=n)
     i <- relist(unlisted_i, PartitioningByEnd(seq_along(x)))
-    x[i]
+    ans <- x[i]
+    mcols(ans) <- mcols(x)
+    ans
 }
 
 
