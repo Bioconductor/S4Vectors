@@ -221,6 +221,8 @@ setAs("Vector", "complex", function(from) as.complex(from))
 setAs("Vector", "character", function(from) as.character(from))
 setAs("Vector", "raw", function(from) as.raw(from))
 
+setAs("Vector", "factor", function(from) as.factor(from))
+
 setAs("Vector", "data.frame", function(from) as.data.frame(from))
 
 ### S3/S4 combo for as.data.frame.Vector

@@ -45,6 +45,7 @@
 \alias{coerce,Vector,complex-method}
 \alias{coerce,Vector,character-method}
 \alias{coerce,Vector,raw-method}
+\alias{coerce,Vector,factor-method}
 \alias{coerce,Vector,data.frame-method}
 \alias{as.data.frame.Vector}
 \alias{as.data.frame,Vector-method}
