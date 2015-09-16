@@ -177,7 +177,6 @@ recycleVector <- function(x, length.out)
     }
 }
 
-### NOT exported.
 ### Must always drop the names of 'arg'.
 recycleArg <- function(arg, argname, length.out)
 {

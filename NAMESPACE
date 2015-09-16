@@ -222,6 +222,7 @@ export(
     isSingleNumberOrNA, isSingleStringOrNA,
     recycleIntegerArg, recycleNumericArg,
     recycleLogicalArg, recycleCharacterArg,
+    recycleArg,
     fold,
 
     ## str-utils.R:
