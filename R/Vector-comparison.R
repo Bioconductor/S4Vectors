@@ -322,6 +322,8 @@ setMethod("rank", "Vector",
     }
 }
 
+### Works on any object for which selfmatch(), order(), and as.character()
+### are supported.
 .compute_table <- function(x)
 {
     xx <- selfmatch(x)
@@ -333,7 +335,9 @@ setMethod("rank", "Vector",
     x2 <- x2[oo]
     t2 <- t2[oo]
     ans <- array(t2)
-    dimnames(ans) <- list(as.character(x2))
+    ## Some "as.character" methods propagate the names (e.g. the method for
+    ## GenomicRanges objects). We drop them.
+    dimnames(ans) <- list(unname(as.character(x2)))
     ans
 }
 
