@@ -221,6 +221,7 @@ export(
     isTRUEorFALSE, isSingleInteger, isSingleNumber, isSingleString,
     isSingleNumberOrNA, isSingleStringOrNA,
     recycleIntegerArg, recycleNumericArg,
+    recycleLogicalArg, recycleCharacterArg,
     fold,
 
     ## str-utils.R:

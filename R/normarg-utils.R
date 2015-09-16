@@ -217,6 +217,20 @@ recycleNumericArg <- function(arg, argname, length.out)
     recycleArg(arg, argname, length.out)
 }
 
+recycleLogicalArg <- function(arg, argname, length.out)
+{
+    if (!is.logical(arg))
+        stop("'", argname, "' must be a logical vector")
+    recycleArg(arg, argname, length.out)
+}
+
+recycleCharacterArg <- function(arg, argname, length.out)
+{
+    if (!is.character(arg))
+        stop("'", argname, "' must be a character vector")
+    recycleArg(arg, argname, length.out)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Normalization of replacement values
