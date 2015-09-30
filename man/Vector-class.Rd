@@ -11,6 +11,7 @@
 \alias{Vector}
 
 \alias{length,Vector-method}
+\alias{lengths,Vector-method}
 \alias{NROW,Vector-method}
 \alias{ROWNAMES,Vector-method}
 \alias{elementMetadata}
@@ -102,6 +103,15 @@
     \item{}{
       \code{length(x)}:
       Get the number of elements in \code{x}.
+    }
+    \item{}{
+      \code{lengths(x, use.names=TRUE)}:
+      Get the length (or nb of row for a matrix-like object) of each of
+      the elements. Equivalent to \code{sapply(x, NROW)}.
+
+      Note: \code{lengths} is functionally equivalent to \code{elementLengths} 
+      but also supports the \code{use.names} argument. Eventually
+      \code{lengths} will replace \code{elementLengths}.
     }
     \item{}{
       \code{NROW(x)}:

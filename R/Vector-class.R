@@ -59,6 +59,15 @@ setMethod("length", "Vector",
     function(x) NROW(slot(x, parallelSlotNames(x)[[1L]]))
 )
 
+setMethod("lengths", "Vector", 
+    function(x, use.names=TRUE)
+    {
+        if (!use.names)
+            names(x) <- NULL 
+        elementLengths(x)  ## propagates names
+    }
+)
+
 setMethod("NROW", "Vector", function(x) length(x))
 setMethod("ROWNAMES", "Vector", function(x) names(x))
 

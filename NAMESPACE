@@ -304,7 +304,7 @@ export(
     runsum, runmean, runwtsum, runq,
 
     ## List-class.R:
-    elementType, elementLengths,
+    elementType, elementLengths, lengths,
     isEmpty, revElements,
 
     ## List-utils.R:
@@ -341,7 +341,7 @@ exportMethods(
     findRun,
     shiftApply,
     runsum, runmean, runwtsum, runq,
-    elementType, elementLengths,
+    elementType, elementLengths, lengths,
     isEmpty, revElements,
     endoapply, mendoapply,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules
