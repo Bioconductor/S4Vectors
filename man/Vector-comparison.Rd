@@ -47,6 +47,7 @@
 
 \alias{sort,Vector-method}
 \alias{sort.Vector}
+\alias{rank,Vector-method}
 
 \alias{table,Vector-method}
 
