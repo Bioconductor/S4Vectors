@@ -354,7 +354,7 @@ countMatches(x, y)
 ## might need to load the IRanges package first.
 
 ## ---------------------------------------------------------------------
-## B. FOR DEVELOPPERS: HOW TO IMPLEMENT THE BINARY COMPARISON OPERATORS
+## B. FOR DEVELOPERS: HOW TO IMPLEMENT THE BINARY COMPARISON OPERATORS
 ##    FOR YOUR Vector SUBCLASS
 ## ---------------------------------------------------------------------
 

@@ -54,7 +54,7 @@
 
 \value{
   All these methods behave like \code{base::\link{split}} except that the
-  first 3 methods return a \link{List} object.
+  first 3 methods return a \link{List} object instead of an ordinary list.
 }
 
 \seealso{
@@ -65,6 +65,8 @@
           package.
 
     \item \link{Vector} and \link{List} objects.
+
+    \item \link{Rle} and \link{DataFrame} objects.
   }
 }
 

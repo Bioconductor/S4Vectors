@@ -230,7 +230,7 @@
   contains compact string representations of each elements in \code{x}.
 
   Note that \code{classNameForDisplay} and \code{showAsCell} are generic
-  functions so developpers can implement methods to control how their own
+  functions so developers can implement methods to control how their own
   Vector extension gets displayed.
 }
 
