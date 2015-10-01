@@ -176,6 +176,7 @@ exportMethods(
     transform,
     substr, substring, levels, "levels<-", droplevels, ifelse,
     "[[", "[[<-", "$", "$<-",
+    split,
     eval, with, within,
 
     ## Methods for generics defined in the methods package:
