@@ -63,7 +63,7 @@ setMethod("lengths", "Vector",
      function(x, use.names=TRUE)
      {
          if (!isTRUEorFALSE(use.names))
-             stop(....)
+             stop("'use.names' must be TRUE or FALSE")
          ans <- elementLengths(x)
          if (!use.names)
              names(ans) <- NULL
