@@ -106,12 +106,14 @@
     }
     \item{}{
       \code{lengths(x, use.names=TRUE)}:
-      Get the length (or nb of row for a matrix-like object) of each of
-      the elements. Equivalent to \code{sapply(x, NROW)}.
+      Get the length of each of the elements.
 
-      Note: \code{lengths} is functionally equivalent to \code{elementLengths} 
-      but also supports the \code{use.names} argument. Eventually
-      \code{lengths} will replace \code{elementLengths}.
+      Note: The \code{lengths} method for Vector objects is currently
+      defined as an alias for \code{\link{elementLengths}} (with addition
+      of the \code{use.names} argument), so is equivalent to
+      \code{sapply(x, NROW)}, not to \code{sapply(x, length)}.
+      See \code{?BiocGenerics::\link[BiocGenerics]{lengths}} in the
+      \pkg{BiocGenerics} package for more information about this.
     }
     \item{}{
       \code{NROW(x)}:
