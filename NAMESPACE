@@ -174,10 +174,11 @@ exportMethods(
     t,
     by,
     transform,
-    substr, substring, levels, "levels<-", droplevels, ifelse,
+    substr, substring, levels, "levels<-", droplevels,
     "[[", "[[<-", "$", "$<-",
     split,
     eval, with, within,
+    ifelse,  # Deprecated
 
     ## Methods for generics defined in the methods package:
     coerce, show,

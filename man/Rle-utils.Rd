@@ -15,9 +15,6 @@
 
 \alias{!,Rle-method}
 \alias{which,Rle-method}
-\alias{ifelse,ANY,ANY,Rle-method}
-\alias{ifelse,ANY,Rle,ANY-method}
-\alias{ifelse,ANY,Rle,Rle-method}
 
 \alias{pmax,Rle-method}
 \alias{pmin,Rle-method}
@@ -54,6 +51,11 @@
 \alias{levels.Rle}
 \alias{levels,Rle-method}
 \alias{levels<-,Rle-method}
+
+% old stuff (Deprecated or Defunct)
+\alias{ifelse,ANY,ANY,Rle-method}
+\alias{ifelse,ANY,Rle,ANY-method}
+\alias{ifelse,ANY,Rle,Rle-method}
 
 \title{Common operations on Rle objects}
 
@@ -112,13 +114,6 @@
       \code{which(x)}:
        Returns an integer vector representing the \code{TRUE} indices of
        \code{x}.
-     }
-     \item{}{
-       \code{ifelse(x, yes, no)}:
-       For each element of \code{x}, returns the corresponding element
-       in \code{yes} if \code{TRUE}, otherwise the element in
-       \code{no}. \code{yes} and \code{no} may be \code{Rle} objects or
-       anything else coercible to a vector.
      }
   }
 }
