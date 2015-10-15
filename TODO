@@ -18,7 +18,7 @@ R files: 73 files
   X DataTable-API.R     (rename DataTable-class.R, put DataTable class def here)
   X DataTable-stats.R   (merge with DataTable-class.R)
 
-  X subsetting-utils.R  (rename subsetting-internals.R)
+  X subsetting-utils.R 
   X Vector-class.R      (there are some leftovers in IRanges/R/Vector-class.R)
   X Vector-comparison.R
   X Hits-class.R        (there are some leftovers in IRanges/R/Hits-class.R)

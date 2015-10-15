@@ -227,14 +227,14 @@ export(
     recycleArg,
     fold,
 
+    ## subsetting-utils.R:
+    normalizeSingleBracketSubscript,
+    normalizeDoubleBracketSubscript,
+
     ## str-utils.R:
     safeExplode,
     strsplitAsListOfIntegerVectors,
     svn.time,
-
-    ## subsetting-internals.R:
-    normalizeSingleBracketSubscript,
-    normalizeDoubleBracketSubscript,
 
     ## Hits-class.R:
     Hits,
@@ -263,18 +263,18 @@ export(
     ## isSorted.R:
     isConstant, isSorted, isStrictlySorted,
 
+    ## subsetting-utils.R:
+    NSBS,
+    normalizeSingleBracketReplacementValue,
+    extractROWS, replaceROWS,
+    getListElement, setListElement,
+
     ## str-utils.R:
     unstrsplit,
 
     ## DataTable-class.R:
     ROWNAMES,
     as.env,
-
-    ## subsetting-internals.R:
-    NSBS,
-    normalizeSingleBracketReplacementValue,
-    extractROWS, replaceROWS,
-    getListElement, setListElement,
 
     ## Annotated-class.R:
     metadata, "metadata<-",
@@ -319,13 +319,13 @@ export(
 ### Exactly the same list as above.
 exportMethods(
     isConstant, isSorted, isStrictlySorted,
-    unstrsplit,
-    ROWNAMES,
-    as.env,
     NSBS,
     normalizeSingleBracketReplacementValue,
     extractROWS, replaceROWS,
     getListElement, setListElement,
+    unstrsplit,
+    ROWNAMES,
+    as.env,
     metadata, "metadata<-",
     parallelVectorNames,
     elementMetadata, mcols, values,

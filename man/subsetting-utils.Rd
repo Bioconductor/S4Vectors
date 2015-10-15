@@ -1,6 +1,6 @@
-\name{subsetting-internals}
+\name{subsetting-utils}
 
-\alias{subsetting-internals}
+\alias{subsetting-utils}
 
 \alias{class:NSBS}
 \alias{NSBS-class}
@@ -39,14 +39,14 @@
 \alias{setListElement}
 
 
-\title{Subsetting internals}
+\title{Subsetting utilities}
 
 \description{
-  Internal helper functions and classes defined in the \pkg{S4Vectors}
+  Low-level utility functions and classes defined in the \pkg{S4Vectors}
   package to support subsetting of vector-like objects. They are not
   intended to be used directly.
 }
 
-\keyword{internal}
+\keyword{utilities}
 \keyword{classes}
 \keyword{methods}

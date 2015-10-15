@@ -387,6 +387,11 @@ const char *_get_classname(SEXP x);
 SEXP anyMissing(SEXP x);
 
 
+/* subsetting_utils.c */
+
+SEXP vector_extract_window(SEXP x, SEXP start, SEXP end);
+
+
 /* vector_utils.c */
 
 int _vector_memcmp(
@@ -634,11 +639,6 @@ SEXP svn_time();
 SEXP top_prenv(SEXP nm, SEXP env);
 
 SEXP top_prenv_dots(SEXP env);
-
-
-/* subsetting_internals.c */
-
-SEXP vector_extract_window(SEXP x, SEXP start, SEXP end);
 
 
 /* Hits_class.c */

@@ -16,6 +16,9 @@ static const R_CallMethodDef callMethods[] = {
 /* anyMissing.c */
 	CALLMETHOD_DEF(anyMissing, 1),
 
+/* subsetting_utils.c */
+	CALLMETHOD_DEF(vector_extract_window, 3),
+
 /* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),
 	CALLMETHOD_DEF(vector_subsetByRanges, 3),
@@ -63,9 +66,6 @@ static const R_CallMethodDef callMethods[] = {
 /* eval_utils.c */
 	CALLMETHOD_DEF(top_prenv, 2),
 	CALLMETHOD_DEF(top_prenv_dots, 1),
-
-/* subsetting_internals.c */
-	CALLMETHOD_DEF(vector_extract_window, 3),
 
 /* Hits_class.c */
 	CALLMETHOD_DEF(Hits_new, 5),
