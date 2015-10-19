@@ -178,7 +178,7 @@ exportMethods(
     "[[", "[[<-", "$", "$<-",
     split,
     eval, with, within,
-    ifelse,  # Deprecated
+    ifelse,  # Defunct
 
     ## Methods for generics defined in the methods package:
     coerce, show,
