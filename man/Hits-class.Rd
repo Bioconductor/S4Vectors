@@ -3,7 +3,6 @@
 
 \alias{class:Hits}
 \alias{Hits-class}
-\alias{Hits}
 
 % accessors
 \alias{queryHits}
@@ -19,6 +18,9 @@
 \alias{countSubjectHits}
 \alias{countSubjectHits,Hits-method}
 
+% constructor
+\alias{Hits}
+
 % coercion
 \alias{as.matrix,Hits-method}
 \alias{as.table,Hits-method}
@@ -29,10 +31,13 @@
 % displaying
 \alias{show,Hits-method}
 
-% other
+% other transformations
 \alias{t,Hits-method}
 \alias{remapHits}
 
+% auto-hits
+\alias{isSelfHit}
+\alias{isRedundantHit}
 
 \title{Hits objects}
 
@@ -59,31 +64,8 @@
   the number of hits for each subject element using \code{as.table}.
 }
 
-\section{Coercion}{
-  In the code snippets below, \code{x} is a \code{Hits}
-  object.
-  
-  \describe{
-    \item{}{\code{as.matrix(x)}: Coerces \code{x} to a two
-      column integer matrix, with each row representing a hit
-      between a query index (first column) and subject index (second
-      column).
-    }
-    \item{}{\code{as.table(x)}: counts the number of hits for each
-      query element in \code{x} and outputs the counts as a \code{table}.
-    }
-    \item{}{\code{t(x)}: Interchange the query and subject in \code{x},
-      returns a transposed \code{Hits}.}
-  }
-}
-
-\section{Subsetting}{
-  \describe{
-    \item{}{\code{x[i]}: Subset the Hits object.}
-  }
-}
-
 \section{Accessors}{
+  In the code snippets below, \code{x} is a \code{Hits} object.
   \describe{
     \item{}{\code{length(x)}: get the number of hits}
     \item{}{\code{queryHits(x)}: Equivalent to \code{as.data.frame(x)[[1]]}.}
@@ -102,8 +84,33 @@
   }
 }
 
-\section{Other operations}{
+\section{Coercion}{
+  In the code snippets below, \code{x} is a \code{Hits} object.
   \describe{
+    \item{}{\code{as.matrix(x)}: Coerces \code{x} to a two
+      column integer matrix, with each row representing a hit
+      between a query index (first column) and subject index (second
+      column).
+    }
+    \item{}{\code{as.table(x)}: counts the number of hits for each
+      query element in \code{x} and outputs the counts as a \code{table}.
+    }
+  }
+}
+
+\section{Subsetting}{
+  In the code snippets below, \code{x} is a \code{Hits} object.
+  \describe{
+    \item{}{\code{x[i]}: Subset the Hits object.}
+  }
+}
+
+\section{Other transformations}{
+  In the code snippets below, \code{x} is a \code{Hits} object.
+  \describe{
+    \item{}{\code{t(x)}: Interchange the query and subject in \code{x},
+      returns a transposed \code{Hits}.
+    }
     \item{}{\code{remapHits(x, query.map=NULL, new.queryLength=NA,
                                subject.map=NULL, new.subjectLength=NA)}:
       Remaps the hits in \code{x} thru a "query map" and/or a "subject map"
@@ -145,6 +152,29 @@
   }
 }
 
+\section{Auto-hits}{
+  When the query and subject are the same, the hits between them are
+  \emph{auto-hits}. A Hits object containing auto-hits must have its
+  \code{queryLength} equal to its \code{subjectLength}. It can be seen
+  as an oriented graph where \code{queryLength} is the nb of nodes and
+  the hits are the (oriented) edges.
+  We provide two little utilities to operate on auto-hits.
+
+  In the code snippets below, \code{x} is a \code{Hits} object.
+  \describe{
+    \item{}{\code{isSelfHit(x)}: A \emph{self hit} is an edge from a node to
+      itself. \code{isSelfHit(x)} returns a logical vector \emph{parallel}
+      to \code{x} indicating which elements in \code{x} are self hits.
+    }
+    \item{}{\code{isRedundantHit(x)}: When there is more than 1 edge between
+      2 given nodes (regardless of orientation), the extra edges are considered
+      to be \emph{redundant hits}. \code{isRedundantHit(x)} returns a logical
+      vector \emph{parallel} to \code{x} indicating which elements in \code{x}
+      are redundant hits.
+    }
+  }
+}
+
 \author{Michael Lawrence and H. Pages}
 
 \seealso{
@@ -163,9 +193,9 @@
 }
 
 \examples{
-x <- c("a", "b", "a", "c", "d")
-y <- c("a", "e", "d", "a", "a", "d")
-hits <- findMatches(x, y)
+query <- c("a", "b", "a", "c", "d")
+subject <- c("a", "e", "d", "a", "a", "d")
+hits <- findMatches(query, subject)
 hits
 
 ## ---------------------------------------------------------------------
@@ -182,11 +212,25 @@ selectHits(hits, select="count")
 ## remapHits()
 ## ---------------------------------------------------------------------
 
-query.map=factor(c(a="A", b="B", c="C", d="D")[x] , levels=LETTERS[1:4])
+query.map=factor(c(a="A", b="B", c="C", d="D")[query], levels=LETTERS[1:4])
 remapHits(hits, query.map=query.map)
 
 ## See ?`Hits-examples` in the IRanges package for more examples of basic
 ## manipulation of Hits objects.
+
+## ---------------------------------------------------------------------
+## Auto-hits
+## ---------------------------------------------------------------------
+
+hits2 <- Hits(c(2, 3, 3, 3, 3, 3, 4, 4, 4), c(4, 3, 2:4, 2, 2:3, 2), 4, 4)
+## Hits 2 and 4 are self hits (from 3rd node to itself):
+which(isSelfHit(hits2))
+## Hits 4, 6, 7, 8, and 9, are redundant hits:
+which(isRedundantHit(hits2))
+
+hits3 <- findMatches(query, query)
+hits3[!isSelfHit(hits3)]
+hits3[!(isSelfHit(hits3) | isRedundantHit(hits3))]
 }
 \keyword{methods}
 \keyword{classes}

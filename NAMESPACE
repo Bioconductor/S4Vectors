@@ -240,6 +240,8 @@ export(
     Hits,
     selectHits,
     remapHits,
+    isSelfHit,
+    isRedundantHit,
 
     ## List-class.R:
     List, phead, ptail, pc,

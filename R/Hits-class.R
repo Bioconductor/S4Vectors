@@ -436,12 +436,47 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### makeAllGroupInnerHits()
+### Auto-hits
 ###
-### NOT exported.
+### When the query and subject are the same, the hits between them are
+### "auto-hits". A Hits object containing auto-hits must have its queryLength
+### equal to its subjectLength. It can be seen as an oriented graph where
+### queryLength is the nb of nodes and the hits are the (oriented) edges.
+###
+
+.error_if_not_auto_hits <- function(x)
+{
+    if (!is(x, "Hits"))
+        stop("'x' must be a Hits object")
+    if (queryLength(x) != subjectLength(x))
+        stop("'queryLength(x)' and 'subjectLength(x)' must be equal")
+}
+
+### A "self hit" is an edge from a node to itself. For example, the 2nd hit in
+### the Hits object below is a self hit (from 3rd node to itself):
+###     Hits(c(3, 3, 3, 4, 4), c(2:4, 2:3), 4, 4)
+isSelfHit <- function(x)
+{
+    .error_if_not_auto_hits(x)
+    queryHits(x) == subjectHits(x)
+}
+
+### When there is more than 1 edge between 2 given nodes (regardless of
+### orientation), the extra edges are considered to be "redundant hits". For
+### example, hits 3, 5, 7, and 8, in the Hits object below are redundant hits:
+###     Hits(c(3, 3, 3, 3, 3, 4, 4, 4), c(3, 2:4, 2, 2:3, 2), 4, 4)
+### Note that this is regardless of the orientation of the edge so hit 7 (edge
+### 4-3) is considered to be redundant with hit 4 (edge 3-4).
+isRedundantHit <- function(x)
+{
+    .error_if_not_auto_hits(x)
+    duplicatedIntegerPairs(pmin.int(queryHits(x), subjectHits(x)),
+                           pmax.int(queryHits(x), subjectHits(x)))
+}
 
 ### About 10x faster and uses 4x less memory than my first attempt in pure
 ### R below.
+### NOT exported.
 makeAllGroupInnerHits <- function(group.sizes, hit.type=0L)
 {
     if (!is.integer(group.sizes))
@@ -454,6 +489,7 @@ makeAllGroupInnerHits <- function(group.sizes, hit.type=0L)
            PACKAGE="S4Vectors")
 }
 
+### NOT exported.
 ### TODO: Remove this.
 makeAllGroupInnerHits.old <- function(GS)
 {
