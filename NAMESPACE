@@ -287,6 +287,7 @@ export(
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
     classNameForDisplay, showAsCell,
+    expand.grid,
 
     ## Vector-comparison.R:
     compare,

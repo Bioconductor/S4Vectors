@@ -588,3 +588,24 @@ setMethod("with", "Vector",
           {
             safeEval(substitute(expr), data, parent.frame(), ...)
           })
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Utilities.
+###
+
+setGeneric("expand.grid", signature="...")
+
+setMethod("expand.grid", "Vector",
+          function(..., KEEP.OUT.ATTRS = TRUE, stringsAsFactors = TRUE) {
+              args <- list(...)
+              inds <- lapply(args, seq_along)
+              grid <- do.call(expand.grid,
+                              c(inds,
+                                KEEP.OUT.ATTRS=KEEP.OUT.ATTRS,
+                                stringsAsFactors=stringsAsFactors))
+              names(args) <- names(grid)
+              ans <- DataFrame(mapply(`[`, args, grid, SIMPLIFY=FALSE),
+                               check.names=FALSE)
+              metadata(ans)$out.attrs <- attr(grid, "out.attrs")
+              ans
+          })
