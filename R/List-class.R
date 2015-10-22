@@ -177,7 +177,7 @@ setMethod("show", "List",
 ### and 'i' is a List of numeric vectors or numeric-Rle objects.
 .unlist_NL_subscript <- function(i, x)
 {
-    offsets <- c(0L, end(PartitioningByEnd(x))[-length(x)])
+    offsets <- c(0L, end(IRanges::PartitioningByEnd(x))[-length(x)])
     i <- i + offsets
     unlist(i, use.names=FALSE)
 }
@@ -187,7 +187,7 @@ setMethod("show", "List",
 .unlist_RL_subscript <- function(i, x)
 {
     unlisted_i <- unlist(i, use.names=FALSE)
-    offsets <- c(0L, end(PartitioningByEnd(x))[-length(x)])
+    offsets <- c(0L, end(IRanges::PartitioningByEnd(x))[-length(x)])
     shift(unlisted_i, shift=rep.int(offsets, elementLengths(i)))
 }
 
@@ -205,7 +205,7 @@ setMethod("show", "List",
     ## Relist.
     group <- rep.int(seq_along(x), elementLengths(x))
     group <- extractROWS(group, unlisted_i)
-    ans_skeleton <- PartitioningByEnd(group, NG=length(x), names=names(x))
+    ans_skeleton <- IRanges::PartitioningByEnd(group, NG=length(x), names=names(x))
     ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
     metadata(ans) <- metadata(x)
     ans
@@ -224,7 +224,7 @@ setMethod("show", "List",
 
     ## Relist.
     ans_breakpoints <- cumsum(unname(elementLengths(i)))
-    ans_skeleton <- PartitioningByEnd(ans_breakpoints, names=names(x))
+    ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
     ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
     metadata(ans) <- metadata(x)
     ans
@@ -243,7 +243,7 @@ setMethod("show", "List",
 
     ## Relist.
     ans_breakpoints <- cumsum(unlist(sum(width(i)), use.names=FALSE))
-    ans_skeleton <- PartitioningByEnd(ans_breakpoints, names=names(x))
+    ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
     ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
     metadata(ans) <- metadata(x)
     ans
@@ -481,7 +481,7 @@ phead <- function(x, n=6L)
     x_eltlens <- unname(elementLengths(x))
     n <- .normarg_n(n, x_eltlens)
     unlisted_i <- IRanges(start=rep.int(1L, length(n)), width=n)
-    i <- relist(unlisted_i, PartitioningByEnd(seq_along(x)))
+    i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
     ans <- x[i]
     mcols(ans) <- mcols(x)
     ans
@@ -492,7 +492,7 @@ ptail <- function(x, n=6L)
     x_eltlens <- unname(elementLengths(x))
     n <- .normarg_n(n, x_eltlens)
     unlisted_i <- IRanges(end=x_eltlens, width=n)
-    i <- relist(unlisted_i, PartitioningByEnd(seq_along(x)))
+    i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
     ans <- x[i]
     mcols(ans) <- mcols(x)
     ans
@@ -554,7 +554,7 @@ listClassName <- function(impl, element.type) {
 
 setAs("ANY", "List", function(from) {
   ## since list is directed to SimpleList, we assume 'from' is non-list-like
-  relist(from, PartitioningByEnd(seq_along(from), names=names(from)))
+  relist(from, IRanges::PartitioningByEnd(seq_along(from), names=names(from)))
 })
 
 ## Special cased, because integer extends ANY (somehow) and numeric,
