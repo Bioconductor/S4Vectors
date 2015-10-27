@@ -162,24 +162,6 @@ setMethod("merge", c("DataTable", "data.frame"), function(x, y, ...) {
   as(merge(as(x, "data.frame"), y, ...), class(x))
 })
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Looping methods.
-###
-
-.by.data.frame <- by.data.frame # so it will find our generic
-environment(.by.data.frame) <- topenv()
-setMethod("by", "DataTable",
-          function(data, INDICES, FUN, ..., simplify = TRUE)
-          {
-              .mc <- mc <- match.call()
-              .mc[[1L]] <- .by.data.frame
-              ans <- eval(.mc, parent.frame())
-              attr(ans, "call") <- mc
-              ans
-          })
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Summary methods.
 ###

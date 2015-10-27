@@ -238,12 +238,15 @@ setAs("Vector", "factor", function(from) as.factor(from))
 setAs("Vector", "data.frame", function(from) as.data.frame(from))
 
 ### S3/S4 combo for as.data.frame.Vector
-as.data.frame.Vector <- function(x, row.names=NULL, optional=FALSE, ...)
-{
-    x <- as.vector(x)
+as.data.frame.Vector <- function(x, row.names=NULL, optional=FALSE, ...) {
     as.data.frame(x, row.names=NULL, optional=optional, ...)
 }
-setMethod("as.data.frame", "Vector", as.data.frame.Vector)
+setMethod("as.data.frame", "Vector",
+          function(x, row.names=NULL, optional=FALSE, ...)
+          {
+              x <- as.vector(x)
+              as.data.frame(x, row.names=NULL, optional=optional, ...)
+          })
 
 makeFixedColumnEnv <- function(x, parent, tform = identity) {
   env <- new.env(parent=parent)
@@ -608,4 +611,16 @@ setMethod("expand.grid", "Vector",
                                check.names=FALSE)
               metadata(ans)$out.attrs <- attr(grid, "out.attrs")
               ans
+          })
+
+### FIXME: tapply method still in IRanges
+setMethod("by", "Vector",
+          function(data, INDICES, FUN, ..., simplify = TRUE)
+          {
+              if (!is.list(INDICES)) {
+                  INDICES <- setNames(list(INDICES),
+                                      deparse(substitute(INDICES))[1L])
+              }
+              structure(tapply(data, INDICES, FUN, simplify = simplify),
+                        call = match.call(), class = "by")
           })
