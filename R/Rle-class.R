@@ -335,9 +335,6 @@ setMethod("%in%", "Rle",
 setMethod("c", "Rle", 
           function(x, ..., recursive = FALSE)
           {
-              if (!identical(recursive, FALSE))
-                  stop("\"c\" method for Rle objects ",
-                       "does not support the 'recursive' argument")
               args <- lapply(unname(list(x, ...)), Rle)
               args <- args[sapply(args, length) > 0]
               if (length(args) == 0L)
