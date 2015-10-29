@@ -621,6 +621,8 @@ setMethod("by", "Vector",
                   INDICES <- setNames(list(INDICES),
                                       deparse(substitute(INDICES))[1L])
               }
-              structure(tapply(data, INDICES, FUN, simplify = simplify),
+              FUNx <- function(i) FUN(extractROWS(data, i), ...)
+              structure(tapply(seq_len(NROW(data)), INDICES, FUNx,
+                               simplify = simplify),
                         call = match.call(), class = "by")
           })
