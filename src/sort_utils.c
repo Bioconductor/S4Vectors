@@ -123,7 +123,7 @@ void _compare_int_pairs(const int *a1, const int *b1, int nelt1,
 }
 
 int _int_pairs_are_sorted(const int *a, const int *b, int nelt,
-		int desc, int strict)
+			  int desc, int strict)
 {
 	int a1, b1, a2, b2, i, ret;
 
@@ -244,6 +244,38 @@ static int compar_int_quads(int a1, int b1, int c1, int d1,
 		return ret;
 	ret = d1 - d2;
 	return ret;
+}
+
+int _int_quads_are_sorted(const int *a, const int *b,
+			  const int *c, const int *d, int nelt,
+			  int desc, int strict)
+{
+	int a1, b1, c1, d1, a2, b2, c2, d2, i, ret;
+
+	if (nelt == 0)
+		return 1;
+	a2 = a[0];
+	b2 = b[0];
+	c2 = c[0];
+	d2 = d[0];
+	for (i = 1; i < nelt; i++) {
+		a1 = a2;
+		b1 = b2;
+		c1 = c2;
+		d1 = d2;
+		a2 = a[i];
+		b2 = b[i];
+		c2 = c[i];
+		d2 = d[i];
+		ret = compar_int_quads(a1, b1, c1, d1, a2, b2, c2, d2);
+		if (ret == 0) {
+			if (strict) return 0;
+			continue;
+		}
+		if (desc != (ret > 0))
+			return 0;
+	}
+	return 1;
 }
 
 static int compar_aabbccdd(int i1, int i2)

@@ -143,6 +143,7 @@ SEXP Integer_diff_with_0(SEXP x)
 	return ans;
 }
 
+
 /****************************************************************************
  * --- .Call ENTRY POINT ---
  * diff(c(x, last))
@@ -167,9 +168,31 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last)
   return ans;
 }
 
+
 /****************************************************************************
+ * Fast ordering of an integer vector.
+ * --- .Call ENTRY POINT ---
+ */
+
+SEXP Integer_order(SEXP x, SEXP decreasing)
+{
+	int ans_length;
+	SEXP ans;
+
+	ans_length = LENGTH(x);
+	PROTECT(ans = NEW_INTEGER(ans_length));
+	_get_order_of_int_array(INTEGER(x), ans_length,
+				LOGICAL(decreasing)[0], INTEGER(ans), 1);
+	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
+ * Fast ordering/comparing of integer pairs.
+ *
  * The .Call entry points in this section are the workhorses behind
- * orderInteger(), orderIntegerPairs(), matchIntegerPairs(), and
+ * sortedIntegerPairs(), orderIntegerPairs(), matchIntegerPairs(), and
  * duplicatedIntegerPairs().
  */
 
@@ -194,20 +217,6 @@ int _check_integer_pairs(SEXP a, SEXP b,
 	*a_p = INTEGER(a);
 	*b_p = INTEGER(b);
 	return len;
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP Integer_order(SEXP x, SEXP decreasing)
-{
-	int ans_length;
-	SEXP ans;
-
-	ans_length = LENGTH(x);
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	_get_order_of_int_array(INTEGER(x), ans_length,
-				LOGICAL(decreasing)[0], INTEGER(ans), 1);
-	UNPROTECT(1);
-	return ans;
 }
 
 /* --- .Call ENTRY POINT ---
@@ -371,8 +380,11 @@ SEXP Integer_selfmatch2_hash(SEXP a, SEXP b)
 
 
 /****************************************************************************
+ * Fast ordering/comparing of integer quadruplets.
+ *
  * The .Call entry points in this section are the workhorses behind
- * orderIntegerQuads(), matchIntegerQuads() and duplicatedIntegerQuads().
+ * sortedIntegerQuads(), orderIntegerQuads(), matchIntegerQuads(), and
+ * duplicatedIntegerQuads().
  */
 
 /*
@@ -401,6 +413,22 @@ int _check_integer_quads(SEXP a, SEXP b, SEXP c, SEXP d,
 	*c_p = INTEGER(c);
 	*d_p = INTEGER(d);
 	return len;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP Integer_sorted4(SEXP a, SEXP b, SEXP c, SEXP d,
+		     SEXP decreasing, SEXP strictly)
+{
+	const int *a_p, *b_p, *c_p, *d_p;
+	int nquad, ans;
+
+	nquad = _check_integer_quads(a, b, c, d,
+				     &a_p, &b_p, &c_p, &d_p,
+				     "a", "b", "c", "d");
+	ans = _int_quads_are_sorted(a_p, b_p, c_p, d_p, nquad,
+				    LOGICAL(decreasing)[0],
+				    LOGICAL(strictly)[0]);
+	return ScalarLogical(ans);
 }
 
 /* --- .Call ENTRY POINT --- */

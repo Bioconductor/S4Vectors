@@ -86,6 +86,16 @@ void _get_matches_of_ordered_int_pairs(
 	int out_shift
 );
 
+int _int_quads_are_sorted(
+	const int *a,
+	const int *b,
+	const int *c,
+	const int *d,
+	int nelt,
+	int desc,
+	int strict
+);
+
 void _get_order_of_int_quads(
 	const int *a,
 	const int *b,
@@ -534,6 +544,15 @@ int _check_integer_quads(
 	const char *b_argname,
 	const char *c_argname,
 	const char *d_argname
+);
+
+SEXP Integer_sorted4(
+	SEXP a,
+	SEXP b,
+	SEXP c,
+	SEXP d,
+	SEXP decreasing,
+	SEXP strictly
 );
 
 SEXP Integer_order4(

@@ -88,7 +88,7 @@ orderInteger <- function(x, decreasing=FALSE, na.last=NA)
         return(sort.list(x, decreasing=decreasing, na.last=na.last,
                          method="radix"))
     }
-    
+
     if (!has_NAs || is.na(na.last)) {
         if (has_NAs)
             x <- x[!is.na(x)]
@@ -314,6 +314,16 @@ runEndsOfIntegerPairs <- function(a, b)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Fast ordering/comparing of integer quadruplets.
 ###
+
+sortedIntegerQuads <- function(a, b, c, d, decreasing=FALSE, strictly=FALSE)
+{
+    a <- .normargIntegerOrFactor(a, "a")
+    b <- .normargIntegerOrFactor(b, "b")
+    c <- .normargIntegerOrFactor(c, "c")
+    d <- .normargIntegerOrFactor(d, "d")
+    .Call2("Integer_sorted4", a, b, c, d, decreasing, strictly,
+           PACKAGE="S4Vectors")
+}
 
 ### For 'a', 'b', 'c' and 'd' integer vectors of equal length with no NAs,
 ### 'orderIntegerQuads(a, b, c, d)' is equivalent to (but faster than):
