@@ -366,8 +366,8 @@ setMethod("[", "FilterMatrix", function(x, i, j, ..., drop = TRUE) {
 })
 
 setMethod("rbind", "FilterMatrix", function(..., deparse.level = 1) {
-  ans <- base::rbind(...)
   args <- list(...)
+  ans <- do.call(rbind, lapply(args, as, "matrix"))
   rulesList <- lapply(args, filterRules)
   if (any(!sapply(rulesList, identical, rulesList[[1]])))
     stop("cannot rbind filter matrices with non-identical rule sets")
@@ -375,8 +375,9 @@ setMethod("rbind", "FilterMatrix", function(..., deparse.level = 1) {
 })
 
 setMethod("cbind", "FilterMatrix", function(..., deparse.level = 1) {
-  ans <- base::cbind(...)
-  rules <- do.call(c, lapply(list(...), function(x) x@filterRules))
+  args <- list(...)
+  ans <- do.call(cbind, lapply(args, as, "matrix"))
+  rules <- do.call(c, lapply(args, function(x) x@filterRules))
   FilterMatrix(matrix = ans, filterRules = rules)
 })
 
