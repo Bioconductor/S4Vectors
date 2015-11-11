@@ -264,9 +264,13 @@ setMethod("sort", "Vector", sort.Vector)
 
 formulaAsListCall <- function(formula) attr(terms(formula), "variables")
 
+formulaValues <- function(x, formula) {
+    eval(formulaAsListCall(formula), as.env(x, environment(formula)))
+}
+
 orderBy <- function(formula, x, decreasing=FALSE, na.last=TRUE) {
-  terms <- eval(formulaAsListCall(formula), as.env(x, environment(formula)))
-  do.call(order, c(decreasing=decreasing, na.last=na.last, terms))
+  values <- formulaValues(x, formula)
+  do.call(order, c(decreasing=decreasing, na.last=na.last, values))
 }
 
 setMethod("xtfrm", "Vector", function(x) {
@@ -360,3 +364,16 @@ setMethod("table", "Vector",
     }
 )
 
+setMethod("xtabs", "Vector",
+          function (formula = ~., data = parent.frame(),
+                    subset, sparse = FALSE, 
+                    na.action, exclude = c(NA, NaN),
+                    drop.unused.levels = FALSE) {
+              stopifnot(missing(subset))
+              stopifnot(identical(sparse, FALSE))
+              stopifnot(missing(na.action))
+              stopifnot(identical(drop.unused.levels, FALSE))
+              do.call(table, c(as.character(data),
+                               formulaValues(data, formula),
+                               exclude=exclude))
+          })
