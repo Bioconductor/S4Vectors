@@ -189,7 +189,7 @@ setMethod("extractROWS", "Rle",
             attributes(ans_values) <- list(levels=levels(x), class="factor")
         ans <- Rle(ans_values, ans_lengths)
         ans <- as(ans, class(x))
-        mcols(ans) <- extractROWS(mcols(ans), i)
+        mcols(ans) <- extractROWS(mcols(x), i)
         ans
     }
 )
@@ -207,6 +207,9 @@ setMethod("[", "Rle",
     }
 )
 
+### The replaced elements in 'x' must get their metadata columns from 'value'.
+### See this thread on bioc-devel:
+###   https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
 setMethod("replaceROWS", "Rle",
     function(x, i, value)
     {
@@ -221,8 +224,11 @@ setMethod("replaceROWS", "Rle",
 
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         lv <- length(value)
-        if (lv != 1L) 
-            return(Rle(replaceROWS(decodeRle(x), i, as.vector(value))))
+        if (lv != 1L) {
+            ans <- Rle(replaceROWS(decodeRle(x), i, as.vector(value)))
+            mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
+            return(ans)
+        }
 
         ## From here, 'value' is guaranteed to be of length 1.
 
@@ -238,9 +244,9 @@ setMethod("replaceROWS", "Rle",
 
         isFactorRle <- is.factor(runValue(x))
         value <- normalizeSingleBracketReplacementValue(value, x)
-        value <- as.vector(value)
+        value2 <- as.vector(value)
         if (isFactorRle) {
-            value <- factor(value, levels=levels(x))
+            value2 <- factor(value2, levels=levels(x))
             dummy_value <- factor(levels(x), levels=levels(x))
         }
         if (anyMissingOrOutside(start(ir), 1L, length(x)) ||
@@ -297,14 +303,16 @@ setMethod("replaceROWS", "Rle",
         if (length(valueWidths) > 0L) {
             subseqs[seq(2L, length(subseqs), by=2L)] <-
                 lapply(seq_len(length(valueWidths)), function(i)
-                       list(values=value,
+                       list(values=value2,
                             lengths=valueWidths[i]))
         }
         values <- unlist(lapply(subseqs, "[[", "values"))
         if (isFactorRle)
             values <- dummy_value[values]
-        Rle(values=values,
-            lengths=unlist(lapply(subseqs, "[[", "lengths")))
+        ans <- Rle(values=values,
+                   lengths=unlist(lapply(subseqs, "[[", "lengths")))
+        mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
+        ans
     }
 )
 

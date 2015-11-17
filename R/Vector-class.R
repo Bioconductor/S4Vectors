@@ -397,15 +397,21 @@ setMethod("replaceROWS", "Vector",
     {
         idx <- seq_along(x)
         i <- extractROWS(setNames(idx, names(x)), i)
-        ## Assuming that objects of class 'class(x)' can be combined with c().
+        ## Assuming that c() works on objects of class 'class(x)' and does the
+        ## right thing (i.e. returns an object of the same class as 'x' and of
+        ## length 'length(x) + length(value)').
         ans <- c(x, value)
-        idx[i] <- length(x) + seq_len(length(value))
         ## Assuming that [ works on objects of class 'class(x)'.
+        idx[i] <- length(x) + seq_along(value)
         ans <- ans[idx]
         ## Restore the original decoration.
         metadata(ans) <- metadata(x)
         names(ans) <- names(x)
-        mcols(ans) <- mcols(x)
+        ## However, we want the replaced elements in 'x' to get their
+        ## metadata columns from 'value' so we do not restore the original
+        ## metadata columns. See this thread on bioc-devel:
+        ##  https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
+        #mcols(ans) <- mcols(x)
         ans
     }
 )
