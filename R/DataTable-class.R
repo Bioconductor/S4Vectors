@@ -2,9 +2,11 @@
 ### DataTable objects
 ### -------------------------------------------------------------------------
 ###
-### DataTable is an API only (i.e. virtual class with no slots) for accessing
-### objects with a rectangular shape like DataFrame or RangedData objects.
-### It mimics the API for standard data.frame objects.
+### DataTable is an API only (i.e. virtual class with no slots) for
+### accessing objects with a rectangular shape like DataFrame or
+### RangedData objects.  It mimics the API for standard data.frame
+### objects, except derivatives do not necessarily behave as a list of
+### columns.
 ###
 
 
@@ -211,6 +213,9 @@ setMethod("as.env", "DataTable",
               addSelfRef(x, env)
           })
 
+as.data.frame.DataTable <- function(x, row.names=NULL, optional=FALSE, ...) {
+    as.data.frame(x, row.names=NULL, optional=optional, ...)
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.

@@ -188,7 +188,7 @@ setMethod("show", "List",
 {
     unlisted_i <- unlist(i, use.names=FALSE)
     offsets <- c(0L, end(IRanges::PartitioningByEnd(x))[-length(x)])
-    shift(unlisted_i, shift=rep.int(offsets, elementLengths(i)))
+    IRanges::shift(unlisted_i, shift=rep.int(offsets, elementLengths(i)))
 }
 
 ### Fast subset by List of logical vectors or logical-Rle objects.
@@ -480,7 +480,7 @@ phead <- function(x, n=6L)
 {
     x_eltlens <- unname(elementLengths(x))
     n <- .normarg_n(n, x_eltlens)
-    unlisted_i <- IRanges(start=rep.int(1L, length(n)), width=n)
+    unlisted_i <- IRanges::IRanges(start=rep.int(1L, length(n)), width=n)
     i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
     ans <- x[i]
     mcols(ans) <- mcols(x)
@@ -491,7 +491,7 @@ ptail <- function(x, n=6L)
 {
     x_eltlens <- unname(elementLengths(x))
     n <- .normarg_n(n, x_eltlens)
-    unlisted_i <- IRanges(end=x_eltlens, width=n)
+    unlisted_i <- IRanges::IRanges(end=x_eltlens, width=n)
     i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
     ans <- x[i]
     mcols(ans) <- mcols(x)
@@ -514,9 +514,7 @@ setAs("List", "list", function(from) as.list(from))
         names(ans) <- NULL
     ans
 }
-### S3/S4 combo for as.list.List
-as.list.List <- function(x, ...) .as.list.List(x, ...)
-setMethod("as.list", "List", as.list.List)
+setMethod("as.list", "List", .as.list.List)
 
 setMethod("as.env", "List",
           function(x, enclos = parent.frame(2), tform = identity) {
@@ -619,8 +617,7 @@ setMethod("unlist", "List",
     }
 )
 
-### S3/S4 combo for as.data.frame.List
-as.data.frame.List <- 
+.as.data.frame.List <- 
     function(x, row.names=NULL, optional=FALSE, ..., value.name="value",
              use.outer.mcols=FALSE, group_name.as.factor=FALSE)
 {
@@ -654,7 +651,7 @@ as.data.frame.List <-
 
     xx
 }
-setMethod("as.data.frame", "List", as.data.frame.List)
+setMethod("as.data.frame", "List", .as.data.frame.List)
 
 setAs("List", "data.frame", function(from) as.data.frame(from))
 
@@ -675,11 +672,11 @@ pc <- function(...) {
   }
 
   ans_unlisted <- do.call(c, lapply(args, unlist, use.names=FALSE))
-  ans_group <- structure(do.call(c, lapply(args, togroup)),
+  ans_group <- structure(do.call(c, lapply(args, IRanges::togroup)),
                          class="factor",
                          levels=as.character(seq_along(args[[1L]])))
   
-  ans <- splitAsList(ans_unlisted, ans_group)
+  ans <- IRanges::splitAsList(ans_unlisted, ans_group)
 
   names(ans) <- names(args[[1L]])
   ans

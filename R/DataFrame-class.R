@@ -513,8 +513,7 @@ injectIntoScope <- function(x, ...) {
   x
 }
 
-### S3/S4 combo for as.data.frame.DataFrame
-as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
+.as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
 {
     if (length(list(...)))
         warning("Arguments in '...' ignored")
@@ -536,7 +535,7 @@ as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
             c(l, list(row.names=row.names),
               check.names=!optional, stringsAsFactors=FALSE))
 }
-setMethod("as.data.frame", "DataFrame", as.data.frame.DataFrame)
+setMethod("as.data.frame", "DataFrame", .as.data.frame.DataFrame)
 
 setMethod("as.matrix", "DataFrame", function(x) {
   if (length(x) == 0L)

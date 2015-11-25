@@ -87,8 +87,9 @@ setMethod("length", "NSBS", function(x) length(as.integer(x)))
 
 ## S3/S4 combo for anyDuplicated.NSBS
 anyDuplicated.NSBS <- function(x, incomparables=FALSE, ...)
-    anyDuplicated(as.integer(x))
-setMethod("anyDuplicated", "NSBS", anyDuplicated.NSBS)
+    anyDuplicated(x, incomparables=incomparables, ...)
+setMethod("anyDuplicated", "NSBS", function(x, incomparables=FALSE, ...)
+    anyDuplicated(as.integer(x)))
 
 setMethod("isStrictlySorted", "NSBS",
     function(x) isStrictlySorted(as.integer(x))
@@ -306,9 +307,8 @@ setMethod("length", "WindowNSBS",
     }
 )
 
-## S3/S4 combo for anyDuplicated.WindowNSBS
-anyDuplicated.WindowNSBS <- function(x, incomparables=FALSE, ...) 0L
-setMethod("anyDuplicated", "WindowNSBS", anyDuplicated.WindowNSBS)
+setMethod("anyDuplicated", "WindowNSBS",
+          function(x, incomparables=FALSE, ...) 0L)
 
 setMethod("isStrictlySorted", "WindowNSBS", function(x) TRUE)
 

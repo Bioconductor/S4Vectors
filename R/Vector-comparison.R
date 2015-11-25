@@ -107,6 +107,9 @@ reverseSelfmatchMapping <- function(selfmatch_mapping)
 
 ### S3/S4 combo for duplicated.Vector
 duplicated.Vector <- function(x, incomparables=FALSE, ...)
+    duplicated(x, incomparables=incomparables, ...)
+
+.duplicated.Vector <- function(x, incomparables=FALSE, ...)
 {
     if (!identical(incomparables, FALSE)) 
         stop("the \"duplicated\" method for Vector objects ", 
@@ -128,15 +131,17 @@ duplicated.Vector <- function(x, incomparables=FALSE, ...)
         ans <- rev(ans)
     ans
 }
-setMethod("duplicated", "Vector", duplicated.Vector)
+setMethod("duplicated", "Vector", .duplicated.Vector)
 
 ### S3/S4 combo for unique.Vector
 unique.Vector <- function(x, incomparables=FALSE, ...)
+    unique(x, incomparables=incomparables, ...)
+.unique.Vector <- function(x, incomparables=FALSE, ...)
 {
     i <- !duplicated(x, incomparables=incomparables, ...)
     extractROWS(x, i)
 }
-setMethod("unique", "Vector", unique.Vector)
+setMethod("unique", "Vector", .unique.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -259,8 +264,8 @@ setMethod("countMatches", c("ANY", "ANY"), .countMatches.default)
     extractROWS(x, i)
 }
 sort.Vector <- function(x, decreasing=FALSE, ...)
-    .sort.Vector(x, decreasing=decreasing, ...)
-setMethod("sort", "Vector", sort.Vector)
+    sort(x, decreasing=decreasing, ...)
+setMethod("sort", "Vector", .sort.Vector)
 
 formulaAsListCall <- function(formula) attr(terms(formula), "variables")
 

@@ -34,33 +34,24 @@ exportClasses(
 ###
 
 S3method(aggregate, Vector)
-S3method(aggregate, Rle)
-S3method(aggregate, List)
 
 S3method(anyDuplicated, NSBS)
-S3method(anyDuplicated, WindowNSBS)
 
 S3method(as.data.frame, Vector)
-S3method(as.data.frame, Rle)
-S3method(as.data.frame, List)
-S3method(as.data.frame, DataFrame)
+S3method(as.data.frame, DataTable)
 
-S3method(as.list, Rle)
-S3method(as.list, List)
-S3method(as.list, SimpleList)
+S3method(as.list, Vector)
 
 S3method(as.vector, Rle)
 
 S3method(cbind, DataFrame)
 
-S3method(diff, Rle)
+S3method(diff, Vector)
 
-S3method(droplevels, Rle)
-S3method(droplevels, List)
+S3method(droplevels, Vector)
 
 S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
-S3method(duplicated, Rle)
 
 S3method(head, Vector)
 
@@ -77,7 +68,6 @@ S3method(rbind, DataFrame)
 S3method(rev, Rle)
 
 S3method(sort, Vector)
-S3method(sort, Rle)
 
 S3method(summary, Rle)
 
@@ -85,7 +75,6 @@ S3method(tail, Vector)
 
 S3method(unique, DataTable)
 S3method(unique, Vector)
-S3method(unique, Rle)
 
 S3method(window, Vector)
 
@@ -94,31 +83,22 @@ S3method(window, Vector)
 ### and (c) methods() doesn't asterisk them.
 export(
     aggregate.Vector,
-    aggregate.Rle,
-    aggregate.List,
 
     anyDuplicated.NSBS,
-    anyDuplicated.WindowNSBS,
 
     as.data.frame.Vector,
-    as.data.frame.Rle,
-    as.data.frame.List,
-    as.data.frame.DataFrame,
+    as.data.frame.DataTable,
 
-    as.list.Rle,
-    as.list.List,
-    as.list.SimpleList,
+    as.list.Vector,
 
     as.vector.Rle,
 
-    diff.Rle,
+    diff.Vector,
 
-    droplevels.Rle,
-    droplevels.List,
+    droplevels.Vector,
 
     duplicated.DataTable,
     duplicated.Vector,
-    duplicated.Rle,
 
     head.Vector,
 
@@ -133,7 +113,6 @@ export(
     rev.Rle,
 
     sort.Vector,
-    sort.Rle,
 
     summary.Rle,
 
@@ -141,7 +120,6 @@ export(
 
     unique.DataTable,
     unique.Vector,
-    unique.Rle,
 
     window.Vector
 )
@@ -195,7 +173,7 @@ exportMethods(
     ## Methods for generics defined in the BiocGenerics package:
     cbind, rbind,
     lapply, sapply,
-    Reduce, Filter, Find, Map, Position,
+    Reduce, Filter,
     unlist,
     do.call,
     union, intersect, setdiff,

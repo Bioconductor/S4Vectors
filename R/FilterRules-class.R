@@ -44,7 +44,7 @@ setReplaceMethod("active", "FilterRules", function(x, value) {
     nfilters <- length(x)
     if (length(value) > nfilters)
       stop("length of 'value' must not be greater than that of 'filters'")
-    if (S4Vectors:::anyMissing(value))
+    if (anyMissing(value))
       stop("'value' cannot contain NA's")
     if (nfilters && (nfilters %% length(value) != 0))
       stop("number of filters not a multiple of 'value' length")
@@ -86,15 +86,15 @@ FilterRules <- function(exprs = list(), ..., active = TRUE) {
 
   active <- rep(active, length.out = length(exprs))
 
-  if (!is.logical(active) || S4Vectors:::anyMissing(active))
+  if (!is.logical(active) || anyMissing(active))
     stop("'active' must be logical without any missing values")
   if (length(active) > length(exprs))
     stop("length of 'active' is greater than number of rules")
   if (length(exprs) && length(exprs) %% length(active) > 0)
     stop("number of rules must be a multiple of length of 'active'")
 
-  ans <- S4Vectors:::new_SimpleList_from_list("FilterRules", exprs,
-                                              active = active)
+  ans <- new_SimpleList_from_list("FilterRules", exprs,
+                                  active = active)
   validObject(ans)
   ans
 }
@@ -144,7 +144,7 @@ setMethod("[", "FilterRules",
     "length of 'active' must match length of 'filters'"
   else if (!identical(names(active(x)), names(x)))
     "names of 'active' must match those of 'filters'"
-  else if (S4Vectors:::anyMissing(active(x)))
+  else if (anyMissing(active(x)))
     "'active' cannot contain NA's"
   else NULL
 }
@@ -219,9 +219,13 @@ setMethod("eval", signature(expr="FilterRules", envir="ANY"),
             rules <- as.list(expr)[active(expr)]
             for (i in seq_along(rules)) {
               rule <- rules[[i]]
-              if (is.expression(rule))
-                val <- eval(rule, envir, enclos)
-              else val <- rule(envir)
+              val <- tryCatch(if (is.expression(rule))
+                                  eval(rule, envir, enclos)
+                              else rule(envir),
+                              error = function(e) {
+                                  stop("Filter '", names(rules)[i], "' failed: ",
+                                       e$message)
+                              })
               if (is(val, "Rle"))
                 val <- as.vector(val)
               if (!is.logical(val))
@@ -395,7 +399,7 @@ FilterMatrix <- function(matrix, filterRules) {
 
 setMethod("show", "FilterMatrix", function(object) {
   cat(class(object), " (", nrow(object), " x ", ncol(object), ")\n", sep = "")
-  mat <- S4Vectors:::makePrettyMatrixForCompactPrinting(object, function(x) x@.Data)
+  mat <- makePrettyMatrixForCompactPrinting(object, function(x) x@.Data)
   print(mat, quote = FALSE, right = TRUE)
 })
 

@@ -267,6 +267,7 @@ setMethod("as.env", "Vector", function(x, enclos, tform = identity) {
   addSelfRef(x, makeFixedColumnEnv(x, as.env(mcols(x), enclos, tform), tform))
 })
 
+as.list.Vector <- function(x, ...) as.list(x, ...)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.
@@ -324,6 +325,7 @@ setGeneric("rename", function(x, ...) standardGeneric("rename"))
 setMethod("rename", "vector", .renameVector)
 setMethod("rename", "Vector", .renameVector)
 
+droplevels.Vector <- function(x, ...) droplevels(x, ...)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
@@ -632,3 +634,5 @@ setMethod("by", "Vector",
                                simplify = simplify),
                         call = match.call(), class = "by")
           })
+
+diff.Vector <- function(x, ...) diff(x, ...)

@@ -136,21 +136,18 @@ asFactorOrFactorRle <- function(x) {
   }
 }
 
-### S3/S4 combo for as.list.Rle
 .as.list.Rle <- function(x) as.list(as.vector(x))
-as.list.Rle <- function(x, ...) .as.list.Rle(x, ...)
-setMethod("as.list", "Rle", as.list.Rle)
+setMethod("as.list", "Rle", .as.list.Rle)
 
 decodeRle <- function(x) rep.int(runValue(x), runLength(x))
 
-### S3/S4 combo for as.data.frame.Rle
-as.data.frame.Rle <- function(x, row.names=NULL, optional=FALSE, ...)
+.as.data.frame.Rle <- function(x, row.names=NULL, optional=FALSE, ...)
 {
     value <- decodeRle(x)
     as.data.frame(value, row.names=row.names,
                   optional=optional, ...)
 }
-setMethod("as.data.frame", "Rle", as.data.frame.Rle)
+setMethod("as.data.frame", "Rle", .as.data.frame.Rle)
 
 getStartEndRunAndOffset <- function(x, start, end) {
     .Call2("Rle_getStartEndRunAndOffset", x, start, end, PACKAGE="S4Vectors")
@@ -574,7 +571,6 @@ setMethod("order", "Rle",
     }
 )
 
-### S3/S4 combo for sort.Rle
 .sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
 {
     if (is.na(na.last)) {
@@ -591,9 +587,7 @@ setMethod("order", "Rle",
         lengths=runLength(x)[ord],
         check=FALSE)
 }
-sort.Rle <- function(x, decreasing=FALSE, ...)
-    .sort.Rle(x, decreasing=decreasing, ...)
-setMethod("sort", "Rle", sort.Rle)
+setMethod("sort", "Rle", .sort.Rle)
 
 setMethod("xtfrm", "Rle", function(x) {
     initialize(x, values=xtfrm(runValue(x)))
@@ -663,17 +657,13 @@ setMethod("table", "Rle",
     }
 }
 
-### S3/S4 combo for duplicated.Rle
 .duplicated.Rle <- function(x, incomparables=FALSE, fromLast=FALSE)
     stop("no \"duplicated\" method for Rle objects yet, sorry")
-duplicated.Rle <- function(x, incomparables=FALSE, ...)
-    .duplicated.Rle(x, incomparables=incomparables, ...)
-setMethod("duplicated", "Rle", duplicated.Rle)
+setMethod("duplicated", "Rle", .duplicated.Rle)
 
-### S3/S4 combo for unique.Rle
-unique.Rle <- function(x, incomparables=FALSE, ...)
+.unique.Rle <- function(x, incomparables=FALSE, ...)
     unique(runValue(x), incomparables=incomparables, ...)
-setMethod("unique", "Rle", unique.Rle)
+setMethod("unique", "Rle", .unique.Rle)
 
 ### S3/S4 combo for anyDuplicated.Rle
 anyDuplicated.Rle <- function(x, incomparables=FALSE, ...)

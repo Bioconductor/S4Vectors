@@ -214,9 +214,7 @@ setMethod("mendoapply", "SimpleList",
         names(ans) <- NULL
     ans
 }
-### S3/S4 combo for as.list.SimpleList
-as.list.SimpleList <- function(x, ...) .as.list.SimpleList(x, ...)
-setMethod("as.list", "SimpleList", as.list.SimpleList)
+setMethod("as.list", "SimpleList", .as.list.SimpleList)
 
 setAs("ANY", "SimpleList", function(from) {
   coerceToSimpleList(from)

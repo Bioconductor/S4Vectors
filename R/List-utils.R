@@ -99,8 +99,7 @@ setMethod("revElements", "List",
 ### Functional programming methods
 ###
 
-#.ReduceDefault <- base::Reduce
-#environment(.ReduceDefault) <- topenv()
+### Copy+pasted to disable forced as.list() coercion
 .ReduceDefault <- function(f, x, init, right = FALSE, accumulate = FALSE) 
 {
     mis <- missing(init)
@@ -165,42 +164,18 @@ setMethod("revElements", "List",
                 out[[len]] <- init
             }
         }
-        if (all(sapply(out, length) == 1L)) 
+        if (all(lengths(out) == 1L)) 
             out <- unlist(out, recursive = FALSE)
         out
     }
 }
 
 setMethod("Reduce", "List", .ReduceDefault)
-  
+
+### Presumably to avoid base::lapply coercion to list.
 .FilterDefault <- base::Filter
 environment(.FilterDefault) <- topenv()
 setMethod("Filter", "List", .FilterDefault)
-
-.FindDefault <- base::Find
-environment(.FindDefault) <- topenv()
-setMethod("Find", "List", .FindDefault)
-
-.MapDefault <- base::Map
-environment(.MapDefault) <- topenv()
-setMethod("Map", "List", .MapDefault)
- 
-setMethod("Position", "List",
-    function(f, x, right = FALSE, nomatch = NA_integer_)
-    {
-        ## In R-2.12, base::Position() was modified to use seq_along()
-        ## internally. The problem is that seq_along() was a primitive
-        ## that would let the user define methods for it (otherwise it
-        ## would have been worth defining a "seq_along" method for Vector
-        ## objects). So we need to redefine seq_along() locally in order
-        ## to make base_Position() work.
-        seq_along <- function(along.with) seq_len(length(along.with))
-        base_Position <- base::Position
-        environment(base_Position) <- environment()
-        base_Position(f, x, right = right, nomatch = nomatch)
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Evaluating.
@@ -233,7 +208,7 @@ setMethod("do.call", c("ANY", "List"),
 ### Factors.
 ###
 
-droplevels.List <- function(x, except = NULL) 
+.droplevels.List <- function(x, except = NULL) 
 {
   ix <- vapply(x, Has(levels), logical(1L))
   ix[except] <- FALSE
@@ -241,4 +216,4 @@ droplevels.List <- function(x, except = NULL)
   x
 }
 
-setMethod("droplevels", "List", droplevels.List)
+setMethod("droplevels", "List", .droplevels.List)

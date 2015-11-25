@@ -212,7 +212,6 @@ setMethod("ifelse", c(yes = "Rle", no = "Rle"), function(test, yes, no)
 ### Other numerical data methods
 ###
 
-### S3/S4 combo for diff.Rle
 .diff.Rle <- function(x, lag = 1, differences = 1)
 {
     if (!isSingleNumber(lag) || lag < 1L ||
@@ -228,7 +227,6 @@ setMethod("ifelse", c(yes = "Rle", no = "Rle"), function(test, yes, no)
     }
     x
 }
-diff.Rle <- function(x, ...) .diff.Rle(x, ...)
 setMethod("diff", "Rle", .diff.Rle)
 
 .psummary.Rle <- function(FUN, ..., MoreArgs = NULL) {
@@ -713,12 +711,12 @@ setReplaceMethod("levels", "Rle",
                      x
                  })
 
-droplevels.Rle <- function(x) {
+.droplevels.Rle <- function(x) {
   if (!is.factor(runValue(x))) {
     stop("levels can only be dropped when runValue(x) is a factor")
   }
   runValue(x) <- droplevels(runValue(x))
   x
 }
-setMethod("droplevels", "Rle", droplevels.Rle)
+setMethod("droplevels", "Rle", .droplevels.Rle)
 

@@ -60,6 +60,13 @@ setMethod("aggregate", "ts", stats:::aggregate.ts)
 aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                              frequency=NULL, delta=NULL, ..., simplify=TRUE)
 {
+    aggregate(x, by, FUN, start, end, width, frequency, delta, ...,
+              simplify=simplify)
+}
+
+.aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
+                              frequency=NULL, delta=NULL, ..., simplify=TRUE)
+{
     FUN <- match.fun(FUN)
     if (!missing(by)) {
         if (is.list(by)) {
@@ -101,7 +108,7 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                simplify = simplify)
     }
 }
-setMethod("aggregate", "Vector", aggregate.Vector)
+setMethod("aggregate", "Vector", .aggregate.Vector)
 
 ### FIXME: This "aggregate" method for vector overrides stats::aggregate()
 ### on vector without preserving its behavior! For example:
@@ -113,8 +120,7 @@ setMethod("aggregate", "Vector", aggregate.Vector)
 ### and even less when they behave differently.
 setMethod("aggregate", "vector", aggregate.Vector)
 
-### S3/S4 combo for aggregate.Rle
-aggregate.Rle <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
+.aggregate.Rle <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                           frequency=NULL, delta=NULL, ..., simplify=TRUE)
 {
     FUN <- match.fun(FUN)
@@ -166,18 +172,15 @@ aggregate.Rle <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                simplify = simplify)
     }
 }
-setMethod("aggregate", "Rle", aggregate.Rle)
+setMethod("aggregate", "Rle", .aggregate.Rle)
 
-### S3/S4 combo for aggregate.List
-aggregate.List <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
+.aggregate.List <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                            frequency=NULL, delta=NULL, ..., simplify=TRUE)
 {
     if (missing(by)
      || !requireNamespace("IRanges", quietly=TRUE)
      || !is(by, "RangesList")) {
-        ans <- aggregate.Vector(
-                   x, by, FUN, start=start, end=end, width=width,
-                   frequency=frequency, delta=delta, ..., simplify=simplify)
+        ans <- callNextMethod()
         return(ans)
     }
     if (length(x) != length(by))
@@ -188,10 +191,7 @@ aggregate.List <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                          aggregate(y[[i]], by = by[[i]], FUN = FUN,
                                    frequency = frequency, delta = delta,
                                    ..., simplify = simplify))
-    ans <- try(SimpleAtomicList(result), silent = TRUE)
-    if (inherits(ans, "try-error"))
-        ans <- new_SimpleList_from_list("SimpleList", result)
-    ans
+    as(result, "List")
 }
-setMethod("aggregate", "List", aggregate.List)
+setMethod("aggregate", "List", .aggregate.List)
 
