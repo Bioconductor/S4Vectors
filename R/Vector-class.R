@@ -325,8 +325,6 @@ setGeneric("rename", function(x, ...) standardGeneric("rename"))
 setMethod("rename", "vector", .renameVector)
 setMethod("rename", "Vector", .renameVector)
 
-droplevels.Vector <- function(x, ...) droplevels(x, ...)
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
@@ -429,11 +427,12 @@ setMethod("replaceROWS", "Vector",
     i <- WindowNSBS(x, start=start, end=end, width=width)
     extractROWS(x, i)
 }
-window.Vector <- function(x, ...) .window.Vector(x, ...)
-setMethod("window", "Vector", window.Vector)
+window.Vector <- function(x, ...) window(x, ...)
+setMethod("window", "Vector", .window.Vector)
 
 ### S3/S4 combo for head.Vector
-head.Vector <- function(x, n=6L, ...)
+head.Vector <- function(x, n=6L, ...) head(x, n, ...)
+.head.Vector <- function(x, n=6L, ...)
 {
     if (!isSingleNumber(n))
         stop("'n' must be a single integer")
@@ -447,10 +446,11 @@ head.Vector <- function(x, n=6L, ...)
     }
     window(x, start=1L, width=n)
 }
-setMethod("head", "Vector", head.Vector)
+setMethod("head", "Vector", .head.Vector)
 
 ## S3/S4 combo for tail.Vector
-tail.Vector <- function(x, n=6L, ...)
+tail.Vector <- function(x, n=6L, ...) tail(x, n, ...)
+.tail.Vector <- function(x, n=6L, ...)
 {
     if (!isSingleNumber(n))
         stop("'n' must be a single integer")
@@ -464,7 +464,7 @@ tail.Vector <- function(x, n=6L, ...)
     }
     window(x, end=x_NROW, width=n)
 }
-setMethod("tail", "Vector", tail.Vector)
+setMethod("tail", "Vector", .tail.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

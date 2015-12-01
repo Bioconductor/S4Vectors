@@ -46,9 +46,10 @@ S3method(as.vector, Rle)
 
 S3method(cbind, DataFrame)
 
-S3method(diff, Vector)
+S3method(diff, Rle)
 
-S3method(droplevels, Vector)
+S3method(droplevels, List)
+S3method(droplevels, Rle)
 
 S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
@@ -93,10 +94,11 @@ export(
 
     as.vector.Rle,
 
-    diff.Vector,
+    diff.Rle,
 
-    droplevels.Vector,
-
+    droplevels.Rle,
+    droplevels.List,
+    
     duplicated.DataTable,
     duplicated.Vector,
 

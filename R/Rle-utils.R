@@ -212,6 +212,7 @@ setMethod("ifelse", c(yes = "Rle", no = "Rle"), function(test, yes, no)
 ### Other numerical data methods
 ###
 
+diff.Rle <- function(x, ...) diff(x, ...)
 .diff.Rle <- function(x, lag = 1, differences = 1)
 {
     if (!isSingleNumber(lag) || lag < 1L ||
@@ -711,6 +712,7 @@ setReplaceMethod("levels", "Rle",
                      x
                  })
 
+droplevels.Rle <- function(x, ...) droplevels(x, ...)
 .droplevels.Rle <- function(x) {
   if (!is.factor(runValue(x))) {
     stop("levels can only be dropped when runValue(x) is a factor")

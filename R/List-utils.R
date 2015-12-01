@@ -208,6 +208,7 @@ setMethod("do.call", c("ANY", "List"),
 ### Factors.
 ###
 
+droplevels.List <- function(x, ...) droplevels(x, ...)
 .droplevels.List <- function(x, except = NULL) 
 {
   ix <- vapply(x, Has(levels), logical(1L))
