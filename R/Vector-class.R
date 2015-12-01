@@ -268,6 +268,7 @@ setMethod("as.env", "Vector", function(x, enclos, tform = identity) {
 })
 
 as.list.Vector <- function(x, ...) as.list(x, ...)
+setMethod("as.list", "Vector", function(x, ...) as.list(as(x, "List"), ...))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Setters.

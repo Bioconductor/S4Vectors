@@ -216,6 +216,11 @@ setMethod("as.env", "DataTable",
 as.data.frame.DataTable <- function(x, row.names=NULL, optional=FALSE, ...) {
     as.data.frame(x, row.names=NULL, optional=optional, ...)
 }
+setMethod("as.data.frame", "DataTable",
+          function(x, row.names=NULL, optional=FALSE, ...) {
+              as.data.frame(as(x, "DataFrame"),
+                            row.names=row.names, optional=optional, ...)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method.
