@@ -28,9 +28,7 @@
 \alias{as.vectorORfactor}
 \alias{as.vectorORfactor,Rle-method}
 \alias{as.factor,Rle-method}
-\alias{as.data.frame.Rle}
 \alias{as.data.frame,Rle-method}
-\alias{as.list.Rle}
 \alias{as.list,Rle-method}
 \alias{coerce,Rle,list-method}
 \alias{coerce,vector,Rle-method}
@@ -69,13 +67,10 @@
 \alias{show,Rle-method}
 \alias{showAsCell,Rle-method}
 \alias{order,Rle-method}
-\alias{sort.Rle}
 \alias{sort,Rle-method}
 \alias{table,Rle-method}
-\alias{unique.Rle}
 \alias{unique,Rle-method}
 \alias{duplicated,Rle-method}
-\alias{duplicated.Rle}
 
 \alias{setdiff,Rle,Rle-method}
 \alias{setdiff,ANY,Rle-method}

@@ -17,13 +17,11 @@
 \alias{isEmpty,List-method}
 
 \alias{coerce,List,list-method}
-\alias{as.list.List}
 \alias{coerce,ANY,List-method}
 \alias{coerce,integer,List-method}
 \alias{as.list,List-method}
 \alias{as.env,List-method}
 \alias{unlist,List-method}
-\alias{as.data.frame.List}
 \alias{as.data.frame,List-method}
 \alias{coerce,List,data.frame-method}
 

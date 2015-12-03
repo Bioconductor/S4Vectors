@@ -8,9 +8,7 @@
 \alias{aggregate,ts-method}
 \alias{aggregate.Vector}
 \alias{aggregate,Vector-method}
-\alias{aggregate.Rle}
 \alias{aggregate,Rle-method}
-\alias{aggregate.List}
 \alias{aggregate,List-method}
 
 \title{Compute summary statistics of subsets of vector-like objects}

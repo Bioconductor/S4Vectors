@@ -12,7 +12,6 @@
 
 % coercion
 \alias{as.list,SimpleList-method}
-\alias{as.list.SimpleList}
 \alias{coerce,ANY,SimpleList-method}
 \alias{coerce,list,List-method}
 
