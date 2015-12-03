@@ -110,16 +110,6 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
 }
 setMethod("aggregate", "Vector", .aggregate.Vector)
 
-### FIXME: This "aggregate" method for vector overrides stats::aggregate()
-### on vector without preserving its behavior! For example:
-###
-###   aggregate(c(NA, 12:20), by=list(rep(1:2, 5)), is.unsorted, TRUE)
-###
-### doesn't give the same result if S4Vectors is loaded or not.
-### As a general rule we should not mask base functionalities with our own,
-### and even less when they behave differently.
-setMethod("aggregate", "vector", aggregate.Vector)
-
 .aggregate.Rle <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                           frequency=NULL, delta=NULL, ..., simplify=TRUE)
 {
