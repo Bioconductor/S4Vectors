@@ -2,8 +2,6 @@
 ### Rle objects
 ### -------------------------------------------------------------------------
 ###
-### Class definitions
-###
 
 setClass("Rle",
          representation(values = "vectorORfactor",
@@ -25,15 +23,18 @@ setClass("Rle",
              #    msg <- c(msg, "consecutive runs must have different values")
              if (is.null(msg)) TRUE else msg
          })
+
  
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Getters.
 ###
 
 setGeneric("runLength", signature = "x",
            function(x) standardGeneric("runLength"))
 setMethod("runLength", "Rle", function(x) x@lengths)
  
+setMethod("length", "Rle", function(x) sum(runLength(x)))
+
 setGeneric("runValue", signature = "x",
            function(x) standardGeneric("runValue"))
 setMethod("runValue", "Rle", function(x) x@values)
@@ -45,8 +46,9 @@ setMethod("start", "Rle", function(x) .Call2("Rle_start", x, PACKAGE="S4Vectors"
 setMethod("end", "Rle", function(x) .Call2("Rle_end", x, PACKAGE="S4Vectors"))
 setMethod("width", "Rle", function(x) runLength(x))
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Replace methods.
+### Setters.
 ###
 
 setGeneric("runLength<-", signature="x",
@@ -58,6 +60,7 @@ setGeneric("runValue<-", signature="x",
            function(x, value) standardGeneric("runValue<-"))
 setReplaceMethod("runValue", "Rle",
                  function(x, value) Rle(values = value, lengths = runLength(x)))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructors
@@ -97,6 +100,7 @@ setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "numeric"),
 
 setMethod("Rle", signature = c(values = "Rle", lengths = "missing"),
           function(values, lengths, check = TRUE) values)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
@@ -153,8 +157,9 @@ getStartEndRunAndOffset <- function(x, start, end) {
     .Call2("Rle_getStartEndRunAndOffset", x, start, end, PACKAGE="S4Vectors")
 }
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### General methods
+### Subsetting.
 ###
 
 setMethod("extractROWS", "Rle",
@@ -332,10 +337,97 @@ setReplaceMethod("[", "Rle",
     }
 )
 
-setMethod("%in%", "Rle",
-          function(x, table)
-              Rle(values = runValue(x) %in% table, lengths = runLength(x),
-                  check = FALSE))
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Convenience wrappers for common subsetting operations.
+###
+
+setMethod("extractROWS", c("Rle", "WindowNSBS"),
+    function(x, i)
+    {
+        start_end <- i@subscript
+        .Call2("Rle_extract_window",
+               x, start_end[[1L]], start_end[[2L]],
+               PACKAGE="S4Vectors")
+    }
+)
+
+### S3/S4 combo for rev.Rle
+rev.Rle <- function(x)
+{
+    x@values <- rev(runValue(x))
+    x@lengths <- rev(runLength(x))
+    x
+}
+setMethod("rev", "Rle", rev.Rle)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting *by* an Rle object.
+###
+### See R/subsetting-utils.R for more information.
+###
+
+setClass("RleNSBS",  # not exported
+    contains="NSBS",
+    representation(
+        subscript="Rle"
+    )
+    #prototype(
+    #    subscript=Rle(integer(0))
+    #)
+)
+
+### Construction methods.
+### Supplied arguments are trusted so we don't check them!
+
+setMethod("NSBS", "Rle",
+    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    {
+        x_NROW <- NROW(x)
+        i_vals <- runValue(i)
+        if (is.logical(i_vals) && length(i_vals) != 0L) {
+            if (anyMissing(i_vals))
+                stop("subscript contains NAs")
+            if (length(i) < x_NROW)
+                i <- rep(i, length.out=x_NROW)
+            ## The coercion method from Rle to NormalIRanges is defined in the
+            ## IRanges package.
+            if (!requireNamespace("IRanges", quietly=TRUE))
+                stop("Couldn't load the IRanges package. You need to install ",
+                     "the IRanges\n  package in order to subset by an Rle ",
+                     "object.")
+            i <- as(i, "NormalIRanges")
+            return(callGeneric())
+        }
+        i_vals <- as.integer(NSBS(i_vals, x,
+                                  exact=exact,
+                                  upperBoundIsStrict=upperBoundIsStrict))
+        runValue(i) <- i_vals
+        new("RleNSBS", subscript=i,
+                       upper_bound=x_NROW,
+                       upper_bound_is_strict=upperBoundIsStrict)
+    }
+)
+
+### Other methods.
+
+setMethod("as.integer", "RleNSBS", function(x) decodeRle(x@subscript))
+
+setMethod("length", "RleNSBS", function(x) length(x@subscript))
+
+setMethod("anyDuplicated", "RleNSBS",
+    function(x, incomparables=FALSE, ...) anyDuplicated(x@subscript)
+)
+
+setMethod("isStrictlySorted", "RleNSBS",
+    function(x) isStrictlySorted(x@subscript)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining.
+###
 
 setMethod("c", "Rle", 
           function(x, ..., recursive = FALSE)
@@ -348,6 +440,16 @@ setMethod("c", "Rle",
               ans_lengths <- unlist(lapply(args, slot, "lengths"))
               Rle(ans_values, ans_lengths)
           })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods.
+###
+
+setMethod("%in%", "Rle",
+          function(x, table)
+              Rle(values = runValue(x) %in% table, lengths = runLength(x),
+                  check = FALSE))
 
 setGeneric("findRun", signature = "vec",
            function(x, vec) standardGeneric("findRun"))
@@ -377,8 +479,6 @@ setMethod("is.unsorted", "Rle",
                   ans <- any(runLength(x) > 1L)
               ans
           })
-
-setMethod("length", "Rle", function(x) sum(runLength(x)))
 
 setMethod("match", c("ANY", "Rle"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
@@ -471,15 +571,6 @@ setMethod("rep.int", "Rle",
               }
               x
           })
-
-### S3/S4 combo for rev.Rle
-rev.Rle <- function(x)
-{
-    x@values <- rev(runValue(x))
-    x@lengths <- rev(runLength(x))
-    x
-}
-setMethod("rev", "Rle", rev.Rle)
 
 setGeneric("shiftApply", signature = c("X", "Y"),
            function(SHIFT, X, Y, FUN, ..., OFFSET = 0L, simplify = TRUE,
@@ -674,12 +765,14 @@ setMethod("isStrictlySorted", "Rle",
     function(x)  all(runLength(x) == 1L) && isStrictlySorted(runValue(x))
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Set methods
 ###
 ### The return values of these do not have any duplicated values, so
 ### it would obviously be more efficient to return plain vectors. That
 ### might violate user expectations though.
+###
 
 setMethod("union", c("Rle", "Rle"), function(x, y) {
   Rle(union(runValue(x), runValue(y)))
@@ -717,6 +810,7 @@ setMethod("setdiff", c("Rle", "ANY"), function(x, y) {
   Rle(setdiff(runValue(x), as.vector(y)))
 })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### The "show" method
 ###
@@ -753,3 +847,4 @@ setMethod("show", "Rle",
           })
 
 setMethod("showAsCell", "Rle", function(object) as.vector(object))
+

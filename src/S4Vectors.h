@@ -399,7 +399,17 @@ SEXP anyMissing(SEXP x);
 
 /* subsetting_utils.c */
 
-SEXP vector_extract_window(SEXP x, SEXP start, SEXP end);
+SEXP _extract_window_from_vectorORfactor(
+	SEXP x,
+	int start,
+	int end
+);
+
+SEXP vectorORfactor_extract_window(
+	SEXP x,
+	SEXP start,
+	SEXP end
+);
 
 
 /* vector_utils.c */
@@ -747,6 +757,12 @@ SEXP Rle_constructor(
 SEXP Rle_start(SEXP x);
 
 SEXP Rle_end(SEXP x);
+
+SEXP Rle_extract_window(
+	SEXP x,
+	SEXP start,
+	SEXP end
+);
 
 SEXP Rle_getStartEndRunAndOffset(
 	SEXP x,

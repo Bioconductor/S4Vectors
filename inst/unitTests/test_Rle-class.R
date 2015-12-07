@@ -100,10 +100,6 @@ test_Rle_general <- function() {
                    subset(x, rep(c(TRUE, FALSE), length.out = length(x))))
     checkIdentical(as.vector(window(x, start = 3, end = 13)),
                    as.vector(window(xRle, start = 3, end = 13)))
-    checkIdentical(as.vector(window(x, start = 3, end = 13, frequency = 1/2)),
-                   as.vector(window(xRle, start = 3, end = 13, frequency = 1/2)))
-    checkIdentical(as.vector(window(x, start = 3, end = 13, delta = 3)),
-                   as.vector(window(xRle, start = 3, end = 13, delta = 3)))
     z <- x
     z[3:13] <- 0L
     zRle <- xRle

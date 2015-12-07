@@ -32,8 +32,8 @@ setClass("NSBS",
 ### - in S4Vectors:
 ###     1) NativeNSBS: subscript slot is a vector of positive integers
 ###     2) WindowNSBS: subscript slot is c(start, end)
-### - in IRanges:
 ###     3) RleNSBS:    subscript slot is an integer-Rle
+### - in IRanges:
 ###     4) RangesNSBS: subscript slot is an IRanges
 
 
@@ -430,12 +430,9 @@ setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
     function(x, i)
     {
         start_end <- i@subscript
-        ans <- .Call2("vector_extract_window",
-                      x, start_end[[1L]], start_end[[2L]],
-                      PACKAGE="S4Vectors")
-        if (is.factor(x))
-            attributes(ans) <- list(levels=levels(x), class="factor")
-        ans
+        .Call2("vectorORfactor_extract_window",
+               x, start_end[[1L]], start_end[[2L]],
+               PACKAGE="S4Vectors")
     }
 )
 

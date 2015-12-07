@@ -9,6 +9,7 @@
 \alias{Rle,vectorORfactor,integer-method}
 \alias{Rle,vectorORfactor,numeric-method}
 
+\alias{length,Rle-method}
 \alias{runLength}
 \alias{runLength,Rle-method}
 \alias{runValue}
@@ -49,15 +50,17 @@
 \alias{coerce,Rle,factor-method}
 \alias{coerce,Rle,data.frame-method}
 
+\alias{extractROWS,Rle,ANY-method}
 \alias{[,Rle-method}
 \alias{[<-,Rle-method}
+\alias{extractROWS,Rle,WindowNSBS-method}
+
 \alias{\%in\%,Rle,ANY-method}
 \alias{c,Rle-method}
 \alias{findRun}
 \alias{findRun,Rle-method}
 \alias{is.na,Rle-method}
 \alias{is.unsorted,Rle-method}
-\alias{length,Rle-method}
 \alias{match,Rle,ANY-method}
 \alias{rep,Rle-method}
 \alias{rep.int,Rle-method}

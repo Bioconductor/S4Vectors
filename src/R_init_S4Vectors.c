@@ -17,7 +17,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(anyMissing, 1),
 
 /* subsetting_utils.c */
-	CALLMETHOD_DEF(vector_extract_window, 3),
+	CALLMETHOD_DEF(vectorORfactor_extract_window, 3),
 
 /* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),
@@ -77,6 +77,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Rle_constructor, 4),
 	CALLMETHOD_DEF(Rle_start, 1),
 	CALLMETHOD_DEF(Rle_end, 1),
+	CALLMETHOD_DEF(Rle_extract_window, 3),
 	CALLMETHOD_DEF(Rle_getStartEndRunAndOffset, 3),
 	CALLMETHOD_DEF(Rle_window_aslist, 5),
 	CALLMETHOD_DEF(Rle_window, 6),

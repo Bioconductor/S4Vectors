@@ -521,6 +521,7 @@ setMethod("showAsCell", "Vector", function(object)
 setMethod("showAsCell", "Date", function(object) object)
 setMethod("showAsCell", "POSIXt", function(object) object)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
 ###
@@ -580,6 +581,7 @@ setMethod("append", c("Vector", "Vector"),
             c(head(x, n=after), values, tail(x, n=-after))
     }
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Evaluating.

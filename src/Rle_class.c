@@ -495,6 +495,98 @@ SEXP Rle_end(SEXP x)
 
 
 /****************************************************************************
+ * Rle_extract_window() (.Call ENTRY POINT)
+ */
+
+static void get_window_runs(const int *run_lengths, int nrun,
+		int start, int end,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+{
+	int offset, i, j;
+
+	if (start == NA_INTEGER || start < 1)
+		error("'start' must be >= 1");
+	if (end == NA_INTEGER || end < start - 1)
+		error("'end' must be >= 'start' - 1");
+	offset = 0;
+	if (end == start - 1) {
+		j = -1;
+		while (offset < end) {
+			j++;
+			if (j >= nrun)
+				break;
+			offset += run_lengths[j];
+		}
+		if (offset == end)
+			i = j + 1;
+		else
+			i = j;
+		*window_nrun = 0;
+	} else {
+		for (i = 0; i < nrun; i++) {
+			offset += run_lengths[i];
+			if (offset >= start)
+				break;
+		}
+		*Ltrim = start - offset + run_lengths[i] - 1;
+		if (offset >= end) {
+			j = i;
+		} else {
+			for (j = i + 1; j < nrun; j++) {
+				offset += run_lengths[j];
+				if (offset >= end)
+					break;
+			}
+		}
+		*Rtrim = offset - end;
+		*window_nrun = j - i + 1;
+	}
+	if (end > offset)
+		error("'end' must be <= 'length(x)'");
+	*offset_nrun = i;
+	//printf("window_nrun=%d offset_nrun=%d Ltrim=%d Rtrim=%d\n",
+	//       *window_nrun, *offset_nrun, *Ltrim, *Rtrim);
+	return;
+}
+
+SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
+{
+	SEXP x_lengths, x_values, ans_lengths, ans_values, ans;
+	int x_nrun, npair, window_nrun, offset_nrun, Ltrim, Rtrim;
+	const int *start_p, *end_p;
+
+	x_lengths = GET_SLOT(x, install("lengths"));
+	x_nrun = LENGTH(x_lengths);
+	x_values = GET_SLOT(x, install("values"));
+
+	npair = _check_integer_pairs(start, end,
+				     &start_p, &end_p,
+				     "start", "end");
+	if (npair != 1)
+		error("'start' and 'end' must be of length 1");
+
+	get_window_runs(INTEGER(x_lengths), x_nrun,
+		start_p[0], end_p[0],
+		&window_nrun, &offset_nrun, &Ltrim, &Rtrim);
+
+	PROTECT(ans_lengths = NEW_INTEGER(window_nrun));
+	_vector_memcpy(ans_lengths, 0, x_lengths, offset_nrun,
+		       window_nrun);
+	if (window_nrun != 0) {
+		INTEGER(ans_lengths)[0] -= Ltrim;
+		INTEGER(ans_lengths)[window_nrun - 1] -= Rtrim;
+	}
+
+	PROTECT(ans_values = _extract_window_from_vectorORfactor(x_values,
+			offset_nrun + 1,
+			offset_nrun + window_nrun));
+	PROTECT(ans = _new_Rle(ans_values, ans_lengths));
+	UNPROTECT(3);
+	return ans;
+}
+
+
+/****************************************************************************
  * Rle_getStartEndRunAndOffset()
  */
 
