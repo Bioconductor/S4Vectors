@@ -58,6 +58,16 @@
 \alias{[<-,Vector-method}
 \alias{replaceROWS,Vector-method}
 
+\alias{window}
+\alias{window.Vector}
+\alias{window,Vector-method}
+\alias{head}
+\alias{head.Vector}
+\alias{head,Vector-method}
+\alias{tail}
+\alias{tail.Vector}
+\alias{tail,Vector-method}
+
 \alias{append,Vector,Vector-method}
 
 \alias{classNameForDisplay}

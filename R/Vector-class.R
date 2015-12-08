@@ -423,13 +423,13 @@ setMethod("replaceROWS", "Vector",
 ###
 
 ### S3/S4 combo for window.Vector
-.window.Vector <- function(x, start=NA, end=NA, width=NA)
+window.Vector <- function(x, ...) window(x, ...)
+Vector_window <- function(x, start=NA, end=NA, width=NA)
 {
     i <- WindowNSBS(x, start=start, end=end, width=width)
     extractROWS(x, i)
 }
-window.Vector <- function(x, ...) window(x, ...)
-setMethod("window", "Vector", .window.Vector)
+setMethod("window", "Vector", Vector_window)
 
 ### S3/S4 combo for head.Vector
 head.Vector <- function(x, n=6L, ...) head(x, n, ...)

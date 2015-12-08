@@ -96,7 +96,7 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
         indices <- structure(seq_len(n), names = names(end))
     if (is.null(frequency) && is.null(delta)) {
         sapply(indices, function(i)
-               FUN(window.Vector(x, start = start[i], end = end[i]), ...),
+               FUN(Vector_window(x, start = start[i], end = end[i]), ...),
                simplify = simplify)
     } else {
         frequency <- rep(frequency, length.out = n)

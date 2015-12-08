@@ -167,7 +167,7 @@ exportMethods(
     head, tail,
 
     ## Methods for generics defined in the stats package:
-    window, aggregate, na.omit, na.exclude, complete.cases,
+    var, cov, cor, sd, window, aggregate, na.omit, na.exclude, complete.cases,
 
     ## Methods for generics defined in the stats4 package:
     summary,
@@ -283,7 +283,6 @@ export(
     runLength, "runLength<-", runValue, "runValue<-", nrun,
     Rle,
     findRun,
-    shiftApply,
 
     ## Rle-utils.R:
     runsum, runmean, runwtsum, runq,
@@ -296,7 +295,10 @@ export(
     endoapply, mendoapply,
 
     ## FilterRules-class.R:
-    active, "active<-", evalSeparately, subsetByFilter, params, filterRules
+    active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
+
+    ## shiftApply-methods.R:
+    shiftApply
 )
 
 ### Exactly the same list as above.
@@ -324,11 +326,11 @@ exportMethods(
     runLength, "runLength<-", runValue, "runValue<-", nrun,
     Rle,
     findRun,
-    shiftApply,
     runsum, runmean, runwtsum, runq,
     elementType, elementLengths, lengths,
     isEmpty, revElements,
     endoapply, mendoapply,
-    active, "active<-", evalSeparately, subsetByFilter, params, filterRules
+    active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
+    shiftApply
 )
 
