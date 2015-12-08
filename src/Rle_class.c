@@ -510,6 +510,7 @@ static void get_window_runs(const int *run_lengths, int nrun,
 		error("'end' must be >= 'start' - 1");
 	offset = 0;
 	if (end == start - 1) {
+		*window_nrun = 0;
 		j = -1;
 		while (offset < end) {
 			j++;
@@ -521,7 +522,6 @@ static void get_window_runs(const int *run_lengths, int nrun,
 			i = j + 1;
 		else
 			i = j;
-		*window_nrun = 0;
 	} else {
 		for (i = 0; i < nrun; i++) {
 			offset += run_lengths[i];

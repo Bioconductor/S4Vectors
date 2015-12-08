@@ -5,7 +5,6 @@
 \alias{shiftApply}
 \alias{shiftApply,Vector,Vector-method}
 \alias{shiftApply,vector,vector-method}
-\alias{shiftApply,Rle,Rle-method}
 
 \title{Apply a function over subsequences of 2 vector-like objects}
 
