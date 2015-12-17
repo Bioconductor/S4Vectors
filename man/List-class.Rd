@@ -16,6 +16,9 @@
 \alias{isEmpty,ANY-method}
 \alias{isEmpty,List-method}
 
+\alias{relistToClass}
+\alias{relistToClass,ANY-method}
+
 \alias{coerce,List,list-method}
 \alias{coerce,ANY,List-method}
 \alias{coerce,integer,List-method}
@@ -232,6 +235,21 @@
       \code{name} is taken literally as an element name.
     }
   }
+}
+
+\section{relistToClass}{
+  \code{relistToClass(x)} is the opposite of \code{elementType(y)} in the
+  sense that the former returns the class of the result of relisting (or
+  splitting) \code{x} while the latter returns the class of the result of
+  unlisting (or unsplitting) \code{y}.
+  More formally, if \code{x} is an object that is relistable and \code{y}
+  a list-like object:
+\preformatted{    relistToClass(x) is class(relist(x, some_skeleton))
+    elementType(y) is class(unlist(y))
+}
+  As a consequence, for any object \code{x} for which \code{relistToClass(x)}
+  is defined and returns a valid class,
+  \code{elementType(new(relistToClass(x)))} should return \code{class(x)}.
 }
 
 \author{P. Aboyoun and H. Pages}

@@ -63,6 +63,36 @@ setMethod("isEmpty", "List", function(x) all(elementLengths(x) == 0L))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### relistToClass()
+###
+### 'relistToClass(x)' is the opposite of 'elementType(y)' in the sense that
+### the former returns the class of the result of relisting (or splitting)
+### 'x' while the latter returns the class of the result of unlisting (or
+### unsplitting) 'y'.
+###
+### More formally, if 'x' is an object that is relistable and 'y' a list-like
+### object:
+###    relistToClass(x) == class(relist(x, some_skeleton))
+###    elementType(y) == class(unlist(y))
+###
+### As a consequence, for any object 'x' for which relistToClass() is defined
+### and returns a valid class, 'elementType(new(relistToClass(x)))' should
+### return 'class(x)'.
+###
+
+setGeneric("relistToClass", function(x) standardGeneric("relistToClass"))
+
+.selectListClassName <- function(x) {
+  cn <- listClassName("Compressed", x)
+  if (cn == "CompressedList")
+    cn <- listClassName("Simple", x)
+  cn
+}
+
+setMethod("relistToClass", "ANY", function(x) .selectListClassName(class(x)))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.
 ###
 

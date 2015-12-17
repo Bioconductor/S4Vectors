@@ -24,6 +24,7 @@ exportClasses(
     Rle,
     List,
     SimpleList,
+    HitsList,
     DataFrame,
     expressionORfunction, FilterRules, FilterMatrix
 )
@@ -229,6 +230,9 @@ export(
     ## SimpleList-class.R:
     SimpleList,
 
+    ## HitsList-class.R:
+    HitsList,
+
     ## DataFrame-class.R:
     DataFrame,
 
@@ -289,10 +293,15 @@ export(
 
     ## List-class.R:
     elementType, elementLengths, lengths,
-    isEmpty, revElements,
+    isEmpty,
+    relistToClass,
 
     ## List-utils.R:
     endoapply, mendoapply,
+    revElements,
+
+    ## HitsList-class.R:
+    space,
 
     ## FilterRules-class.R:
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
@@ -328,8 +337,11 @@ exportMethods(
     findRun,
     runsum, runmean, runwtsum, runq,
     elementType, elementLengths, lengths,
-    isEmpty, revElements,
+    isEmpty,
+    relistToClass,
     endoapply, mendoapply,
+    revElements,
+    space,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
     shiftApply
 )
