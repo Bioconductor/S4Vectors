@@ -277,20 +277,32 @@ setMethod("as.list", "Vector", function(x, ...) as.list(as(x, "List"), ...))
 setGeneric("elementMetadata<-",
            function(x, ..., value) standardGeneric("elementMetadata<-"))
 
+.normalize_mcols_replacement_value <- function(value, x)
+{
+    x_slots <- getSlots(class(x))
+    ## Should never happen because 'x' should always be a Vector object so
+    ## should always have the 'elementMetadata' slot.
+    if (!("elementMetadata" %in% names(x_slots)))
+        stop(wmsg("trying to set metadata columns on an object that does ",
+                  "not support them (i.e. with no 'elementMetadata' slot)"))
+    mcols_class <- x_slots[["elementMetadata"]]
+    if (is.null(value)) {
+        if (is(NULL, mcols_class))
+            return(NULL)
+        value <- new("DataFrame", nrows=length(x))
+    }
+    value <- as(value, mcols_class, strict=TRUE)
+    ## From here 'value' is guaranteed to be a DataTable object.
+    if (!is.null(rownames(value)))
+        rownames(value) <- NULL
+    V_recycle(value, x, x_what="value", skeleton_what="x")
+}
+
 setReplaceMethod("elementMetadata", "Vector",
     function(x, ..., value)
     {
-        if (!is(value, "DataTableORNULL"))
-            stop("replacement 'elementMetadata' value must be ",
-                 "a DataTable object or NULL")
-        if ("elementMetadata" %in% names(attributes(x))) {
-            if (!is.null(value) && length(x) != nrow(value))
-                stop("supplied metadata columns must have the length of 'x'")
-            if (!is.null(value))
-                rownames(value) <- NULL
-            x@elementMetadata <- value
-        }
-        x
+        value <- .normalize_mcols_replacement_value(value, x)
+        BiocGenerics:::replaceSlots(x, elementMetadata=value, check=FALSE)
     }
 )
 

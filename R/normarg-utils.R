@@ -56,25 +56,27 @@ isNumericOrNAs <- function(x)
 ### NOT exported.
 V_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton")
 {
-    x_len <- length(x)
+    x_NROW <- NROW(x)
     skeleton_len <- length(skeleton)
-    if (x_len == skeleton_len)
+    if (x_NROW == skeleton_len)
         return(x)
-    if (x_len > skeleton_len && x_len != 1L)
+    if (x_NROW > skeleton_len && x_NROW != 1L)
         stop(wmsg(
-            "'", x_what, "' cannot be longer than '", skeleton_what, "'"
+            "'NROW(", x_what, ")' is greater than ",
+            "'length(", skeleton_what, ")'"
         ))
-    if (x_len == 0L)
+    if (x_NROW == 0L)
         stop(wmsg(
-            "'", x_what, "' is a zero-length object but '", skeleton_what,
-            "' is not"
+            "'NROW(", x_what, ")' is 0 but ",
+            "'length(", skeleton_what, ")' is not"
         ))
-    if (skeleton_len %% x_len != 0L)
+    if (skeleton_len %% x_NROW != 0L)
         warning(wmsg(
-            "'length(", skeleton_what, ")' is not a multiple of 'length(",
-            x_what, ")'"
+            "'length(", skeleton_what, ")' is not a multiple of ",
+            "'NROW(", x_what, ")'"
         ))
-    rep(x, length.out=skeleton_len)
+    idx <- rep(seq_len(x_NROW), length.out=skeleton_len)
+    extractROWS(x, idx)
 }
 
 ### Horizontal recycling (of a list-like object only).
