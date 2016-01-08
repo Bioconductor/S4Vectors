@@ -64,14 +64,21 @@ setGeneric("upperBoundIsStrict",
 ### Default methods.
 ###
 
+### Used in IRanges.
+### We use 'call.=FALSE' to hide the function call because displaying it might
+### confuse some users.
+.subscript_error <- function(...) stop(wmsg(...), call.=FALSE)
+
 setMethod("NSBS", "NSBS",
     function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
     {
         x_NROW <- NROW(x)
         if (upperBound(i) != x_NROW ||
             upperBoundIsStrict(i) < upperBoundIsStrict)
-            stop("subscript is a NSBS object that is ",
-                 "incompatible\n  with the current subsetting operation")
+            .subscript_error(
+                "subscript is a NSBS object that is incompatible ",
+                "with the current subsetting operation"
+            )
         i
     }
 )
@@ -143,10 +150,10 @@ setMethod("NSBS", "NULL",
         i <- as.integer(i)
     if (upperBoundIsStrict) {
         if (anyMissingOrOutside(i, upper=x_NROW))
-            stop("subscript contains NAs or out-of-bounds indices")
+            .subscript_error("subscript contains NAs or out-of-bounds indices")
     } else {
         if (any(is.na(i)))
-            stop("subscript contains NAs")
+            .subscript_error("subscript contains NAs")
     }
     nonzero_idx <- which(i != 0L)
     i <- i[nonzero_idx]
@@ -154,7 +161,7 @@ setMethod("NSBS", "NULL",
         any_pos <- any(i > 0L)
         any_neg <- any(i < 0L)
         if (any_neg && any_pos)
-            stop("cannot mix negative with positive indices")
+            .subscript_error("cannot mix negative with positive indices")
         ## From here, indices are guaranteed to be either all positive or
         ## all negative.
         if (any_neg)
@@ -170,12 +177,14 @@ setMethod("NSBS", "logical",
     {
         x_NROW <- NROW(x)
         if (anyMissing(i))
-            stop("subscript contains NAs")
+            .subscript_error("subscript contains NAs")
         li <- length(i)
         if (upperBoundIsStrict && li > x_NROW) {
             if (any(i[(x_NROW+1L):li]))
-                stop("subscript is a logical vector with out-of-bounds ",
-                     "TRUE values")
+                .subscript_error(
+                    "subscript is a logical vector with out-of-bounds ",
+                     "TRUE values"
+                )
             i <- i[seq_len(x_NROW)]
         }
         if (li < x_NROW)
@@ -192,7 +201,8 @@ setMethod("NSBS", "logical",
     what <- if (length(dim(x)) != 0L) "rownames" else "names"
     if (is.null(x_ROWNAMES)) {
         if (upperBoundIsStrict)
-            stop("cannot subset by character when ", what, " are NULL")
+            .subscript_error("cannot subset by character when ", what,
+                             " are NULL")
         i <- x_NROW + seq_along(i)
         return(i)
     }
@@ -207,7 +217,7 @@ setMethod("NSBS", "logical",
         return(i)
     }
     if (anyMissing(i))
-        stop("subscript contains invalid ", what)
+        .subscript_error("subscript contains invalid ", what)
     .NativeNSBS(i, x_NROW, upperBoundIsStrict)
 }
 
@@ -248,7 +258,7 @@ setClass("WindowNSBS",  # not exported
 .normarg_window_start <- function(start, argname="start")
 {
     if (!isSingleNumberOrNA(start))
-        stop("'", argname, "' must be a single number or NA")
+        .subscript_error("'", argname, "' must be a single number or NA")
     if (!is.integer(start))
         start <- as.integer(start)
     start
