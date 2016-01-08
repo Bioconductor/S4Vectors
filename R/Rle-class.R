@@ -485,9 +485,11 @@ setMethod("match", c("ANY", "Rle"),
     {
         m <- match(x, runValue(table), incomparables=incomparables)
         ans <- start(table)[m]
-        ## as.integer(nomatch)[1L] seems to mimic how base::match() treats the
-        ## 'nomatch' argument.
-        ans[is.na(ans)] <- as.integer(nomatch)[1L]
+        ## 'as.integer(nomatch)[1L]' seems to mimic how base::match() treats
+        ## the 'nomatch' argument.
+        nomatch <- as.integer(nomatch)[1L]
+        if (!is.na(nomatch))
+            ans[is.na(ans)] <- nomatch
         ans
     }
 )
