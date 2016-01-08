@@ -483,10 +483,12 @@ setMethod("is.unsorted", "Rle",
 setMethod("match", c("ANY", "Rle"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
     {
-        table_run_starts <- start(table)
-        table <- runValue(table)
-        m <- callGeneric()
-        table_run_starts[m]
+        m <- match(x, runValue(table), incomparables=incomparables)
+        ans <- start(table)[m]
+        ## as.integer(nomatch)[1L] seems to mimic how base::match() treats the
+        ## 'nomatch' argument.
+        ans[is.na(ans)] <- as.integer(nomatch)[1L]
+        ans
     }
 )
 
