@@ -318,4 +318,3 @@ test_List_as.data.frame <- function() {
         checkIdentical(relist(current$value, x), x)
   }
 }
-
