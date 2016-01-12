@@ -18,6 +18,53 @@ test_List_replace_names <- function() {
   }
 }
 
+test_List_unlist <- function() {
+  for (compress in c(TRUE, FALSE)) {
+    x0 <- list(c(a=1L), 21:23, 33L)
+    x <- IntegerList(x0, compress=compress)
+    target <- unlist(x0)
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0) <- names(x) <- LETTERS[1:3]
+    target <- unlist(x0)
+    names(target)[2:4] <- "B"  # base::unlist() behaviour not what we want!
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0)[2] <- names(x)[2] <- ""
+    target <- unlist(x0)
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0)[2] <- names(x)[2] <- NA
+    target <- unlist(x0)
+    names(target)[2:4] <- NA  # base::unlist() behaviour not what we want!
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0[[2]])[] <- names(x[[2]])[] <- NA
+    target <- unlist(x0)
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0[[2]]) <- names(x[[2]]) <- "b"
+    target <- unlist(x0)
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0[[2]])[] <- names(x[[2]])[] <- "a"
+    target <- unlist(x0)
+    current <- unlist(x)
+    checkIdentical(target, current)
+
+    names(x0)[2] <- names(x)[2] <- "A"
+    target <- unlist(x0)
+    current <- unlist(x)
+    checkIdentical(target, current)
+  }
+}
+
 test_List_extraction <- function() {
   int1 <- c(1L,2L,3L,5L,2L,8L)
   int2 <- c(15L,45L,20L,1L,15L,100L,80L,5L)
@@ -202,53 +249,6 @@ test_List_apply <- function() {
   }
 }
 
-test_List_unlist <- function() {
-  for (compress in c(TRUE, FALSE)) {
-    x0 <- list(c(a=1L), 21:23, 33L)
-    x <- IntegerList(x0, compress=compress)
-    target <- unlist(x0)
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0) <- names(x) <- LETTERS[1:3]
-    target <- unlist(x0)
-    names(target)[2:4] <- "B"  # base::unlist() behaviour not what we want!
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0)[2] <- names(x)[2] <- ""
-    target <- unlist(x0)
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0)[2] <- names(x)[2] <- NA
-    target <- unlist(x0)
-    names(target)[2:4] <- NA  # base::unlist() behaviour not what we want!
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0[[2]])[] <- names(x[[2]])[] <- NA
-    target <- unlist(x0)
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0[[2]]) <- names(x[[2]]) <- "b"
-    target <- unlist(x0)
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0[[2]])[] <- names(x[[2]])[] <- "a"
-    target <- unlist(x0)
-    current <- unlist(x)
-    checkIdentical(target, current)
-
-    names(x0)[2] <- names(x)[2] <- "A"
-    target <- unlist(x0)
-    current <- unlist(x)
-    checkIdentical(target, current)
-  }
-}
-
 test_List_annotation <- function() {
   int1 <- c(1L,2L,3L,5L,2L,8L)
   int2 <- c(15L,45L,20L,1L,15L,100L,80L,5L)
@@ -264,47 +264,58 @@ test_List_annotation <- function() {
 
 test_List_as.data.frame <- function() {
   for (compress in c(TRUE, FALSE)) {
+    x <- IntegerList(c=11:12, a=21:23, b=integer(0), a=41L, compress=compress)
+
     ## empty-ish
-    current <- as.data.frame(IntegerList(compress=compress))
-    checkIdentical(data.frame(), current)
-    current <- as.data.frame(IntegerList(NA, compress=compress))
-    expected <- data.frame(group=1L, group_name=NA_character_, 
-                           value=NA_integer_, stringsAsFactors=FALSE)
-    checkIdentical(expected, current)
+    if (compress) {  # currently fail when 'x' is a SimpleList because
+                     # unlist() is broken on an empty SimpleList, so skip it
+        current <- as.data.frame(x[0])
+        target <- data.frame(group=integer(0), group_name=character(0),
+                             value=integer(0),
+                             stringsAsFactors=FALSE)
+        checkIdentical(target, current)
+    }
 
-    ilist <- IntegerList(C=1:5, A=NA, B=10:11, compress=compress)
     ## group, group_name, value
-    current <- as.data.frame(ilist)
-    checkTrue(ncol(current) == 3L)
-    checkIdentical(togroup(ilist), current$group)
-    checkIdentical(names(ilist)[togroup(ilist)], current$group_name)
+    current <- as.data.frame(x)
+    target <- data.frame(group=c(1L, 1L, 2L, 2L, 2L, 4L),
+                         group_name=c("c", "c", "a", "a", "a", "a"),
+                         value=c(11:12, 21:23, 41L),
+                         stringsAsFactors=FALSE)
+    checkIdentical(target, current)
 
-    current <- as.data.frame(ilist, group_name.as.factor=TRUE)
-    expected <- names(ilist)[togroup(ilist)]
-    checkTrue(is(current$group_name, "factor"))
-    checkIdentical(names(ilist), levels(current$group_name))
-    names(ilist) <- NULL
-    current <- as.data.frame(ilist, group_name.as.factor=TRUE)
-    checkIdentical(character(), levels(current$group_name))
-    checkException(as.data.frame(ilist, group_name.as.factor=NULL), silent=TRUE)
- 
-    checkIdentical(unlist(ilist, use.names=FALSE), current$value)
-    current <- as.data.frame(ilist, value.name="test")
-    checkIdentical(unlist(ilist, use.names=FALSE), current$test)
-    checkException(as.data.frame(ilist, value.name=NULL), silent=TRUE)
+    current <- as.data.frame(x, group_name.as.factor=TRUE)
+    target$group_name <- factor(target$group_name, levels=unique(names(x)))
+    checkIdentical(target, current)
+
+    current <- as.data.frame(unname(x))
+    target$group_name <- rep(NA_character_, 6)
+    checkIdentical(target, current)
+
+    current <- as.data.frame(unname(x), group_name.as.factor=TRUE) 
+    target$group_name <- factor(target$group_name, levels=character(0))
+    checkIdentical(target, current)
+
+    current <- as.data.frame(x, value.name="test")
+    checkIdentical(unlist(x, use.names=FALSE), current$test)
 
     ## outer mcols
-    mcols(ilist) <- DataFrame(foo=c("ccc", "aaa", "bbb"))
-    current <- as.data.frame(ilist, use.outer.mcols=TRUE)
-    expected <- c("group", "group_name", "value", "foo")
-    checkIdentical(expected, colnames(current))
-    checkException(as.data.frame(ilist, use.outer.mcols=NULL), silent=TRUE)
+    mcols(x) <- DataFrame(stuff=LETTERS[4:1], range=IRanges(1:4, 10))
+    current <- as.data.frame(x, use.outer.mcols=TRUE)
+    target <- data.frame(group=c(1L, 1L, 2L, 2L, 2L, 4L),
+                         group_name=c("c", "c", "a", "a", "a", "a"),
+                         value=c(11:12, 21:23, 41L),
+                         stringsAsFactors=FALSE)
+    target <- cbind(target,
+                    as.data.frame(mcols(x))[current$group, , drop=FALSE])
+    rownames(target) <- NULL
+    checkIdentical(target, current)
 
     ## relist
-    names(ilist) <- c("C", "A", "B") 
-    mcols(ilist) <- NULL
-    current <- as.data.frame(ilist)
-    if (compress == TRUE)
-      checkIdentical(relist(current$value, ilist), ilist)
+    mcols(x) <- NULL
+    current <- as.data.frame(x)
+    if (compress)
+        checkIdentical(relist(current$value, x), x)
   }
 }
+

@@ -121,6 +121,69 @@ setMethod("show", "List",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### unlist()
+###
+
+### NOT exported. Assumes 'names1' is not NULL.
+make_unlist_result_names <- function(names1, names2)
+{
+    if (is.null(names2))
+        return(names1)
+    idx2 <- names2 != "" | is.na(names2)
+    idx1 <- names1 != "" | is.na(names1)
+    idx <- idx1 & idx2
+    if (any(idx))
+        names1[idx] <- paste(names1[idx], names2[idx], sep = ".")
+    idx <- !idx1 & idx2
+    if (any(idx))
+        names1[idx] <- names2[idx]
+    names1
+}
+
+setMethod("unlist", "List",
+    function(x, recursive=TRUE, use.names=TRUE)
+    {
+        if (!identical(recursive, TRUE))
+            stop("\"unlist\" method for List objects ",
+                 "does not support the 'recursive' argument")
+        if (!isTRUEorFALSE(use.names))
+            stop("'use.names' must be TRUE or FALSE")
+        if (length(x) == 0L)
+            return(NULL)
+        x_names <- names(x)
+        if (!is.null(x_names))
+            names(x) <- NULL
+        xx <- as.list(x)
+        if (length(dim(xx[[1L]])) < 2L) {
+            ans <- do.call(c, xx)
+            ans_names0 <- names(ans)
+            if (use.names) {
+                if (!is.null(x_names)) {
+                    ans_names <- rep.int(x_names, elementLengths(x))
+                    ans_names <- make_unlist_result_names(ans_names, ans_names0)
+                    try_result <- try(names(ans) <- ans_names, silent=TRUE)
+                    if (inherits(try_result, "try-error"))
+                        warning("failed to set names on the result ",
+                                "of unlisting a ", class(x), " object")
+                }
+            } else {
+                ## This is consistent with base::unlist but is not consistent
+                ## with unlist,CompressedList. See comments and FIXME note in
+                ## the unlist,CompressedList code for more details.
+                if (!is.null(ans_names0))
+                    names(ans) <- NULL
+            }
+        } else {
+            ans <- do.call(rbind, xx)
+            if (!use.names)
+                rownames(ans) <- NULL
+        }
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
 
@@ -589,97 +652,48 @@ setAs("ANY", "List", function(from) {
 ## so ambiguities are introduced due to method caching.
 setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
 
-### NOT exported. Assumes 'names1' is not NULL.
-make_unlist_result_names <- function(names1, names2)
+.make_group_and_group_name <- function(x_elt_lens, group_name.as.factor=FALSE)
 {
-    if (is.null(names2))
-        return(names1)
-    idx2 <- names2 != "" | is.na(names2)
-    idx1 <- names1 != "" | is.na(names1)
-    idx <- idx1 & idx2
-    if (any(idx))
-        names1[idx] <- paste(names1[idx], names2[idx], sep = ".")
-    idx <- !idx1 & idx2
-    if (any(idx))
-        names1[idx] <- names2[idx]
-    names1
-}
-
-setMethod("unlist", "List",
-    function(x, recursive=TRUE, use.names=TRUE)
-    {
-        if (!identical(recursive, TRUE))
-            stop("\"unlist\" method for List objects ",
-                 "does not support the 'recursive' argument")
-        if (!isTRUEorFALSE(use.names))
-            stop("'use.names' must be TRUE or FALSE")
-        if (length(x) == 0L)
-            return(NULL)
-        x_names <- names(x)
-        if (!is.null(x_names))
-            names(x) <- NULL
-        xx <- as.list(x)
-        if (length(dim(xx[[1L]])) < 2L) {
-            ans <- do.call(c, xx)
-            ans_names0 <- names(ans)
-            if (use.names) {
-                if (!is.null(x_names)) {
-                    ans_names <- rep.int(x_names, elementLengths(x))
-                    ans_names <- make_unlist_result_names(ans_names, ans_names0)
-                    try_result <- try(names(ans) <- ans_names, silent=TRUE)
-                    if (inherits(try_result, "try-error"))
-                        warning("failed to set names on the result ",
-                                "of unlisting a ", class(x), " object")
-                }
-            } else {
-                ## This is consistent with base::unlist but is not consistent
-                ## with unlist,CompressedList. See comments and FIXME note in
-                ## the unlist,CompressedList code for more details.
-                if (!is.null(ans_names0))
-                    names(ans) <- NULL
-            }
-        } else {
-            ans <- do.call(rbind, xx)
-            if (!use.names)
-                rownames(ans) <- NULL
-        }
-        ans
+    if (!isTRUEorFALSE(group_name.as.factor))
+        stop("'group_name.as.factor' must be TRUE or FALSE")
+    group <- rep.int(seq_along(x_elt_lens), x_elt_lens)
+    x_names <- names(x_elt_lens)
+    if (is.null(x_names)) {
+        group_name <- rep.int(NA_character_, length(group))
+        if (group_name.as.factor)
+            group_name <- factor(group_name, levels=character(0))
+    } else {
+        group_name <- rep.int(x_names, x_elt_lens)
+        if (group_name.as.factor)
+            group_name <- factor(group_name, levels=unique(x_names))
     }
-)
+    data.frame(group=group, group_name=group_name, stringsAsFactors=FALSE)
+}
 
 .as.data.frame.List <- 
     function(x, row.names=NULL, optional=FALSE, ..., value.name="value",
              use.outer.mcols=FALSE, group_name.as.factor=FALSE)
 {
-    if (!requireNamespace("IRanges", quietly=TRUE))
-        stop("Couldn't load the IRanges package. You need to install ",
-             "the IRanges\n  package to coerce a List object to data.frame.")
-    if (!length(IRanges::togroup(x)))
-        return(data.frame())
     if (!isSingleString(value.name))
         stop("'value.name' must be a single string")
     if (!isTRUEorFALSE(use.outer.mcols))
         stop("'use.outer.mcols' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(group_name.as.factor))
-        stop("'group_name.as.factor' must be TRUE or FALSE")
-    if (!(is.null(row.names) || is.character(row.names)))
-        stop("'row.names'  must be NULL or a character vector")
-
-    if (!length(group_name <- names(x)[IRanges::togroup(x)]))
-        group_name <- NA_character_
-    if (group_name.as.factor)
-        group_name <- factor(group_name, levels=unique(group_name))
-    xx <- cbind(data.frame(group=IRanges::togroup(x), group_name, 
-                           stringsAsFactors=FALSE), 
-                as.data.frame(unlist(x, use.names=FALSE), 
-                              row.names=row.names, optional=optional, ...))
-    if (ncol(xx) == 3)
-        colnames(xx)[3] <- value.name
-    if (use.outer.mcols)
-        if (length(md <- mcols(x)[IRanges::togroup(x), , drop=FALSE]))
-            return(cbind(xx, md))
-
-    xx
+    ans <- as.data.frame(unlist(x, use.names=FALSE),
+                         row.names=row.names, optional=optional, ...)
+    if (ncol(ans) == 1L)
+        colnames(ans)[1L] <- value.name
+    group_and_group_name <- .make_group_and_group_name(elementLengths(x),
+                                                       group_name.as.factor)
+    ans <- cbind(group_and_group_name, ans)
+    if (use.outer.mcols) {
+        x_mcols <- mcols(x)
+        if (length(x_mcols) != 0L) {
+            extra_cols <- as.data.frame(x_mcols)
+            extra_cols <- extract_data_frame_rows(extra_cols, ans[[1L]])
+            ans <- cbind(ans, extra_cols)
+        }
+    }
+    ans
 }
 setMethod("as.data.frame", "List", .as.data.frame.List)
 
