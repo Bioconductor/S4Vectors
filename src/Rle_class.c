@@ -1,5 +1,7 @@
 #include "S4Vectors.h"
 
+#include <stdlib.h>  /* for malloc, free */
+
 
 static SEXP _new_Rle(SEXP values, SEXP lengths)
 {
@@ -495,79 +497,348 @@ SEXP Rle_end(SEXP x)
 
 
 /****************************************************************************
- * Rle_extract_window() (.Call ENTRY POINT)
+ * Rle_find_windows_runs()
  */
 
-static void get_window_runs(const int *run_lengths, int nrun,
-		int start, int end,
+static char errmsg_buf[200];
+
+static const char *find_window_runs1(const int *run_lengths, int nrun,
+		int window_start, int window_end,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
 {
 	int offset, i, j;
 
-	if (start == NA_INTEGER || start < 1)
-		error("'start' must be >= 1");
-	if (end == NA_INTEGER || end < start - 1)
-		error("'end' must be >= 'start' - 1");
+	if (window_start == NA_INTEGER || window_start < 1) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'start' must be >= 1");
+		return errmsg_buf;
+	}
+	if (window_end == NA_INTEGER || window_end < window_start - 1) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'end' must be >= 'start' - 1");
+		return errmsg_buf;
+	}
 	offset = 0;
-	if (end == start - 1) {
+	if (window_end == window_start - 1) {
 		*window_nrun = 0;
 		j = -1;
-		while (offset < end) {
+		while (offset < window_end) {
 			j++;
 			if (j >= nrun)
 				break;
 			offset += run_lengths[j];
 		}
-		if (offset == end)
+		if (offset == window_end)
 			i = j + 1;
 		else
 			i = j;
 	} else {
 		for (i = 0; i < nrun; i++) {
 			offset += run_lengths[i];
-			if (offset >= start)
+			if (offset >= window_start)
 				break;
 		}
-		*Ltrim = start - offset + run_lengths[i] - 1;
-		if (offset >= end) {
+		*Ltrim = window_start - offset + run_lengths[i] - 1;
+		if (offset >= window_end) {
 			j = i;
 		} else {
 			for (j = i + 1; j < nrun; j++) {
 				offset += run_lengths[j];
-				if (offset >= end)
+				if (offset >= window_end)
 					break;
 			}
 		}
-		*Rtrim = offset - end;
+		*Rtrim = offset - window_end;
 		*window_nrun = j - i + 1;
 	}
-	if (end > offset)
-		error("'end' must be <= 'length(x)'");
+	if (window_end > offset) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'end' must be <= 'length(x)'");
+		return errmsg_buf;
+	}
 	*offset_nrun = i;
-	//printf("window_nrun=%d offset_nrun=%d Ltrim=%d Rtrim=%d\n",
-	//       *window_nrun, *offset_nrun, *Ltrim, *Rtrim);
-	return;
+	return NULL;
 }
 
+static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
+{
+	int n1, n2, n, bp;
+
+	/* Check first element. */
+	n1 = 0;
+	bp = breakpoints[n1];
+	if (x <= bp)
+		return n1;
+
+	/* Check last element. */
+	n2 = nbreakpoints - 1;
+	bp = breakpoints[n2];
+	if (x > bp)
+		return nbreakpoints;
+	if (x == bp)
+		return n2;
+
+	/* Binary search.
+	   Seems that using >> 1 instead of / 2 is faster, even when compiling
+	   with 'gcc -O2' (one would hope that the optimizer is able to do that
+	   kind of optimization). */
+	while ((n = (n1 + n2) >> 1) != n1) {
+		bp = breakpoints[n];
+		if (x == bp)
+			return n;
+		if (x > bp)
+			n1 = n;
+		else
+			n2 = n;
+	}
+	return n2;
+}
+
+/*
+ * Like find_window_runs1() but takes 'run_breakpoints' (= cumsum(run_lengths))
+ * instead of 'run_lengths' as input and uses a binary search.
+ */
+static const char *find_window_runs2(const int *run_breakpoints, int nrun,
+		int window_start, int window_end,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+{
+	int start_run, end_run;
+
+	if (window_start == NA_INTEGER || window_start < 1) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'start' must be >= 1");
+		return errmsg_buf;
+	}
+	if (window_end == NA_INTEGER || window_end < window_start - 1) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'end' must be >= 'start' - 1");
+		return errmsg_buf;
+	}
+	start_run = int_bsearch(window_start, run_breakpoints, nrun);
+	end_run = int_bsearch(window_end, run_breakpoints, nrun);
+	if (end_run >= nrun) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'end' must be <= 'length(x)'");
+		return errmsg_buf;
+	}
+	*window_nrun = end_run - start_run;
+	if (window_start <= window_end)
+		(*window_nrun)++;
+	*offset_nrun = start_run;
+	*Ltrim = window_start - run_breakpoints[start_run - 1] - 1;
+	*Rtrim = run_breakpoints[end_run] - window_end;
+	return NULL;
+}
+
+/* Naive algo. */
+static const char *find_windows_runs1(const int *run_lengths, int nrun,
+		const int *window_start, const int *window_end, int nwindow,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+{
+	int i;
+	const char *errmsg;
+
+	errmsg = NULL;
+	for (i = 0; i < nwindow; i++) {
+		errmsg = find_window_runs1(run_lengths, nrun,
+					   window_start[i], window_end[i],
+					   window_nrun + i, offset_nrun + i,
+					   Ltrim + i, Rtrim + i);
+		if (errmsg != NULL)
+			break;
+	}
+	return errmsg;
+}
+
+/* Binary search. */
+static const char *find_windows_runs2(const int *run_lengths, int nrun,
+		const int *window_start, const int *window_end, int nwindow,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+{
+	int *run_breakpoints, breakpoint, i;
+	const char *errmsg;
+
+	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
+	if (run_breakpoints == NULL) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "find_windows_runs2: memory allocation failed");
+		return errmsg_buf;
+	}
+	breakpoint = 0;
+	for (i = 0; i < nrun; i++) {
+		breakpoint += run_lengths[i];
+		run_breakpoints[i] = breakpoint;
+	}
+	errmsg = NULL;
+	for (i = 0; i < nwindow; i++) {
+		errmsg = find_window_runs2(run_breakpoints, nrun,
+					   window_start[i], window_end[i],
+					   window_nrun + i, offset_nrun + i,
+					   Ltrim + i, Rtrim + i);
+		if (errmsg != NULL)
+			break;
+	}
+	free(run_breakpoints);
+	return errmsg; 
+}
+
+/* Sort 'window_start' and 'window_end'. */
+static const char *find_windows_runs3(const int *run_lengths, int nrun,
+		const int *window_start, const int *window_end, int nwindow,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+{
+	int SEbuf_len, *SEbuf, *SEorder,
+	    *SEbuf2, SE, breakpoint, i, j, k, SE_run;
+
+	SEbuf_len = 2 * nwindow;
+	SEbuf = (int *) malloc(sizeof(int) * SEbuf_len);
+	SEorder = (int *) malloc(sizeof(int) * SEbuf_len);
+	if (SEbuf == NULL || SEorder == NULL) {
+		if (SEbuf != NULL)
+			free(SEbuf);
+		if (SEorder != NULL)
+			free(SEorder);
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "find_windows_runs3: memory allocation failed");
+		return errmsg_buf;
+	}
+	memcpy(SEbuf, window_start, sizeof(int) * nwindow);
+	SEbuf2 = SEbuf + nwindow;
+	memcpy(SEbuf2, window_end, sizeof(int) * nwindow);
+	_get_order_of_int_array(SEbuf, SEbuf_len, 0, SEorder, 0);
+	breakpoint = j = 0;
+	for (k = 0; k < SEbuf_len; k++) {
+		i = SEorder[k];
+		SE = SEbuf[i];
+		while (breakpoint < SE && j < nrun)
+			breakpoint += run_lengths[j++];
+		if (i < nwindow) {
+			/* SE is a start. */
+			if (SE < 1) {
+				free(SEbuf);
+				free(SEorder);
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+					 "'start' must be >= 1");
+				return errmsg_buf;
+			}
+			Ltrim[i] = - breakpoint;
+			if (SE > breakpoint) {
+				SE_run = j;
+			} else {
+				SE_run = j - 1;
+				Ltrim[i] += run_lengths[SE_run];
+			}
+			offset_nrun[i] = SE_run;
+		} else {
+			/* SE is an end. */
+			if (SE > breakpoint) {
+				free(SEbuf);
+				free(SEorder);
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+					 "'end' must be <= 'length(x)'");
+				return errmsg_buf;
+			}
+			i -= nwindow;
+			Rtrim[i] = breakpoint;
+			SE_run = j - 1;
+			window_nrun[i] = SE_run;
+		}
+	}
+	for (i = 0; i < nwindow; i++) {
+		window_nrun[i] -= offset_nrun[i];
+		if (window_start[i] <= window_end[i])
+			window_nrun[i]++;
+		Ltrim[i] += window_start[i] - 1;
+		Rtrim[i] -= window_end[i];
+	}
+	free(SEbuf);
+	free(SEorder);
+	return NULL; 
+}
+
+static const char *find_windows_runs(const int *run_lengths, int nrun,
+		const int *window_start, const int *window_end, int nwindow,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim,
+		int method)
+{
+	const char *(*fun)(const int *run_lengths, int nrun,
+		const int *window_start, const int *window_end, int nwindow,
+		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim);
+
+	switch (method) {
+		case 1: fun = find_windows_runs1; break;
+		case 2: fun = find_windows_runs2; break;
+		case 3: fun = find_windows_runs3; break;
+		default: error("not ready yet"); break;
+	}
+	return fun(run_lengths, nrun,
+		   window_start, window_end, nwindow,
+		   window_nrun, offset_nrun, Ltrim, Rtrim);
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP Rle_find_windows_runs(SEXP x, SEXP start, SEXP end, SEXP method)
+{
+	SEXP x_lengths, window_nrun, offset_nrun, Ltrim, Rtrim, ans;
+	int x_nrun, nwindow;
+	const int *window_start_p, *window_end_p;
+	const char *errmsg;
+
+	x_lengths = GET_SLOT(x, install("lengths"));
+	x_nrun = LENGTH(x_lengths);
+	nwindow = _check_integer_pairs(start, end,
+				       &window_start_p, &window_end_p,
+				       "start", "end");
+	PROTECT(window_nrun = NEW_INTEGER(nwindow));
+	PROTECT(offset_nrun = NEW_INTEGER(nwindow));
+	PROTECT(Ltrim = NEW_INTEGER(nwindow));
+	PROTECT(Rtrim = NEW_INTEGER(nwindow));
+	errmsg = find_windows_runs(INTEGER(x_lengths), x_nrun,
+				window_start_p, window_end_p, nwindow,
+				INTEGER(window_nrun), INTEGER(offset_nrun),
+				INTEGER(Ltrim), INTEGER(Rtrim),
+				INTEGER(method)[0]);
+	if (errmsg != NULL) {
+		UNPROTECT(4);
+		error(errmsg);
+	}
+	PROTECT(ans = NEW_LIST(4));
+	SET_VECTOR_ELT(ans, 0, window_nrun);
+	SET_VECTOR_ELT(ans, 1, offset_nrun);
+	SET_VECTOR_ELT(ans, 2, Ltrim);
+	SET_VECTOR_ELT(ans, 3, Rtrim);
+	UNPROTECT(5);
+	return ans;
+}
+
+
+/****************************************************************************
+ * Rle_extract_window()
+ */
+
+/* --- .Call ENTRY POINT --- */
 SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 {
 	SEXP x_lengths, x_values, ans_lengths, ans_values, ans;
-	int x_nrun, npair, window_nrun, offset_nrun, Ltrim, Rtrim;
-	const int *start_p, *end_p;
+	int x_nrun, nwindow, window_nrun, offset_nrun, Ltrim, Rtrim;
+	const int *window_start_p, *window_end_p;
+	const char *errmsg;
 
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
 	x_values = GET_SLOT(x, install("values"));
 
-	npair = _check_integer_pairs(start, end,
-				     &start_p, &end_p,
-				     "start", "end");
-	if (npair != 1)
+	nwindow = _check_integer_pairs(start, end,
+				       &window_start_p, &window_end_p,
+				       "start", "end");
+	if (nwindow != 1)
 		error("'start' and 'end' must be of length 1");
 
-	get_window_runs(INTEGER(x_lengths), x_nrun,
-		start_p[0], end_p[0],
-		&window_nrun, &offset_nrun, &Ltrim, &Rtrim);
+	errmsg = find_window_runs1(INTEGER(x_lengths), x_nrun,
+				   window_start_p[0], window_end_p[0],
+				   &window_nrun, &offset_nrun, &Ltrim, &Rtrim);
+	if (errmsg != NULL)
+		error(errmsg);
 
 	PROTECT(ans_lengths = NEW_INTEGER(window_nrun));
 	_vector_memcpy(ans_lengths, 0, x_lengths, offset_nrun,

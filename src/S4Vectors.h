@@ -758,6 +758,13 @@ SEXP Rle_start(SEXP x);
 
 SEXP Rle_end(SEXP x);
 
+SEXP Rle_find_windows_runs(
+	SEXP x,
+	SEXP start,
+	SEXP end,
+	SEXP method
+);
+
 SEXP Rle_extract_window(
 	SEXP x,
 	SEXP start,
