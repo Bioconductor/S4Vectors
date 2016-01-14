@@ -519,20 +519,7 @@ static const char *find_window_runs1(const int *run_lengths, int nrun,
 		return errmsg_buf;
 	}
 	offset = 0;
-	if (window_end == window_start - 1) {
-		*window_nrun = 0;
-		j = -1;
-		while (offset < window_end) {
-			j++;
-			if (j >= nrun)
-				break;
-			offset += run_lengths[j];
-		}
-		if (offset == window_end)
-			i = j + 1;
-		else
-			i = j;
-	} else {
+	if (window_end >= window_start) {
 		for (i = 0; i < nrun; i++) {
 			offset += run_lengths[i];
 			if (offset >= window_start)
@@ -550,6 +537,20 @@ static const char *find_window_runs1(const int *run_lengths, int nrun,
 		}
 		*Rtrim = offset - window_end;
 		*window_nrun = j - i + 1;
+	} else {
+		/* Zero-width window. */
+		*window_nrun = 0;
+		j = -1;
+		while (offset < window_end) {
+			j++;
+			if (j >= nrun)
+				break;
+			offset += run_lengths[j];
+		}
+		if (offset == window_end)
+			i = j + 1;
+		else
+			i = j;
 	}
 	if (window_end > offset) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -602,7 +603,7 @@ static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 		int window_start, int window_end,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
 {
-	int start_run, end_run;
+	int end_run;
 
 	if (window_start == NA_INTEGER || window_start < 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
@@ -614,23 +615,25 @@ static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 			 "'end' must be >= 'start' - 1");
 		return errmsg_buf;
 	}
-	start_run = int_bsearch(window_start, run_breakpoints, nrun);
-	end_run = int_bsearch(window_end, run_breakpoints, nrun);
-	if (end_run >= nrun) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be <= 'length(x)'");
-		return errmsg_buf;
+	*offset_nrun = int_bsearch(window_start, run_breakpoints, nrun);
+	if (window_end >= window_start) {
+		end_run = int_bsearch(window_end, run_breakpoints, nrun);
+		if (end_run >= nrun) {
+			snprintf(errmsg_buf, sizeof(errmsg_buf),
+				 "'end' must be <= 'length(x)'");
+			return errmsg_buf;
+		}
+		*window_nrun = end_run - *offset_nrun + 1;
+		*Ltrim = window_start - run_breakpoints[*offset_nrun - 1] - 1;
+		*Rtrim = run_breakpoints[end_run] - window_end;
+	} else {
+		/* Zero-width window. */
+		*window_nrun = 0;
 	}
-	*window_nrun = end_run - start_run;
-	if (window_start <= window_end)
-		(*window_nrun)++;
-	*offset_nrun = start_run;
-	*Ltrim = window_start - run_breakpoints[start_run - 1] - 1;
-	*Rtrim = run_breakpoints[end_run] - window_end;
 	return NULL;
 }
 
-/* Naive algo. */
+/* Method 1: Naive algo (inefficient if more than 1 window). */
 static const char *find_windows_runs1(const int *run_lengths, int nrun,
 		const int *window_start, const int *window_end, int nwindow,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
@@ -650,7 +653,7 @@ static const char *find_windows_runs1(const int *run_lengths, int nrun,
 	return errmsg;
 }
 
-/* Binary search. */
+/* Method 2: Binary search. */
 static const char *find_windows_runs2(const int *run_lengths, int nrun,
 		const int *window_start, const int *window_end, int nwindow,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
@@ -682,7 +685,7 @@ static const char *find_windows_runs2(const int *run_lengths, int nrun,
 	return errmsg; 
 }
 
-/* Sort 'window_start' and 'window_end'. */
+/* Method 3: Sort 'window_start' and 'window_end'. */
 static const char *find_windows_runs3(const int *run_lengths, int nrun,
 		const int *window_start, const int *window_end, int nwindow,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
@@ -745,17 +748,21 @@ static const char *find_windows_runs3(const int *run_lengths, int nrun,
 		}
 	}
 	for (i = 0; i < nwindow; i++) {
-		window_nrun[i] -= offset_nrun[i];
-		if (window_start[i] <= window_end[i])
-			window_nrun[i]++;
-		Ltrim[i] += window_start[i] - 1;
-		Rtrim[i] -= window_end[i];
+		if (window_end[i] >= window_start[i]) {
+			window_nrun[i] -= offset_nrun[i] - 1;
+			Ltrim[i] += window_start[i] - 1;
+			Rtrim[i] -= window_end[i];
+		} else {
+			/* Zero-width window. */
+			window_nrun[i] = 0;
+		}
 	}
 	free(SEbuf);
 	free(SEorder);
 	return NULL; 
 }
 
+/* If 'method' is not >= 0 and <= 3, then the function does nothing (no-op). */
 static const char *find_windows_runs(const int *run_lengths, int nrun,
 		const int *window_start, const int *window_end, int nwindow,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim,
@@ -765,11 +772,24 @@ static const char *find_windows_runs(const int *run_lengths, int nrun,
 		const int *window_start, const int *window_end, int nwindow,
 		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim);
 
+	if (method == 0) {
+		if (nwindow == 1) {
+			method = 1;
+		} else {
+			/* If nwindow > 0.05 * nrun then use algo based on
+			   binary search (method 2), otherwise use algo based
+			   on qsort (method 3). The 5% cutoff is empirical
+			   (based on timings obtained in January 2016 on a
+			   Dell LATITUDE E6440 laptop running 64-bit Ubuntu
+			   14.04.3 LTS). */
+			method = nwindow > 0.05 * nrun ? 2 : 3;
+		}
+	}
 	switch (method) {
 		case 1: fun = find_windows_runs1; break;
 		case 2: fun = find_windows_runs2; break;
 		case 3: fun = find_windows_runs3; break;
-		default: error("not ready yet"); break;
+		default: return NULL;  /* do nothing */
 	}
 	return fun(run_lengths, nrun,
 		   window_start, window_end, nwindow,
