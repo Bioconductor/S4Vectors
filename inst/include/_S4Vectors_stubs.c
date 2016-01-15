@@ -396,9 +396,19 @@ DEFINE_CCALLABLE_STUB(int, vector_memcmp,
 	(     x1,     x1_offset,      x2,     x2_offset,     nelt)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(vector_memcpy,
-	(SEXP out, int out_offset, SEXP in, int in_offset, int nelt),
-	(     out,     out_offset,      in,     in_offset,     nelt)
+DEFINE_CCALLABLE_STUB(int, copy_vector_block,
+	(SEXP dest, int dest_offset, SEXP src, int src_offset, int block_width),
+	(     dest,     dest_offset,      src,     src_offset,     block_width)
+)
+
+DEFINE_CCALLABLE_STUB(int, copy_vector_blocks,
+	(SEXP dest, int dest_offset, SEXP src, const int *src_offset, const int *block_width, int nblock),
+	(     dest,     dest_offset,      src,            src_offset,            block_width,     nblock)
+)
+
+DEFINE_CCALLABLE_STUB(int, copy_vector_ranges,
+	(SEXP dest, int dest_offset, SEXP src, const int *start, const int *width, int nranges),
+	(     dest,     dest_offset,      src,            start,            width,     nranges)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, list_as_data_frame,

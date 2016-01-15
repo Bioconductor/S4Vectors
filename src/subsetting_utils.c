@@ -19,11 +19,11 @@ SEXP _extract_window_from_vectorORfactor(SEXP x, int start, int end)
 		error("'end' must be >= 'start' - 1");
 	ans_len = end - offset;
 	PROTECT(ans = allocVector(TYPEOF(x), ans_len));
-	_vector_memcpy(ans, 0, x, offset, ans_len);
+	_copy_vector_block(ans, 0, x, offset, ans_len);
 	x_names = GET_NAMES(x);
 	if (x_names != R_NilValue) {
 		PROTECT(ans_names = NEW_CHARACTER(ans_len));
-		_vector_memcpy(ans_names, 0, x_names, offset, ans_len);
+		_copy_vector_block(ans_names, 0, x_names, offset, ans_len);
 		SET_NAMES(ans, ans_names);
 		UNPROTECT(1);
 	}

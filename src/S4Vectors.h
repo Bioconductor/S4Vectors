@@ -422,15 +422,31 @@ int _vector_memcmp(
 	int nelt
 );
 
-void _vector_memcpy(
-	SEXP out,
-	int out_offset,
-	SEXP in,
-	int in_offset,
-	int nelt
+int _copy_vector_block(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	int src_offset,
+	int block_width
 );
 
-SEXP sapply_NROW(SEXP x);
+int _copy_vector_blocks(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	const int *src_offset,
+	const int *block_width,
+	int nblock
+);
+
+int _copy_vector_ranges(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	const int *start,
+	const int *width,
+	int nranges
+);
 
 SEXP vector_subsetByRanges(
 	SEXP x,
@@ -443,6 +459,8 @@ SEXP vector_seqselect(
 	SEXP start,
 	SEXP width
 );
+
+SEXP sapply_NROW(SEXP x);
 
 SEXP _list_as_data_frame(
 	SEXP x,

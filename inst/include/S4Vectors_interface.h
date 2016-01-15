@@ -379,12 +379,30 @@ int vector_memcmp(
 	int nelt
 );
 
-void vector_memcpy(
-	SEXP out,
-	int out_offset,
-	SEXP in,
-	int in_offset,
-	int nelt
+int copy_vector_block(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	int src_offset,
+	int block_width
+);
+
+int copy_vector_blocks(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	const int *src_offset,
+	const int *block_width,
+	int nblock
+);
+
+int copy_vector_ranges(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	const int *start,
+	const int *width,
+	int nranges
 );
 
 SEXP list_as_data_frame(

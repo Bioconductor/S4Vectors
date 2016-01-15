@@ -861,8 +861,8 @@ SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 		error(errmsg);
 
 	PROTECT(ans_lengths = NEW_INTEGER(window_nrun));
-	_vector_memcpy(ans_lengths, 0, x_lengths, offset_nrun,
-		       window_nrun);
+	_copy_vector_block(ans_lengths, 0, x_lengths, offset_nrun,
+			   window_nrun);
 	if (window_nrun != 0) {
 		INTEGER(ans_lengths)[0] -= Ltrim;
 		INTEGER(ans_lengths)[window_nrun - 1] -= Rtrim;
