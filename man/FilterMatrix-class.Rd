@@ -66,7 +66,12 @@
 
 \author{ Michael Lawrence }
 \seealso{
-  \code{\link{evalSeparately}} is the typical way to generate this object.
+  \itemize{
+    \item \code{\link{evalSeparately}} is the typical way to generate this
+          object.
+
+    \item \link{FilterRules} objects.
+  }
 }
 
 \keyword{classes}

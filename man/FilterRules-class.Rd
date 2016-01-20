@@ -204,61 +204,62 @@
 }
 
 \author{ Michael Lawrence }
+
 \seealso{
-  \code{\link[IRanges]{rdapply}} in the \pkg{IRanges} package, which accepts
-  a \code{FilterRules} instance to filter each space before invoking the user
-  function.
+  \link{FilterMatrix} objects for storing the logical output of a set
+  of FilterRules objects.
 }
+
 \examples{
-  ## constructing a FilterRules instance
+## constructing a FilterRules instance
 
-  ## an empty set of filters
-  filters <- FilterRules()
+## an empty set of filters
+filters <- FilterRules()
   
-  ## as a simple character vector
-  filts <- c("peaks", "promoters")
-  filters <- FilterRules(filts)
-  active(filters) # all TRUE
+## as a simple character vector
+filts <- c("peaks", "promoters")
+filters <- FilterRules(filts)
+active(filters) # all TRUE
 
-  ## with functions and expressions
-  filts <- list(peaks = expression(peaks), promoters = expression(promoters),
-                find_eboxes = function(rd) rep(FALSE, nrow(rd)))
-  filters <- FilterRules(filts, active = FALSE)
-  active(filters) # all FALSE
+## with functions and expressions
+filts <- list(peaks = expression(peaks), promoters = expression(promoters),
+              find_eboxes = function(rd) rep(FALSE, nrow(rd)))
+filters <- FilterRules(filts, active = FALSE)
+active(filters) # all FALSE
 
-  ## direct, quoted args (character literal parsed)
-  filters <- FilterRules(under_peaks = peaks, in_promoters = "promoters")
-  filts <- list(under_peaks = expression(peaks),
-                in_promoters = expression(promoters))
+## direct, quoted args (character literal parsed)
+filters <- FilterRules(under_peaks = peaks, in_promoters = "promoters")
+filts <- list(under_peaks = expression(peaks),
+              in_promoters = expression(promoters))
 
-  ## specify both exprs and additional args
-  filters <- FilterRules(filts, diffexp = de)
+## specify both exprs and additional args
+filters <- FilterRules(filts, diffexp = de)
 
-  filts <- c("promoters", "peaks", "introns")
-  filters <- FilterRules(filts)
+filts <- c("promoters", "peaks", "introns")
+filters <- FilterRules(filts)
 
-  ## evaluation
-  df <- DataFrame(peaks = c(TRUE, TRUE, FALSE, FALSE),
-                  promoters = c(TRUE, FALSE, FALSE, TRUE),
-                  introns = c(TRUE, FALSE, FALSE, FALSE))
-  eval(filters, df)
-  fm <- evalSeparately(filters, df)
-  identical(filterRules(fm), filters)
-  summary(fm)
-  summary(fm, percent = TRUE)
-  fm <- evalSeparately(filters, df, serial = TRUE)
+## evaluation
+df <- DataFrame(peaks = c(TRUE, TRUE, FALSE, FALSE),
+                promoters = c(TRUE, FALSE, FALSE, TRUE),
+                introns = c(TRUE, FALSE, FALSE, FALSE))
+eval(filters, df)
+fm <- evalSeparately(filters, df)
+identical(filterRules(fm), filters)
+summary(fm)
+summary(fm, percent = TRUE)
+fm <- evalSeparately(filters, df, serial = TRUE)
 
-  ## set the active state directly
+## set the active state directly
   
-  active(filters) <- FALSE # all FALSE
-  active(filters) <- TRUE # all TRUE
-  active(filters) <- c(FALSE, FALSE, TRUE)
-  active(filters)["promoters"] <- TRUE # use a filter name
+active(filters) <- FALSE # all FALSE
+active(filters) <- TRUE # all TRUE
+active(filters) <- c(FALSE, FALSE, TRUE)
+active(filters)["promoters"] <- TRUE # use a filter name
   
-  ## toggle the active state by name or index
+## toggle the active state by name or index
   
-  active(filters) <- c(NA, 2) # NA's are dropped
-  active(filters) <- c("peaks", NA) 
+active(filters) <- c(NA, 2) # NA's are dropped
+active(filters) <- c("peaks", NA) 
 }
 
 \keyword{classes}
