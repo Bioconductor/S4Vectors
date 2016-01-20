@@ -41,7 +41,6 @@ R files: 73 files
   X FilterRules-class.R
 
     classNameForDisplay-methods.R (no more, has been diluted in other files)
-    updateObject-methods.R (need to remove methods for range-based objects)
     zzz.R
 
 C files:
