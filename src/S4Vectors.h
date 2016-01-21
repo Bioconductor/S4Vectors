@@ -397,21 +397,6 @@ const char *_get_classname(SEXP x);
 SEXP anyMissing(SEXP x);
 
 
-/* subsetting_utils.c */
-
-SEXP _extract_window_from_vectorORfactor(
-	SEXP x,
-	int start,
-	int end
-);
-
-SEXP vectorORfactor_extract_window(
-	SEXP x,
-	SEXP start,
-	SEXP end
-);
-
-
 /* vector_utils.c */
 
 int _vector_memcmp(
@@ -448,13 +433,14 @@ int _copy_vector_ranges(
 	int nranges
 );
 
-SEXP vector_subsetByRanges(
+SEXP _extract_vectorORfactor_ranges(
 	SEXP x,
-	SEXP start,
-	SEXP width
+	const int *start,
+	const int *width,
+	int nranges
 );
 
-SEXP vector_seqselect(
+SEXP vectorORfactor_extract_ranges(
 	SEXP x,
 	SEXP start,
 	SEXP width

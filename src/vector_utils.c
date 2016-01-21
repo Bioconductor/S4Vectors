@@ -139,8 +139,7 @@ int _copy_vector_blocks(SEXP dest, int dest_offset,
  * instead of a vector of offsets.
  */
 int _copy_vector_ranges(SEXP dest, int dest_offset,
-		SEXP src, const int *start, const int *width,
-		int nranges)
+		SEXP src, const int *start, const int *width, int nranges)
 {
 	int i;
 
@@ -153,35 +152,27 @@ int _copy_vector_ranges(SEXP dest, int dest_offset,
 
 
 /****************************************************************************
- * vector_subsetByRanges() and vector_seqselect()
- *
- * TODO: These 2 functions are redundant. We only need one: the fastest.
+ * vectorORfactor_extract_ranges()
  */
 
-/* --- .Call ENTRY POINT ---
- * 'start' and 'width': integer vectors of the same length with no NAs. 'width'
- * is assumed to be >= 0.
- */
-SEXP vector_subsetByRanges(SEXP x, SEXP start, SEXP width)
+SEXP _extract_vectorORfactor_ranges(SEXP x,
+		const int *start, const int *width, int nranges)
 {
-	int x_len, nranges, ans_len, i, offset_i, width_i, end_i;
-	const int *start_p, *width_p;
-	SEXP ans, x_names, ans_names;
+	int x_len, i, ans_len, start_i, width_i, end_i;
+	SEXP ans, x_names, ans_names, ans_class, ans_levels;
 
 	x_len = LENGTH(x);
-	nranges = _check_integer_pairs(start, width,
-				       &start_p, &width_p,
-				       "start", "width");
-	ans_len = 0;
 	_reset_ovflow_flag();
-	for (i = 0; i < nranges; i++) {
-		width_i = width_p[i];
+	for (i = ans_len = 0; i < nranges; i++) {
+		start_i = start[i];
+		if (start_i == NA_INTEGER || start_i < 1)
+			error("'start' must be >= 1");
+		width_i = width[i];
 		if (width_i == NA_INTEGER || width_i < 0)
-			error("'width' cannot contain NAs or negative values");
-		offset_i = start_p[i] - 1;
-		end_i = offset_i + width_i;
-		if (offset_i < 0 || end_i > x_len)
-			error("some ranges are out of bounds");
+			error("'width' must be >= 0");
+		end_i = start_i - 1 + width_i;
+		if (end_i > x_len)
+			error("'end' must be <= 'length(x)'");
 		ans_len = _safe_int_add(ans_len, width_i);
 	}
 	if (_get_ovflow_flag())
@@ -190,90 +181,51 @@ SEXP vector_subsetByRanges(SEXP x, SEXP start, SEXP width)
 		      "This is not supported yet.",
 		      CHAR(type2str(TYPEOF(x))), INT_MAX);
 	PROTECT(ans = allocVector(TYPEOF(x), ans_len));
-	_copy_vector_ranges(ans, 0, x, start_p, width_p, nranges);
+
+	/* Extract the values from 'x'. */
+	_copy_vector_ranges(ans, 0, x, start, width, nranges);
+
+	/* Extract the names from 'x'. */
 	x_names = GET_NAMES(x);
 	if (x_names != R_NilValue) {
 		PROTECT(ans_names = NEW_CHARACTER(ans_len));
 		_copy_vector_ranges(ans_names, 0, x_names,
-				    start_p, width_p, nranges);
+				    start, width, nranges);
 		SET_NAMES(ans, ans_names);
+		UNPROTECT(1);
+	}
+
+	/* Propagate 'levels(x)'. */
+	if (isFactor(x)) {
+		PROTECT(ans_class = duplicate(GET_CLASS(x)));
+		SET_CLASS(ans, ans_class);
+		UNPROTECT(1);
+		PROTECT(ans_levels = duplicate(GET_LEVELS(x)));
+		SET_LEVELS(ans, ans_levels);
 		UNPROTECT(1);
 	}
 	UNPROTECT(1);
 	return ans;
 }
 
-/* --- .Call ENTRY POINT ---
- * TODO: Remove this at some point (use vector_subsetByRanges instead).
+/*
+ * --- .Call ENTRY POINT ---
+ * Args:
+ *   x:            An atomic vector, or factor, or list.
+ *   start, width: Integer vectors of the same length defining the ranges to
+ *                 extract.
+ * Return an object of the same type as 'x' (names and levels are propagated).
  */
-SEXP vector_seqselect(SEXP x, SEXP start, SEXP width)
+
+SEXP vectorORfactor_extract_ranges(SEXP x, SEXP start, SEXP width)
 {
-	int ans_offset, i, j, s, w;
-	SEXP ans, ans_names;
+	int nranges;
+	const int *start_p, *width_p;
 
-	if (!IS_INTEGER(start))
-		error("'start' must be an integer vector");
-	if (!IS_INTEGER(width))
-		error("'width' must be an integer vector");
-	if (LENGTH(start) != LENGTH(width))
-		error("length of 'start' must equal length of 'width'");
-
-	ans_offset = 0;
-	_reset_ovflow_flag();
-	for (i = 0; i < LENGTH(start); i++) {
-		s = INTEGER(start)[i];
-		w = INTEGER(width)[i];
-		if (s == NA_INTEGER || s < 1)
-			error("each element in 'start' must be a positive integer");
-		if (w == NA_INTEGER || w < 0)
-			error("each element in 'width' must be a non-negative integer");
-		if (LENGTH(x) < s + w - 1)
-			error("some ranges are out of bounds");
-		ans_offset = _safe_int_add(ans_offset, w);
-	}
-	if (_get_ovflow_flag())
-		error("Subsetting %s object by subscript containing "
-		      "ranges produces a result\n  of length > %d. "
-		      "This is not supported yet.",
-		      CHAR(type2str(TYPEOF(x))), INT_MAX);
-	PROTECT(ans = allocVector(TYPEOF(x), ans_offset));
-
-	for (i = ans_offset = 0; i < LENGTH(start); i++, ans_offset += w) {
-		s = INTEGER(start)[i] - 1;
-		w = INTEGER(width)[i];
-		switch (TYPEOF(x)) {
-		    case LGLSXP:
-		    case INTSXP:
-			memcpy(INTEGER(ans) + ans_offset, INTEGER(x) + s, w * sizeof(int));
-			break;
-		    case REALSXP:
-			memcpy(REAL(ans) + ans_offset, REAL(x) + s, w * sizeof(double));
-			break;
-		    case CPLXSXP:
-			memcpy(COMPLEX(ans) + ans_offset, COMPLEX(x) + s, w * sizeof(Rcomplex));
-			break;
-		    case STRSXP:
-			for (j = 0; j < w; j++)
-				SET_STRING_ELT(ans, ans_offset + j, STRING_ELT(x, s + j));
-			break;
-		    case VECSXP:
-			for (j = 0; j < w; j++)
-				SET_VECTOR_ELT(ans, ans_offset + j, VECTOR_ELT(x, s + j));
-			break;
-		    case RAWSXP:
-			memcpy(RAW(ans) + ans_offset, RAW(x) + s, w * sizeof(char));
-			break;
-		    default:
-			error("S4Vectors internal error in vector_seqselect(): "
-			      "%s type not supported",
-			      CHAR(type2str(TYPEOF(x))));
-		}
-	}
-	ans_names = GET_NAMES(x);
-	if (ans_names != R_NilValue)
-		SET_NAMES(ans, vector_seqselect(ans_names, start, width));
-	UNPROTECT(1);
-	return ans;
+	nranges = _check_integer_pairs(start, width,
+				       &start_p, &width_p,
+				       "start", "width");
+	return _extract_vectorORfactor_ranges(x, start_p, width_p, nranges);
 }
 
 

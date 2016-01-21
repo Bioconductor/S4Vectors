@@ -439,10 +439,9 @@ setMethod("replaceROWS", "NULL", function(x, i, value) NULL)
 setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
     function(x, i)
     {
-        start_end <- i@subscript
-        .Call2("vectorORfactor_extract_window",
-               x, start_end[[1L]], start_end[[2L]],
-               PACKAGE="S4Vectors")
+        start <- i@subscript[[1L]]
+        width <- i@subscript[[2L]] - start + 1L
+        extract_ranges_from_vectorORfactor(x, start, width)
     }
 )
 

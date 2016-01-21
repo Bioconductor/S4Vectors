@@ -424,6 +424,14 @@ setMethod("isStrictlySorted", "RleNSBS",
     function(x) isStrictlySorted(x@subscript)
 )
 
+setMethod("extractROWS", c("vectorORfactor", "Rle"),
+    function(x, i)
+    {
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        callGeneric()
+    }
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.

@@ -71,6 +71,18 @@ quick_unsplit <- function(x, f)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### extract_ranges_from_vectorORfactor()
+###
+
+### NOT exported.
+extract_ranges_from_vectorORfactor <- function(x, start, width)
+{
+    .Call2("vectorORfactor_extract_ranges", x, start, width,
+           PACKAGE="S4Vectors")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### extract_data_frame_rows()
 ###
 ### A fast version of {df <- df[i, , drop=FALSE]; rownames(df) <- NULL}.
@@ -81,6 +93,7 @@ quick_unsplit <- function(x, f)
 ### and only a waste of time.
 ###
 
+### NOT exported.
 extract_data_frame_rows <- function(x, i)
 {
     stopifnot(is.data.frame(x))

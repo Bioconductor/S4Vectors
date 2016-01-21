@@ -868,9 +868,9 @@ SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 		INTEGER(ans_lengths)[window_nrun - 1] -= Rtrim;
 	}
 
-	PROTECT(ans_values = _extract_window_from_vectorORfactor(x_values,
-			offset_nrun + 1,
-			offset_nrun + window_nrun));
+	offset_nrun++;  /* add 1 to get the start */
+	PROTECT(ans_values = _extract_vectorORfactor_ranges(x_values,
+					&offset_nrun, &window_nrun, 1));
 	PROTECT(ans = _new_Rle(ans_values, ans_lengths));
 	UNPROTECT(3);
 	return ans;
@@ -983,8 +983,10 @@ SEXP Rle_window_aslist(SEXP x, SEXP runStart, SEXP runEnd,
 
 	PROTECT(ans = NEW_LIST(2));
 	PROTECT(ans_names = NEW_CHARACTER(2));
-	PROTECT(ans_values = vector_seqselect(values, runStart, runWidth));
-	PROTECT(ans_lengths = vector_seqselect(lengths, runStart, runWidth));
+	PROTECT(ans_values = vectorORfactor_extract_ranges(values,
+					runStart, runWidth));
+	PROTECT(ans_lengths = vectorORfactor_extract_ranges(lengths,
+					runStart, runWidth));
 
     if (INTEGER(runWidth)[0] > 0) {
         INTEGER(ans_lengths)[0] -= INTEGER(offsetStart)[0];
@@ -1074,8 +1076,10 @@ SEXP _seqselect_Rle(SEXP x, const int *start, const int *width, int length)
 		*width_run_elt = *end_elt - *start_elt + 1;
 	}
 
-	PROTECT(ans_values = vector_seqselect(values, start_run, width_run));
-	PROTECT(ans_lengths = vector_seqselect(lengths, start_run, width_run));
+	PROTECT(ans_values = vectorORfactor_extract_ranges(values,
+					start_run, width_run));
+	PROTECT(ans_lengths = vectorORfactor_extract_ranges(lengths,
+					start_run, width_run));
 
 	index = 0;
 	len_elt = INTEGER(ans_lengths);
