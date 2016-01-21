@@ -192,7 +192,7 @@ static int compute_Rbyte_runs(const Rbyte *values, int nvalues,
  * know what you are doing!
  */
 
-SEXP _logical_Rle_constructor(const int *values, int nvalues,
+SEXP _construct_logical_Rle(const int *values, int nvalues,
 		const int *lengths, int buflength)
 {
 	int nrun, *buf_lengths;
@@ -226,7 +226,7 @@ SEXP _logical_Rle_constructor(const int *values, int nvalues,
 	return ans;
 }
 
-SEXP _integer_Rle_constructor(const int *values, int nvalues,
+SEXP _construct_integer_Rle(const int *values, int nvalues,
 		const int *lengths, int buflength)
 {
 	int nrun, *buf_lengths;
@@ -260,7 +260,7 @@ SEXP _integer_Rle_constructor(const int *values, int nvalues,
 	return ans;
 }
 
-SEXP _numeric_Rle_constructor(const double *values, int nvalues,
+SEXP _construct_numeric_Rle(const double *values, int nvalues,
 		const int *lengths, int buflength)
 {
 	int nrun, *buf_lengths;
@@ -294,7 +294,7 @@ SEXP _numeric_Rle_constructor(const double *values, int nvalues,
 	return ans;
 }
 
-SEXP _complex_Rle_constructor(const Rcomplex *values, int nvalues,
+SEXP _construct_complex_Rle(const Rcomplex *values, int nvalues,
 		const int *lengths, int buflength)
 {
 	int nrun, *buf_lengths;
@@ -329,7 +329,7 @@ SEXP _complex_Rle_constructor(const Rcomplex *values, int nvalues,
 	return ans;
 }
 
-SEXP _character_Rle_constructor(SEXP values,
+SEXP _construct_character_Rle(SEXP values,
 		const int *lengths, int buflength)
 {
 	int nvalues, nrun, *buf_lengths, i;
@@ -364,7 +364,7 @@ SEXP _character_Rle_constructor(SEXP values,
 	return ans;
 }
 
-SEXP _raw_Rle_constructor(const Rbyte *values, int nvalues,
+SEXP _construct_raw_Rle(const Rbyte *values, int nvalues,
 		const int *lengths, int buflength)
 {
 	int nrun, *buf_lengths;
@@ -398,11 +398,68 @@ SEXP _raw_Rle_constructor(const Rbyte *values, int nvalues,
 	return ans;
 }
 
+SEXP _construct_Rle(SEXP values, const int *lengths, int buflength)
+{
+	int nvalues;
+	SEXP ans, ans_values, ans_values_class, ans_values_levels;
+
+	nvalues = LENGTH(values);
+	switch (TYPEOF(values)) {
+	    case LGLSXP:
+		PROTECT(ans = _construct_logical_Rle(
+					LOGICAL(values), nvalues,
+					lengths, buflength));
+		break;
+	    case INTSXP:
+		PROTECT(ans = _construct_integer_Rle(
+					INTEGER(values), nvalues,
+					lengths, buflength));
+		/* 'values' could be a factor in which case we need to
+		   propagate its levels.  */
+		if (isFactor(values)) {
+			ans_values = GET_SLOT(ans, install("values"));
+			PROTECT(ans_values_class =
+					duplicate(GET_CLASS(values)));
+			SET_CLASS(ans_values, ans_values_class);
+			UNPROTECT(1);
+			PROTECT(ans_values_levels =
+					duplicate(GET_LEVELS(values)));
+			SET_LEVELS(ans_values, ans_values_levels);
+			UNPROTECT(1);
+		}
+		break;
+	    case REALSXP:
+		PROTECT(ans = _construct_numeric_Rle(
+					REAL(values), nvalues,
+					lengths, buflength));
+		break;
+	    case CPLXSXP:
+		PROTECT(ans = _construct_complex_Rle(
+					COMPLEX(values), nvalues,
+					lengths, buflength));
+		break;
+	    case STRSXP:
+		PROTECT(ans = _construct_character_Rle(values,
+					lengths, buflength));
+		break;
+	    case RAWSXP:
+		PROTECT(ans = _construct_raw_Rle(RAW(values),
+					nvalues, lengths, buflength));
+		break;
+	    default:
+		error("Rle of type '%s' is not supported",
+		      CHAR(type2str(TYPEOF(values))));
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
 
 /****************************************************************************
- * The Rle constructor (.Call ENTRY POINT).
+ * The Rle constructor.
  */
 
+/* --- .Call ENTRY POINT --- */
 SEXP Rle_constructor(SEXP values, SEXP lengths, SEXP check, SEXP buflength)
 {
 	int nvalues, buflength0;
@@ -417,29 +474,7 @@ SEXP Rle_constructor(SEXP values, SEXP lengths, SEXP check, SEXP buflength)
 	}
 	lengths_p = LENGTH(lengths) > 0 ? INTEGER(lengths) : NULL;
 	buflength0 = INTEGER(buflength)[0];
-	switch (TYPEOF(values)) {
-	    case LGLSXP:
-		return _logical_Rle_constructor(LOGICAL(values), nvalues,
-						lengths_p, buflength0);
-	    case INTSXP:
-		return _integer_Rle_constructor(INTEGER(values), nvalues,
-						lengths_p, buflength0);
-	    case REALSXP:
-		return _numeric_Rle_constructor(REAL(values), nvalues,
-						lengths_p, buflength0);
-	    case CPLXSXP:
-		return _complex_Rle_constructor(COMPLEX(values), nvalues,
-						lengths_p, buflength0);
-	    case STRSXP:
-		return _character_Rle_constructor(values,
-						lengths_p, buflength0);
-	    case RAWSXP:
-		return _raw_Rle_constructor(RAW(values), nvalues,
-						lengths_p, buflength0);
-	}
-	error("Rle of type '%s' is not supported",
-	      CHAR(type2str(TYPEOF(values))));
-	return R_NilValue;
+	return _construct_Rle(values, lengths_p, buflength0);
 }
 
 
@@ -497,14 +532,14 @@ SEXP Rle_end(SEXP x)
 
 
 /****************************************************************************
- * Rle_find_windows_runs()
+ * Rle_find_runs_of_ranges()
  */
 
 static char errmsg_buf[200];
 
 static const char *find_window_runs1(const int *run_lengths, int nrun,
 		int window_start, int window_end,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
 	int offset, i, j;
 
@@ -536,10 +571,10 @@ static const char *find_window_runs1(const int *run_lengths, int nrun,
 			}
 		}
 		*Rtrim = offset - window_end;
-		*window_nrun = j - i + 1;
+		*spanned_nrun = j - i + 1;
 	} else {
 		/* Zero-width window. */
-		*window_nrun = 0;
+		*spanned_nrun = 0;
 		j = -1;
 		while (offset < window_end) {
 			j++;
@@ -601,7 +636,7 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
  */
 static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 		int window_start, int window_end,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
 	int end_run;
 
@@ -623,29 +658,31 @@ static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 				 "'end' must be <= 'length(x)'");
 			return errmsg_buf;
 		}
-		*window_nrun = end_run - *offset_nrun + 1;
+		*spanned_nrun = end_run - *offset_nrun + 1;
 		*Ltrim = window_start - run_breakpoints[*offset_nrun - 1] - 1;
 		*Rtrim = run_breakpoints[end_run] - window_end;
 	} else {
 		/* Zero-width window. */
-		*window_nrun = 0;
+		*spanned_nrun = 0;
 	}
 	return NULL;
 }
 
 /* Method 1: Naive algo (inefficient if more than 1 window). */
-static const char *find_windows_runs1(const int *run_lengths, int nrun,
-		const int *window_start, const int *window_end, int nwindow,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+static const char *find_runs_of_ranges1(const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
-	int i;
+	int i, start_i, end_i;
 	const char *errmsg;
 
 	errmsg = NULL;
-	for (i = 0; i < nwindow; i++) {
+	for (i = 0; i < nranges; i++) {
+		start_i = start[i];
+		end_i = start_i - 1 + width[i];
 		errmsg = find_window_runs1(run_lengths, nrun,
-					   window_start[i], window_end[i],
-					   window_nrun + i, offset_nrun + i,
+					   start_i, end_i,
+					   offset_nrun + i, spanned_nrun + i,
 					   Ltrim + i, Rtrim + i);
 		if (errmsg != NULL)
 			break;
@@ -654,17 +691,17 @@ static const char *find_windows_runs1(const int *run_lengths, int nrun,
 }
 
 /* Method 2: Binary search. */
-static const char *find_windows_runs2(const int *run_lengths, int nrun,
-		const int *window_start, const int *window_end, int nwindow,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+static const char *find_runs_of_ranges2(const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
-	int *run_breakpoints, breakpoint, i;
+	int *run_breakpoints, breakpoint, i, start_i, end_i;
 	const char *errmsg;
 
 	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
 	if (run_breakpoints == NULL) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "find_windows_runs2: memory allocation failed");
+			 "find_runs_of_ranges2: memory allocation failed");
 		return errmsg_buf;
 	}
 	breakpoint = 0;
@@ -673,10 +710,12 @@ static const char *find_windows_runs2(const int *run_lengths, int nrun,
 		run_breakpoints[i] = breakpoint;
 	}
 	errmsg = NULL;
-	for (i = 0; i < nwindow; i++) {
+	for (i = 0; i < nranges; i++) {
+		start_i = start[i];
+		end_i = start_i - 1 + width[i];
 		errmsg = find_window_runs2(run_breakpoints, nrun,
-					   window_start[i], window_end[i],
-					   window_nrun + i, offset_nrun + i,
+					   start_i, end_i,
+					   offset_nrun + i, spanned_nrun + i,
 					   Ltrim + i, Rtrim + i);
 		if (errmsg != NULL)
 			break;
@@ -685,15 +724,15 @@ static const char *find_windows_runs2(const int *run_lengths, int nrun,
 	return errmsg; 
 }
 
-/* Method 3: Sort 'window_start' and 'window_end'. */
-static const char *find_windows_runs3(const int *run_lengths, int nrun,
-		const int *window_start, const int *window_end, int nwindow,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim)
+/* Method 3: Sort the starts and ends of the ranges. */
+static const char *find_runs_of_ranges3(const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
 	int SEbuf_len, *SEbuf, *SEorder,
 	    *SEbuf2, SE, breakpoint, i, j, k, SE_run;
 
-	SEbuf_len = 2 * nwindow;
+	SEbuf_len = 2 * nranges;
 	SEbuf = (int *) malloc(sizeof(int) * SEbuf_len);
 	SEorder = (int *) malloc(sizeof(int) * SEbuf_len);
 	if (SEbuf == NULL || SEorder == NULL) {
@@ -702,12 +741,13 @@ static const char *find_windows_runs3(const int *run_lengths, int nrun,
 		if (SEorder != NULL)
 			free(SEorder);
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "find_windows_runs3: memory allocation failed");
+			 "find_runs_of_ranges3: memory allocation failed");
 		return errmsg_buf;
 	}
-	memcpy(SEbuf, window_start, sizeof(int) * nwindow);
-	SEbuf2 = SEbuf + nwindow;
-	memcpy(SEbuf2, window_end, sizeof(int) * nwindow);
+	memcpy(SEbuf, start, sizeof(int) * nranges);
+	SEbuf2 = SEbuf + nranges;
+	for (i = 0; i < nranges; i++)
+		SEbuf2[i] = start[i] - 1 + width[i];
 	_get_order_of_int_array(SEbuf, SEbuf_len, 0, SEorder, 0);
 	breakpoint = j = 0;
 	for (k = 0; k < SEbuf_len; k++) {
@@ -715,7 +755,7 @@ static const char *find_windows_runs3(const int *run_lengths, int nrun,
 		SE = SEbuf[i];
 		while (breakpoint < SE && j < nrun)
 			breakpoint += run_lengths[j++];
-		if (i < nwindow) {
+		if (i < nranges) {
 			/* SE is a start. */
 			if (SE < 1) {
 				free(SEbuf);
@@ -741,20 +781,20 @@ static const char *find_windows_runs3(const int *run_lengths, int nrun,
 					 "'end' must be <= 'length(x)'");
 				return errmsg_buf;
 			}
-			i -= nwindow;
+			i -= nranges;
 			Rtrim[i] = breakpoint;
 			SE_run = j - 1;
-			window_nrun[i] = SE_run;
+			spanned_nrun[i] = SE_run;
 		}
 	}
-	for (i = 0; i < nwindow; i++) {
-		if (window_end[i] >= window_start[i]) {
-			window_nrun[i] -= offset_nrun[i] - 1;
-			Ltrim[i] += window_start[i] - 1;
-			Rtrim[i] -= window_end[i];
+	for (i = 0; i < nranges; i++) {
+		if (width[i] != 0) {
+			spanned_nrun[i] -= offset_nrun[i] - 1;
+			Ltrim[i] += start[i] - 1;
+			Rtrim[i] -= SEbuf2[i];
 		} else {
-			/* Zero-width window. */
-			window_nrun[i] = 0;
+			/* Zero-width range. */
+			spanned_nrun[i] = 0;
 		}
 	}
 	free(SEbuf);
@@ -763,59 +803,59 @@ static const char *find_windows_runs3(const int *run_lengths, int nrun,
 }
 
 /* If 'method' is not >= 0 and <= 3, then the function does nothing (no-op). */
-static const char *find_windows_runs(const int *run_lengths, int nrun,
-		const int *window_start, const int *window_end, int nwindow,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim,
+static const char *find_runs_of_ranges(const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim,
 		int method)
 {
 	const char *(*fun)(const int *run_lengths, int nrun,
-		const int *window_start, const int *window_end, int nwindow,
-		int *window_nrun, int *offset_nrun, int *Ltrim, int *Rtrim);
+		const int *start, const int *width, int nranges,
+		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim);
 
 	if (method == 0) {
-		if (nwindow == 1) {
+		if (nranges == 1) {
 			method = 1;
 		} else {
-			/* If nwindow > 0.05 * nrun then use algo based on
+			/* If nranges > 0.05 * nrun then use algo based on
 			   binary search (method 2), otherwise use algo based
 			   on qsort (method 3). The 5% cutoff is empirical
 			   (based on timings obtained in January 2016 on a
 			   Dell LATITUDE E6440 laptop running 64-bit Ubuntu
 			   14.04.3 LTS). */
-			method = nwindow > 0.05 * nrun ? 2 : 3;
+			method = nranges > 0.05 * nrun ? 2 : 3;
 		}
 	}
 	switch (method) {
-		case 1: fun = find_windows_runs1; break;
-		case 2: fun = find_windows_runs2; break;
-		case 3: fun = find_windows_runs3; break;
+		case 1: fun = find_runs_of_ranges1; break;
+		case 2: fun = find_runs_of_ranges2; break;
+		case 3: fun = find_runs_of_ranges3; break;
 		default: return NULL;  /* do nothing */
 	}
 	return fun(run_lengths, nrun,
-		   window_start, window_end, nwindow,
-		   window_nrun, offset_nrun, Ltrim, Rtrim);
+		   start, width, nranges,
+		   offset_nrun, spanned_nrun, Ltrim, Rtrim);
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Rle_find_windows_runs(SEXP x, SEXP start, SEXP end, SEXP method)
+SEXP Rle_find_runs_of_ranges(SEXP x, SEXP start, SEXP width, SEXP method)
 {
-	SEXP x_lengths, window_nrun, offset_nrun, Ltrim, Rtrim, ans;
-	int x_nrun, nwindow;
-	const int *window_start_p, *window_end_p;
+	SEXP x_lengths, offset_nrun, spanned_nrun, Ltrim, Rtrim, ans;
+	int x_nrun, nranges;
+	const int *start_p, *width_p;
 	const char *errmsg;
 
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
-	nwindow = _check_integer_pairs(start, end,
-				       &window_start_p, &window_end_p,
-				       "start", "end");
-	PROTECT(window_nrun = NEW_INTEGER(nwindow));
-	PROTECT(offset_nrun = NEW_INTEGER(nwindow));
-	PROTECT(Ltrim = NEW_INTEGER(nwindow));
-	PROTECT(Rtrim = NEW_INTEGER(nwindow));
-	errmsg = find_windows_runs(INTEGER(x_lengths), x_nrun,
-				window_start_p, window_end_p, nwindow,
-				INTEGER(window_nrun), INTEGER(offset_nrun),
+	nranges = _check_integer_pairs(start, width,
+				       &start_p, &width_p,
+				       "start", "width");
+	PROTECT(offset_nrun = NEW_INTEGER(nranges));
+	PROTECT(spanned_nrun = NEW_INTEGER(nranges));
+	PROTECT(Ltrim = NEW_INTEGER(nranges));
+	PROTECT(Rtrim = NEW_INTEGER(nranges));
+	errmsg = find_runs_of_ranges(INTEGER(x_lengths), x_nrun,
+				start_p, width_p, nranges,
+				INTEGER(offset_nrun), INTEGER(spanned_nrun),
 				INTEGER(Ltrim), INTEGER(Rtrim),
 				INTEGER(method)[0]);
 	if (errmsg != NULL) {
@@ -823,8 +863,8 @@ SEXP Rle_find_windows_runs(SEXP x, SEXP start, SEXP end, SEXP method)
 		error(errmsg);
 	}
 	PROTECT(ans = NEW_LIST(4));
-	SET_VECTOR_ELT(ans, 0, window_nrun);
-	SET_VECTOR_ELT(ans, 1, offset_nrun);
+	SET_VECTOR_ELT(ans, 0, offset_nrun);
+	SET_VECTOR_ELT(ans, 1, spanned_nrun);
 	SET_VECTOR_ELT(ans, 2, Ltrim);
 	SET_VECTOR_ELT(ans, 3, Rtrim);
 	UNPROTECT(5);
@@ -833,47 +873,100 @@ SEXP Rle_find_windows_runs(SEXP x, SEXP start, SEXP end, SEXP method)
 
 
 /****************************************************************************
- * Rle_extract_window()
+ * Rle_extract_window() and Rle_extract_ranges()
  */
+
+static SEXP subset_Rle_by_runs(SEXP x,
+		const int *start_nrun, const int *spanned_nrun,
+		const int *Ltrim, const int *Rtrim, int nranges)
+{
+	SEXP x_values, tmp_values, x_lengths, ans;
+	int tmp_nrun, *tmp_lengths, i, nrun;
+
+	x_values = GET_SLOT(x, install("values"));
+	PROTECT(tmp_values = _subset_vectorORfactor_by_ranges(x_values,
+					start_nrun, spanned_nrun, nranges));
+	tmp_nrun = LENGTH(tmp_values);
+	tmp_lengths = (int *) R_alloc(sizeof(int), tmp_nrun);
+	x_lengths = GET_SLOT(x, install("lengths"));
+	for (i = tmp_nrun = 0; i < nranges; i++) {
+		nrun = spanned_nrun[i];
+		if (nrun == 0)
+			continue;
+		memcpy(tmp_lengths + tmp_nrun,
+		       INTEGER(x_lengths) + start_nrun[i] - 1,
+		       sizeof(int) * nrun);
+		tmp_lengths[tmp_nrun] -= Ltrim[i];
+		tmp_nrun += nrun;
+		tmp_lengths[tmp_nrun - 1] -= Rtrim[i];
+	}
+	PROTECT(ans = _construct_Rle(tmp_values, tmp_lengths, 0));
+	UNPROTECT(2);
+	return ans;
+}
 
 /* --- .Call ENTRY POINT --- */
 SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 {
-	SEXP x_lengths, x_values, ans_lengths, ans_values, ans;
-	int x_nrun, nwindow, window_nrun, offset_nrun, Ltrim, Rtrim;
+	int nwindow, x_nrun, offset_nrun, spanned_nrun, Ltrim, Rtrim;
 	const int *window_start_p, *window_end_p;
+	SEXP x_lengths;
 	const char *errmsg;
-
-	x_lengths = GET_SLOT(x, install("lengths"));
-	x_nrun = LENGTH(x_lengths);
-	x_values = GET_SLOT(x, install("values"));
 
 	nwindow = _check_integer_pairs(start, end,
 				       &window_start_p, &window_end_p,
 				       "start", "end");
 	if (nwindow != 1)
 		error("'start' and 'end' must be of length 1");
-
+	x_lengths = GET_SLOT(x, install("lengths"));
+	x_nrun = LENGTH(x_lengths);
 	errmsg = find_window_runs1(INTEGER(x_lengths), x_nrun,
 				   window_start_p[0], window_end_p[0],
-				   &window_nrun, &offset_nrun, &Ltrim, &Rtrim);
+				   &offset_nrun, &spanned_nrun, &Ltrim, &Rtrim);
 	if (errmsg != NULL)
 		error(errmsg);
-
-	PROTECT(ans_lengths = NEW_INTEGER(window_nrun));
-	_copy_vector_block(ans_lengths, 0, x_lengths, offset_nrun,
-			   window_nrun);
-	if (window_nrun != 0) {
-		INTEGER(ans_lengths)[0] -= Ltrim;
-		INTEGER(ans_lengths)[window_nrun - 1] -= Rtrim;
-	}
-
 	offset_nrun++;  /* add 1 to get the start */
-	PROTECT(ans_values = _extract_vectorORfactor_ranges(x_values,
-					&offset_nrun, &window_nrun, 1));
-	PROTECT(ans = _new_Rle(ans_values, ans_lengths));
-	UNPROTECT(3);
-	return ans;
+	return subset_Rle_by_runs(x, &offset_nrun, &spanned_nrun,
+				     &Ltrim, &Rtrim, 1);
+}
+
+SEXP _subset_Rle_by_ranges(SEXP x,
+		const int *start, const int *width, int nranges,
+		int method)
+{
+	SEXP x_lengths;
+	int x_nrun, *offset_nrun, *spanned_nrun, *Ltrim, *Rtrim, i;
+	const char *errmsg;
+
+	x_lengths = GET_SLOT(x, install("lengths"));
+	x_nrun = LENGTH(x_lengths);
+	offset_nrun = (int *) R_alloc(sizeof(int), nranges);
+	spanned_nrun = (int *) R_alloc(sizeof(int), nranges);
+	Ltrim = (int *) R_alloc(sizeof(int), nranges);
+	Rtrim = (int *) R_alloc(sizeof(int), nranges);
+	errmsg = find_runs_of_ranges(INTEGER(x_lengths), x_nrun,
+				     start, width, nranges,
+				     offset_nrun, spanned_nrun, Ltrim, Rtrim,
+				     method);
+	if (errmsg != NULL)
+		error(errmsg);
+	for (i = 0; i < nranges; i++)
+		offset_nrun[i]++;  /* add 1 to get the start */
+	return subset_Rle_by_runs(x, offset_nrun, spanned_nrun,
+				     Ltrim, Rtrim, nranges);
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP Rle_extract_ranges(SEXP x, SEXP start, SEXP width, SEXP method)
+{
+	int nranges;
+	const int *start_p, *width_p;
+
+	nranges = _check_integer_pairs(start, width,
+				       &start_p, &width_p,
+				       "start", "width");
+	return _subset_Rle_by_ranges(x, start_p, width_p, nranges,
+				     INTEGER(method)[0]);
 }
 
 
@@ -1027,97 +1120,5 @@ SEXP Rle_window(SEXP x, SEXP runStart, SEXP runEnd,
 	UNPROTECT(1);
 
 	return ans;
-}
-
-
-/****************************************************************************
- * Rle_seqselect()
- */
-
-SEXP _seqselect_Rle(SEXP x, const int *start, const int *width, int length)
-{
-	int i, index, *end_elt, *width_run_elt, *len_elt;
-	const int *start_elt, *width_elt, *soff_elt, *eoff_elt;
-	SEXP values, lengths, end;
-	SEXP info, info_start, info_end;
-	SEXP start_run, end_run, width_run, start_offset, end_offset;
-	SEXP ans, ans_names, ans_values, ans_lengths;
-
-	values = GET_SLOT(x, install("values"));
-	lengths = GET_SLOT(x, install("lengths"));
-
-	PROTECT(end = NEW_INTEGER(length));
-	for (i = 0, start_elt = start,
-		    end_elt = INTEGER(end),
-		    width_elt = width;
-	     i < length;
-	     i++, start_elt++, end_elt++, width_elt++)
-	{
-		*end_elt = *start_elt + *width_elt - 1;
-	}
-
-	PROTECT(info = get_StartEndRunAndOffset_from_runLength(
-					INTEGER(lengths), LENGTH(lengths),
-					start, INTEGER(end), length));
-	info_start = VECTOR_ELT(info, 0);
-	start_run = VECTOR_ELT(info_start, 0);
-	start_offset = VECTOR_ELT(info_start, 1);
-	info_end = VECTOR_ELT(info, 1);
-	end_run = VECTOR_ELT(info_end, 0);
-	end_offset = VECTOR_ELT(info_end, 1);
-
-	PROTECT(width_run = NEW_INTEGER(length));
-	for (i = 0, start_elt = INTEGER(start_run),
-		    end_elt = INTEGER(end_run),
-		    width_run_elt = INTEGER(width_run);
-	     i < length;
-	     i++, start_elt++, end_elt++, width_run_elt++)
-	{
-		*width_run_elt = *end_elt - *start_elt + 1;
-	}
-
-	PROTECT(ans_values = vectorORfactor_extract_ranges(values,
-					start_run, width_run));
-	PROTECT(ans_lengths = vectorORfactor_extract_ranges(lengths,
-					start_run, width_run));
-
-	index = 0;
-	len_elt = INTEGER(ans_lengths);
-	for (i = 0, soff_elt = INTEGER(start_offset),
-		    eoff_elt = INTEGER(end_offset),
-		    width_elt = INTEGER(width_run);
-	     i < length;
-	     i++, soff_elt++, eoff_elt++, width_elt++)
-	{
-		if (*width_elt > 0) {
-			len_elt[index] -= *soff_elt;
-			index += *width_elt;
-			len_elt[index - 1] -= *eoff_elt;
-		}
-	}
-
-	PROTECT(ans = NEW_LIST(2));
-	PROTECT(ans_names = NEW_CHARACTER(2));
-
-	SET_VECTOR_ELT(ans, 0, ans_values);
-	SET_VECTOR_ELT(ans, 1, ans_lengths);
-	SET_STRING_ELT(ans_names, 0, mkChar("values"));
-	SET_STRING_ELT(ans_names, 1, mkChar("lengths"));
-	SET_NAMES(ans, ans_names);
-
-	UNPROTECT(7);
-
-	return ans;
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP Rle_seqselect(SEXP x, SEXP start, SEXP width)
-{
-	int n;
-
-	n = LENGTH(start);
-	if (LENGTH(width) != n)
-		error("length of 'start' must equal length of 'width'");
-	return _seqselect_Rle(x, INTEGER(start), INTEGER(width), n);
 }
 

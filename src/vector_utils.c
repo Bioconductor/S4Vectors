@@ -19,28 +19,28 @@ int _vector_memcmp(SEXP x1, int x1_offset, SEXP x2, int x2_offset, int nelt)
 		error("S4Vectors internal error in _vector_memcmp(): "
 		      "elements to compare are out of vector bounds");
 	switch (TYPEOF(x1)) {
-	case RAWSXP:
+	    case RAWSXP:
 		s1 = (const void *) (RAW(x1) + x1_offset);
 		s2 = (const void *) (RAW(x2) + x2_offset);
 		eltsize = sizeof(Rbyte);
 		break;
-	case LGLSXP:
-	case INTSXP:
+	    case LGLSXP:
+	    case INTSXP:
 		s1 = (const void *) (INTEGER(x1) + x1_offset);
 		s2 = (const void *) (INTEGER(x2) + x2_offset);
 		eltsize = sizeof(int);
 		break;
-	case REALSXP:
+	    case REALSXP:
 		s1 = (const void *) (REAL(x1) + x1_offset);
 		s2 = (const void *) (REAL(x2) + x2_offset);
 		eltsize = sizeof(double);
 		break;
-	case CPLXSXP:
+	    case CPLXSXP:
 		s1 = (const void *) (COMPLEX(x1) + x1_offset);
 		s2 = (const void *) (COMPLEX(x2) + x2_offset);
 		eltsize = sizeof(Rcomplex);
 		break;
-	default:
+	    default:
 		error("S4Vectors internal error in _vector_memcmp(): "
 		      "%s type not supported", CHAR(type2str(TYPEOF(x1))));
 	}
@@ -121,23 +121,6 @@ int _copy_vector_block(SEXP dest, int dest_offset,
 }
 
 /* Return new 'dest_offset'. */
-int _copy_vector_blocks(SEXP dest, int dest_offset,
-		SEXP src, const int *src_offset, const int *block_width,
-		int nblock)
-{
-	int i;
-
-	for (i = 0; i < nblock; i++)
-		dest_offset = _copy_vector_block(dest, dest_offset,
-						 src, src_offset[i],
-						 block_width[i]);
-	return dest_offset;
-}
-
-/*
- * Same as _copy_vector_blocks() above except that it takes a vector of starts
- * instead of a vector of offsets.
- */
 int _copy_vector_ranges(SEXP dest, int dest_offset,
 		SEXP src, const int *start, const int *width, int nranges)
 {
@@ -155,7 +138,7 @@ int _copy_vector_ranges(SEXP dest, int dest_offset,
  * vectorORfactor_extract_ranges()
  */
 
-SEXP _extract_vectorORfactor_ranges(SEXP x,
+SEXP _subset_vectorORfactor_by_ranges(SEXP x,
 		const int *start, const int *width, int nranges)
 {
 	int x_len, i, ans_len, start_i, width_i, end_i;
@@ -195,7 +178,8 @@ SEXP _extract_vectorORfactor_ranges(SEXP x,
 		UNPROTECT(1);
 	}
 
-	/* Propagate 'levels(x)'. */
+	/* 'x' could be a factor in which case we need to propagate
+	   its levels.  */
 	if (isFactor(x)) {
 		PROTECT(ans_class = duplicate(GET_CLASS(x)));
 		SET_CLASS(ans, ans_class);
@@ -225,7 +209,7 @@ SEXP vectorORfactor_extract_ranges(SEXP x, SEXP start, SEXP width)
 	nranges = _check_integer_pairs(start, width,
 				       &start_p, &width_p,
 				       "start", "width");
-	return _extract_vectorORfactor_ranges(x, start_p, width_p, nranges);
+	return _subset_vectorORfactor_by_ranges(x, start_p, width_p, nranges);
 }
 
 

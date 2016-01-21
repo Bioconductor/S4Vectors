@@ -387,15 +387,6 @@ int copy_vector_block(
 	int block_width
 );
 
-int copy_vector_blocks(
-	SEXP dest,
-	int dest_offset,
-	SEXP src,
-	const int *src_offset,
-	const int *block_width,
-	int nblock
-);
-
 int copy_vector_ranges(
 	SEXP dest,
 	int dest_offset,
@@ -457,51 +448,51 @@ int get_select_mode(SEXP select);
  * (see Rle_class.c)
  */
 
-SEXP logical_Rle_constructor(
+SEXP construct_logical_Rle(
 	const int *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP integer_Rle_constructor(
+SEXP construct_integer_Rle(
 	const int *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP numeric_Rle_constructor(
+SEXP construct_numeric_Rle(
 	const double *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP complex_Rle_constructor(
+SEXP construct_complex_Rle(
 	const Rcomplex *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP character_Rle_constructor(
+SEXP construct_character_Rle(
 	SEXP values,
 	const int *lengths,
 	int buflength
 );
 
-SEXP raw_Rle_constructor(
+SEXP construct_raw_Rle(
 	const Rbyte *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP seqselect_Rle(SEXP x,
-	const int *start,
-	const int *width,
-	int length
+SEXP construct_Rle(
+	SEXP values,
+	const int *lengths,
+	int buflength
 );
 
 /*

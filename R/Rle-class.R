@@ -81,16 +81,8 @@ setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "integer"),
           {
               if (!isTRUEorFALSE(check))
                   stop("'check' must be TRUE or FALSE")
-              ans <- .Call2("Rle_constructor",
-                            values, lengths, check, 0L,
-                            PACKAGE="S4Vectors")
-              if (is.factor(values)) {
-                  ans@values <-
-                    factor(ans@values,
-                           levels = seq_len(length(levels(values))),
-                           labels = levels(values))
-              }
-              ans
+              .Call2("Rle_constructor", values, lengths, check, 0L,
+                                        PACKAGE="S4Vectors")
           })
 
 setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "numeric"),
@@ -162,6 +154,16 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Subsetting.
 ###
 
+extract_ranges_from_Rle <- function(x, start, width, method=0L)
+{
+    if (!(isSingleNumber(method) && method >= 0 && method <= 3))
+        stop("'method' must be a single integer between 0 and 3")
+    if (!is.integer(method))
+        method <- as.integer(method)
+    .Call2("Rle_extract_ranges", x, start, width, method,
+                                 PACKAGE="S4Vectors")
+}
+
 setMethod("extractROWS", "Rle",
     function(x, i)
     {
@@ -180,16 +182,7 @@ setMethod("extractROWS", "Rle",
         } else {
             ir <- as(as.integer(i), "IRanges")
         }
-        ## Rle_seqselect .Call entry point will segfault if 'ir' contains
-        ## empty ranges!
-        ir <- ir[width(ir) != 0L]
-        ansList <- .Call2("Rle_seqselect", x, start(ir), width(ir),
-                          PACKAGE="S4Vectors")
-        ans_values <- ansList[["values"]]
-        ans_lengths <- ansList[["lengths"]]
-        if (is.factor(runValue(x)))
-            attributes(ans_values) <- list(levels=levels(x), class="factor")
-        ans <- Rle(ans_values, ans_lengths)
+        ans <- extract_ranges_from_Rle(x, start(ir), width(ir))
         ans <- as(ans, class(x))
         mcols(ans) <- extractROWS(mcols(x), i)
         ans

@@ -73,12 +73,12 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Rle_constructor, 4),
 	CALLMETHOD_DEF(Rle_start, 1),
 	CALLMETHOD_DEF(Rle_end, 1),
-	CALLMETHOD_DEF(Rle_find_windows_runs, 4),
+	CALLMETHOD_DEF(Rle_find_runs_of_ranges, 4),
 	CALLMETHOD_DEF(Rle_extract_window, 3),
+	CALLMETHOD_DEF(Rle_extract_ranges, 4),
 	CALLMETHOD_DEF(Rle_getStartEndRunAndOffset, 3),
 	CALLMETHOD_DEF(Rle_window_aslist, 5),
 	CALLMETHOD_DEF(Rle_window, 6),
-	CALLMETHOD_DEF(Rle_seqselect, 3),
 
 /* Rle_utils.c */
 	CALLMETHOD_DEF(Rle_runsum, 3),
@@ -174,7 +174,6 @@ void R_init_S4Vectors(DllInfo *info)
 /* vector_utils.c */
 	REGISTER_CCALLABLE(_vector_memcmp);
 	REGISTER_CCALLABLE(_copy_vector_block);
-	REGISTER_CCALLABLE(_copy_vector_blocks);
 	REGISTER_CCALLABLE(_copy_vector_ranges);
 	REGISTER_CCALLABLE(_list_as_data_frame);
 
@@ -188,13 +187,13 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_get_select_mode);
 
 /* Rle_class.c */
-	REGISTER_CCALLABLE(_logical_Rle_constructor);
-	REGISTER_CCALLABLE(_integer_Rle_constructor);
-	REGISTER_CCALLABLE(_numeric_Rle_constructor);
-	REGISTER_CCALLABLE(_complex_Rle_constructor);
-	REGISTER_CCALLABLE(_character_Rle_constructor);
-	REGISTER_CCALLABLE(_raw_Rle_constructor);
-	REGISTER_CCALLABLE(_seqselect_Rle);
+	REGISTER_CCALLABLE(_construct_logical_Rle);
+	REGISTER_CCALLABLE(_construct_integer_Rle);
+	REGISTER_CCALLABLE(_construct_numeric_Rle);
+	REGISTER_CCALLABLE(_construct_complex_Rle);
+	REGISTER_CCALLABLE(_construct_character_Rle);
+	REGISTER_CCALLABLE(_construct_raw_Rle);
+	REGISTER_CCALLABLE(_construct_Rle);
 
 /* List_class.c */
 	REGISTER_CCALLABLE(_get_List_elementType);

@@ -47,6 +47,51 @@ test_Rle_coercion <- function() {
     checkIdentical(as.factor(y), as.factor(yRle))
 }
 
+test_extract_ranges_from_Rle <- function() {
+    extract_ranges_from_Rle <- S4Vectors:::extract_ranges_from_Rle
+    x <- Rle(factor(letters[1:3], levels=rev(letters)), 7:5)
+
+    start <- 1L
+    width <- length(x)
+    for (method in 0:3) {
+        current <- extract_ranges_from_Rle(x, start, width, method)
+        checkIdentical(x, current)
+    }
+
+    start <- seq_along(x)
+    width <- rep(1L, length(start))
+    for (method in 0:3) {
+        current <- extract_ranges_from_Rle(x, start, width, method)
+        checkIdentical(x, current)
+    }
+
+    start <- seq_len(length(x) + 1L)
+    width <- rep(0L, length(start))
+    target <- Rle(factor(levels=rev(letters)))
+    for (method in 0:3) {
+        current <- extract_ranges_from_Rle(x, start, width, method)
+        checkIdentical(target, current)
+    }
+
+    start <- seq_len(length(x) - 5L)
+    width <- rep(c(6L, 2L, 7L), length.out=length(start))
+    target <- S4Vectors:::extract_ranges_from_vectorORfactor(
+                                  S4Vectors:::decodeRle(x), start, width)
+    for (method in 0:3) {
+        current <- extract_ranges_from_Rle(x, start, width, method)
+        checkIdentical(target, S4Vectors:::decodeRle(current))
+    }
+
+    start <- rev(start)
+    width <- rev(width)
+    target <- S4Vectors:::extract_ranges_from_vectorORfactor(
+                                  S4Vectors:::decodeRle(x), start, width)
+    for (method in 0:3) {
+        current <- extract_ranges_from_Rle(x, start, width, method)
+        checkIdentical(target, S4Vectors:::decodeRle(current))
+    }
+}
+
 test_Rle_general <- function() {
     x <- rep(6:10, 1:5)
     xRle <- Rle(x)

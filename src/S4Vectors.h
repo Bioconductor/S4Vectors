@@ -415,15 +415,6 @@ int _copy_vector_block(
 	int block_width
 );
 
-int _copy_vector_blocks(
-	SEXP dest,
-	int dest_offset,
-	SEXP src,
-	const int *src_offset,
-	const int *block_width,
-	int nblock
-);
-
 int _copy_vector_ranges(
 	SEXP dest,
 	int dest_offset,
@@ -433,7 +424,7 @@ int _copy_vector_ranges(
 	int nranges
 );
 
-SEXP _extract_vectorORfactor_ranges(
+SEXP _subset_vectorORfactor_by_ranges(
 	SEXP x,
 	const int *start,
 	const int *width,
@@ -710,43 +701,49 @@ SEXP make_all_group_inner_hits(
 
 /* Rle_class.c */
 
-SEXP _logical_Rle_constructor(
+SEXP _construct_logical_Rle(
 	const int *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP _integer_Rle_constructor(
+SEXP _construct_integer_Rle(
 	const int *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP _numeric_Rle_constructor(
+SEXP _construct_numeric_Rle(
 	const double *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP _complex_Rle_constructor(
+SEXP _construct_complex_Rle(
 	const Rcomplex *values,
 	int nvalues,
 	const int *lengths,
 	int buflength
 );
 
-SEXP _character_Rle_constructor(
+SEXP _construct_character_Rle(
 	SEXP values,
 	const int *lengths,
 	int buflength
 );
 
-SEXP _raw_Rle_constructor(
+SEXP _construct_raw_Rle(
 	const Rbyte *values,
 	int nvalues,
+	const int *lengths,
+	int buflength
+);
+
+SEXP _construct_Rle(
+	SEXP values,
 	const int *lengths,
 	int buflength
 );
@@ -762,10 +759,10 @@ SEXP Rle_start(SEXP x);
 
 SEXP Rle_end(SEXP x);
 
-SEXP Rle_find_windows_runs(
+SEXP Rle_find_runs_of_ranges(
 	SEXP x,
 	SEXP start,
-	SEXP end,
+	SEXP width,
 	SEXP method
 );
 
@@ -773,6 +770,21 @@ SEXP Rle_extract_window(
 	SEXP x,
 	SEXP start,
 	SEXP end
+);
+
+SEXP _subset_Rle_by_ranges(
+	SEXP x,
+	const int *start,
+	const int *width,
+	int nranges,
+	int method
+);
+
+SEXP Rle_extract_ranges(
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP method
 );
 
 SEXP Rle_getStartEndRunAndOffset(
@@ -796,19 +808,6 @@ SEXP Rle_window(
 	SEXP offsetStart,
 	SEXP offsetEnd,
 	SEXP ans
-);
-
-SEXP _seqselect_Rle(
-	SEXP x,
-	const int *start,
-	const int *width,
-	int length
-);
-
-SEXP Rle_seqselect(
-	SEXP x,
-	SEXP start,
-	SEXP width
 );
 
 

@@ -401,11 +401,6 @@ DEFINE_CCALLABLE_STUB(int, copy_vector_block,
 	(     dest,     dest_offset,      src,     src_offset,     block_width)
 )
 
-DEFINE_CCALLABLE_STUB(int, copy_vector_blocks,
-	(SEXP dest, int dest_offset, SEXP src, const int *src_offset, const int *block_width, int nblock),
-	(     dest,     dest_offset,      src,            src_offset,            block_width,     nblock)
-)
-
 DEFINE_CCALLABLE_STUB(int, copy_vector_ranges,
 	(SEXP dest, int dest_offset, SEXP src, const int *start, const int *width, int nranges),
 	(     dest,     dest_offset,      src,            start,            width,     nranges)
@@ -453,39 +448,39 @@ DEFINE_CCALLABLE_STUB(int, get_select_mode,
  * Stubs for callables defined in Rle_class.c
  */
 
-DEFINE_CCALLABLE_STUB(SEXP, logical_Rle_constructor,
+DEFINE_CCALLABLE_STUB(SEXP, construct_logical_Rle,
 	(const int *values, int nvalues, const int *lengths, int buflength),
 	(           values,     nvalues,            lengths,     buflength)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, integer_Rle_constructor,
+DEFINE_CCALLABLE_STUB(SEXP, construct_integer_Rle,
 	(const int *values, int nvalues, const int *lengths, int buflength),
 	(           values,     nvalues,            lengths,     buflength)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, numeric_Rle_constructor,
+DEFINE_CCALLABLE_STUB(SEXP, construct_numeric_Rle,
 	(const double *values, int nvalues, const int *lengths, int buflength),
 	(              values,     nvalues,            lengths,     buflength)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, complex_Rle_constructor,
+DEFINE_CCALLABLE_STUB(SEXP, construct_complex_Rle,
 	(const Rcomplex *values, int nvalues, const int *lengths, int buflength),
 	(                values,     nvalues,            lengths,     buflength)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, character_Rle_constructor,
+DEFINE_CCALLABLE_STUB(SEXP, construct_character_Rle,
 	(SEXP values, const int *lengths, int buflength),
 	(     values,            lengths,     buflength)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, raw_Rle_constructor,
+DEFINE_CCALLABLE_STUB(SEXP, construct_raw_Rle,
 	(const Rbyte *values, int nvalues, const int *lengths, int buflength),
 	(             values,     nvalues,            lengths,     buflength)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, seqselect_Rle,
-	(SEXP x, const int *start, const int *width, int length),
-	(     x,            start,            width,     length)
+DEFINE_CCALLABLE_STUB(SEXP, construct_Rle,
+	(SEXP values, const int *lengths, int buflength),
+	(     values,            lengths,     buflength)
 )
 
 /*

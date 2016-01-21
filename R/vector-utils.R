@@ -76,10 +76,8 @@ quick_unsplit <- function(x, f)
 
 ### NOT exported.
 extract_ranges_from_vectorORfactor <- function(x, start, width)
-{
     .Call2("vectorORfactor_extract_ranges", x, start, width,
-           PACKAGE="S4Vectors")
-}
+                                            PACKAGE="S4Vectors")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
