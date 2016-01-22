@@ -659,7 +659,9 @@ static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 			return errmsg_buf;
 		}
 		*spanned_nrun = end_run - *offset_nrun + 1;
-		*Ltrim = window_start - run_breakpoints[*offset_nrun - 1] - 1;
+		*Ltrim = window_start - 1;
+		if (*offset_nrun >= 1)
+			*Ltrim -= run_breakpoints[*offset_nrun - 1];
 		*Rtrim = run_breakpoints[end_run] - window_end;
 	} else {
 		/* Zero-width window. */
