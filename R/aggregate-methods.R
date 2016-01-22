@@ -135,22 +135,10 @@ setMethod("aggregate", "Vector", .aggregate.Vector)
     else
         indices <- structure(seq_len(n), names = names(end))
     if (is.null(frequency) && is.null(delta)) {
-        info <- getStartEndRunAndOffset(x, start, end)
-        runStart <- info[["start"]][["run"]]
-        offsetStart <- info[["start"]][["offset"]]
-        runEnd <- info[["end"]][["run"]]
-        offsetEnd <- info[["end"]][["offset"]]
-        ## Performance Optimization
-        ## Use a stripped down loop with empty Rle object
-        newRle <- new(class(x))
-        sapply(indices,
-               function(i)
-               FUN(.Call2("Rle_window",
-                          x, runStart[i], runEnd[i],
-                          offsetStart[i], offsetEnd[i],
-                          newRle, PACKAGE = "S4Vectors"),
-                   ...),
-               simplify = simplify)
+        width <- end - start + 1L
+        rle_list <- extract_ranges_from_Rle(x, start, width, as.list=TRUE)
+        names(rle_list) <- names(indices)
+        sapply(rle_list, FUN, ..., simplify = simplify)
     } else {
         frequency <- rep(frequency, length.out = n)
         delta <- rep(delta, length.out = n)

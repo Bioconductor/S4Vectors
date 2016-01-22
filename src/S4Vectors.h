@@ -777,14 +777,16 @@ SEXP _subset_Rle_by_ranges(
 	const int *start,
 	const int *width,
 	int nranges,
-	int method
+	int method,
+	int as_list
 );
 
 SEXP Rle_extract_ranges(
 	SEXP x,
 	SEXP start,
 	SEXP width,
-	SEXP method
+	SEXP method,
+	SEXP as_list
 );
 
 SEXP Rle_getStartEndRunAndOffset(
@@ -799,15 +801,6 @@ SEXP Rle_window_aslist(
 	SEXP runEnd,
 	SEXP offsetStart,
 	SEXP offsetEnd
-);
-
-SEXP Rle_window(
-	SEXP x,
-	SEXP runStart,
-	SEXP runEnd,
-	SEXP offsetStart,
-	SEXP offsetEnd,
-	SEXP ans
 );
 
 

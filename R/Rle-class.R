@@ -154,13 +154,15 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Subsetting.
 ###
 
-extract_ranges_from_Rle <- function(x, start, width, method=0L)
+extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
 {
     if (!(isSingleNumber(method) && method >= 0 && method <= 3))
         stop("'method' must be a single integer between 0 and 3")
     if (!is.integer(method))
         method <- as.integer(method)
-    .Call2("Rle_extract_ranges", x, start, width, method,
+    if (!isTRUEorFALSE(as.list))
+        stop("'as.list' must be TRUE or FALSE")
+    .Call2("Rle_extract_ranges", x, start, width, method, as.list,
                                  PACKAGE="S4Vectors")
 }
 

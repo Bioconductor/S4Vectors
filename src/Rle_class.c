@@ -876,28 +876,73 @@ SEXP Rle_find_runs_of_ranges(SEXP x, SEXP start, SEXP width, SEXP method)
  * Rle_extract_window() and Rle_extract_ranges()
  */
 
+static SEXP extract_Rle_window(SEXP x_values, const int *x_lengths,
+		int start_nrun, int spanned_nrun, int Ltrim, int Rtrim)
+{
+	SEXP ans_values, ans_lengths, ans;
+
+	PROTECT(ans_values = _subset_vectorORfactor_by_ranges(x_values,
+					&start_nrun, &spanned_nrun, 1));
+	PROTECT(ans_lengths = NEW_INTEGER(spanned_nrun));
+	if (spanned_nrun != 0) {
+		memcpy(INTEGER(ans_lengths),
+		       x_lengths + start_nrun - 1,
+		       sizeof(int) * spanned_nrun);
+		INTEGER(ans_lengths)[0] -= Ltrim;
+		INTEGER(ans_lengths)[spanned_nrun - 1] -= Rtrim;
+	}
+	PROTECT(ans = _new_Rle(ans_values, ans_lengths));
+	UNPROTECT(3);
+	return ans;
+}
+
+/*
+ * Extract 'nranges' Rle's from 'x'. Each Rle to extract is specified by
+ * 'start_nrun[i]', 'spanned_nrun[i]', 'Ltrim[i]', and 'Rtrim[i]'.
+ * If 'as_list' is TRUE, then the extracted Rle's are returned in a list of
+ * length 'nranges'. Otherwise, the single Rle obtained by concatenating them
+ * all together is returned.
+ */
 static SEXP subset_Rle_by_runs(SEXP x,
 		const int *start_nrun, const int *spanned_nrun,
-		const int *Ltrim, const int *Rtrim, int nranges)
+		const int *Ltrim, const int *Rtrim, int nranges,
+		int as_list)
 {
-	SEXP x_values, tmp_values, x_lengths, ans;
-	int tmp_nrun, *tmp_lengths, i, nrun;
+	SEXP x_values, x_lengths, tmp_values, ans, ans_elt;
+	int tmp_nrun, *tmp_lengths, i, n;
 
 	x_values = GET_SLOT(x, install("values"));
+	x_lengths = GET_SLOT(x, install("lengths"));
+	if (as_list == 1) {
+		PROTECT(ans = NEW_LIST(nranges));
+		for (i = 0; i < nranges; i++) {
+			PROTECT(ans_elt = extract_Rle_window(x_values,
+						INTEGER(x_lengths),
+						start_nrun[i], spanned_nrun[i],
+						Ltrim[i], Rtrim[i]));
+			SET_VECTOR_ELT(ans, i, ans_elt);
+			UNPROTECT(1);
+		}
+		UNPROTECT(1);
+		return ans;
+	}
+	if (nranges == 1)
+		return extract_Rle_window(x_values, INTEGER(x_lengths),
+				start_nrun[0], spanned_nrun[0],
+				Ltrim[0], Rtrim[0]);
 	PROTECT(tmp_values = _subset_vectorORfactor_by_ranges(x_values,
 					start_nrun, spanned_nrun, nranges));
 	tmp_nrun = LENGTH(tmp_values);
 	tmp_lengths = (int *) R_alloc(sizeof(int), tmp_nrun);
-	x_lengths = GET_SLOT(x, install("lengths"));
 	for (i = tmp_nrun = 0; i < nranges; i++) {
-		nrun = spanned_nrun[i];
-		if (nrun == 0)
+		n = spanned_nrun[i];
+		if (n == 0)
 			continue;
 		memcpy(tmp_lengths + tmp_nrun,
 		       INTEGER(x_lengths) + start_nrun[i] - 1,
-		       sizeof(int) * nrun);
+		       sizeof(int) * n);
 		tmp_lengths[tmp_nrun] -= Ltrim[i];
-		tmp_nrun += nrun;
+		tmp_nrun += n;
 		tmp_lengths[tmp_nrun - 1] -= Rtrim[i];
 	}
 	PROTECT(ans = _construct_Rle(tmp_values, tmp_lengths, 0));
@@ -910,7 +955,7 @@ SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 {
 	int nwindow, x_nrun, offset_nrun, spanned_nrun, Ltrim, Rtrim;
 	const int *window_start_p, *window_end_p;
-	SEXP x_lengths;
+	SEXP x_values, x_lengths;
 	const char *errmsg;
 
 	nwindow = _check_integer_pairs(start, end,
@@ -918,6 +963,7 @@ SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 				       "start", "end");
 	if (nwindow != 1)
 		error("'start' and 'end' must be of length 1");
+	x_values = GET_SLOT(x, install("values"));
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
 	errmsg = find_window_runs1(INTEGER(x_lengths), x_nrun,
@@ -926,13 +972,13 @@ SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 	if (errmsg != NULL)
 		error(errmsg);
 	offset_nrun++;  /* add 1 to get the start */
-	return subset_Rle_by_runs(x, &offset_nrun, &spanned_nrun,
-				     &Ltrim, &Rtrim, 1);
+	return extract_Rle_window(x_values, INTEGER(x_lengths),
+				  offset_nrun, spanned_nrun, Ltrim, Rtrim);
 }
 
 SEXP _subset_Rle_by_ranges(SEXP x,
 		const int *start, const int *width, int nranges,
-		int method)
+		int method, int as_list)
 {
 	SEXP x_lengths;
 	int x_nrun, *offset_nrun, *spanned_nrun, *Ltrim, *Rtrim, i;
@@ -953,11 +999,12 @@ SEXP _subset_Rle_by_ranges(SEXP x,
 	for (i = 0; i < nranges; i++)
 		offset_nrun[i]++;  /* add 1 to get the start */
 	return subset_Rle_by_runs(x, offset_nrun, spanned_nrun,
-				     Ltrim, Rtrim, nranges);
+				     Ltrim, Rtrim, nranges, as_list);
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Rle_extract_ranges(SEXP x, SEXP start, SEXP width, SEXP method)
+SEXP Rle_extract_ranges(SEXP x, SEXP start, SEXP width,
+			SEXP method, SEXP as_list)
 {
 	int nranges;
 	const int *start_p, *width_p;
@@ -966,7 +1013,7 @@ SEXP Rle_extract_ranges(SEXP x, SEXP start, SEXP width, SEXP method)
 				       &start_p, &width_p,
 				       "start", "width");
 	return _subset_Rle_by_ranges(x, start_p, width_p, nranges,
-				     INTEGER(method)[0]);
+				     INTEGER(method)[0], LOGICAL(as_list)[0]);
 }
 
 
@@ -1048,11 +1095,7 @@ SEXP Rle_getStartEndRunAndOffset(SEXP x, SEXP start, SEXP end)
 			INTEGER(start), INTEGER(end), n);
 }
 
-
-/*
- * --- .Call ENTRY POINT ---
- */
-
+/* --- .Call ENTRY POINT --- */
 SEXP Rle_window_aslist(SEXP x, SEXP runStart, SEXP runEnd,
 		               SEXP offsetStart, SEXP offsetEnd)
 {
@@ -1093,31 +1136,6 @@ SEXP Rle_window_aslist(SEXP x, SEXP runStart, SEXP runEnd,
 	SET_NAMES(ans, ans_names);
 
 	UNPROTECT(5);
-
-	return ans;
-}
-
-
-/*
- * --- .Call ENTRY POINT ---
- */
-
-/*
- * Rle_window accepts an Rle object to support fast R-level aggregate usage
- */
-SEXP Rle_window(SEXP x, SEXP runStart, SEXP runEnd,
-		        SEXP offsetStart, SEXP offsetEnd, SEXP ans)
-{
-	SEXP ans_list;
-
-	PROTECT(ans_list = Rle_window_aslist(x, runStart, runEnd,
-                                         offsetStart, offsetEnd));
-
-	ans = Rf_duplicate(ans);
-	SET_SLOT(ans, install("values"), VECTOR_ELT(ans_list, 0));
-	SET_SLOT(ans, install("lengths"), VECTOR_ELT(ans_list, 1));
-
-	UNPROTECT(1);
 
 	return ans;
 }
