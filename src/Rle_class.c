@@ -418,13 +418,14 @@ SEXP _construct_Rle(SEXP values, const int *lengths, int buflength)
 		   propagate its levels.  */
 		if (isFactor(values)) {
 			ans_values = GET_SLOT(ans, install("values"));
-			PROTECT(ans_values_class =
-					duplicate(GET_CLASS(values)));
-			SET_CLASS(ans_values, ans_values_class);
-			UNPROTECT(1);
+			/* Levels must be set before class. */
 			PROTECT(ans_values_levels =
 					duplicate(GET_LEVELS(values)));
 			SET_LEVELS(ans_values, ans_values_levels);
+			UNPROTECT(1);
+			PROTECT(ans_values_class =
+					duplicate(GET_CLASS(values)));
+			SET_CLASS(ans_values, ans_values_class);
 			UNPROTECT(1);
 		}
 		break;
