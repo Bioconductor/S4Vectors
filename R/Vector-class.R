@@ -445,7 +445,7 @@ setMethod("window", "Vector", Vector_window)
 
 ### S3/S4 combo for head.Vector
 head.Vector <- function(x, n=6L, ...) head(x, n, ...)
-.head.Vector <- function(x, n=6L, ...)
+Vector_head <- function(x, n=6L)
 {
     if (!isSingleNumber(n))
         stop("'n' must be a single integer")
@@ -459,11 +459,11 @@ head.Vector <- function(x, n=6L, ...) head(x, n, ...)
     }
     window(x, start=1L, width=n)
 }
-setMethod("head", "Vector", .head.Vector)
+setMethod("head", "Vector", Vector_head)
 
 ## S3/S4 combo for tail.Vector
 tail.Vector <- function(x, n=6L, ...) tail(x, n, ...)
-.tail.Vector <- function(x, n=6L, ...)
+Vector_tail <- function(x, n=6L)
 {
     if (!isSingleNumber(n))
         stop("'n' must be a single integer")
@@ -477,7 +477,7 @@ tail.Vector <- function(x, n=6L, ...) tail(x, n, ...)
     }
     window(x, end=x_NROW, width=n)
 }
-setMethod("tail", "Vector", .tail.Vector)
+setMethod("tail", "Vector", Vector_tail)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
