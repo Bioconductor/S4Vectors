@@ -223,58 +223,48 @@ printAtomicVectorInAGrid <- function(x, prefix="", justify="left")
     invisible(x)
 }
 
-.rownames2 <- function(names=NULL, len=NULL, tindex=NULL, bindex=NULL)
-{
-  if (is.null(tindex) && is.null(bindex)) {
-    ## all lines
-    if (len == 0L)
-      character(0)
-    else if (is.null(names))
-      paste0("[", seq_len(len), "]")
-    else
-      names
-  } else {
-    ## head and tail 
-    if (!is.null(names)) {
-      c(names[tindex], "...", names[bindex])
-    } else {
-      s1 <- paste0("[", tindex, "]")
-      s2 <- paste0("[", bindex, "]")
-      if (all(tindex == 0))
-        s1 <- character(0)
-      if (all(bindex == 0))
-        s2 <- character(0)
-      c(s1, "...", s2)
-    }
-  }
-}
-
 ### 'makeNakedMat.FUN' must be a function returning a character matrix.
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
-  lx <- NROW(x)
-  nhead <- get_showHeadLines()
-  ntail <- get_showTailLines()
-
-  if (lx <= nhead + ntail + 1L) {
-    ans <- makeNakedMat.FUN(x)
-    ans_rownames <- .rownames2(names(x), lx)
-  } else {
-    top_idx <- 1:nhead
-    if (nhead == 0)
-      top_idx <- 0
-    bottom_idx=(lx-ntail+1L):lx
-    if (ntail == 0)
-      bottom_idx <- 0
-    ans_top <- makeNakedMat.FUN(x[top_idx,,drop=FALSE])
-    ans_bottom <- makeNakedMat.FUN(x[bottom_idx,,drop=FALSE])
-    ans <- rbind(ans_top,
-                 matrix(rep.int("...", ncol(ans_top)), nrow=1L),
-                 ans_bottom)
-    ans_rownames <- .rownames2(names(x), lx, top_idx, bottom_idx)
-  }
-  rownames(ans) <- format(ans_rownames, justify="right")
-  ans
+    x_NROW <- NROW(x)
+    x_ROWNAMES <- ROWNAMES(x)
+    nhead <- get_showHeadLines()
+    ntail <- get_showTailLines()
+    wrap_in_square_brackets <- function(idx) {
+        if (length(idx) == 0L)
+            return(character(0))
+        paste0("[", idx, "]")
+    }
+    if (x_NROW <= nhead + ntail + 1L) {
+        ## Compute 'ans' (the matrix).
+        ans <- makeNakedMat.FUN(x)
+        ## Compute 'ans_rownames' (the matrix row names).
+        if (is.null(x_ROWNAMES)) {
+            ans_rownames <- wrap_in_square_brackets(seq_len(x_NROW))
+        } else {
+            ans_rownames <- x_ROWNAMES
+        }
+    } else {
+        ## Compute 'ans' (the matrix).
+        ans_top <- makeNakedMat.FUN(head(x, n=nhead))
+        ans_bottom <- makeNakedMat.FUN(tail(x, n=ntail))
+        ans <- rbind(ans_top,
+                     matrix(rep.int("...", ncol(ans_top)), nrow=1L),
+                     ans_bottom)
+        ## Compute 'ans_rownames' (the matrix row names).
+        if (is.null(x_ROWNAMES)) {
+            top_idx <- seq(from=1L, by=1L, length.out=nhead)
+            s1 <- wrap_in_square_brackets(top_idx)
+            bottom_idx <- seq(to=x_NROW, by=1L, length.out=ntail)
+            s2 <- wrap_in_square_brackets(bottom_idx)
+        } else {
+            s1 <- head(x_ROWNAMES, n=nhead)
+            s2 <- tail(x_ROWNAMES, n=ntail)
+        }
+        ans_rownames <- c(s1, "...", s2)
+    }
+    rownames(ans) <- format(ans_rownames, justify="right")
+    ans
 }
 
 makeClassinfoRowForCompactPrinting <- function(x, col2class)
