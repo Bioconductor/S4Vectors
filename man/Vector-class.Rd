@@ -121,7 +121,7 @@
       Get the length of each of the elements.
 
       Note: The \code{lengths} method for Vector objects is currently
-      defined as an alias for \code{\link{elementLengths}} (with addition
+      defined as an alias for \code{\link{elementNROWS}} (with addition
       of the \code{use.names} argument), so is equivalent to
       \code{sapply(x, NROW)}, not to \code{sapply(x, length)}.
       See \code{?BiocGenerics::\link[BiocGenerics]{lengths}} in the

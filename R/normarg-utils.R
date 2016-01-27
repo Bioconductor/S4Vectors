@@ -94,25 +94,25 @@ H_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
     if (!is.na(more_blahblah))
         x_what2 <- paste0(x_what2, " (", more_blahblah, ")")
 
-    x_eltlens <- unname(elementLengths(x))
-    skeleton_eltlens <- unname(elementLengths(skeleton))
-    idx <- which(x_eltlens != skeleton_eltlens)
+    x_eltNROWS <- unname(elementNROWS(x))
+    skeleton_eltNROWS <- unname(elementNROWS(skeleton))
+    idx <- which(x_eltNROWS != skeleton_eltNROWS)
     if (length(idx) == 0L)
         return(x)
 
-    longer_idx <- which(x_eltlens > skeleton_eltlens)
-    shorter_idx <- which(x_eltlens < skeleton_eltlens)
+    longer_idx <- which(x_eltNROWS > skeleton_eltNROWS)
+    shorter_idx <- which(x_eltNROWS < skeleton_eltNROWS)
     if (length(longer_idx) == 0L && length(shorter_idx) == 0L)
         return(x)
     if (length(longer_idx) != 0L) {
-        if (max(x_eltlens[longer_idx]) >= 2L)
+        if (max(x_eltNROWS[longer_idx]) >= 2L)
             stop(wmsg(
                 x_what2, " are longer than their corresponding ",
                 "list element in '", skeleton_what, "'"
             ))
     }
     if (length(shorter_idx) != 0L) {
-        tmp <- x_eltlens[shorter_idx]
+        tmp <- x_eltNROWS[shorter_idx]
         if (min(tmp) == 0L)
             stop(wmsg(
                 x_what2, " are of length 0, but their corresponding ",
@@ -135,8 +135,8 @@ H_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
     ## list of integers and 'skeleton' a List object).
     unlisted_x <- unlist(x, use.names=FALSE)
     times <- rep.int(1L, length(unlisted_x))
-    idx2 <- cumsum(x_eltlens)[idx]
-    times[idx2] <- skeleton_eltlens[idx]
+    idx2 <- cumsum(x_eltNROWS)[idx]
+    times[idx2] <- skeleton_eltNROWS[idx]
     unlisted_ans <- rep.int(unlisted_x, times)
     ans <- relist(unlisted_ans, skeleton)
     names(ans) <- names(x)

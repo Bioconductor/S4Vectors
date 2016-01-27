@@ -9,9 +9,11 @@
 \alias{elementType}
 \alias{elementType,List-method}
 \alias{elementType,vector-method}
+\alias{elementNROWS}
+\alias{elementNROWS,ANY-method}
+\alias{elementNROWS,List-method}
 \alias{elementLengths}
 \alias{elementLengths,ANY-method}
-\alias{elementLengths,List-method}
 \alias{isEmpty}
 \alias{isEmpty,ANY-method}
 \alias{isEmpty,List-method}
@@ -42,7 +44,7 @@
 
 \description{
   List objects are \link{Vector} objects with a \code{"[["},
-  \code{elementType} and \code{elementLengths} method.
+  \code{elementType} and \code{elementNROWS} method.
   The List class serves a similar role as \link[base]{list} in base R.
 
   It adds one slot, the \code{elementType} slot, to the two slots shared by
@@ -121,9 +123,14 @@
       derive.
     }
     \item{}{
-      \code{elementLengths(x)}:
+      \code{elementNROWS(x)}:
       Get the length (or nb of row for a matrix-like object) of each of
       the elements. Equivalent to \code{sapply(x, NROW)}.
+    }
+    \item{}{
+      \code{elementLengths(x)}:
+      Equivalent to \code{elementNROWS(x)}. Clearly a misnomer. Will be
+      deprecated soon.
     }
     \item{}{
       \code{isEmpty(x)}:

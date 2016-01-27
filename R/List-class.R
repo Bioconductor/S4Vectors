@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 ###
 ### List objects are Vector objects with "[[", "elementType" and
-### "elementLengths" methods.
+### "elementNROWS" methods.
 ###
 
 setClass("List",
@@ -24,11 +24,11 @@ setGeneric("elementType", function(x, ...) standardGeneric("elementType"))
 setMethod("elementType", "List", function(x) x@elementType)
 setMethod("elementType", "vector", function(x) storage.mode(x))
 
-setGeneric("elementLengths", function(x) standardGeneric("elementLengths"))
+setGeneric("elementNROWS", function(x) standardGeneric("elementNROWS"))
 
-setMethod("elementLengths", "ANY", sapply_NROW)
+setMethod("elementNROWS", "ANY", sapply_NROW)
 
-setMethod("elementLengths", "List",
+setMethod("elementNROWS", "List",
     function(x)
     {
         y <- as.list(x)
@@ -39,10 +39,17 @@ setMethod("elementLengths", "List",
             return(ans)
         }
         if (length(dim(y[[1L]])) < 2L)
-            return(elementLengths(y))
+            return(elementNROWS(y))
         return(sapply(y, NROW))
     }
 )
+
+### In BioC 3.3 elementLengths() was renamed elementNROWS() (the old name was
+### clearly a misnomer). For backward compatibility the old name was kept
+### around and became an "alias" for elementNROWS().
+### TODO: Deprecate elementLengths() soon.
+setGeneric("elementLengths", function(x) standardGeneric("elementLengths"))
+setMethod("elementLengths", "ANY", function(x) elementNROWS(x))
 
 setGeneric("isEmpty", function(x) standardGeneric("isEmpty"))
 setMethod("isEmpty", "ANY",
@@ -59,7 +66,7 @@ setMethod("isEmpty", "ANY",
               sapply(x, function(xx) all(isEmpty(xx)))
           })
 ### A List object is considered empty iff all its elements are empty.
-setMethod("isEmpty", "List", function(x) all(elementLengths(x) == 0L))
+setMethod("isEmpty", "List", function(x) all(elementNROWS(x) == 0L))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,7 +166,7 @@ setMethod("unlist", "List",
             ans_names0 <- names(ans)
             if (use.names) {
                 if (!is.null(x_names)) {
-                    ans_names <- rep.int(x_names, elementLengths(x))
+                    ans_names <- rep.int(x_names, elementNROWS(x))
                     ans_names <- make_unlist_result_names(ans_names, ans_names0)
                     try_result <- try(names(ans) <- ans_names, silent=TRUE)
                     if (inherits(try_result, "try-error"))
@@ -197,9 +204,9 @@ setMethod("unlist", "List",
         unlisted_i <- as.integer(unlisted_i)
     if (anyMissingOrOutside(unlisted_i, lower=1L))
         return(FALSE)
-    x_eltlens <- elementLengths(x)
-    i_eltlens <- elementLengths(i)
-    if (any(unlisted_i > rep.int(x_eltlens, i_eltlens)))
+    x_eltNROWS <- elementNROWS(x)
+    i_eltNROWS <- elementNROWS(i)
+    if (any(unlisted_i > rep.int(x_eltNROWS, i_eltNROWS)))
         return(FALSE)
     return(TRUE)
 }
@@ -247,14 +254,14 @@ setMethod("unlist", "List",
 ### corresponding element in 'x'.
 .adjust_elt_lengths <- function(i, x)
 {
-    x_eltlens <- unname(elementLengths(x))
-    i_eltlens <- unname(elementLengths(i))
-    idx <- which(x_eltlens != i_eltlens)
+    x_eltNROWS <- unname(elementNROWS(x))
+    i_eltNROWS <- unname(elementNROWS(i))
+    idx <- which(x_eltNROWS != i_eltNROWS)
     ## FIXME: This is rough and doesn't follow exactly the truncate-or-recycle
     ## semantic of normalizeSingleBracketSubscript() on a logical vector or
     ## logical-Rle object.
     for (k in idx)
-        i[[k]] <- rep(i[[k]], length.out=x_eltlens[k])
+        i[[k]] <- rep(i[[k]], length.out=x_eltNROWS[k])
     return(i)
 }
 
@@ -281,7 +288,7 @@ setMethod("unlist", "List",
 {
     unlisted_i <- unlist(i, use.names=FALSE)
     offsets <- c(0L, end(IRanges::PartitioningByEnd(x))[-length(x)])
-    IRanges::shift(unlisted_i, shift=rep.int(offsets, elementLengths(i)))
+    IRanges::shift(unlisted_i, shift=rep.int(offsets, elementNROWS(i)))
 }
 
 ### Fast subset by List of logical vectors or logical-Rle objects.
@@ -296,7 +303,7 @@ setMethod("unlist", "List",
     unlisted_ans <- extractROWS(unlisted_x, unlisted_i)
 
     ## Relist.
-    group <- rep.int(seq_along(x), elementLengths(x))
+    group <- rep.int(seq_along(x), elementNROWS(x))
     group <- extractROWS(group, unlisted_i)
     ans_skeleton <- IRanges::PartitioningByEnd(group, NG=length(x), names=names(x))
     ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
@@ -316,7 +323,7 @@ setMethod("unlist", "List",
     unlisted_ans <- extractROWS(unlisted_x, unlisted_i)
 
     ## Relist.
-    ans_breakpoints <- cumsum(unname(elementLengths(i)))
+    ans_breakpoints <- cumsum(unname(elementNROWS(i)))
     ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
     ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
     metadata(ans) <- metadata(x)
@@ -554,7 +561,7 @@ setReplaceMethod("$", "List",
 ### phead() and ptail(): "parallel" versions of head() and tail() for List
 ### objects. They're just fast equivalents of 'mapply(head, x, n)' and
 ### 'mapply(tail, x, n)', respectively.
-.normarg_n <- function(n, x_eltlens)
+.normarg_n <- function(n, x_eltNROWS)
 {
     if (!is.numeric(n))
         stop("'n' must be an integer vector")
@@ -562,17 +569,17 @@ setReplaceMethod("$", "List",
         n <- as.integer(n)
     if (any(is.na(n)))
         stop("'n' cannot contain NAs")
-    n <- pmin(x_eltlens, n)
+    n <- pmin(x_eltNROWS, n)
     neg_idx <- which(n < 0L)
     if (length(neg_idx) != 0L)
-        n[neg_idx] <- pmax(n[neg_idx] + x_eltlens[neg_idx], 0L)
+        n[neg_idx] <- pmax(n[neg_idx] + x_eltNROWS[neg_idx], 0L)
     n
 }
 
 phead <- function(x, n=6L)
 {
-    x_eltlens <- unname(elementLengths(x))
-    n <- .normarg_n(n, x_eltlens)
+    x_eltNROWS <- unname(elementNROWS(x))
+    n <- .normarg_n(n, x_eltNROWS)
     unlisted_i <- IRanges::IRanges(start=rep.int(1L, length(n)), width=n)
     i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
     ans <- x[i]
@@ -582,9 +589,9 @@ phead <- function(x, n=6L)
 
 ptail <- function(x, n=6L)
 {
-    x_eltlens <- unname(elementLengths(x))
-    n <- .normarg_n(n, x_eltlens)
-    unlisted_i <- IRanges::IRanges(end=x_eltlens, width=n)
+    x_eltNROWS <- unname(elementNROWS(x))
+    n <- .normarg_n(n, x_eltNROWS)
+    unlisted_i <- IRanges::IRanges(end=x_eltNROWS, width=n)
     i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
     ans <- x[i]
     mcols(ans) <- mcols(x)
@@ -652,18 +659,18 @@ setAs("ANY", "List", function(from) {
 ## so ambiguities are introduced due to method caching.
 setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
 
-.make_group_and_group_name <- function(x_elt_lens, group_name.as.factor=FALSE)
+.make_group_and_group_name <- function(x_eltNROWS, group_name.as.factor=FALSE)
 {
     if (!isTRUEorFALSE(group_name.as.factor))
         stop("'group_name.as.factor' must be TRUE or FALSE")
-    group <- rep.int(seq_along(x_elt_lens), x_elt_lens)
-    x_names <- names(x_elt_lens)
+    group <- rep.int(seq_along(x_eltNROWS), x_eltNROWS)
+    x_names <- names(x_eltNROWS)
     if (is.null(x_names)) {
         group_name <- rep.int(NA_character_, length(group))
         if (group_name.as.factor)
             group_name <- factor(group_name, levels=character(0))
     } else {
-        group_name <- rep.int(x_names, x_elt_lens)
+        group_name <- rep.int(x_names, x_eltNROWS)
         if (group_name.as.factor)
             group_name <- factor(group_name, levels=unique(x_names))
     }
@@ -682,7 +689,7 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
                          row.names=row.names, optional=optional, ...)
     if (ncol(ans) == 1L)
         colnames(ans)[1L] <- value.name
-    group_and_group_name <- .make_group_and_group_name(elementLengths(x),
+    group_and_group_name <- .make_group_and_group_name(elementNROWS(x),
                                                        group_name.as.factor)
     ans <- cbind(group_and_group_name, ans)
     if (use.outer.mcols) {
@@ -711,7 +718,7 @@ pc <- function(...) {
   if (length(args) <= 1L) {
     return(args[[1L]])
   }
-  if (length(unique(elementLengths(args))) > 1L) {
+  if (length(unique(elementNROWS(args))) > 1L) {
     stop("All arguments in '...' must have the same length")
   }
 

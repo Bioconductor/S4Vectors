@@ -64,7 +64,7 @@ setMethod("lengths", "Vector",
      {
          if (!isTRUEorFALSE(use.names))
              stop("'use.names' must be TRUE or FALSE")
-         ans <- elementLengths(x)
+         ans <- elementNROWS(x)  # This is wrong! See ?Vector for the details.
          if (!use.names)
              names(ans) <- NULL
          ans
