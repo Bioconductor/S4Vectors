@@ -248,9 +248,9 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         ## Compute 'ans' (the matrix).
         ans_top <- makeNakedMat.FUN(head(x, n=nhead))
         ans_bottom <- makeNakedMat.FUN(tail(x, n=ntail))
-        ans <- rbind(ans_top,
-                     matrix(rep.int("...", ncol(ans_top)), nrow=1L),
-                     ans_bottom)
+        ellipses <- rep.int("...", ncol(ans_top))
+        ellipses[colnames(ans_top) %in% "|"] <- "."
+        ans <- rbind(ans_top, matrix(ellipses, nrow=1L), ans_bottom)
         ## Compute 'ans_rownames' (the matrix row names).
         if (is.null(x_ROWNAMES)) {
             top_idx <- seq(from=1L, by=1L, length.out=nhead)
@@ -261,7 +261,15 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
             s1 <- head(x_ROWNAMES, n=nhead)
             s2 <- tail(x_ROWNAMES, n=ntail)
         }
-        ans_rownames <- c(s1, "...", s2)
+        max_width <- max(nchar(s1, type="width"), nchar(s2, type="width"))
+        if (max_width <= 1L) {
+            ellipsis <- "."
+        } else if (max_width == 2L) {
+            ellipsis <- ".."
+        } else {
+            ellipsis <- "..."
+        }
+        ans_rownames <- c(s1, ellipsis, s2)
     }
     rownames(ans) <- format(ans_rownames, justify="right")
     ans
