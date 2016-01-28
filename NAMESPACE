@@ -303,6 +303,9 @@ export(
     ## HitsList-class.R:
     space,
 
+    ## expand-methods.R
+    expand,
+
     ## FilterRules-class.R:
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
 
@@ -342,6 +345,7 @@ exportMethods(
     endoapply, mendoapply,
     revElements,
     space,
+    expand,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
     shiftApply
 )

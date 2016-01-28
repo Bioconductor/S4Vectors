@@ -250,8 +250,8 @@
 
 \seealso{
   \itemize{
-    \item \link{Rle}, \link[IRanges]{IRanges} and \link[XVector]{XRaw}
-          for example implementations.
+    \item \link{Rle}, \link{Hits}, \link[IRanges]{IRanges} and
+          \link[XVector]{XRaw} for example implementations.
 
     \item \link{Vector-comparison} for comparing, ordering, and tabulating
           vector-like objects.
