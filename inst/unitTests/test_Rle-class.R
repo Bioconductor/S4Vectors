@@ -49,6 +49,37 @@ test_Rle_coercion <- function() {
 
 test_extract_ranges_from_Rle <- function() {
     extract_ranges_from_Rle <- S4Vectors:::extract_ranges_from_Rle
+
+    # Extract single range.
+    x <- Rle()
+    for (method in 0:3) {
+        current <- extract_ranges_from_Rle(x, 1L, 0L, method)
+        checkIdentical(x, current)
+        checkException(extract_ranges_from_Rle(x, 1L, 1L, method), silent=TRUE)
+        checkException(extract_ranges_from_Rle(x, 0L, 0L, method), silent=TRUE)
+        checkException(extract_ranges_from_Rle(x, 0L, 1L, method), silent=TRUE)
+    }
+
+    x <- Rle(0.8, 10L)
+    for (method in 0:3) {
+        target <- Rle(numeric(0))
+        for (start in 1:11) {
+            current <- extract_ranges_from_Rle(x, start, 0L, method)
+            checkIdentical(target, current)
+        }
+        checkException(extract_ranges_from_Rle(x, 0L, 0L, method), silent=TRUE)
+        checkException(extract_ranges_from_Rle(x, 12L, 1L, method), silent=TRUE)
+
+        target <- Rle(0.8)
+        for (start in 1:10) {
+            current <- extract_ranges_from_Rle(x, start, 1L, method)
+            checkIdentical(target, current)
+        }
+        checkException(extract_ranges_from_Rle(x, 0L, 1L, method), silent=TRUE)
+        checkException(extract_ranges_from_Rle(x, 11L, 1L, method), silent=TRUE)
+    }
+
+    # Extract multiple ranges.
     x <- Rle(factor(letters[1:3], levels=rev(letters)), 7:5)
 
     start <- 1L

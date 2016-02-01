@@ -561,7 +561,8 @@ static const char *find_window_runs1(const int *run_lengths, int nrun,
 			if (offset >= window_start)
 				break;
 		}
-		*Ltrim = window_start - offset + run_lengths[i] - 1;
+		if (i < nrun)
+			*Ltrim = window_start - offset + run_lengths[i] - 1;
 		if (offset >= window_end) {
 			j = i;
 		} else {
@@ -601,11 +602,8 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 {
 	int n1, n2, n, bp;
 
-	/* Check first element. */
-	n1 = 0;
-	bp = breakpoints[n1];
-	if (x <= bp)
-		return n1;
+	if (nbreakpoints == 0)
+		return nbreakpoints;
 
 	/* Check last element. */
 	n2 = nbreakpoints - 1;
@@ -614,6 +612,12 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 		return nbreakpoints;
 	if (x == bp)
 		return n2;
+
+	/* Check first element. */
+	n1 = 0;
+	bp = breakpoints[n1];
+	if (x <= bp)
+		return n1;
 
 	/* Binary search.
 	   Seems that using >> 1 instead of / 2 is faster, even when compiling
@@ -639,14 +643,20 @@ static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 		int window_start, int window_end,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
-	int end_run;
+	int x_len, end_run;
 
 	if (window_start == NA_INTEGER || window_start < 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'start' must be >= 1");
 		return errmsg_buf;
 	}
-	if (window_end == NA_INTEGER || window_end < window_start - 1) {
+	x_len = nrun == 0 ? 0 : run_breakpoints[nrun - 1];
+	if (window_end == NA_INTEGER || window_end > x_len) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "'end' must be <= 'length(x)'");
+		return errmsg_buf;
+	}
+	if (window_end < window_start - 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'end' must be >= 'start' - 1");
 		return errmsg_buf;
