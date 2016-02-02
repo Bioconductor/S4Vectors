@@ -664,11 +664,6 @@ static const char *find_window_runs2(const int *run_breakpoints, int nrun,
 	*offset_nrun = int_bsearch(window_start, run_breakpoints, nrun);
 	if (window_end >= window_start) {
 		end_run = int_bsearch(window_end, run_breakpoints, nrun);
-		if (end_run >= nrun) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "'end' must be <= 'length(x)'");
-			return errmsg_buf;
-		}
 		*spanned_nrun = end_run - *offset_nrun + 1;
 		*Ltrim = window_start - 1;
 		if (*offset_nrun >= 1)
