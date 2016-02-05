@@ -538,7 +538,7 @@ SEXP Rle_end(SEXP x)
 
 static char errmsg_buf[200];
 
-static const char *map1_window_to_runs(const int *run_lengths, int nrun,
+static const char *window2runs_mapper1(const int *run_lengths, int nrun,
 		int window_start, int window_end,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
@@ -636,11 +636,11 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 }
 
 /*
- * Like map1_window_to_runs() but takes 'run_breakpoints' (obtained with
+ * Like window2runs_mapper1() but takes 'run_breakpoints' (obtained with
  * 'cumsum(run_lengths)') instead of 'run_lengths' as input and uses a binary
  * search.
  */
-static const char *map2_window_to_runs(const int *run_breakpoints, int nrun,
+static const char *window2runs_mapper2(const int *run_breakpoints, int nrun,
 		int window_start, int window_end,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
@@ -678,7 +678,7 @@ static const char *map2_window_to_runs(const int *run_breakpoints, int nrun,
 }
 
 /* Method 1: Naive algo (inefficient if more than 1 window). */
-static const char *map1_ranges_to_runs(const int *run_lengths, int nrun,
+static const char *ranges2runs_mapper1(const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
@@ -689,7 +689,7 @@ static const char *map1_ranges_to_runs(const int *run_lengths, int nrun,
 	for (i = 0; i < nranges; i++) {
 		start_i = start[i];
 		end_i = start_i - 1 + width[i];
-		errmsg = map1_window_to_runs(run_lengths, nrun,
+		errmsg = window2runs_mapper1(run_lengths, nrun,
 					start_i, end_i,
 					offset_nrun + i, spanned_nrun + i,
 					Ltrim + i, Rtrim + i);
@@ -700,7 +700,7 @@ static const char *map1_ranges_to_runs(const int *run_lengths, int nrun,
 }
 
 /* Method 2: Binary search. */
-static const char *map2_ranges_to_runs(const int *run_lengths, int nrun,
+static const char *ranges2runs_mapper2(const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
@@ -710,7 +710,7 @@ static const char *map2_ranges_to_runs(const int *run_lengths, int nrun,
 	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
 	if (run_breakpoints == NULL) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "map2_ranges_to_runs: memory allocation failed");
+			 "ranges2runs_mapper2: memory allocation failed");
 		return errmsg_buf;
 	}
 	breakpoint = 0;
@@ -722,7 +722,7 @@ static const char *map2_ranges_to_runs(const int *run_lengths, int nrun,
 	for (i = 0; i < nranges; i++) {
 		start_i = start[i];
 		end_i = start_i - 1 + width[i];
-		errmsg = map2_window_to_runs(run_breakpoints, nrun,
+		errmsg = window2runs_mapper2(run_breakpoints, nrun,
 					start_i, end_i,
 					offset_nrun + i, spanned_nrun + i,
 					Ltrim + i, Rtrim + i);
@@ -734,7 +734,7 @@ static const char *map2_ranges_to_runs(const int *run_lengths, int nrun,
 }
 
 /* Method 3: Sort the starts and ends of the ranges. */
-static const char *map3_ranges_to_runs(const int *run_lengths, int nrun,
+static const char *ranges2runs_mapper3(const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
@@ -750,7 +750,7 @@ static const char *map3_ranges_to_runs(const int *run_lengths, int nrun,
 		if (SEorder != NULL)
 			free(SEorder);
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "map3_ranges_to_runs: memory allocation failed");
+			 "ranges2runs_mapper3: memory allocation failed");
 		return errmsg_buf;
 	}
 	memcpy(SEbuf, start, sizeof(int) * nranges);
@@ -812,7 +812,7 @@ static const char *map3_ranges_to_runs(const int *run_lengths, int nrun,
 }
 
 /* If 'method' is not >= 0 and <= 3, then the function does nothing (no-op). */
-static const char *map_ranges_to_runs(const int *run_lengths, int nrun,
+static const char *ranges2runs_mapper(const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim,
 		int method)
@@ -835,9 +835,9 @@ static const char *map_ranges_to_runs(const int *run_lengths, int nrun,
 		}
 	}
 	switch (method) {
-		case 1: fun = map1_ranges_to_runs; break;
-		case 2: fun = map2_ranges_to_runs; break;
-		case 3: fun = map3_ranges_to_runs; break;
+		case 1: fun = ranges2runs_mapper1; break;
+		case 2: fun = ranges2runs_mapper2; break;
+		case 3: fun = ranges2runs_mapper3; break;
 		default: return NULL;  /* do nothing */
 	}
 	return fun(run_lengths, nrun,
@@ -862,7 +862,7 @@ SEXP ranges_to_runs_mapper(SEXP run_lengths, SEXP start, SEXP width,
 	PROTECT(spanned_nrun = NEW_INTEGER(nranges));
 	PROTECT(Ltrim = NEW_INTEGER(nranges));
 	PROTECT(Rtrim = NEW_INTEGER(nranges));
-	errmsg = map_ranges_to_runs(INTEGER(run_lengths), nrun,
+	errmsg = ranges2runs_mapper(INTEGER(run_lengths), nrun,
 				start_p, width_p, nranges,
 				INTEGER(offset_nrun), INTEGER(spanned_nrun),
 				INTEGER(Ltrim), INTEGER(Rtrim),
@@ -975,7 +975,7 @@ SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
 	x_values = GET_SLOT(x, install("values"));
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
-	errmsg = map1_window_to_runs(INTEGER(x_lengths), x_nrun,
+	errmsg = window2runs_mapper1(INTEGER(x_lengths), x_nrun,
 				window_start_p[0], window_end_p[0],
 				&offset_nrun, &spanned_nrun, &Ltrim, &Rtrim);
 	if (errmsg != NULL)
@@ -999,7 +999,7 @@ SEXP _subset_Rle_by_ranges(SEXP x,
 	spanned_nrun = (int *) R_alloc(sizeof(int), nranges);
 	Ltrim = (int *) R_alloc(sizeof(int), nranges);
 	Rtrim = (int *) R_alloc(sizeof(int), nranges);
-	errmsg = map_ranges_to_runs(INTEGER(x_lengths), x_nrun,
+	errmsg = ranges2runs_mapper(INTEGER(x_lengths), x_nrun,
 				start, width, nranges,
 				offset_nrun, spanned_nrun, Ltrim, Rtrim,
 				method);
