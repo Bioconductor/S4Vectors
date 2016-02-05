@@ -759,8 +759,8 @@ SEXP Rle_start(SEXP x);
 
 SEXP Rle_end(SEXP x);
 
-SEXP Rle_find_runs_of_ranges(
-	SEXP x,
+SEXP ranges_to_runs_mapper(
+	SEXP run_lengths,
 	SEXP start,
 	SEXP width,
 	SEXP method

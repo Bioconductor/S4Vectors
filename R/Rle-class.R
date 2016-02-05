@@ -154,12 +154,26 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Subsetting.
 ###
 
-extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
+.normarg_method <- function(method)
 {
     if (!(isSingleNumber(method) && method >= 0 && method <= 3))
         stop("'method' must be a single integer between 0 and 3")
     if (!is.integer(method))
         method <- as.integer(method)
+    method
+}
+
+### Used in GenomicRanges.
+map_ranges_to_runs <- function(run_lens, start, width, method=0L)
+{
+    method <- .normarg_method(method)
+    .Call2("ranges_to_runs_mapper", run_lens, start, width, method,
+                                    PACKAGE="S4Vectors")
+}
+
+extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
+{
+    method <- .normarg_method(method)
     if (!isTRUEorFALSE(as.list))
         stop("'as.list' must be TRUE or FALSE")
     .Call2("Rle_extract_ranges", x, start, width, method, as.list,
