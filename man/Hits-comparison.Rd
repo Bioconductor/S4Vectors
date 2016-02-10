@@ -2,7 +2,7 @@
 
 \alias{Hits-comparison}
 
-\alias{compare,Hits,Hits-method}
+\alias{pcompare,Hits,Hits-method}
 \alias{match,Hits,Hits-method}
 \alias{order,Hits-method}
 
@@ -14,7 +14,7 @@
   \code{match()}, \code{\%in\%}, \code{order()}, \code{sort()}, and
   \code{rank()} can be used on \link{Hits} objects to compare and order hits.
 
-  Note that only the \code{"compare"}, \code{"match"}, and \code{"order"}
+  Note that only the \code{"pcompare"}, \code{"match"}, and \code{"order"}
   methods are actually defined for \link{Hits} objects. This is all what is
   needed to make all the other comparing and ordering operations (i.e.
   \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<}, \code{>},
@@ -23,7 +23,7 @@
 }
 
 \usage{
-\S4method{compare}{Hits,Hits}(x, y)
+\S4method{pcompare}{Hits,Hits}(x, y)
 
 \S4method{match}{Hits,Hits}(x, table, nomatch=NA_integer_, incomparables=NULL,
       method=c("auto", "quick", "hash"))
@@ -75,7 +75,7 @@
 
   \describe{
     \item{}{
-      \code{compare(x, y)}:
+      \code{pcompare(x, y)}:
       Performs element-wise (aka "parallel") comparison of 2 \link{Hits}
       objects \code{x} and \code{y}, that is, returns an integer vector where
       the i-th element is less than, equal to, or greater than zero if
@@ -117,8 +117,8 @@
 hits <- Hits(c(2, 4, 4, 4, 5, 5), c(3, 1, 3, 2, 3, 2), 6, 3)
 hits
 
-compare(hits, hits[3])
-compare(hits[3], hits)
+pcompare(hits, hits[3])
+pcompare(hits[3], hits)
 
 hits == hits[3]
 hits != hits[3]

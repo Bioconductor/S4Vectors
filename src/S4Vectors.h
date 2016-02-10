@@ -43,7 +43,7 @@ void _get_order_of_int_array(
 	int out_shift
 );
 
-void _compare_int_pairs(
+void _pcompare_int_pairs(
 	const int *a1,
 	const int *b1,
 	int nelt1,
@@ -490,7 +490,7 @@ int _check_integer_pairs(
 	const char *b_argname
 );
 
-SEXP Integer_compare2(
+SEXP Integer_pcompare2(
 	SEXP a1,
 	SEXP b1,
 	SEXP a2,

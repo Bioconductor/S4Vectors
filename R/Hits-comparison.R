@@ -11,20 +11,20 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### compare()
+### pcompare()
 ###
 ### Hits are ordered by query hit first and then by subject hit.
 ### This way, the space of hits is totally ordered.
 ###
 
-setMethod("compare", c("Hits", "Hits"),
+setMethod("pcompare", c("Hits", "Hits"),
     function(x, y)
     {
         if (!.compatible_Hits(x, y))
             stop("'x' and 'y' are incompatible Hits objects ",
                  "by subject and/or query length")
-        compareIntegerPairs(queryHits(x), subjectHits(x),
-                            queryHits(y), subjectHits(y))
+        pcompareIntegerPairs(queryHits(x), subjectHits(x),
+                             queryHits(y), subjectHits(y))
     }
 )
 
@@ -72,7 +72,7 @@ setMethod("match", c("Hits", "Hits"),
 ### Ordering hits
 ###
 ### order(), sort(), rank() on Hits objects are consistent with the order
-### on hits implied by compare().
+### on hits implied by pcompare().
 ###
 
 ### The current implementation doesn't take advantage of the fact that Hits

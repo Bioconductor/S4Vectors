@@ -217,6 +217,9 @@ export(
     strsplitAsListOfIntegerVectors,
     svn.time,
 
+    ## Vector-comparison.R:
+    compare,
+
     ## Hits-class.R:
     Hits,
     selectHits,
@@ -274,7 +277,7 @@ export(
     expand.grid,
 
     ## Vector-comparison.R:
-    compare,
+    pcompare,
     selfmatch,
     findMatches, countMatches,
 
@@ -329,7 +332,7 @@ exportMethods(
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
     classNameForDisplay, showAsCell,
-    compare,
+    pcompare, 
     selfmatch,
     findMatches, countMatches,
     queryHits, subjectHits,

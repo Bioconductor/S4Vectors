@@ -100,9 +100,9 @@ static int compar_int_pairs(int a1, int b1, int a2, int b2)
 }
 
 /* Vectorized comparison of 2 vectors of integer pairs. */
-void _compare_int_pairs(const int *a1, const int *b1, int nelt1,
-			const int *a2, const int *b2, int nelt2,
-			int *out, int out_len, int with_warning)
+void _pcompare_int_pairs(const int *a1, const int *b1, int nelt1,
+			 const int *a2, const int *b2, int nelt2,
+			 int *out, int out_len, int with_warning)
 {
 	int i, j, k;
 

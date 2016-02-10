@@ -2,6 +2,7 @@
 
 \alias{Vector-comparison}
 
+\alias{pcompare}
 \alias{compare}
 
 \alias{==,Vector,Vector-method}
@@ -63,7 +64,7 @@
 ## Element-wise (aka "parallel") comparison of 2 Vector objects
 ## ------------------------------------------------------------
 
-compare(x, y)
+pcompare(x, y)
 
 \S4method{==}{Vector,Vector}(e1, e2)
 \S4method{==}{Vector,ANY}(e1, e2)
@@ -184,18 +185,18 @@ countMatches(x, table, ...)
 }
 
 \details{
-  Doing \code{compare(x, y)} on 2 vector-like objects \code{x} and \code{y}
+  Doing \code{pcompare(x, y)} on 2 vector-like objects \code{x} and \code{y}
   of length 1 must return an integer less than, equal to, or greater than zero
   if the single element in \code{x} is considered to be respectively less than,
   equal to, or greater than the single element in \code{y}.
   If \code{x} or \code{y} have a length != 1, then they are typically expected
-  to have the same length so \code{compare(x, y)} can operate element-wise,
+  to have the same length so \code{pcompare(x, y)} can operate element-wise,
   that is, in that case it returns an integer vector of the same length
   as \code{x} and \code{y} where the i-th element is the result of compairing
   \code{x[i]} and \code{y[i]}. If \code{x} and \code{y} don't have the same
   length and are not zero-length vectors, then the shortest is first
   recycled to the length of the longest. If one of them is a zero-length
-  vector then \code{compare(x, y)} returns a zero-length integer vector.
+  vector then \code{pcompare(x, y)} returns a zero-length integer vector.
 
   \code{selfmatch(x, ...)} is equivalent to \code{match(x, x, ...)}. This
   is actually how the default method is implemented. However note that
@@ -213,7 +214,7 @@ countMatches(x, table, ...)
 }
 
 \value{
-  For \code{compare}: see Details section above.
+  For \code{pcompare}: see Details section above.
 
   For \code{selfmatch}: an integer vector of the same length as \code{x}.
 
@@ -247,10 +248,10 @@ countMatches(x, table, ...)
           these operators:
           \preformatted{
 setMethod("==", c("Vector", "Vector"),
-    function(e1, e2) { compare(e1, e2) == 0L }
+    function(e1, e2) { pcompare(e1, e2) == 0L }
 )
 setMethod("<=", c("Vector", "Vector"),
-    function(e1, e2) { compare(e1, e2) <= 0L }
+    function(e1, e2) { pcompare(e1, e2) <= 0L }
 )
 setMethod("!=", c("Vector", "Vector"),
     function(e1, e2) { !(e1 == e2) }
@@ -266,14 +267,14 @@ setMethod(">", c("Vector", "Vector"),
 )
           }
           With these definitions, the 6 binary operators work out-of-the-box
-          on \link{Vector} objects for which \code{compare} works the
-          expected way. If \code{compare} is not implemented, then it's
+          on \link{Vector} objects for which \code{pcompare} works the
+          expected way. If \code{pcompare} is not implemented, then it's
           enough to implement \code{==} and \code{<=} methods to have the
           4 remaining operators (\code{!=}, \code{>=}, \code{<}, and
           \code{>}) work out-of-the-box.
 
-    \item The \pkg{S4Vectors} package provides no \code{compare} method for
-          \link{Vector} objects. Specific \code{compare} methods need to be
+    \item The \pkg{S4Vectors} package provides no \code{pcompare} method for
+          \link{Vector} objects. Specific \code{pcompare} methods need to be
           implemented for specific \link{Vector} subclasses (e.g. for
           \link{Hits} and \link[IRanges]{Ranges} objects). These specific
           methods must obey the rules described in the Details section above.
@@ -359,7 +360,7 @@ countMatches(x, y)
 ##    FOR YOUR Vector SUBCLASS
 ## ---------------------------------------------------------------------
 
-## The answer is: don't implement them. Just implement compare() and the
+## The answer is: don't implement them. Just implement pcompare() and the
 ## binary comparison operators will work out-of-the-box. Here is an
 ## example:
 
@@ -377,9 +378,9 @@ x <- new("Raw", data=charToRaw("AB.x0a-BAA+C"))
 stopifnot(identical(length(x), 12L))
 stopifnot(identical(x[7:3], new("Raw", data=charToRaw("-a0x."))))
 
-## (2) Implement a "compare" method for Raw objects.
+## (2) Implement a "pcompare" method for Raw objects.
 
-setMethod("compare", c("Raw", "Raw"),
+setMethod("pcompare", c("Raw", "Raw"),
     function(x, y) {as.integer(x@data) - as.integer(y@data)}
 )
 

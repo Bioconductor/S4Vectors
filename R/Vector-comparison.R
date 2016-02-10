@@ -6,7 +6,7 @@
 
 ### Functions/operators for comparing, ordering, tabulating:
 ###
-###     compare
+###     pcompare
 ###     ==
 ###     !=
 ###     <=
@@ -38,16 +38,16 @@
 ### Element-wise (aka "parallel") comparison of 2 Vector objects.
 ###
 
-setGeneric("compare", function(x, y) standardGeneric("compare"))
+setGeneric("pcompare", function(x, y) standardGeneric("pcompare"))
 
-### The methods below are implemented on top of compare().
+### The methods below are implemented on top of pcompare().
 
 setMethods("==", .OP2_SIGNATURES,
-    function(e1, e2) { compare(e1, e2) == 0L }
+    function(e1, e2) { pcompare(e1, e2) == 0L }
 )
 
 setMethods("<=", .OP2_SIGNATURES,
-    function(e1, e2) { compare(e1, e2) <= 0L }
+    function(e1, e2) { pcompare(e1, e2) <= 0L }
 )
 
 ### The methods below are implemented on top of == and <=.
@@ -59,6 +59,8 @@ setMethods(">=", .OP2_SIGNATURES, function(e1, e2) { e2 <= e1 })
 setMethods("<", .OP2_SIGNATURES, function(e1, e2) { !(e2 <= e1) })
 
 setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
+
+compare <- function(...) {.Deprecated("pcompare"); pcompare(...)}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

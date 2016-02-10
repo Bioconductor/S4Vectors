@@ -228,7 +228,7 @@ int _check_integer_pairs(SEXP a, SEXP b,
  * object, except if M or N is 0 in which case the object with length != 0 is
  * truncated to length 0.
  */
-SEXP Integer_compare2(SEXP a1, SEXP b1, SEXP a2, SEXP b2)
+SEXP Integer_pcompare2(SEXP a1, SEXP b1, SEXP a2, SEXP b2)
 {
 	int npair1, npair2, ans_len;
 	const int *a1_p, *b1_p, *a2_p, *b2_p;
@@ -241,8 +241,8 @@ SEXP Integer_compare2(SEXP a1, SEXP b1, SEXP a2, SEXP b2)
 	else
 		ans_len = npair1 >= npair2 ? npair1 : npair2;
 	PROTECT(ans = NEW_INTEGER(ans_len));
-	_compare_int_pairs(a1_p, b1_p, npair1, a2_p, b2_p, npair2,
-			   INTEGER(ans), ans_len, 1);
+	_pcompare_int_pairs(a1_p, b1_p, npair1, a2_p, b2_p, npair2,
+			    INTEGER(ans), ans_len, 1);
 	UNPROTECT(1);
 	return ans;
 }
