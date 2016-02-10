@@ -26,7 +26,7 @@ setClass("Rle",
 
  
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Getters.
+### Getters
 ###
 
 setGeneric("runLength", signature = "x",
@@ -48,50 +48,53 @@ setMethod("width", "Rle", function(x) runLength(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Setters.
+### Constructor
+###
+
+### Low-level constructor.
+new_Rle <- function(values=logical(0), lengths=integer(0), check=TRUE)
+{
+    stopifnot(is(values, "vectorORfactor"))
+    stopifnot(is.numeric(lengths))
+    if (!is.integer(lengths))
+        lengths <- as.integer(lengths)
+    if (!isTRUEorFALSE(check))
+        stop("'check' must be TRUE or FALSE")
+    .Call2("Rle_constructor", values, lengths, check, 0L, PACKAGE="S4Vectors")
+}
+
+setGeneric("Rle", signature="values",
+    function(values=logical(0), lengths=integer(0)) standardGeneric("Rle")
+)
+
+setMethod("Rle", "ANY",
+    function(values=logical(0), lengths=integer(0)) new_Rle(values, lengths)
+)
+
+setMethod("Rle", "Rle",
+    function(values=logical(0), lengths=integer(0))
+    {
+        if (!missing(lengths))
+            stop(wmsg("'lengths' cannot be supplied when calling Rle() ",
+                      "on an Rle object"))
+        values
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Setters
 ###
 
 setGeneric("runLength<-", signature="x",
            function(x, value) standardGeneric("runLength<-"))
 setReplaceMethod("runLength", "Rle",
-                 function(x, value) Rle(values = runValue(x), lengths = value))
+                 function(x, value) Rle(runValue(x), value))
          
 setGeneric("runValue<-", signature="x",
            function(x, value) standardGeneric("runValue<-"))
 setReplaceMethod("runValue", "Rle",
-                 function(x, value) Rle(values = value, lengths = runLength(x)))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructors
-###
-
-setGeneric("Rle", signature = c("values", "lengths"),
-           function(values, lengths, ...) standardGeneric("Rle"))
-
-setMethod("Rle", signature = c(values = "missing", lengths = "missing"),
-          function(values, lengths)
-              new2("Rle", values = vector(), lengths = integer(), check=FALSE))
-
-setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "missing"),
-          function(values, lengths) Rle(values, integer(0), check = FALSE))
-
-setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "integer"),
-          function(values, lengths, check = TRUE)
-          {
-              if (!isTRUEorFALSE(check))
-                  stop("'check' must be TRUE or FALSE")
-              .Call2("Rle_constructor", values, lengths, check, 0L,
-                                        PACKAGE="S4Vectors")
-          })
-
-setMethod("Rle", signature = c(values = "vectorORfactor", lengths = "numeric"),
-          function(values, lengths, check = TRUE)
-              Rle(values = values, lengths = as.integer(lengths),
-                  check = check))
-
-setMethod("Rle", signature = c(values = "Rle", lengths = "missing"),
-          function(values, lengths, check = TRUE) values)
+                 function(x, value) Rle(value, runLength(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -320,8 +323,7 @@ setMethod("replaceROWS", "Rle",
         values <- unlist(lapply(subseqs, "[[", "values"))
         if (isFactorRle)
             values <- dummy_value[values]
-        ans <- Rle(values=values,
-                   lengths=unlist(lapply(subseqs, "[[", "lengths")))
+        ans <- Rle(values, unlist(lapply(subseqs, "[[", "lengths")))
         mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
         ans
     }
@@ -465,8 +467,7 @@ setMethod("c", "Rle",
 
 setMethod("%in%", "Rle",
           function(x, table)
-              Rle(values = runValue(x) %in% table, lengths = runLength(x),
-                  check = FALSE))
+              new_Rle(runValue(x) %in% table, runLength(x), check=FALSE))
 
 setGeneric("findRun", signature = "vec",
            function(x, vec) standardGeneric("findRun"))
@@ -481,8 +482,7 @@ setMethod("findRun", signature = c(vec = "Rle"),
 
 setMethod("is.na", "Rle",
           function(x)
-              Rle(values = is.na(runValue(x)), lengths = runLength(x),
-                  check = FALSE))
+              new_Rle(is.na(runValue(x)), runLength(x), check=FALSE))
 
 setMethod("anyNA", "Rle",
           function(x)
@@ -587,8 +587,8 @@ setMethod("rep.int", "Rle",
                   runLength(x) <- diffWithInitialZero(cumsum(times)[end(x)])
               } else if (length(times) == 1) {
                   times <- as.vector(times)
-                  x <- Rle(values  = rep.int(runValue(x), times),
-                           lengths = rep.int(runLength(x), times))
+                  x <- Rle(rep.int(runValue(x), times),
+                           rep.int(runLength(x), times))
               }
               x
           })
@@ -614,9 +614,7 @@ setMethod("order", "Rle",
     else
         ord <- order(runValue(x), decreasing=decreasing,
                      na.last=na.last)
-    Rle(values=runValue(x)[ord], 
-        lengths=runLength(x)[ord],
-        check=FALSE)
+    new_Rle(runValue(x)[ord], runLength(x)[ord], check=FALSE)
 }
 setMethod("sort", "Rle", .sort.Rle)
 

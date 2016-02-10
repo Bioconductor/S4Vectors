@@ -247,7 +247,7 @@ test_Rle_table <- function()
 
 test_Rle_Integer_overflow <- function() {
 
-    x0 <- Rle(values=as.integer(c(1,(2^31)-1,1)))
+    x0 <- Rle(as.integer(c(1,(2^31)-1,1)))
     checkIdentical(NA_integer_, suppressWarnings(sum(x0)))
 
     testWarning <- NULL
@@ -261,7 +261,7 @@ test_Rle_Integer_overflow <- function() {
     }))
     checkTrue(testWarning)
 
-    x <- Rle(values=c(1,(2^31)-1,1))
+    x <- Rle(c(1,(2^31)-1,1))
     checkIdentical(mean(x0), mean(x))
 }
 

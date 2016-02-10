@@ -4,10 +4,8 @@
 \alias{class:Rle}
 \alias{Rle-class}
 \alias{Rle}
-\alias{Rle,missing,missing-method}
-\alias{Rle,vectorORfactor,missing-method}
-\alias{Rle,vectorORfactor,integer-method}
-\alias{Rle,vectorORfactor,numeric-method}
+\alias{Rle,ANY-method}
+\alias{Rle,Rle-method}
 
 \alias{length,Rle-method}
 \alias{runLength}
@@ -92,29 +90,21 @@
   \code{\link[base]{rle}} function from the base package.
 }
 
-\section{Constructors}{
+\section{Constructor}{
   \describe{
     \item{}{
-      \code{Rle(values)}:
-      This constructor creates an Rle instances out of an atomic
-      vector \code{values}.
-    }
-    \item{}{
       \code{Rle(values, lengths)}:
-      This constructor creates an Rle instances out of an atomic
+      This constructor creates an Rle instance out of an atomic
       vector or factor object \code{values} and an integer or numeric vector
       \code{lengths} with all positive elements that represent how many times
       each value is repeated. The length of these two vectors must be the same.
-    }
-    \item{}{
-      \code{as(from, "Rle")}:
-      This constructor creates an Rle instances out of an atomic
-      vector \code{from}.
+      \code{lengths} can be missing in which case \code{values} is turned
+      into an Rle.
     }
   }
 }
 
-\section{Accessors}{
+\section{Getters}{
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
@@ -145,7 +135,7 @@
   }
 }
 
-\section{Replacers}{
+\section{Setters}{
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
@@ -163,30 +153,41 @@
 }
 
 \section{Coercion}{
-  In the code snippets below, \code{x} and \code{from} are Rle objects:
-
-  \describe{
-    \item{}{
-      \code{as.vector(x, mode="any")}, \code{as(from, "vector")}:
-      Creates an atomic vector based on the values contained in
-      \code{x}. The vector will be coerced to the requested \code{mode},
-      unless \code{mode} is "any", in which case the most appropriate
-      type is chosen.
+  \subsection{From atomic vector to Rle}{
+    In the code snippets below, \code{from} is an atomic vector:
+    \describe{
+      \item{}{
+        \code{as(from, "Rle")}:
+        This coercion creates an Rle instances out of an atomic
+        vector \code{from}.
+      }
     }
-    \item{}{
-      \code{as.vectorORfactor(x)}: Creates an atomic vector or factor,
-      based on the type of values contained in \code{x}. This is the
-      most general way to decompress the Rle to a native R data
-      structure.
-    }
-    \item{}{
-      \code{as.factor(x)}, \code{as(from, "factor")}: Creates a factor object
-      based on the values contained in \code{x}.
-    }
-    \item{}{
-      \code{as.data.frame(x)}, \code{as(from, "data.frame")}: Creates
-      a \code{data.frame} with a single column holding the result of
-      \code{as.vector(x)}.
+  }
+  \subsection{From Rle to other objects}{
+    In the code snippets below, \code{x} and \code{from} are Rle objects:
+    \describe{
+      \item{}{
+        \code{as.vector(x, mode="any")}, \code{as(from, "vector")}:
+        Creates an atomic vector based on the values contained in
+        \code{x}. The vector will be coerced to the requested \code{mode},
+        unless \code{mode} is "any", in which case the most appropriate
+        type is chosen.
+      }
+      \item{}{
+        \code{as.vectorORfactor(x)}: Creates an atomic vector or factor,
+        based on the type of values contained in \code{x}. This is the
+        most general way to decompress the Rle to a native R data
+        structure.
+      }
+      \item{}{
+        \code{as.factor(x)}, \code{as(from, "factor")}: Creates a factor object
+        based on the values contained in \code{x}.
+      }
+      \item{}{
+        \code{as.data.frame(x)}, \code{as(from, "data.frame")}: Creates
+        a \code{data.frame} with a single column holding the result of
+        \code{as.vector(x)}.
+      }
     }
   }
 }

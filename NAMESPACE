@@ -155,7 +155,7 @@ exportMethods(
     t,
     by,
     transform,
-    substr, substring, levels, "levels<-", droplevels,
+    nchar, substr, substring, levels, "levels<-", droplevels,
     "[[", "[[<-", "$", "$<-",
     split,
     eval, with, within,
