@@ -82,7 +82,7 @@ strsplitAsListOfIntegerVectors(x, sep=",")  # 'sep' default is ","
   in \code{x}.
 }
 
-\author{H. Pages}
+\author{Hervé Pagès}
 
 \seealso{
   \itemize{

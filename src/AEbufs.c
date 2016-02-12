@@ -1,28 +1,12 @@
 /****************************************************************************
- *                          Auto-Extending buffers                          *
- *                                                                          *
- *                           Author: Herve Pages                            *
+ *                         Auto-Extending buffers                           *
+ *                           Author: H. Pag\`es                             *
  ****************************************************************************/
 #include "S4Vectors.h"
 #include <stdlib.h>  /* for malloc, free, realloc */
 
 #define MAX_BUFLENGTH_INC (32 * 1024 * 1024)
 #define MAX_BUFLENGTH (32 * MAX_BUFLENGTH_INC)
-
-
-static int debug = 0;
-
-SEXP debug_AEbufs()
-{
-#ifdef DEBUG_S4VECTORS
-	debug = !debug;
-	Rprintf("Debug mode turned %s in file %s\n",
-		debug ? "on" : "off", __FILE__);
-#else
-	Rprintf("Debug mode not available in file %s\n", __FILE__);
-#endif
-	return R_NilValue;
-}
 
 
 /****************************************************************************
@@ -315,34 +299,12 @@ IntAE *_new_IntAE_from_CHARACTER(SEXP x, int keyshift)
 	IntAE *ae;
 	int i, *elt;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug) {
-		Rprintf("[DEBUG] _new_IntAE_from_CHARACTER(): BEGIN ... "
-			"LENGTH(x)=%d keyshift=%d\n",
-			LENGTH(x), keyshift);
-	}
-#endif
 	ae = _new_IntAE(LENGTH(x), 0, 0);
 	_IntAE_set_nelt(ae, ae->_buflength);
 	for (i = 0, elt = ae->elts; i < ae->_buflength; i++, elt++) {
 		sscanf(CHAR(STRING_ELT(x, i)), "%d", elt);
 		*elt += keyshift;
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			if (i < 100
-			 || i >= ae->_buflength - 100)
-				Rprintf("[DEBUG] _new_IntAE_from_CHARACTER(): "
-					"i=%d key=%s *elt=%d\n",
-					i,
-					CHAR(STRING_ELT(x, i)), *elt);
-		}
-#endif
 	}
-#ifdef DEBUG_S4VECTORS
-	if (debug) {
-		Rprintf("[DEBUG] _new_IntAE_from_CHARACTER(): END\n");
-	}
-#endif
 	return ae;
 }
 
@@ -359,14 +321,6 @@ static void flush_IntAE_pool()
 {
 	IntAE *ae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && IntAE_pool_len != 0) {
-		printf("flush_IntAE_pool: "
-		       "flushing %d IntAE buffers\n",
-		       IntAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (IntAE_pool_len > 0) {
 		IntAE_pool_len--;
 		ae = IntAE_pool[IntAE_pool_len];
@@ -589,54 +543,16 @@ SEXP _IntAEAE_toEnvir(const IntAEAE *aeae, SEXP envir, int keyshift)
 	SEXP value;
 
 	nelt = _IntAEAE_get_nelt(aeae);
-#ifdef DEBUG_S4VECTORS
-	int nkey = 0, cum_length = 0;
-	if (debug) {
-		Rprintf("[DEBUG] _IntAEAE_toEnvir(): BEGIN ... "
-			"aeae->_nelt=%d keyshift=%d\n",
-			nelt, keyshift);
-	}
-#endif
 	for (i = 0; i < nelt; i++) {
 		ae = aeae->elts[i];
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			if (i < 100 || i >= nelt - 100)
-				Rprintf("[DEBUG] _IntAEAE_toEnvir(): "
-					"nkey=%d aeae->elts[%d]._nelt=%d\n",
-					nkey, i, _IntAE_get_nelt(ae));
-		}
-#endif
 		if (_IntAE_get_nelt(ae) == 0)
 			continue;
 		//snprintf(key, sizeof(key), "%d", i + keyshift);
 		snprintf(key, sizeof(key), "%010d", i + keyshift);
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			if (i < 100 || i >= nelt - 100)
-				Rprintf("[DEBUG] _IntAEAE_toEnvir(): "
-					"installing key=%s ... ", key);
-		}
-#endif
 		PROTECT(value = _new_INTEGER_from_IntAE(ae));
 		defineVar(install(key), value, envir);
 		UNPROTECT(1);
-#ifdef DEBUG_S4VECTORS
-		if (debug) {
-			nkey++;
-			cum_length += _IntAE_get_nelt(ae);
-			if (i < 100 || i >= nelt - 100)
-				Rprintf("OK (nkey=%d cum_length=%d)\n",
-					nkey, cum_length);
-		}
-#endif
 	}
-#ifdef DEBUG_S4VECTORS
-	if (debug) {
-		Rprintf("[DEBUG] _IntAEAE_toEnvir(): END "
-			"(nkey=%d cum_length=%d)\n", nkey, cum_length);
-	}
-#endif
 	return envir;
 }
 
@@ -662,14 +578,6 @@ static void flush_IntAEAE_pool()
 {
 	IntAEAE *aeae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && IntAEAE_pool_len != 0) {
-		printf("flush_IntAEAE_pool: "
-		       "flushing %d IntAEAE buffers\n",
-		       IntAEAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (IntAEAE_pool_len > 0) {
 		IntAEAE_pool_len--;
 		aeae = IntAEAE_pool[IntAEAE_pool_len];
@@ -764,14 +672,6 @@ static void flush_IntPairAE_pool()
 {
 	IntPairAE *ae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && IntPairAE_pool_len != 0) {
-		printf("flush_IntPairAE_pool: "
-		       "flushing %d IntPairAE buffers\n",
-		       IntPairAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (IntPairAE_pool_len > 0) {
 		IntPairAE_pool_len--;
 		ae = IntPairAE_pool[IntPairAE_pool_len];
@@ -905,14 +805,6 @@ static void flush_IntPairAEAE_pool()
 {
 	IntPairAEAE *aeae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && IntPairAEAE_pool_len != 0) {
-		printf("flush_IntPairAEAE_pool: "
-		       "flushing %d IntPairAEAE buffers\n",
-		       IntPairAEAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (IntPairAEAE_pool_len > 0) {
 		IntPairAEAE_pool_len--;
 		aeae = IntPairAEAE_pool[IntPairAEAE_pool_len];
@@ -1022,14 +914,6 @@ static void flush_LLongAE_pool()
 {
 	LLongAE *ae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && LLongAE_pool_len != 0) {
-		printf("flush_LLongAE_pool: "
-		       "flushing %d LLongAE buffers\n",
-		       LLongAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (LLongAE_pool_len > 0) {
 		LLongAE_pool_len--;
 		ae = LLongAE_pool[LLongAE_pool_len];
@@ -1206,14 +1090,6 @@ static void flush_CharAE_pool()
 {
 	CharAE *ae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && CharAE_pool_len != 0) {
-		printf("flush_CharAE_pool: "
-		       "flushing %d CharAE buffers\n",
-		       CharAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (CharAE_pool_len > 0) {
 		CharAE_pool_len--;
 		ae = CharAE_pool[CharAE_pool_len];
@@ -1373,14 +1249,6 @@ static void flush_CharAEAE_pool()
 {
 	CharAEAE *aeae;
 
-#ifdef DEBUG_S4VECTORS
-	if (debug && CharAEAE_pool_len != 0) {
-		printf("flush_CharAEAE_pool: "
-		       "flushing %d CharAEAE buffers\n",
-		       CharAEAE_pool_len);
-		fflush(stdout);
-	}
-#endif
 	while (CharAEAE_pool_len > 0) {
 		CharAEAE_pool_len--;
 		aeae = CharAEAE_pool[CharAEAE_pool_len];

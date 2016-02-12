@@ -175,7 +175,7 @@
   }
 }
 
-\author{Michael Lawrence and H. Pages}
+\author{Michael Lawrence and Hervé Pagès}
 
 \seealso{
   \itemize{

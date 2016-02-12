@@ -1,8 +1,6 @@
 #include "../inst/include/S4Vectors_defines.h"
 #include <string.h>
 
-#define DEBUG_S4VECTORS 1
-
 #define INIT_STATIC_SYMBOL(NAME) \
 { \
 	if (NAME ## _symbol == NULL) \
@@ -143,8 +141,6 @@ void _set_hbucket_val(
 
 
 /* AEbufs.c */
-
-SEXP debug_AEbufs();
 
 SEXP AEbufs_use_malloc(SEXP x);
 

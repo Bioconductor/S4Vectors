@@ -1,6 +1,6 @@
 /****************************************************************************
  *                 Low-level manipulation of List objects                   *
- *          Authors: Patrick Aboyoun, Michael Lawrence, Herve Pages         *
+ *             Authors: P. Aboyoun, M. Lawrence, and H. Pag\`es             *
  ****************************************************************************/
 #include "S4Vectors.h"
 

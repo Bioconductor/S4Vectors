@@ -54,7 +54,7 @@
   from \code{x}.
 }
 
-\author{H. Pages and Michael Lawrence}
+\author{Hervé Pagès and Michael Lawrence}
 
 \seealso{
   \itemize{

@@ -9,7 +9,6 @@
 static const R_CallMethodDef callMethods[] = {
 
 /* AEbufs.c */
-	CALLMETHOD_DEF(debug_AEbufs, 0),
 	CALLMETHOD_DEF(AEbufs_use_malloc, 1),
 	CALLMETHOD_DEF(AEbufs_free, 0),
 

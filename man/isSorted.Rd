@@ -50,7 +50,7 @@ isConstant(x)
   A single logical i.e. \code{TRUE}, \code{FALSE} or \code{NA}.
 }
 
-\author{H. Pages}
+\author{Hervé Pagès}
 
 \seealso{
   \itemize{

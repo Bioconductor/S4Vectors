@@ -312,7 +312,7 @@ setMethod(">", c("Vector", "Vector"),
   }
 }
 
-\author{H. Pages}
+\author{Hervé Pagès}
 
 \seealso{
   \itemize{
