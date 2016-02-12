@@ -1,6 +1,6 @@
 /****************************************************************************
- *                         Auto-Extending buffers                           *
- *                           Author: H. Pag\`es                             *
+ *                          Auto-Extending buffers                          *
+ *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "S4Vectors.h"
 #include <stdlib.h>  /* for malloc, free, realloc */
