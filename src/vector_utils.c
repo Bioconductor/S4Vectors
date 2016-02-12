@@ -159,10 +159,7 @@ SEXP _subset_vectorORfactor_by_ranges(SEXP x,
 		ans_len = _safe_int_add(ans_len, width_i);
 	}
 	if (_get_ovflow_flag())
-		error("Subsetting %s object by subscript containing "
-		      "ranges produces a result\n  of length > %d. "
-		      "This is not supported yet.",
-		      CHAR(type2str(TYPEOF(x))), INT_MAX);
+		error("subscript is too big");
 	PROTECT(ans = allocVector(TYPEOF(x), ans_len));
 
 	/* Extract the values from 'x'. */
