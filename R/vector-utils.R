@@ -74,10 +74,13 @@ quick_unsplit <- function(x, f)
 ### extract_ranges_from_vectorORfactor()
 ###
 
-### NOT exported.
+### NOT exported but used in IRanges package (by "extractROWS" method with
+### signature vectorORfactor,RangesNSBS).
 extract_ranges_from_vectorORfactor <- function(x, start, width)
+{
     .Call2("vectorORfactor_extract_ranges", x, start, width,
                                             PACKAGE="S4Vectors")
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

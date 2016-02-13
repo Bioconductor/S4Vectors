@@ -154,8 +154,20 @@ getStartEndRunAndOffset <- function(x, start, end) {
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting workhorses
 ###
+### These are the low-level functions that do the real work of subsetting an
+### Rle object. The final coercion to class(x) is to make sure that they act
+### like an endomorphism on objects that belong to a subclass of Rle (the
+### VariantAnnotation package defines Rle subclasses).
+### Note that they drop the metadata columns!
+###
+
+extract_window_from_Rle <- function(x, start, end)
+{
+    ans <- .Call2("Rle_extract_window", x, start, end, PACKAGE="S4Vectors")
+    as(ans, class(x))  # so the function is an endomorphism
+}
 
 .normarg_method <- function(method)
 {
@@ -174,35 +186,56 @@ map_ranges_to_runs <- function(run_lens, start, width, method=0L)
                                     PACKAGE="S4Vectors")
 }
 
+### NOT exported but used in IRanges package (by "extractROWS" method with
+### signature Rle,RangesNSBS).
 extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
 {
     method <- .normarg_method(method)
     if (!isTRUEorFALSE(as.list))
         stop("'as.list' must be TRUE or FALSE")
-    .Call2("Rle_extract_ranges", x, start, width, method, as.list,
-                                 PACKAGE="S4Vectors")
+    ans <- .Call2("Rle_extract_ranges", x, start, width, method, as.list,
+                                        PACKAGE="S4Vectors")
+    as(ans, class(x))  # so the function is an endomorphism
 }
 
-setMethod("extractROWS", "Rle",
+### TODO: Optimize this, maybe by implementing a simpler version of .Call
+### entry point "Rle_extract_ranges" that takes 1 integer vector instead of 2.
+extract_positions_from_Rle <- function(x, i)
+{
+    if (!is.integer(i))
+        stop("'i' must be an integer vector")
+    ans <- extract_ranges_from_Rle(x, i, rep.int(1L, length(i)))
+    as(ans, class(x))  # so the function is an endomorphism
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting
+###
+
+setMethod("extractROWS", c("Rle", "ANY"),
+    function (x, i) 
+    {
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        callGeneric()
+    }
+)
+
+setMethod("extractROWS", c("Rle", "WindowNSBS"),
     function(x, i)
     {
-        ## FIXME: Right now, the subscript 'i' is turned into an IRanges
-        ## object so we need stuff that lives in the IRanges package for this
-        ## to work. This is ugly/hacky and needs to be fixed (thru a redesign
-        ## of this method).
-        if (!requireNamespace("IRanges", quietly=TRUE))
-            stop("Couldn't load the IRanges package. You need to install ",
-                 "the IRanges\n  package in order to subset an Rle object.")
+        start <- i@subscript[[1L]]
+        end <- i@subscript[[2L]]
+        ans <- extract_window_from_Rle(x, start, end)
+        mcols(ans) <- extractROWS(mcols(x), i)
+        ans
+    }
+)
 
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        ## TODO: Maybe make this the coercion method from NSBS to Ranges.
-        if (is(i, "RangesNSBS")) {
-            ir <- i@subscript
-        } else {
-            ir <- as(as.integer(i), "IRanges")
-        }
-        ans <- extract_ranges_from_Rle(x, start(ir), width(ir))
-        ans <- as(ans, class(x))
+setMethod("extractROWS", c("Rle", "NSBS"),
+    function(x, i)
+    {
+        ans <- extract_positions_from_Rle(x, as.integer(i))
         mcols(ans) <- extractROWS(mcols(x), i)
         ans
     }
@@ -353,16 +386,6 @@ setReplaceMethod("[", "Rle",
 ### Convenience wrappers for common subsetting operations.
 ###
 
-setMethod("extractROWS", c("Rle", "WindowNSBS"),
-    function(x, i)
-    {
-        start_end <- i@subscript
-        .Call2("Rle_extract_window",
-               x, start_end[[1L]], start_end[[2L]],
-               PACKAGE="S4Vectors")
-    }
-)
-
 ### S3/S4 combo for rev.Rle
 rev.Rle <- function(x)
 {
@@ -404,12 +427,20 @@ setMethod("NSBS", "Rle",
                 i <- rep(i, length.out=x_NROW)
             ## The coercion method from Rle to NormalIRanges is defined in the
             ## IRanges package.
-            if (!requireNamespace("IRanges", quietly=TRUE))
-                stop("Couldn't load the IRanges package. You need to install ",
-                     "the IRanges\n  package in order to subset by an Rle ",
-                     "object.")
-            i <- as(i, "NormalIRanges")
-            return(callGeneric())
+            if (requireNamespace("IRanges", quietly=TRUE)) {
+                i <- as(i, "NormalIRanges")
+                ## This will call the "NSBS" method for Ranges objects defined
+                ## in the IRanges package and return a RangesNSBS, or
+                ## WindowNSBS, or NativeNSBS object.
+                return(callGeneric())
+            }
+            warning(wmsg(
+                "Couldn't load the IRanges package. Installing this package ",
+                "will enable efficient subsetting by a logical-Rle object ",
+                "so is higly recommended."
+            ))
+            i <- which(i)
+            return(callGeneric())  # will return a NativeNSBS object
         }
         i_vals <- as.integer(NSBS(i_vals, x,
                                   exact=exact,
@@ -433,14 +464,6 @@ setMethod("anyDuplicated", "RleNSBS",
 
 setMethod("isStrictlySorted", "RleNSBS",
     function(x) isStrictlySorted(x@subscript)
-)
-
-setMethod("extractROWS", c("vectorORfactor", "Rle"),
-    function(x, i)
-    {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        callGeneric()
-    }
 )
 
 

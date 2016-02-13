@@ -15,12 +15,12 @@
 setClass("NSBS", 
     representation(
         "VIRTUAL",
-        upper_bound="integer",            # single integer >= 0
-        upper_bound_is_strict="logical",  # TRUE or FALSE
         ## 'subscript' is an object that holds integer values >= 1 and
         ## <= upper_bound. The precise type of the object depends on the NSBS
         ## subclass and is specified in the subclass definition.
-        subscript="ANY"
+        subscript="ANY",
+        upper_bound="integer",           # single integer >= 0
+        upper_bound_is_strict="logical"  # TRUE or FALSE
     ),
     prototype(
         upper_bound=0L,
@@ -405,10 +405,9 @@ setGeneric("replaceROWS", signature="x",
     function(x, i, value) standardGeneric("replaceROWS")
 )
 
-### Used in IRanges!
-extractROWSWithBracket <- function(x, i)
+.extractROWSWithBracket <- function(x, i)
 {
-  if (missing(i))
+  if (is.null(x) || missing(i))
     return(x)
   ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
   ndim <- max(length(dim(x)), 1L)
@@ -420,8 +419,10 @@ extractROWSWithBracket <- function(x, i)
   do.call(`[`, args)
 }
 
-replaceROWSWithBracket <- function(x, i, value)
+.replaceROWSWithBracket <- function(x, i, value)
 {
+  if (is.null(x))
+    return(x)
   ndim <- max(length(dim(x)), 1L)
   i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
   args <- rep(alist(foo=), ndim)
@@ -431,10 +432,7 @@ replaceROWSWithBracket <- function(x, i, value)
   do.call(`[<-`, args)
 }
 
-setMethod("extractROWS", "ANY", extractROWSWithBracket)
-setMethod("replaceROWS", "ANY", replaceROWSWithBracket)
-setMethod("extractROWS", "NULL", function(x, i) NULL)
-setMethod("replaceROWS", "NULL", function(x, i, value) NULL)
+setMethod("extractROWS", c("ANY", "ANY"), .extractROWSWithBracket)
 
 setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
     function(x, i)
@@ -444,6 +442,8 @@ setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
         extract_ranges_from_vectorORfactor(x, start, width)
     }
 )
+
+setMethod("replaceROWS", "ANY", .replaceROWSWithBracket)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
