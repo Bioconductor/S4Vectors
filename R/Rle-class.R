@@ -195,6 +195,8 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
         stop("'as.list' must be TRUE or FALSE")
     ans <- .Call2("Rle_extract_ranges", x, start, width, method, as.list,
                                         PACKAGE="S4Vectors")
+    if (as.list)
+        return(ans)
     as(ans, class(x))  # so the function is an endomorphism
 }
 
@@ -204,8 +206,7 @@ extract_positions_from_Rle <- function(x, i)
 {
     if (!is.integer(i))
         stop("'i' must be an integer vector")
-    ans <- extract_ranges_from_Rle(x, i, rep.int(1L, length(i)))
-    as(ans, class(x))  # so the function is an endomorphism
+    extract_ranges_from_Rle(x, i, rep.int(1L, length(i)))
 }
 
 
