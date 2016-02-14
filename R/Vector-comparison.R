@@ -95,7 +95,7 @@ reverseSelfmatchMapping <- function(selfmatch_mapping)
 {
     ans <- vector(mode="list", length=length(selfmatch_mapping))
     sparse_ans <- split(seq_along(selfmatch_mapping), selfmatch_mapping)
-    ans[as.integer(names(sparse_ans))] <- sparse_ans
+    ans[as.integer(names(sparse_ans))] <- as.list(sparse_ans)
     ans
 }
 
@@ -196,7 +196,7 @@ setGeneric("countMatches", signature=c("x", "table"),
     x2 <- match(x, table, ...)
     table2 <- selfmatch(table, ...)
     table_low2high <- reverseSelfmatchMapping(table2)
-    hits_per_x <- table_low2high[x2]
+    hits_per_x <- table_low2high[as.integer(x2)]
     x_hits <- rep.int(seq_along(hits_per_x), sapply_NROW(hits_per_x))
     if (length(x_hits) == 0L) {
         table_hits <- integer(0)
