@@ -55,6 +55,8 @@
 
 \alias{\%in\%,Rle,ANY-method}
 \alias{c,Rle-method}
+\alias{append,Rle,vector-method}
+\alias{append,vector,Rle-method}
 \alias{findRun}
 \alias{findRun,Rle-method}
 \alias{is.na,Rle-method}

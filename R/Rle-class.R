@@ -484,6 +484,15 @@ setMethod("c", "Rle",
               Rle(ans_values, ans_lengths)
           })
 
+setMethod("append", c("Rle", "vector"),
+          function (x, values, after = length(x)) {
+              append(x, Rle(values), after)
+          })
+
+setMethod("append", c("vector", "Rle"),
+          function (x, values, after = length(x)) {
+              append(Rle(x), values, after)
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other methods.
