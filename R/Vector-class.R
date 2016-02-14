@@ -48,7 +48,8 @@ setMethod("parallelSlotNames", "Vector", function(x) "elementMetadata")
 ### parallelVectorNames() is for internal use only.
 setGeneric("parallelVectorNames",
            function(x) standardGeneric("parallelVectorNames"))
-setMethod("parallelVectorNames", "ANY", function(x) character())
+setMethod("parallelVectorNames", "ANY",
+          function(x) colnames(as.data.frame(new(class(x)))))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
