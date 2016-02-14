@@ -47,4 +47,5 @@ Collate: S4-utils.R
 	aggregate-methods.R
 	shiftApply-methods.R
 	split-methods.R
+	Pairs-class.R
 	zzz.R

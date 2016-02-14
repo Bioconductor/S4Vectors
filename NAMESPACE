@@ -26,7 +26,8 @@ exportClasses(
     SimpleList,
     HitsList,
     DataFrame,
-    expressionORfunction, FilterRules, FilterMatrix
+    expressionORfunction, FilterRules, FilterMatrix,
+    Pairs
 )
 
 
@@ -240,7 +241,10 @@ export(
     DataFrame,
 
     ## FilterRules-class.R:
-    FilterRules, FilterMatrix
+    FilterRules, FilterMatrix,
+
+    ## Pairs-class.R:
+    Pairs, first, "first<-", last, "last<-", zipup, zipdown
 )
 
 
