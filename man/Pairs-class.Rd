@@ -25,10 +25,7 @@
 \alias{Pairs}
 
 % coercion
-\alias{zipup}
-\alias{zipup,Pairs-method}
-\alias{zipdown}
-\alias{zipdown,Pairs-method}
+\alias{zipup,Pairs,missing-method}
 \alias{coerce,Pairs,DataFrame-method}
 \alias{as.data.frame,Pairs-method}
 
