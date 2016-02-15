@@ -14,7 +14,6 @@ Author: H. Pagès, M. Lawrence and P. Aboyoun
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure, DataRepresentation
 Depends: R (>= 3.1.0), methods, utils, stats, stats4, BiocGenerics (>= 0.15.10)
-Imports: methods, utils, stats, stats4, BiocGenerics
 Suggests: IRanges, GenomicRanges, RUnit
 License: Artistic-2.0
 Collate: S4-utils.R
