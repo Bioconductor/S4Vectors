@@ -49,7 +49,7 @@ setMethod("parallelSlotNames", "Vector", function(x) "elementMetadata")
 setGeneric("parallelVectorNames",
            function(x) standardGeneric("parallelVectorNames"))
 setMethod("parallelVectorNames", "ANY",
-          function(x) colnames(as.data.frame(new(class(x)))))
+          function(x) setdiff(colnames(as.data.frame(new(class(x)))), "value"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
