@@ -114,7 +114,7 @@ setMethod("zipup", c("ANY", "ANY"), function(x, y) {
               collate_subscript <- make_XYZxyz_to_XxYyZz_subscript(length(x))
               linear <- linear[collate_subscript]
               names <- if (!is.null(names(x))) names(x) else names(y)
-              p <- PartitioningByWidth(rep(2L, length(x)), names=names)
+              p <- IRanges::PartitioningByWidth(rep(2L, length(x)), names=names)
               relist(linear, p)
           })
 
@@ -129,7 +129,7 @@ setGeneric("zipdown", function(x) standardGeneric("zipdown"))
 
 setMethod("zipdown", "ANY", function(x) {
               stopifnot(all(lengths(x) == 2L))
-              p <- PartitioningByEnd(x)
+              p <- IRanges::PartitioningByEnd(x)
               v <- unlist(x, use.names=FALSE)
               Pairs(v[start(p)], v[end(p)], names=names(x))
           })
