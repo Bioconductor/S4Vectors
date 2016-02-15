@@ -134,7 +134,7 @@ setMethod("zipdown", "ANY", function(x) {
               Pairs(v[start(p)], v[end(p)], names=names(x))
           })
 
-setMethod("zipdown", "List", function(x, ...) {
+setMethod("zipdown", "List", function(x) {
               unzipped <- callNextMethod()
               mcols(unzipped) <- mcols(x)
               unzipped
