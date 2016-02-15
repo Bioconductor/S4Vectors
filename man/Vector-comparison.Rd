@@ -118,7 +118,7 @@ countMatches(x, table, ...)
 ## sort()
 ## ------
 
-\S4method{sort}{Vector}(x, decreasing=FALSE, ...)
+\S4method{sort}{Vector}(x, decreasing=FALSE, na.last = NA, by)
 
 ## table()
 ## -------
@@ -147,8 +147,12 @@ countMatches(x, table, ...)
     Note that you can use \code{match} if you want to do \code{select="first"}.
     Otherwise you're welcome to request this on the Bioconductor mailing list.
   }
-  \item{decreasing}{
+  \item{decreasing, na.last}{
     See \code{?base::\link[base]{sort}}.
+  }
+  \item{by}{A formula referencing the metadata columns by which to sort,
+    e.g., \code{~ x + y} sorts by column \dQuote{x}, breaking ties with
+    column \dQuote{y}.
   }
   \item{...}{
     A \link{Vector} object for \code{table} (the \code{table} method for
