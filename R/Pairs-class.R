@@ -106,7 +106,7 @@ setMethod("match", c("Pairs", "Pairs"),
 ### We use 'zipup' and 'zipdown' because '(un)zip' already taken by utils.
 ###
 
-setGeneric("zipup", function(x, y) standardGeneric("zipup"))
+setGeneric("zipup", function(x, y, ...) standardGeneric("zipup"))
 
 setMethod("zipup", c("ANY", "ANY"), function(x, y) {
               stopifnot(length(x) == length(y))
@@ -118,14 +118,14 @@ setMethod("zipup", c("ANY", "ANY"), function(x, y) {
               relist(linear, p)
           })
 
-setMethod("zipup", c("Pairs", "missing"), function(x, y) {
-              zipped <- zipup(first(x), last(x))
+setMethod("zipup", c("Pairs", "missing"), function(x, y, ...) {
+              zipped <- zipup(first(x), last(x), ...)
               names(zipped) <- names(x)
               mcols(zipped) <- mcols(x)
               zipped
           })
 
-setGeneric("zipdown", function(x) standardGeneric("zipdown"))
+setGeneric("zipdown", function(x, ...) standardGeneric("zipdown"))
 
 setMethod("zipdown", "ANY", function(x) {
               stopifnot(all(lengths(x) == 2L))
@@ -134,7 +134,7 @@ setMethod("zipdown", "ANY", function(x) {
               Pairs(v[start(p)], v[end(p)], names=names(x))
           })
 
-setMethod("zipdown", "List", function(x) {
+setMethod("zipdown", "List", function(x, ...) {
               unzipped <- callNextMethod()
               mcols(unzipped) <- mcols(x)
               unzipped
