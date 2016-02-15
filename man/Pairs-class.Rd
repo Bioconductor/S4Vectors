@@ -109,7 +109,7 @@
           package, which generates an instance of this class based on
           overlaps.
 
-    \item \link[IRanges]{setop-methods} in the \pkg{IRanges} package,
+    \item \link[IRanges]{setops-methods} in the \pkg{IRanges} package,
           for set operations on Pairs objects.
   }
 }
