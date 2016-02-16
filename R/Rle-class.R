@@ -195,9 +195,14 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
         stop("'as.list' must be TRUE or FALSE")
     ans <- .Call2("Rle_extract_ranges", x, start, width, method, as.list,
                                         PACKAGE="S4Vectors")
-    if (as.list)
+    ## The function must act like an endomorphism.
+    x_class <- class(x)
+    if (!as.list)
+        return(as(ans, x_class))
+    ## 'ans' is a list of Rle instances.
+    if (x_class == "Rle")
         return(ans)
-    as(ans, class(x))  # so the function is an endomorphism
+    lapply(ans, as, x_class)
 }
 
 ### TODO: Optimize this, maybe by implementing a simpler version of .Call
