@@ -151,8 +151,9 @@ exportMethods(
     c, append,
     merge,
     "==", "!=", "<=", ">=", "<", ">",
+    "!",
     match, duplicated, unique, anyDuplicated, "%in%",
-    sort, rank, xtfrm,
+    order, sort, is.unsorted, rank, xtfrm,
     t,
     by,
     transform,
@@ -303,6 +304,9 @@ export(
     isEmpty,
     relistToClass,
 
+    ## List-comparison.R:
+    pcompareRecursively,
+
     ## List-utils.R:
     endoapply, mendoapply,
     revElements,
@@ -349,6 +353,7 @@ exportMethods(
     elementType, elementNROWS, elementLengths, lengths,
     isEmpty,
     relistToClass,
+    pcompareRecursively,
     endoapply, mendoapply,
     revElements,
     space,
