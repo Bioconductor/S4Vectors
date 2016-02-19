@@ -497,14 +497,15 @@ setMethod("rep.int", "Rle",
         if (anyMissingOrOutside(times, 0L))
             stop("invalid 'times' argument")
 
-        if (length(times) == 1L) {
-            ans <- Rle(rep.int(runValue(x), times),
-                       rep.int(runLength(x), times))
-            ans <- as(ans, class(x))  # so the function is an endomorphism
-        } else {
-            ans <- .rep_times_Rle(x, times)
-        }
-        ans
+        x_len <- length(x)
+        times_len <- length(times)
+        if (times_len == x_len)
+            return(.rep_times_Rle(x, times))
+        if (times_len != 1L)
+            stop("invalid 'times' argument")
+        ans <- Rle(rep.int(runValue(x), times),
+                   rep.int(runLength(x), times))
+        as(ans, class(x))  # rep.int() must act like an endomorphism
     }
 )
 
