@@ -121,9 +121,10 @@ setClass("NativeNSBS",  # not exported
 ### Supplied arguments are trusted so we don't check them!
 
 .NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict)
-    new("NativeNSBS", subscript=subscript,
-                      upper_bound=upper_bound,
-                      upper_bound_is_strict=upper_bound_is_strict)
+    new2("NativeNSBS", subscript=subscript,
+                       upper_bound=upper_bound,
+                       upper_bound_is_strict=upper_bound_is_strict,
+                       check=FALSE)
 
 setMethod("NSBS", "missing",
     function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
@@ -296,7 +297,9 @@ WindowNSBS <- function(x, start=NA, end=NA, width=NA)
         stop("the specified window is out-of-bounds")
     if (end < start - 1L)
         stop("the specified window has a negative width")
-    new("WindowNSBS", subscript=c(start, end), upper_bound=x_NROW)
+    new2("WindowNSBS", subscript=c(start, end),
+                       upper_bound=x_NROW,
+                       check=FALSE)
 }
 
 setMethod("as.integer", "WindowNSBS",

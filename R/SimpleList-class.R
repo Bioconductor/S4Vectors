@@ -70,7 +70,7 @@ SimpleList <- function(...)
     ##   "list"
     if (length(args) == 1L && extends(class(args[[1L]]), "list"))
         args <- args[[1L]]
-    new("SimpleList", listData=args)
+    new2("SimpleList", listData=args, check=FALSE)
 }
 
 

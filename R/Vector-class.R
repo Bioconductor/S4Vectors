@@ -278,6 +278,13 @@ setMethod("as.list", "Vector", function(x, ...) as.list(as(x, "List"), ...))
 setGeneric("elementMetadata<-",
            function(x, ..., value) standardGeneric("elementMetadata<-"))
 
+### NOT exported but used in packages IRanges, GenomicRanges,
+### SummarizedExperiment, GenomicAlignments, and maybe more...
+### 3x faster than new("DataFrame", nrows=nrow).
+### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
+make_zero_col_DataFrame <- function(nrow)
+    new2("DataFrame", nrows=nrow, check=FALSE)
+
 .normalize_mcols_replacement_value <- function(value, x)
 {
     x_slots <- getSlots(class(x))
@@ -290,7 +297,7 @@ setGeneric("elementMetadata<-",
     if (is.null(value)) {
         if (is(NULL, mcols_class))
             return(NULL)
-        value <- new("DataFrame", nrows=length(x))
+        value <- make_zero_col_DataFrame(length(x))
     }
     value <- as(value, mcols_class, strict=TRUE)
     ## From here 'value' is guaranteed to be a DataTable object.
@@ -539,13 +546,11 @@ setMethod("showAsCell", "POSIXt", function(object) object)
 ### Combining.
 ###
 
-makeZeroColDataFrame <- function(x) new("DataFrame", nrows=length(x))
-
 ### Somewhat painful that we do not always have a DataFrame in elementMetadata
 ensureMcols <- function(x) {
   mc <- mcols(x)
   if (is.null(mc)) {
-    mc <- makeZeroColDataFrame(x)
+    mc <- make_zero_col_DataFrame(length(x))
   }
   mc
 }
@@ -559,8 +564,10 @@ rbind_mcols <- function(x, ...)
     mcols_is_null <- sapply(mcols_list, is.null)
     if (all(mcols_is_null))
         return(NULL)    
-    mcols_list[mcols_is_null] <- lapply(args[mcols_is_null],
-                                        makeZeroColDataFrame)
+    mcols_list[mcols_is_null] <- lapply(
+        args[mcols_is_null],
+        function(arg) make_zero_col_DataFrame(length(arg))
+    )
     colnames_list <- lapply(mcols_list, colnames)
     allCols <- unique(unlist(colnames_list, use.names=FALSE))
     fillCols <- function(df) {

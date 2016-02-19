@@ -394,14 +394,24 @@ setReplaceMethod("[", "Rle",
 ### See R/subsetting-utils.R for more information.
 ###
 
-setClass("RleNSBS",  # not exported
+setClass("RleNSBS",      # not exported
     contains="NSBS",
     representation(
-        subscript="Rle"
+        subscript="Rle"  # integer-Rle
+    ),
+    prototype(
+        ## Calling Rle(integer(0)) below causes the following error at
+        ## installation time:
+        ##     Error in .Call(.NAME, ..., PACKAGE = PACKAGE) : 
+        ##       "Rle_constructor" not available for .Call() for package
+        ##       "S4Vectors"
+        ##     Error : unable to load R code in package ‘S4Vectors’
+        ##     ERROR: lazy loading failed for package ‘S4Vectors’
+        #subscript=Rle(integer(0))
+        subscript=new2("Rle", values=integer(0),
+                              lengths=integer(0),
+                              check=FALSE)
     )
-    #prototype(
-    #    subscript=Rle(integer(0))
-    #)
 )
 
 ### Construction methods.
@@ -438,9 +448,10 @@ setMethod("NSBS", "Rle",
                                   exact=exact,
                                   upperBoundIsStrict=upperBoundIsStrict))
         runValue(i) <- i_vals
-        new("RleNSBS", subscript=i,
-                       upper_bound=x_NROW,
-                       upper_bound_is_strict=upperBoundIsStrict)
+        new2("RleNSBS", subscript=i,
+                        upper_bound=x_NROW,
+                        upper_bound_is_strict=upperBoundIsStrict,
+                        check=FALSE)
     }
 )
 
@@ -520,7 +531,8 @@ setMethod("rep", "Rle",
                           stop("invalid 'each' argument")
                       usedEach <- TRUE
                       if (each == 0)
-                          x <- new(class(x), values = runValue(x)[0L])
+                          x <- new2(class(x), values=runValue(x)[0L],
+                                              check=FALSE)
                       else
                           x@lengths <- each[1L] * runLength(x)
                   }
@@ -530,7 +542,8 @@ setMethod("rep", "Rle",
                   length.out <- as.integer(length.out[1L])
                   if (!is.na(length.out)) {
                       if (length.out == 0) {
-                          x <- new(class(x), values = runValue(x)[0L])
+                          x <- new2(class(x), values=runValue(x)[0L],
+                                              check=FALSE)
                       } else if (length.out < n) {
                           x <- window(x, 1, length.out)
                       } else if (length.out > n) {
