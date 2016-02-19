@@ -389,7 +389,7 @@ setReplaceMethod("[", "Rle",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting *by* an Rle object.
+### Subsetting an object by an Rle subscript.
 ###
 ### See R/subsetting-utils.R for more information.
 ###
@@ -471,6 +471,30 @@ setMethod("isStrictlySorted", "RleNSBS",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subsetting an Rle object by an Rle subscript.
+###
+
+### Simplified version of rep.int() for Rle objects. Handles only the case
+### where 'times' has the length of 'x'.
+.rep_times_Rle <- function(x, times)
+{
+    breakpoints <- end(x)
+    if (length(times) != last_or(breakpoints, 0L))
+        stop("invalid 'times' argument")
+    runLength(x) <- groupsum(times, breakpoints)
+    x
+}
+
+setMethod("extractROWS", c("Rle", "RleNSBS"),
+    function(x, i)
+    {
+        rle <- i@subscript
+        .rep_times_Rle(extractROWS(x, runValue(rle)), runLength(rle))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other subsetting-related operations
 ###
 
@@ -482,21 +506,6 @@ rev.Rle <- function(x)
     x
 }
 setMethod("rev", "Rle", rev.Rle)
-
-### Simplified version of rep.int() for Rle objects. Handles only the case
-### where 'times' has the length of 'x'.
-.rep_times_Rle <- function(x, times)
-{
-    if (!is.numeric(times))
-        stop("invalid 'times' argument")
-    if (!is.integer(times))
-        times <- as.integer(times)
-    breakpoints <- end(x)
-    if (length(times) != last_or(breakpoints, 0L))
-        stop("invalid 'times' argument")
-    runLength(x) <- groupsum(times, breakpoints)
-    x
-}
 
 setMethod("rep.int", "Rle",
     function(x, times)
