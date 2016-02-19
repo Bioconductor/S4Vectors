@@ -53,19 +53,20 @@
 \alias{[<-,Rle-method}
 \alias{extractROWS,Rle,WindowNSBS-method}
 
-\alias{\%in\%,Rle,ANY-method}
+\alias{rev.Rle}
+\alias{rev,Rle-method}
+\alias{rep.int,Rle-method}
+\alias{rep,Rle-method}
+
 \alias{c,Rle-method}
 \alias{append,Rle,vector-method}
 \alias{append,vector,Rle-method}
+\alias{\%in\%,Rle,ANY-method}
 \alias{findRun}
 \alias{findRun,Rle-method}
 \alias{is.na,Rle-method}
 \alias{is.unsorted,Rle-method}
 \alias{match,Rle,ANY-method}
-\alias{rep,Rle-method}
-\alias{rep.int,Rle-method}
-\alias{rev.Rle}
-\alias{rev,Rle-method}
 \alias{show,Rle-method}
 \alias{showAsCell,Rle-method}
 \alias{order,Rle-method}

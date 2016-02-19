@@ -7,6 +7,12 @@
 ###
 
 
+last_or <- function(x, or)
+{
+    x_len <- length(x)
+    if (x_len != 0L) x[[x_len]] else or
+}
+
 sapply_NROW <- function(x)
 {
     if (!is.list(x))

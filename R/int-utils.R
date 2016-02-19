@@ -49,6 +49,20 @@ diffWithLast <- function(x, last)
   .Call2("Integer_diff_with_last", x, last, PACKAGE="S4Vectors")
 }
 
+### x: integer vector.
+### breakpoints: vector of positions on 'x' in increasing order.
+### Equivalent to (but 10x faster than):
+###     sum(relist(x, PartitioningByEnd(breakpoints)))
+### Also equivalent to (but 200x faster than):
+###     f <- rep(factor(seq_along(breakpoints)), diff(c(0L, breakpoints)))
+###     vapply(split(x, f, drop=FALSE), sum, integer(1), USE.NAMES=FALSE)
+groupsum <- function(x, breakpoints)
+{   
+    if (last_or(breakpoints, 0L) != length(x))
+        stop("invalid 'breakpoints' argument")
+    diffWithInitialZero(cumsum(x)[breakpoints])
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Fast ordering of an integer vector.

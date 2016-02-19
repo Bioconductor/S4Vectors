@@ -389,20 +389,6 @@ setReplaceMethod("[", "Rle",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience wrappers for common subsetting operations.
-###
-
-### S3/S4 combo for rev.Rle
-rev.Rle <- function(x)
-{
-    x@values <- rev(runValue(x))
-    x@lengths <- rev(runLength(x))
-    x
-}
-setMethod("rev", "Rle", rev.Rle)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting *by* an Rle object.
 ###
 ### See R/subsetting-utils.R for more information.
@@ -471,6 +457,99 @@ setMethod("anyDuplicated", "RleNSBS",
 setMethod("isStrictlySorted", "RleNSBS",
     function(x) isStrictlySorted(x@subscript)
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other subsetting-related operations
+###
+
+### S3/S4 combo for rev.Rle
+rev.Rle <- function(x)
+{
+    x@values <- rev(runValue(x))
+    x@lengths <- rev(runLength(x))
+    x
+}
+setMethod("rev", "Rle", rev.Rle)
+
+### Simplified version of rep.int() for Rle objects. Handles only the case
+### where 'times' has the length of 'x'.
+.rep_times_Rle <- function(x, times)
+{
+    if (!is.numeric(times))
+        stop("invalid 'times' argument")
+    if (!is.integer(times))
+        times <- as.integer(times)
+    breakpoints <- end(x)
+    if (length(times) != last_or(breakpoints, 0L))
+        stop("invalid 'times' argument")
+    runLength(x) <- groupsum(times, breakpoints)
+    x
+}
+
+setMethod("rep.int", "Rle",
+    function(x, times)
+    {
+        if (!is.numeric(times))
+            stop("invalid 'times' argument")
+        if (!is.integer(times))
+            times <- as.integer(times)
+        if (anyMissingOrOutside(times, 0L))
+            stop("invalid 'times' argument")
+
+        if (length(times) == 1L) {
+            ans <- Rle(rep.int(runValue(x), times),
+                       rep.int(runLength(x), times))
+            ans <- as(ans, class(x))  # so the function is an endomorphism
+        } else {
+            ans <- .rep_times_Rle(x, times)
+        }
+        ans
+    }
+)
+
+setMethod("rep", "Rle",
+          function(x, times, length.out, each)
+          {
+              usedEach <- FALSE
+              if (!missing(each) && length(each) > 0) {
+                  each <- as.integer(each[1L])
+                  if (!is.na(each)) {
+                      if (each < 0)
+                          stop("invalid 'each' argument")
+                      usedEach <- TRUE
+                      if (each == 0)
+                          x <- new(class(x), values = runValue(x)[0L])
+                      else
+                          x@lengths <- each[1L] * runLength(x)
+                  }
+              }
+              if (!missing(length.out) && length(length.out) > 0) {
+                  n <- length(x)
+                  length.out <- as.integer(length.out[1L])
+                  if (!is.na(length.out)) {
+                      if (length.out == 0) {
+                          x <- new(class(x), values = runValue(x)[0L])
+                      } else if (length.out < n) {
+                          x <- window(x, 1, length.out)
+                      } else if (length.out > n) {
+                          if (n == 0) {
+                              x <- Rle(rep(runValue(x), length.out=1),
+                                       length.out)
+                          } else {
+                              x <-
+                                window(rep.int(x, ceiling(length.out / n)),
+                                       1, length.out)
+                          }
+                      }
+                  }
+              } else if (!missing(times)) {
+                  if (usedEach && length(times) != 1)
+                      stop("invalid 'times' argument")
+                  x <- rep.int(x, times)
+              }
+              x
+          })
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -568,68 +647,6 @@ setMethod("match", c("Rle", "Rle"),
         Rle(m, x_run_lens)
     }
 )
-
-setMethod("rep", "Rle",
-          function(x, times, length.out, each)
-          {
-              usedEach <- FALSE
-              if (!missing(each) && length(each) > 0) {
-                  each <- as.integer(each[1L])
-                  if (!is.na(each)) {
-                      if (each < 0)
-                          stop("invalid 'each' argument")
-                      usedEach <- TRUE
-                      if (each == 0)
-                          x <- new(class(x), values = runValue(x)[0L])
-                      else
-                          x@lengths <- each[1L] * runLength(x)
-                  }
-              }
-              if (!missing(length.out) && length(length.out) > 0) {
-                  n <- length(x)
-                  length.out <- as.integer(length.out[1L])
-                  if (!is.na(length.out)) {
-                      if (length.out == 0) {
-                          x <- new(class(x), values = runValue(x)[0L])
-                      } else if (length.out < n) {
-                          x <- window(x, 1, length.out)
-                      } else if (length.out > n) {
-                          if (n == 0) {
-                              x <- Rle(rep(runValue(x), length.out=1),
-                                       length.out)
-                          } else {
-                              x <-
-                                window(rep.int(x, ceiling(length.out / n)),
-                                       1, length.out)
-                          }
-                      }
-                  }
-              } else if (!missing(times)) {
-                  if (usedEach && length(times) != 1)
-                      stop("invalid 'times' argument")
-                  x <- rep.int(x, times)
-              }
-              x
-          })
-
-setMethod("rep.int", "Rle",
-          function(x, times)
-          {
-              n <- length(x)
-              if (!is.integer(times))
-                  times <- as.integer(times)
-              if ((length(times) > 1 && length(times) < n) ||
-                  anyMissingOrOutside(times, 0L))
-                  stop("invalid 'times' argument")
-              if (length(times) == n) {
-                  runLength(x) <- diffWithInitialZero(cumsum(times)[end(x)])
-              } else if (length(times) == 1) {
-                  times <- as.vector(times)
-                  x <- Rle(rep.int(runValue(x), times),
-                           rep.int(runLength(x), times))
-              }
-              x
-          })
 
 ### FIXME: Remove in R 3.3
 setMethod("order", "Rle",
