@@ -468,17 +468,19 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
 ### the "revmap" method for SortedByQueryHits objects.
 ### Note that:
 ###   - If 'x' is a valid SortedByQueryHits object (i.e. the hits in it are
-###     sorted by query), then 'revmap_SortedByQueryHits(x)' returns a
-###     SortedByQueryHits object where hits are "fully sorted" i.e. sorted by
-###     query first and then by subject.
-###   - Because revmap_SortedByQueryHits() reorders the hits by query, doing
-###     'revmap_SortedByQueryHits(revmap_SortedByQueryHits(x))' brings back 'x'
-###     but with the hits in it now "fully sorted".
-revmap_SortedByQueryHits <- function(x)
-    Hits(x@subjectHits, x@queryHits, x@subjectLength, x@queryLength)
+###     sorted by query), then 'revmap_Hits(x)' returns a SortedByQueryHits
+###     object where hits are "fully sorted" i.e. sorted by query first and
+###     then by subject.
+###   - Because revmap_Hits() reorders the hits by query, doing
+###     'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits in it
+###     now "fully sorted".
+revmap_Hits <- function(x)
+    new_Hits(class(x), subjectHits(x), queryHits(x),
+                       subjectLength(x), queryLength(x),
+                       mcols(x))
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
-setMethod("t", "SortedByQueryHits", revmap_SortedByQueryHits)
+setMethod("t", "Hits", revmap_Hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

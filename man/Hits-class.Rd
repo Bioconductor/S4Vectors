@@ -41,7 +41,7 @@
 \alias{c,Hits-method}
 
 % other transformations
-\alias{t,SortedByQueryHits-method}
+\alias{t,Hits-method}
 \alias{remapHits}
 
 % auto-hits
