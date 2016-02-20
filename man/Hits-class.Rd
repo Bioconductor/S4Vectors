@@ -62,8 +62,8 @@
 \usage{
 ## Constructor function
 Hits(queryHits=integer(0), subjectHits=integer(0),
-     queryLength=0L, subjectLength=0L, sort.by.query=TRUE,
-     ...)
+     queryLength=0L, subjectLength=0L,
+     ..., sort.by.query=TRUE)
 }
 
 \arguments{
@@ -75,15 +75,15 @@ Hits(queryHits=integer(0), subjectHits=integer(0),
   \item{queryLength, subjectLength}{
     2 single non-negative integers
   }
-  \item{sort.by.query}{
-    Should the hits in the returned object be sorted by query? If yes, then
-    a SortedByQueryHits instance is returned (SortedByQueryHits is a subclass
-    of Hits).
-  }
   \item{...}{
     Metadata columns to set on the Hits object. All the metadata columns must
     be vector-like objects of the same length as \code{queryHits} and
     \code{subjectHits}.
+  }
+  \item{sort.by.query}{
+    Should the hits in the returned object be sorted by query? If yes, then
+    a SortedByQueryHits instance is returned (SortedByQueryHits is a subclass
+    of Hits).
   }
 }
 

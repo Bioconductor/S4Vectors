@@ -212,8 +212,8 @@ new_Hits <- function(Class,
 ### default.
 ### TODO: Change the default for 'sort.by.query' from TRUE to FALSE.
 Hits <- function(queryHits=integer(0), subjectHits=integer(0),
-                 queryLength=0L, subjectLength=0L, sort.by.query=TRUE,
-                 ...)
+                 queryLength=0L, subjectLength=0L,
+                 ..., sort.by.query=TRUE)
 {
     if (!isTRUEorFALSE(sort.by.query))
         stop("'sort.by.query' must be TRUE or FALSE")
