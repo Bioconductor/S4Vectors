@@ -176,8 +176,8 @@ setGeneric("countMatches", signature=c("x", "table"),
         standardGeneric("countMatches")
 )
 
-### Problem: using transpose=TRUE generates an invalid Hits object (hits are
-### not ordered):
+### Problem: using transpose=TRUE generates an invalid SortedByQueryHits
+### object (hits are not sorted by query):
 ###   > S4Vectors:::.findAllMatchesInSmallTable(1:6, c(7:5, 4:5),
 ###                                             transpose=TRUE)
 ###   Hits of length 4

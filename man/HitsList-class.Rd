@@ -5,6 +5,10 @@
 \alias{HitsList-class}
 \alias{HitsList}
 
+\alias{class:SortedByQueryHitsList}
+\alias{SortedByQueryHitsList-class}
+\alias{SortedByQueryHitsList}
+
 % accessors
 \alias{space}
 \alias{space,HitsList-method}
@@ -12,6 +16,7 @@
 \alias{queryHits,HitsList-method}
 
 \alias{relistToClass,Hits-method}
+\alias{relistToClass,SortedByQueryHits-method}
 
 % coercion
 \alias{as.matrix,HitsList-method}

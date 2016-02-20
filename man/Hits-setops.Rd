@@ -4,7 +4,9 @@
 \alias{setops-methods}
 
 \alias{union,Hits,Hits-method}
+
 \alias{intersect,Hits,Hits-method}
+
 \alias{setdiff,Hits,Hits-method}
 
 \title{Set operations on Hits objects}

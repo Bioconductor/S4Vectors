@@ -8,12 +8,13 @@
  * C-level constructors
  */
 
-static SEXP new_Hits0(SEXP queryHits, SEXP subjectHits,
+static SEXP new_Hits0(const char *classname,
+		      SEXP queryHits, SEXP subjectHits,
 		      int q_len, int s_len)
 {
 	SEXP classdef, ans, ans_queryLength, ans_subjectLength;
 
-	PROTECT(classdef = MAKE_CLASS("Hits"));
+	PROTECT(classdef = MAKE_CLASS(classname));
 	PROTECT(ans = NEW_OBJECT(classdef));
 
 	SET_SLOT(ans, install("queryHits"), queryHits);
@@ -31,7 +32,8 @@ static SEXP new_Hits0(SEXP queryHits, SEXP subjectHits,
 	return ans;
 }
 
-static SEXP new_Hits1(const int *q_hits, const int *s_hits, int nhit,
+static SEXP new_Hits1(const char *classname,
+		      const int *q_hits, const int *s_hits, int nhit,
 		      int q_len, int s_len)
 {
 	SEXP ans_queryHits, ans_subjectHits, ans;
@@ -42,7 +44,8 @@ static SEXP new_Hits1(const int *q_hits, const int *s_hits, int nhit,
 	n = sizeof(int) * nhit;
 	memcpy(INTEGER(ans_queryHits), q_hits, n);
 	memcpy(INTEGER(ans_subjectHits), s_hits, n);
-	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
+	ans = new_Hits0(classname, ans_queryHits, ans_subjectHits,
+				   q_len, s_len);
 	UNPROTECT(2);
 	return ans;
 }
@@ -122,7 +125,8 @@ SEXP _new_Hits(int *q_hits, const int *s_hits, int nhit,
 	int *qh_out, *sh_out;
 
 	if (already_sorted || nhit <= 1 || q_len <= 1)
-		return new_Hits1(q_hits, s_hits, nhit, q_len, s_len);
+		return new_Hits1("SortedByQueryHits", q_hits, s_hits, nhit,
+						      q_len, s_len);
 	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
 	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
 	qh_out = INTEGER(ans_queryHits);
@@ -131,12 +135,13 @@ SEXP _new_Hits(int *q_hits, const int *s_hits, int nhit,
 		tsort_hits(q_hits, s_hits, qh_out, sh_out, nhit, q_len, NULL);
 	else
 		qsort_hits(q_hits, s_hits, qh_out, sh_out, nhit, NULL);
-	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
+	ans = new_Hits0("SortedByQueryHits", ans_queryHits, ans_subjectHits,
+					     q_len, s_len);
 	UNPROTECT(2);
 	return ans;
 }
 
-static SEXP new_Hits_with_revmap(
+static SEXP new_Hits_with_revmap(const char *classname,
 		const int *q_hits, const int *s_hits, int nhit,
 		int q_len, int s_len, int *revmap)
 {
@@ -160,7 +165,8 @@ static SEXP new_Hits_with_revmap(
 		qsort_hits((int *) q_hits, s_hits, qh_out, sh_out, nhit,
 			   revmap);
 	}
-	ans = new_Hits0(ans_queryHits, ans_subjectHits, q_len, s_len);
+	ans = new_Hits0(classname, ans_queryHits, ans_subjectHits,
+				   q_len, s_len);
 	UNPROTECT(2);
 	return ans;
 }
@@ -202,13 +208,15 @@ static int check_hits(const int *q_hits, const int *s_hits, int nhit,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len,
+SEXP Hits_new(SEXP Class, SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len,
 	      SEXP revmap_envir)
 {
+	const char *classname;
 	int nhit, q_len0, s_len0, already_sorted, *revmap_p;
 	const int *q_hits_p, *s_hits_p;
 	SEXP ans, revmap, symbol;
 
+	classname = CHAR(STRING_ELT(Class, 0));
 	nhit = _check_integer_pairs(q_hits, s_hits,
 				    &q_hits_p, &s_hits_p,
 				    "queryHits", "subjectHits");
@@ -216,14 +224,16 @@ SEXP Hits_new(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len,
 	s_len0 = get_q_len_or_s_len(s_len, "subjectLength");
 	already_sorted = check_hits(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
 	if (already_sorted)
-		return new_Hits1(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
+		return new_Hits1(classname, q_hits_p, s_hits_p, nhit,
+					    q_len0, s_len0);
 	if (revmap_envir == R_NilValue) {
 		revmap_p = NULL;
 	} else {
 		PROTECT(revmap = NEW_INTEGER(nhit));
 		revmap_p = INTEGER(revmap);
 	}
-	PROTECT(ans = new_Hits_with_revmap(q_hits_p, s_hits_p, nhit,
+	PROTECT(ans = new_Hits_with_revmap(classname,
+					   q_hits_p, s_hits_p, nhit,
 					   q_len0, s_len0, revmap_p));
 	if (revmap_envir == R_NilValue) {
 		UNPROTECT(1);
@@ -357,7 +367,8 @@ SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 		}
 		iofeig += gs;
 	}
-	ans = new_Hits0(ans_q_hits, ans_s_hits, iofeig, iofeig);
+	ans = new_Hits0("SortedByQueryHits", ans_q_hits, ans_s_hits,
+					     iofeig, iofeig);
 	UNPROTECT(2);
 	return ans;
 }

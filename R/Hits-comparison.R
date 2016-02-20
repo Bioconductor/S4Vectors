@@ -22,7 +22,7 @@ setMethod("pcompare", c("Hits", "Hits"),
     {
         if (!.compatible_Hits(x, y))
             stop("'x' and 'y' are incompatible Hits objects ",
-                 "by subject and/or query length")
+                 "by query and/or subject length")
         pcompareIntegerPairs(queryHits(x), subjectHits(x),
                              queryHits(y), subjectHits(y))
     }

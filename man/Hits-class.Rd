@@ -3,6 +3,13 @@
 
 \alias{class:Hits}
 \alias{Hits-class}
+\alias{Hits}
+
+\alias{class:SortedByQueryHits}
+\alias{SortedByQueryHits-class}
+\alias{SortedByQueryHits}
+
+\alias{parallelSlotNames,Hits-method}
 
 % accessors
 \alias{queryHits}
@@ -18,21 +25,23 @@
 \alias{countSubjectHits}
 \alias{countSubjectHits,Hits-method}
 
-% constructor
-\alias{Hits}
-
 % coercion
+\alias{coerce,Hits,SortedByQueryHits-method}
 \alias{as.matrix,Hits-method}
 \alias{as.table,Hits-method}
 
 % subsetting
-\alias{extractROWS,Hits-method}
+\alias{extractROWS,classNameForDisplay,ANY-method}
 
 % displaying
+\alias{classNameForDisplay,Hits-method}
 \alias{show,Hits-method}
 
+% commbining
+\alias{c,Hits-method}
+
 % other transformations
-\alias{t,Hits-method}
+\alias{t,SortedByQueryHits-method}
 \alias{remapHits}
 
 % auto-hits
@@ -48,6 +57,34 @@
   For example, the \code{\link[IRanges]{findOverlaps}} function, defined
   and documented in the \pkg{IRanges} package, returns the hits between
   the \code{query} and \code{subject} arguments in a \code{Hits} object.
+}
+
+\usage{
+## Constructor function
+Hits(queryHits=integer(0), subjectHits=integer(0),
+     queryLength=0L, subjectLength=0L, sort.by.query=TRUE,
+     ...)
+}
+
+\arguments{
+  \item{queryHits, subjectHits}{
+    2 integer vectors of the same length.
+    The values in \code{queryHits} must be >= 1 and <= \code{queryLength}.
+    The values in \code{subjectHits} must be >= 1 and <= \code{subjectLength}.
+  }
+  \item{queryLength, subjectLength}{
+    2 single non-negative integers
+  }
+  \item{sort.by.query}{
+    Should the hits in the returned object be sorted by query? If yes, then
+    a SortedByQueryHits instance is returned (SortedByQueryHits is a subclass
+    of Hits).
+  }
+  \item{...}{
+    Metadata columns to set on the Hits object. All the metadata columns must
+    be vector-like objects of the same length as \code{queryHits} and
+    \code{subjectHits}.
+  }
 }
 
 \details{

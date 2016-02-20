@@ -143,7 +143,12 @@ setMethod("anyNA", "Vector", function(x) any(is.na(x)))
     for (slotname in x_pslotnames) {
         tmp <- slot(x, slotname)
         if (!(is.null(tmp) || NROW(tmp) == x_len)) {
-            msg <- c("'x@", slotname, "' is not parallel to 'x'")
+            if (slotname == "elementMetadata") {
+                what <- "mcols(x)"
+            } else {
+                what <- paste0("x@", slotname)
+            }
+            msg <- c("'", what, "' is not parallel to 'x'")
             return(paste(msg, collapse=""))
         }
     }

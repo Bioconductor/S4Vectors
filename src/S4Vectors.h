@@ -673,6 +673,7 @@ SEXP _new_Hits(
 );
 
 SEXP Hits_new(
+	SEXP Class,
 	SEXP q_hits,
 	SEXP s_hits,
 	SEXP q_len,

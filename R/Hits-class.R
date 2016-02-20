@@ -18,6 +18,10 @@ setClass("Hits",
     )
 )
 
+### Hits objects where the hits are sorted by query. Coercion from
+### SortedByQueryHits to List takes advantage of this and is very fast.
+setClass("SortedByQueryHits", contains="Hits")
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### parallelSlotNames()
@@ -73,124 +77,173 @@ setMethod("countSubjectHits", "Hits", .count_subject_hits)
 ### Validity
 ###
 
-.valid.Hits.queryLength <- function(x)
+.valid.Hits.queryLength_or_subjectLength <- function(q_len, what)
 {
-    x_q_len <- queryLength(x)
-    if (!isSingleInteger(x_q_len) || x_q_len < 0L)
-        return("'queryLength(x)' must be a single non-negative integer")
-    if (!is.null(attributes(x_q_len)))
-        return("'queryLength(x)' must be a single integer with no attributes")
-    NULL
-}
-
-.valid.Hits.subjectLength <- function(x)
-{
-    x_s_len <- subjectLength(x)
-    if (!isSingleInteger(x_s_len) || x_s_len < 0L) 
-        return("'subjectLength(x)' must be a single non-negative integer")
-    if (!is.null(attributes(x_s_len)))
-        return("'subjectLength(x)' must be a single integer with no attributes")
+    if (!isSingleInteger(q_len) || q_len < 0L) {
+        msg <- wmsg("'", what, "Length(x)' must be a single non-negative ",
+                    "integer")
+        return(msg)
+    }
+    if (!is.null(attributes(q_len))) {
+        msg <- wmsg("'", what, "Length(x)' must be a single integer ",
+                    "with no attributes")
+        return(msg)
+    }
     NULL
 }
 
 .valid.Hits.queryHits_or_subjectHits <- function(q_hits, q_len, what)
 {
     if (!(is.integer(q_hits) && is.null(attributes(q_hits)))) {
-        msg <- c("'", what, "Hits(x)' must be an integer vector ",
-                 "with no attributes")
-        return(paste(msg, collapse=""))
+        msg <- wmsg("'", what, "Hits(x)' must be an integer vector ",
+                    "with no attributes")
+        return(msg)
     }
     if (anyMissingOrOutside(q_hits, 1L, q_len)) {
-        msg <- c("'", what, "Hits(x)' must contain non-NA values ",
-                 ">= 1 and <= '", what, "Length(x)'")
-        return(paste(msg, collapse=""))
+        msg <- wmsg("'", what, "Hits(x)' must contain non-NA values ",
+                    ">= 1 and <= '", what, "Length(x)'")
+        return(msg)
     }
     NULL
-}
-
-### Coercion from Hits to List is very fast because it assumes that the hits
-### are already sorted by query. So for a Hits object to be valid we require
-### that the hits in it are already sorted by query.
-.valid.Hits.queryHits_ordering <- function(q_hits)
-{
-    if (isNotSorted(q_hits))
-        return("'queryHits(x)' must be sorted")
-    NULL
-}
-
-.valid.Hits.queryHits <- function(x)
-{
-    x_q_hits <- queryHits(x)
-    x_q_len <- queryLength(x)
-    c(.valid.Hits.queryHits_or_subjectHits(x_q_hits, x_q_len, "query"),
-      .valid.Hits.queryHits_ordering(x_q_hits))
-}
-
-.valid.Hits.subjectHits <- function(x)
-{
-    x_s_hits <- subjectHits(x)
-    x_s_len <- subjectLength(x)
-    .valid.Hits.queryHits_or_subjectHits(x_s_hits, x_s_len, "subject")
 }
 
 .valid.Hits <- function(x)
 {
-    c(.valid.Hits.queryLength(x),
-      .valid.Hits.subjectLength(x),
-      .valid.Hits.queryHits(x),
-      .valid.Hits.subjectHits(x))
+    q_len <- queryLength(x)
+    s_len <- subjectLength(x)
+    c(.valid.Hits.queryLength_or_subjectLength(q_len, "query"),
+      .valid.Hits.queryLength_or_subjectLength(s_len, "subject"),
+      .valid.Hits.queryHits_or_subjectHits(queryHits(x), q_len, "query"),
+      .valid.Hits.queryHits_or_subjectHits(subjectHits(x), s_len, "subject"))
 }
 
 setValidity2("Hits", .valid.Hits)
+
+.valid.SortedByQueryHits <- function(x)
+{
+    if (isNotSorted(queryHits(x)))
+        return("'queryHits(x)' must be sorted")
+    NULL
+}
+
+setValidity2("SortedByQueryHits", .valid.SortedByQueryHits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor
 ###
 
-Hits <- function(queryHits=integer(0), subjectHits=integer(0),
-                 queryLength=0L, subjectLength=0L,
-                 ...)
+### Very low-level constructor. Doesn't try to sort the hits by query.
+.new_Hits <- function(Class, queryHits, subjectHits,
+                             queryLength, subjectLength,
+                             mcols)
 {
+    new2(Class, queryHits=queryHits,
+                subjectHits=subjectHits,
+                queryLength=queryLength,
+                subjectLength=subjectLength,
+                elementMetadata=mcols,
+                check=TRUE)
+}
+
+### Low-level constructor. Sort the hits by query if Class extends
+### SortedByQueryHits.
+new_Hits <- function(Class,
+                     queryHits=integer(0), subjectHits=integer(0),
+                     queryLength=0L, subjectLength=0L,
+                     mcols=NULL)
+{
+    if (!isSingleString(Class))
+        stop("'Class' must be a single character string")
+    if (!extends(Class, "Hits"))
+        stop("'Class' must be the name of a class that extends Hits")
+
     if (!(is.numeric(queryHits) && is.numeric(subjectHits)))
         stop("'queryHits' and 'subjectHits' must be integer vectors")
     if (!is.integer(queryHits))
         queryHits <- as.integer(queryHits)
     if (!is.integer(subjectHits))
         subjectHits <- as.integer(subjectHits)
+
     if (!(isSingleNumber(queryLength) && isSingleNumber(subjectLength)))
         stop("'queryLength' and 'subjectLength' must be single integers")
     if (!is.integer(queryLength))
         queryLength <- as.integer(queryLength)
     if (!is.integer(subjectLength))
         subjectLength <- as.integer(subjectLength)
-    ans_mcols <- DataFrame(...)
-    if (ncol(ans_mcols) != 0L) {
+
+    if (!(is.null(mcols) || is(mcols, "DataFrame")))
+        stop("'mcols' must be NULL or a DataFrame object")
+
+    if (!extends(Class, "SortedByQueryHits")) {
+        ## No need to sort the hits by query.
+        ans <- .new_Hits(Class, queryHits, subjectHits,
+                                queryLength, subjectLength,
+                                mcols)
+        return(ans)
+    }
+
+    ## Sort the hits by query.
+    if (!is.null(mcols)) {
         revmap_envir <- new.env(parent=emptyenv())
     } else {
         revmap_envir <- NULL
     }
-    ans <- .Call2("Hits_new", queryHits, subjectHits,
+    ans <- .Call2("Hits_new", Class,
+                              queryHits, subjectHits,
                               queryLength, subjectLength,
                               revmap_envir,
                               PACKAGE="S4Vectors")
-    if (ncol(ans_mcols) != 0L) {
-        if (nrow(ans_mcols) != length(ans))
+    if (!is.null(mcols)) {
+        if (nrow(mcols) != length(ans))
             stop("length of supplied metadata columns ",
                  "must equal number of hits")
         if (exists("revmap", envir=revmap_envir)) {
             revmap <- get("revmap", envir=revmap_envir)
-            ans_mcols <- ans_mcols[revmap, , drop=FALSE]
+            mcols <- mcols[revmap, , drop=FALSE]
         }
-        mcols(ans) <- ans_mcols
+        mcols(ans) <- mcols
     }
     ans
+}
+
+### High-level constructor.
+### This constructor currently returns a SortedByQueryHits instance by
+### default.
+### TODO: Change the default for 'sort.by.query' from TRUE to FALSE.
+Hits <- function(queryHits=integer(0), subjectHits=integer(0),
+                 queryLength=0L, subjectLength=0L, sort.by.query=TRUE,
+                 ...)
+{
+    if (!isTRUEorFALSE(sort.by.query))
+        stop("'sort.by.query' must be TRUE or FALSE")
+    if (sort.by.query) {
+        Class <- "SortedByQueryHits"
+    } else {
+        Class <- "Hits"
+    }
+    if (length(list(...)) == 0L) {
+        mcols <- NULL
+    } else {
+        mcols <- DataFrame(..., check.names=FALSE)
+    }
+    new_Hits(Class, queryHits, subjectHits, queryLength, subjectLength, mcols)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
+
+.from_Hits_to_SortedByQueryHits <- function(from)
+{
+    new_Hits("SortedByQueryHits", queryHits(from), subjectHits(from),
+                                  queryLength(from), subjectLength(from),
+                                  mcols(from))
+}
+
+    
+setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
 
 setMethod("as.matrix", "Hits",
     function(x) cbind(queryHits=queryHits(x), subjectHits=subjectHits(x))
@@ -205,7 +258,7 @@ setMethod("as.table", "Hits", .count_query_hits)
 
 ### The "extractROWS" method for Vector objects doesn't test the validity of
 ### the result so we override it.
-setMethod("extractROWS", "Hits",
+setMethod("extractROWS", "SortedByQueryHits",
     function(x, i)
     {
         ans <- callNextMethod()
@@ -224,6 +277,8 @@ setMethod("extractROWS", "Hits",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Displaying
 ###
+
+setMethod("classNameForDisplay", "Hits", function(x) "Hits")
 
 .makeNakedMatFromHits <- function(x)
 {
@@ -247,7 +302,7 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
     x_len <- length(x)
     x_mcols <- mcols(x)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(x_class, " object with ",
+    cat(classNameForDisplay(x), " object with ",
         x_len, " hit", ifelse(x_len == 1L, "", "s"),
         " and ",
         x_nmc, " metadata column", ifelse(x_nmc == 1L, "", "s"),
@@ -284,6 +339,109 @@ setMethod("show", "Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining
+###
+### Note that supporting "extractROWS" and "c" makes "replaceROWS" (and thus
+### "[<-") work out-of-the-box!
+###
+
+### 'Class' must be "Hits" or the name of a concrete subclass of Hits.
+### 'objects' must be a list of Hits objects.
+### Returns an instance of class 'Class'.
+combine_Hits_objects <- function(Class, objects,
+                                 use.names=TRUE, ignore.mcols=FALSE)
+{
+    if (!isSingleString(Class))
+        stop("'Class' must be a single character string")
+    if (!extends(Class, "Hits"))
+        stop("'Class' must be the name of a class that extends Hits")
+    if (!is.list(objects))
+        stop("'objects' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    ### TODO: Support 'use.names=TRUE'.
+    if (use.names)
+        stop("'use.names=TRUE' is not supported yet")
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+
+    if (length(objects) != 0L) {
+        ## TODO: Implement (in C) fast 'elementIsNull(objects)' in S4Vectors
+        ## that does 'sapply(objects, is.null, USE.NAMES=FALSE)', and use it
+        ## here.
+        null_idx <- which(sapply(objects, is.null, USE.NAMES=FALSE))
+        if (length(null_idx) != 0L)
+            objects <- objects[-null_idx]
+    }
+    if (length(objects) == 0L)
+        return(new(Class))
+
+    ## TODO: Implement (in C) fast 'elementIs(objects, class)' in S4Vectors
+    ## that does 'sapply(objects, is, class, USE.NAMES=FALSE)', and use it
+    ## here. 'elementIs(objects, "NULL")' should work and be equivalent to
+    ## 'elementIsNull(objects)'.
+    if (!all(sapply(objects, is, Class, USE.NAMES=FALSE)))
+        stop("the objects to combine must be ", Class, " objects (or NULLs)")
+    objects_names <- names(objects)
+    names(objects) <- NULL  # so lapply(objects, ...) below returns an
+                            # unnamed list
+
+    ## Combine "queryLength" slots.
+    queryLength_slots <- lapply(objects, function(x) x@queryLength)
+    ans_queryLength <- unlist(queryLength_slots, use.names=FALSE)
+
+    ## Combine "subjectLength" slots.
+    subjectLength_slots <- lapply(objects, function(x) x@subjectLength)
+    ans_subjectLength <- unlist(subjectLength_slots, use.names=FALSE)
+
+    if (!(all(ans_queryLength == ans_queryLength[[1L]]) &&
+          all(ans_subjectLength == ans_subjectLength[[1L]])))
+        stop(wmsg("the objects to combine are incompatible Hits objects ",
+                  "by query and/or subject length"))
+    ans_queryLength <- ans_queryLength[[1L]]
+    ans_subjectLength <- ans_subjectLength[[1L]]
+
+    ## Combine "queryHits" slots.
+    queryHits_slots <- lapply(objects, function(x) x@queryHits)
+    ans_queryHits <- unlist(queryHits_slots, use.names=FALSE)
+
+    ## Combine "subjectHits" slots.
+    subjectHits_slots <- lapply(objects, function(x) x@subjectHits)
+    ans_subjectHits <- unlist(subjectHits_slots, use.names=FALSE)
+
+    ## Combine "mcols" slots.
+    if (ignore.mcols) {
+        ans_mcols <- NULL
+    } else {
+        ans_mcols <- do.call(S4Vectors:::rbind_mcols, objects)
+    }
+
+    ## Make 'ans' and return it.
+    .new_Hits(Class, ans_queryHits, ans_subjectHits,
+                     ans_queryLength, ans_subjectLength,
+                     ans_mcols)
+}
+
+setMethod("c", "Hits",
+    function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop("\"c\" method for Hits objects ",
+                 "does not support the 'recursive' argument")
+        if (missing(x)) {
+            objects <- list(...)
+            x <- objects[[1L]]
+        } else {
+            objects <- list(x, ...)
+        }
+        combine_Hits_objects(class(x), objects,
+                             use.names=FALSE,
+                             ignore.mcols=ignore.mcols)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selectHits()
 ###
 
@@ -307,19 +465,20 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
 
 ### NOT exported (but used in IRanges).
 ### TODO: Move revmap() generic from AnnotationDbi to S4Vectors, and make this
-### the "revmap" method for Hits objects.
+### the "revmap" method for SortedByQueryHits objects.
 ### Note that:
-###   - If 'x' is a valid Hits object (i.e. the hits in it are sorted by
-###     query), then 'Hits_revmap(x)' returns a Hits object where hits are
-###     "fully sorted" i.e. sorted by query first and then by subject.
-###   - Because Hits_revmap() reorders the hits by query, doing
-###     'Hits_revmap(Hits_revmap(x))' brings back 'x' but with the hits in it
-###     now "fully sorted".
-Hits_revmap <- function(x)
+###   - If 'x' is a valid SortedByQueryHits object (i.e. the hits in it are
+###     sorted by query), then 'revmap_SortedByQueryHits(x)' returns a
+###     SortedByQueryHits object where hits are "fully sorted" i.e. sorted by
+###     query first and then by subject.
+###   - Because revmap_SortedByQueryHits() reorders the hits by query, doing
+###     'revmap_SortedByQueryHits(revmap_SortedByQueryHits(x))' brings back 'x'
+###     but with the hits in it now "fully sorted".
+revmap_SortedByQueryHits <- function(x)
     Hits(x@subjectHits, x@queryHits, x@subjectLength, x@queryLength)
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
-setMethod("t", "Hits", Hits_revmap)
+setMethod("t", "SortedByQueryHits", revmap_SortedByQueryHits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -368,8 +527,9 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
                          subject.map=NULL, new.subjectLength=NA,
                          with.counts=FALSE)
 {
-    if (!is(x, "Hits"))
-        stop("'x' must be a Hits object")
+    if (!is(x, "SortedByQueryHits"))
+        stop(wmsg("remapHits() only works on a SortedByQueryHits object ",
+                  "at the moment"))
     query.map <- .normargMap(query.map, "query", queryLength(x))
     new.queryLength <- .normargNewLength(new.queryLength,
                                          "query", query.map)

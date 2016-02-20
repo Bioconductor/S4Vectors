@@ -10,7 +10,12 @@ setClass("HitsList",
     representation(
         subjectOffsets="integer"
     ),
-    prototype(elementType="Hits")
+    prototype=prototype(elementType="Hits")
+)
+
+setClass("SortedByQueryHitsList",
+    contains="HitsList",
+    prototype=prototype(elementType="SortedByQueryHits")
 )
 
 
@@ -42,6 +47,10 @@ setMethod("queryHits", "HitsList", function(x) {
 ### Constructor
 ###
 
+### This constructor always returns a SortedByQueryHitsList instance at the
+### moment.
+### TODO: Maybe add the 'sort.by.query' argument to let the user choose
+### between getting a HitsList or SortedByQueryHitsList instance.
 HitsList <- function(list_of_hits, subject)
 {
   subjectOffsets <- c(0L, head(cumsum(sapply(subject, length)), -1))
@@ -49,7 +58,7 @@ HitsList <- function(list_of_hits, subject)
   if (!is.null(names(list_of_hits)) && !is.null(names(subject)))
     subjectToQuery <- match(names(list_of_hits), names(subject))
   subjectOffsets <- subjectOffsets[subjectToQuery]
-  new_SimpleList_from_list("HitsList", list_of_hits,
+  new_SimpleList_from_list("SortedByQueryHitsList", list_of_hits,
                            subjectOffsets = subjectOffsets)
 }
 
@@ -58,7 +67,11 @@ HitsList <- function(list_of_hits, subject)
 ### Going from Hits to HitsList with extractList() and family.
 ###
 
-setMethod("relistToClass", "Hits", function(x) "HitsList")
+setMethod("relistToClass", "Hits",
+    function(x) "HitsList")
+
+setMethod("relistToClass", "SortedByQueryHits",
+    function(x) "SortedByQueryHitsList")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

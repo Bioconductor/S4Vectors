@@ -20,11 +20,11 @@ exportClasses(
     NSBS,
     Annotated,
     DataTableORNULL, Vector,
-    Hits,
+    Hits, SortedByQueryHits,
     Rle,
     List,
     SimpleList,
-    HitsList,
+    HitsList, SortedByQueryHitsList,
     DataFrame,
     expressionORfunction, FilterRules, FilterMatrix,
     Pairs
