@@ -25,6 +25,13 @@
 \alias{countRnodeHits}
 \alias{countRnodeHits,Hits-method}
 
+\alias{queryHits}
+\alias{subjectHits}
+\alias{queryLength}
+\alias{subjectLength}
+\alias{countQueryHits}
+\alias{countSubjectHits}
+
 % updateObject
 \alias{updateObject,Hits-method}
 
@@ -102,6 +109,16 @@ Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
     \item{}{\code{countRnodeHits(x)}: Counts the number of hits for
       each right node, returning an integer vector.
     }
+  }
+
+  The following accessors are just aliases for the above accessors:
+  \describe{
+    \item{}{\code{queryHits(x)}: alias for \code{from(x)}.
+    \item{}{\code{subjectHits(x)}: alias for \code{to(x)}.
+    \item{}{\code{queryLength(x)}: alias for \code{nLnode(x)}.
+    \item{}{\code{subjectLength(x)}: alias for \code{nRnode(x)}.
+    \item{}{\code{countQueryHits(x)}: alias for \code{countLnodeHits(x)}.
+    \item{}{\code{countSubjectHits(x)}: alias for \code{countRnodeHits(x)}.
   }
 }
 
