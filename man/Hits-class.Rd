@@ -62,7 +62,7 @@
 
 \description{
   The Hits class is a container for representing a set of hits between
-  a set of left nodes and a set of right nodes.
+  a set of \emph{left nodes} and a set of \emph{right nodes}.
   Note that only the hits are stored in the object. No information about
   the left or right nodes is stored, except their number.
 
@@ -84,7 +84,7 @@ Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
     The values in \code{to} must be >= 1 and <= \code{nRnode}.
   }
   \item{nLnode, nRnode}{
-    2 single non-negative integers
+    Number of left and right nodes.
   }
   \item{...}{
     Metadata columns to set on the Hits object. All the metadata columns must
