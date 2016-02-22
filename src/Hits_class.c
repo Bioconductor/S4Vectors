@@ -9,23 +9,23 @@
  */
 
 static SEXP new_Hits0(const char *classname,
-		      SEXP queryHits, SEXP subjectHits,
-		      int q_len, int s_len)
+		      SEXP from, SEXP to,
+		      int nLnode, int nRnode)
 {
-	SEXP classdef, ans, ans_queryLength, ans_subjectLength;
+	SEXP classdef, ans, ans_nLnode, ans_nRnode;
 
 	PROTECT(classdef = MAKE_CLASS(classname));
 	PROTECT(ans = NEW_OBJECT(classdef));
 
-	SET_SLOT(ans, install("queryHits"), queryHits);
-	SET_SLOT(ans, install("subjectHits"), subjectHits);
+	SET_SLOT(ans, install("from"), from);
+	SET_SLOT(ans, install("to"), to);
 
-	PROTECT(ans_queryLength = ScalarInteger(q_len));
-	SET_SLOT(ans, install("queryLength"), ans_queryLength);
+	PROTECT(ans_nLnode = ScalarInteger(nLnode));
+	SET_SLOT(ans, install("nLnode"), ans_nLnode);
 	UNPROTECT(1);
 
-	PROTECT(ans_subjectLength = ScalarInteger(s_len));
-	SET_SLOT(ans, install("subjectLength"), ans_subjectLength);
+	PROTECT(ans_nRnode = ScalarInteger(nRnode));
+	SET_SLOT(ans, install("nRnode"), ans_nRnode);
 	UNPROTECT(1);
 
 	UNPROTECT(2);
@@ -33,19 +33,19 @@ static SEXP new_Hits0(const char *classname,
 }
 
 static SEXP new_Hits1(const char *classname,
-		      const int *q_hits, const int *s_hits, int nhit,
-		      int q_len, int s_len)
+		      const int *from, const int *to, int nhit,
+		      int nLnode, int nRnode)
 {
-	SEXP ans_queryHits, ans_subjectHits, ans;
+	SEXP ans_from, ans_to, ans;
 	size_t n;
 
-	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
-	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
+	PROTECT(ans_from = NEW_INTEGER(nhit));
+	PROTECT(ans_to = NEW_INTEGER(nhit));
 	n = sizeof(int) * nhit;
-	memcpy(INTEGER(ans_queryHits), q_hits, n);
-	memcpy(INTEGER(ans_subjectHits), s_hits, n);
-	ans = new_Hits0(classname, ans_queryHits, ans_subjectHits,
-				   q_len, s_len);
+	memcpy(INTEGER(ans_from), from, n);
+	memcpy(INTEGER(ans_to), to, n);
+	ans = new_Hits0(classname, ans_from, ans_to,
+				   nLnode, nRnode);
 	UNPROTECT(2);
 	return ans;
 }
@@ -56,176 +56,176 @@ static SEXP new_Hits1(const char *classname,
  */
 
 /* Based on qsort(). Time is O(nhit*log(nhit)).
-   If 'revmap' is not NULL, then 'qh_in' is not modified. */
-static void qsort_hits(int *qh_in, const int *sh_in,
-		       int *qh_out, int *sh_out, int nhit,
+   If 'revmap' is not NULL, then 'from_in' is not modified. */
+static void qsort_hits(int *from_in, const int *to_in,
+		       int *from_out, int *to_out, int nhit,
 		       int *revmap)
 {
 	int k;
 
 	if (revmap == NULL)
-		revmap = sh_out;
-	_get_order_of_int_array(qh_in, nhit, 0, revmap, 0);
+		revmap = to_out;
+	_get_order_of_int_array(from_in, nhit, 0, revmap, 0);
 	for (k = 0; k < nhit; k++)
-		qh_out[k] = qh_in[revmap[k]];
-	if (revmap == sh_out) {
-		memcpy(qh_in, revmap, sizeof(int) * nhit);
-		revmap = qh_in;
+		from_out[k] = from_in[revmap[k]];
+	if (revmap == to_out) {
+		memcpy(from_in, revmap, sizeof(int) * nhit);
+		revmap = from_in;
 	}
 	for (k = 0; k < nhit; k++)
-		sh_out[k] = sh_in[revmap[k]++];
+		to_out[k] = to_in[revmap[k]++];
 	return;
 }
 
 /* Tabulated sorting. Time is O(nhit).
-    WARNINGS: 'nhit' MUST be >= 'q_len'. 'qh_in' is ALWAYS modified. */
-static void tsort_hits(int *qh_in, const int *sh_in,
-		       int *qh_out, int *sh_out, int nhit, int q_len,
+    WARNINGS: 'nhit' MUST be >= 'nLnode'. 'from_in' is ALWAYS modified. */
+static void tsort_hits(int *from_in, const int *to_in,
+		       int *from_out, int *to_out, int nhit, int nLnode,
 		       int *revmap)
 {
 	int i, k, offset, count, prev_offset, j;
 
-	/* Compute nb of hits per query. We need a place for this so we
-	   temporarily use 'qh_out' which is assumed to have at least 'q_len'
+	/* Compute nb of hits per left node. We need a place for this so we
+	   temporarily use 'from_out' which is assumed to have at least 'nLnode'
 	   elements. */
-	for (i = 0; i < q_len; i++)
-		qh_out[i] = 0;
+	for (i = 0; i < nLnode; i++)
+		from_out[i] = 0;
 	for (k = 0; k < nhit; k++)
-		qh_out[--qh_in[k]]++;  /* make 'qh_in[k]' 0-based */
+		from_out[--from_in[k]]++;  /* make 'from_in[k]' 0-based */
 	/* Replace counts with offsets. */
 	offset = 0;
-	for (i = 0; i < q_len; i++) {
-		count = qh_out[i];
-		qh_out[i] = offset;
+	for (i = 0; i < nLnode; i++) {
+		count = from_out[i];
+		from_out[i] = offset;
 		offset += count;
 	}
-	/* Fill 'sh_out' and 'revmap'. */
+	/* Fill 'to_out' and 'revmap'. */
 	for (k = 0; k < nhit; k++) {
-		offset = qh_out[qh_in[k]]++;
-		sh_out[offset] = sh_in[k];
+		offset = from_out[from_in[k]]++;
+		to_out[offset] = to_in[k];
 		if (revmap != NULL)
 			revmap[offset] = k + 1;
 	}
-	/* Fill 'qh_out'. */
-	memcpy(qh_in, qh_out, sizeof(int) * q_len);
+	/* Fill 'from_out'. */
+	memcpy(from_in, from_out, sizeof(int) * nLnode);
 	k = offset = 0;
-	for (i = 1; i <= q_len; i++) {
+	for (i = 1; i <= nLnode; i++) {
 		prev_offset = offset;
-		offset = qh_in[i - 1];
+		offset = from_in[i - 1];
 		for (j = prev_offset; j < offset; j++)
-			qh_out[k++] = i;
+			from_out[k++] = i;
 	}
 	return;
 }
 
-SEXP _new_Hits(int *q_hits, const int *s_hits, int nhit,
-	       int q_len, int s_len, int already_sorted)
+SEXP _new_Hits(int *from, const int *to, int nhit,
+	       int nLnode, int nRnode, int already_sorted)
 {
-	SEXP ans_queryHits, ans_subjectHits, ans;
-	int *qh_out, *sh_out;
+	SEXP ans_from, ans_to, ans;
+	int *from_out, *to_out;
 
-	if (already_sorted || nhit <= 1 || q_len <= 1)
-		return new_Hits1("SortedByQueryHits", q_hits, s_hits, nhit,
-						      q_len, s_len);
-	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
-	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
-	qh_out = INTEGER(ans_queryHits);
-	sh_out = INTEGER(ans_subjectHits);
-	if (nhit >= q_len)
-		tsort_hits(q_hits, s_hits, qh_out, sh_out, nhit, q_len, NULL);
+	if (already_sorted || nhit <= 1 || nLnode <= 1)
+		return new_Hits1("SortedByQueryHits", from, to, nhit,
+						      nLnode, nRnode);
+	PROTECT(ans_from = NEW_INTEGER(nhit));
+	PROTECT(ans_to = NEW_INTEGER(nhit));
+	from_out = INTEGER(ans_from);
+	to_out = INTEGER(ans_to);
+	if (nhit >= nLnode)
+		tsort_hits(from, to, from_out, to_out, nhit, nLnode, NULL);
 	else
-		qsort_hits(q_hits, s_hits, qh_out, sh_out, nhit, NULL);
-	ans = new_Hits0("SortedByQueryHits", ans_queryHits, ans_subjectHits,
-					     q_len, s_len);
+		qsort_hits(from, to, from_out, to_out, nhit, NULL);
+	ans = new_Hits0("SortedByQueryHits", ans_from, ans_to,
+					     nLnode, nRnode);
 	UNPROTECT(2);
 	return ans;
 }
 
 static SEXP new_Hits_with_revmap(const char *classname,
-		const int *q_hits, const int *s_hits, int nhit,
-		int q_len, int s_len, int *revmap)
+		const int *from, const int *to, int nhit,
+		int nLnode, int nRnode, int *revmap)
 {
-	SEXP ans_queryHits, ans_subjectHits, ans;
-	int *q_hits2, *qh_out, *sh_out;
+	SEXP ans_from, ans_to, ans;
+	int *from2, *from_out, *to_out;
 
-	if (revmap == NULL || nhit >= q_len) {
-		q_hits2 = (int *) R_alloc(sizeof(int), nhit);
-		memcpy(q_hits2, q_hits, sizeof(int) * nhit);
+	if (revmap == NULL || nhit >= nLnode) {
+		from2 = (int *) R_alloc(sizeof(int), nhit);
+		memcpy(from2, from, sizeof(int) * nhit);
 	}
 	if (revmap == NULL)
-		return _new_Hits(q_hits2, s_hits, nhit, q_len, s_len, 0);
-	PROTECT(ans_queryHits = NEW_INTEGER(nhit));
-	PROTECT(ans_subjectHits = NEW_INTEGER(nhit));
-	qh_out = INTEGER(ans_queryHits);
-	sh_out = INTEGER(ans_subjectHits);
-	if (nhit >= q_len) {
-		tsort_hits(q_hits2, s_hits, qh_out, sh_out, nhit,
-			   q_len, revmap);
+		return _new_Hits(from2, to, nhit, nLnode, nRnode, 0);
+	PROTECT(ans_from = NEW_INTEGER(nhit));
+	PROTECT(ans_to = NEW_INTEGER(nhit));
+	from_out = INTEGER(ans_from);
+	to_out = INTEGER(ans_to);
+	if (nhit >= nLnode) {
+		tsort_hits(from2, to, from_out, to_out, nhit,
+			   nLnode, revmap);
 	} else {
-		qsort_hits((int *) q_hits, s_hits, qh_out, sh_out, nhit,
+		qsort_hits((int *) from, to, from_out, to_out, nhit,
 			   revmap);
 	}
-	ans = new_Hits0(classname, ans_queryHits, ans_subjectHits,
-				   q_len, s_len);
+	ans = new_Hits0(classname, ans_from, ans_to, nLnode, nRnode);
 	UNPROTECT(2);
 	return ans;
 }
 
-static int get_q_len_or_s_len(SEXP len, const char *what)
+static int get_nnode(SEXP len, const char *side)
 {
 	int len0;
 
 	if (!IS_INTEGER(len) || LENGTH(len) != 1)
-		error("'%s' must be a single integer", what);
+		error("'n%snode(x)' must be a single integer",
+                      side);
 	len0 = INTEGER(len)[0];
 	if (len0 == NA_INTEGER || len0 < 0)
-		error("'%s' must be a single non-negative integer", what);
+		error("'n%snode(x)' must be a single non-negative integer",
+                      side);
 	return len0;
 }
 
-/* Return 1 if 'q_hits' is already sorted and 0 otherwise. */
-static int check_hits(const int *q_hits, const int *s_hits, int nhit,
-		      int q_len, int s_len)
+/* Return 1 if 'from' is already sorted and 0 otherwise. */
+static int check_hits(const int *from, const int *to, int nhit,
+		      int nLnode, int nRnode)
 {
 	int already_sorted, prev_i, k, i, j;
 
 	already_sorted = 1;
 	prev_i = -1;
-	for (k = 0; k < nhit; k++, q_hits++, s_hits++) {
-		i = *q_hits;
-		if (i == NA_INTEGER || i < 1 || i > q_len)
-			error("'queryHits' must contain non-NA values "
-			      ">= 1 and <= 'queryLength'");
+	for (k = 0; k < nhit; k++, from++, to++) {
+		i = *from;
+		if (i == NA_INTEGER || i < 1 || i > nLnode)
+			error("'from(x)' must contain non-NA values "
+			      ">= 1 and <= 'nLnode(x)'");
 		if (i < prev_i)
 			already_sorted = 0;
 		prev_i = i;
-		j = *s_hits;
-		if (j == NA_INTEGER || j < 1 || j > s_len)
-			error("'subjectHits' must contain non-NA values "
-			      ">= 1 and <= 'subjectLength'");
+		j = *to;
+		if (j == NA_INTEGER || j < 1 || j > nRnode)
+			error("'to(x)' must contain non-NA values "
+			      ">= 1 and <= 'nRnode(x)'");
 	}
 	return already_sorted;
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Hits_new(SEXP Class, SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len,
+SEXP Hits_new(SEXP Class, SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
 	      SEXP revmap_envir)
 {
 	const char *classname;
-	int nhit, q_len0, s_len0, already_sorted, *revmap_p;
-	const int *q_hits_p, *s_hits_p;
+	int nhit, nLnode0, nRnode0, already_sorted, *revmap_p;
+	const int *from_p, *to_p;
 	SEXP ans, revmap, symbol;
 
 	classname = CHAR(STRING_ELT(Class, 0));
-	nhit = _check_integer_pairs(q_hits, s_hits,
-				    &q_hits_p, &s_hits_p,
-				    "queryHits", "subjectHits");
-	q_len0 = get_q_len_or_s_len(q_len, "queryLength");
-	s_len0 = get_q_len_or_s_len(s_len, "subjectLength");
-	already_sorted = check_hits(q_hits_p, s_hits_p, nhit, q_len0, s_len0);
+	nhit = _check_integer_pairs(from, to, &from_p, &to_p,
+				    "from(x)", "to(x)");
+	nLnode0 = get_nnode(nLnode, "L");
+	nRnode0 = get_nnode(nRnode, "R");
+	already_sorted = check_hits(from_p, to_p, nhit, nLnode0, nRnode0);
 	if (already_sorted)
-		return new_Hits1(classname, q_hits_p, s_hits_p, nhit,
-					    q_len0, s_len0);
+		return new_Hits1(classname, from_p, to_p, nhit,
+					    nLnode0, nRnode0);
 	if (revmap_envir == R_NilValue) {
 		revmap_p = NULL;
 	} else {
@@ -233,8 +233,8 @@ SEXP Hits_new(SEXP Class, SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP s_len,
 		revmap_p = INTEGER(revmap);
 	}
 	PROTECT(ans = new_Hits_with_revmap(classname,
-					   q_hits_p, s_hits_p, nhit,
-					   q_len0, s_len0, revmap_p));
+					   from_p, to_p, nhit,
+					   nLnode0, nRnode0, revmap_p));
 	if (revmap_envir == R_NilValue) {
 		UNPROTECT(1);
 		return ans;
@@ -276,28 +276,28 @@ int _get_select_mode(SEXP select)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP select_hits(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP select)
+SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP select)
 {
-	int nhit, ans_len, select_mode, init_val, i, k, j1;
-	const int *q_hits_p, *s_hits_p;
+	int nhit, annRnode, select_mode, init_val, i, k, j1;
+	const int *from_p, *to_p;
 	SEXP ans;
 
-	nhit = _check_integer_pairs(q_hits, s_hits,
-				    &q_hits_p, &s_hits_p,
-				    "queryHits(x)", "subjectHits(x)");
-	ans_len = INTEGER(q_len)[0];
+	nhit = _check_integer_pairs(from, to,
+				    &from_p, &to_p,
+				    "from(x)", "to(x)");
+	annRnode = INTEGER(nLnode)[0];
 	select_mode = _get_select_mode(select);
-	PROTECT(ans = NEW_INTEGER(ans_len));
+	PROTECT(ans = NEW_INTEGER(annRnode));
 	init_val = select_mode == COUNT_HITS ? 0 : NA_INTEGER;
-	for (i = 0; i < ans_len; i++)
+	for (i = 0; i < annRnode; i++)
 		INTEGER(ans)[i] = init_val;
-	for (k = 0; k < nhit; k++, q_hits_p++, s_hits_p++) {
-		i = *q_hits_p - 1;
+	for (k = 0; k < nhit; k++, from_p++, to_p++) {
+		i = *from_p - 1;
 		if (select_mode == COUNT_HITS) {
 			INTEGER(ans)[i]++;
 			continue;
 		}
-		j1 = *s_hits_p;
+		j1 = *to_p;
 		if (INTEGER(ans)[i] == NA_INTEGER
 		 || (select_mode == FIRST_HIT) == (j1 < INTEGER(ans)[i]))
 			INTEGER(ans)[i] = j1;
@@ -315,14 +315,14 @@ SEXP select_hits(SEXP q_hits, SEXP s_hits, SEXP q_len, SEXP select)
  */
 SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 {
-	int ngroup, htype, ans_len, i, j, k, gs, nhit,
+	int ngroup, htype, annRnode, i, j, k, gs, nhit,
 	    iofeig, *left, *right;
 	const int *group_sizes_elt;
-	SEXP ans_q_hits, ans_s_hits, ans;
+	SEXP ans_from, ans_to, ans;
 
 	ngroup = LENGTH(group_sizes);
 	htype = INTEGER(hit_type)[0];
-	for (i = ans_len = 0, group_sizes_elt = INTEGER(group_sizes);
+	for (i = annRnode = 0, group_sizes_elt = INTEGER(group_sizes);
 	     i < ngroup;
 	     i++, group_sizes_elt++)
 	{
@@ -330,13 +330,13 @@ SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 		if (gs == NA_INTEGER || gs < 0)
 			error("'group_sizes' contains NAs or negative values");
 		nhit = htype == 0 ? gs * gs : (gs * (gs - 1)) / 2;
-		ans_len += nhit;
+		annRnode += nhit;
 		
 	}
-	PROTECT(ans_q_hits = NEW_INTEGER(ans_len));
-	PROTECT(ans_s_hits = NEW_INTEGER(ans_len));
-	left = INTEGER(ans_q_hits);
-	right = INTEGER(ans_s_hits);
+	PROTECT(ans_from = NEW_INTEGER(annRnode));
+	PROTECT(ans_to = NEW_INTEGER(annRnode));
+	left = INTEGER(ans_from);
+	right = INTEGER(ans_to);
 	iofeig = 0; /* 0-based Index Of First Element In Group */
 	for (i = 0, group_sizes_elt = INTEGER(group_sizes);
 	     i < ngroup;
@@ -367,7 +367,7 @@ SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 		}
 		iofeig += gs;
 	}
-	ans = new_Hits0("SortedByQueryHits", ans_q_hits, ans_s_hits,
+	ans = new_Hits0("SortedByQueryHits", ans_from, ans_to,
 					     iofeig, iofeig);
 	UNPROTECT(2);
 	return ans;

@@ -664,29 +664,29 @@ SEXP top_prenv_dots(SEXP env);
 /* Hits_class.c */
 
 SEXP _new_Hits(
-	int *q_hits,
-	const int *s_hits,
+	int *from,
+	const int *to,
 	int nhit,
-	int q_len,
-	int s_len,
+	int nLnode,
+	int nRnode,
 	int already_sorted
 );
 
 SEXP Hits_new(
 	SEXP Class,
-	SEXP q_hits,
-	SEXP s_hits,
-	SEXP q_len,
-	SEXP s_len,
+	SEXP from,
+	SEXP to,
+	SEXP nLnode,
+	SEXP nRnode,
 	SEXP revmap_envir
 );
 
 int _get_select_mode(SEXP select);
 
 SEXP select_hits(
-	SEXP q_hits,
-	SEXP s_hits,
-	SEXP q_len,
+	SEXP from,
+	SEXP to,
+	SEXP nLnode,
 	SEXP select
 );
 

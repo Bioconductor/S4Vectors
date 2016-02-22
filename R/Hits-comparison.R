@@ -6,14 +6,14 @@
 
 .compatible_Hits <- function(x, y)
 {
-    queryLength(x) == queryLength(y) && subjectLength(x) == subjectLength(y)
+    nLnode(x) == nLnode(y) && nRnode(x) == nRnode(y)
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### pcompare()
 ###
-### Hits are ordered by query hit first and then by subject hit.
+### Hits are ordered by 'from' first and then by 'to'.
 ### This way, the space of hits is totally ordered.
 ###
 
@@ -22,9 +22,8 @@ setMethod("pcompare", c("Hits", "Hits"),
     {
         if (!.compatible_Hits(x, y))
             stop("'x' and 'y' are incompatible Hits objects ",
-                 "by query and/or subject length")
-        pcompareIntegerPairs(queryHits(x), subjectHits(x),
-                             queryHits(y), subjectHits(y))
+                 "by number of left and/or right nodes")
+        pcompareIntegerPairs(from(x), to(x), from(y), to(y))
     }
 )
 
@@ -38,13 +37,13 @@ setMethod("match", c("Hits", "Hits"),
                        method=c("auto", "quick", "hash"))
     {
         if (!.compatible_Hits(x, table))
-            stop("'x' and 'table' are incompatible Hits objects ",
-                 "by subject and/or query length")
+            stop("'x' and 'y' are incompatible Hits objects ",
+                 "by number of left and/or right nodes")
         if (!is.null(incomparables))
             stop("\"match\" method for Hits objects ",
                  "only accepts 'incomparables=NULL'")
-        matchIntegerPairs(queryHits(x), subjectHits(x),
-                          queryHits(table), subjectHits(table),
+        matchIntegerPairs(from(x), to(x),
+                          from(table), to(table),
                           nomatch=nomatch, method=method)
     }
 )
@@ -64,7 +63,7 @@ setMethod("match", c("Hits", "Hits"),
 
 #setMethod("selfmatch", "Hits",
 #    function (x, method=c("auto", "quick", "hash"))
-#        selfmatchIntegerPairs(queryHits(x), subjectHits(x), method=method)
+#        selfmatchIntegerPairs(from(x), to(x), method=method)
 #)
 
 
@@ -75,9 +74,8 @@ setMethod("match", c("Hits", "Hits"),
 ### on hits implied by pcompare().
 ###
 
-### The current implementation doesn't take advantage of the fact that Hits
-### objects are already sorted by query hit but maybe a significant speedup
-### could be achieved by doing so.
+### TODO: Maybe add a method for SortedByQueryHits that takes advantage of
+### the fact that Hits objects are already sorted by 'from'.
 ### 'na.last' is pointless (Hits objects don't contain NAs) so is ignored.
 setMethod("order", "Hits",
     function(..., na.last=TRUE, decreasing=FALSE)
@@ -88,13 +86,12 @@ setMethod("order", "Hits",
         args <- list(...)
         if (length(args) == 1L) {
             x <- args[[1L]]
-            return(orderIntegerPairs(queryHits(x), subjectHits(x),
-                                     decreasing=decreasing))
+            return(orderIntegerPairs(from(x), to(x), decreasing=decreasing))
         }
         order_args <- vector("list", 2L * length(args))
         idx <- 2L * seq_along(args)
-        order_args[idx - 1L] <- lapply(args, queryHits)
-        order_args[idx] <- lapply(args, subjectHits)
+        order_args[idx - 1L] <- lapply(args, from)
+        order_args[idx] <- lapply(args, to)
         do.call(order, c(order_args, list(decreasing=decreasing)))
     }
 )

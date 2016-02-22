@@ -223,6 +223,9 @@ export(
     compare,
 
     ## Hits-class.R:
+    queryHits, subjectHits,
+    queryLength, subjectLength,
+    countQueryHits, countSubjectHits,
     Hits,
     selectHits,
     remapHits,
@@ -287,9 +290,7 @@ export(
     findMatches, countMatches,
 
     ## Hits-class.R:
-    queryHits, subjectHits,
-    queryLength, subjectLength,
-    countQueryHits, countSubjectHits,
+    from, to, nLnode, nRnode, countLnodeHits, countRnodeHits,
 
     ## Rle-class.R:
     runLength, "runLength<-", runValue, "runValue<-", nrun,
@@ -343,9 +344,7 @@ exportMethods(
     pcompare, 
     selfmatch,
     findMatches, countMatches,
-    queryHits, subjectHits,
-    queryLength, subjectLength,
-    countQueryHits, countSubjectHits,
+    from, to, nLnode, nRnode, countLnodeHits, countRnodeHits,
     runLength, "runLength<-", runValue, "runValue<-", nrun,
     Rle,
     findRun,

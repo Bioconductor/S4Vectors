@@ -433,11 +433,11 @@ SEXP find_interv_and_start_from_width(
  */
 
 SEXP new_Hits(
-	int *q_hits,
-	const int *s_hits,
+	int *from,
+	const int *to,
 	int nhit,
-	int q_len,
-	int s_len,
+	int nLnode,
+	int nRnode,
 	int already_sorted
 );
 

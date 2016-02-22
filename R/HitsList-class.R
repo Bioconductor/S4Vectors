@@ -34,12 +34,12 @@ setMethod("space", "HitsList",
             space
           })
 
-setMethod("subjectHits", "HitsList", function(x) {
-  as.matrix(x)[,2L,drop=TRUE]
+setMethod("from", "HitsList", function(x) {
+  as.matrix(x)[,1L,drop=TRUE]
 })
 
-setMethod("queryHits", "HitsList", function(x) {
-  as.matrix(x)[,1L,drop=TRUE]
+setMethod("to", "HitsList", function(x) {
+  as.matrix(x)[,2L,drop=TRUE]
 })
 
 
@@ -83,12 +83,12 @@ setMethod("relistToClass", "SortedByQueryHits",
 setMethod("as.matrix", "HitsList", function(x) {
   mats <- lapply(x, as.matrix)
   mat <- do.call(rbind, mats)
-  rows <- c(0L, head(cumsum(sapply(x, queryLength)), -1))
+  rows <- c(0L, head(cumsum(sapply(x, nLnode)), -1))
   nr <- sapply(mats, nrow)
   mat + cbind(rep.int(rows, nr), rep.int(x@subjectOffsets, nr))
 })
 
-## count up the matches for each query in every matching
+## count up the matches for each left node in every matching
 
 setMethod("as.table", "HitsList", function(x, ...) {
   counts <- unlist(lapply(x, as.table))

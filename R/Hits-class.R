@@ -4,17 +4,18 @@
 ###
 
 
+### Vector of hits between a set of left nodes and a set of right nodes.
 setClass("Hits",
     contains="Vector",
     representation(
-        queryHits="integer",     # integer vector of length N
-        subjectHits="integer",   # integer vector of length N
-        queryLength="integer",   # single integer
-        subjectLength="integer"  # single integer
+        from="integer",    # integer vector of length N
+        to="integer",      # integer vector of length N
+        nLnode="integer",  # single integer: number of Lnodes ("left nodes")
+        nRnode="integer"   # single integer: number of Rnodes ("right nodes")
     ),
     prototype(
-        queryLength=0L,
-        subjectLength=0L
+        nLnode=0L,
+        nRnode=0L
     )
 )
 
@@ -30,7 +31,7 @@ setClass("SortedByQueryHits", contains="Hits")
 ### Combine the new parallel slots with those of the parent class. Make sure
 ### to put the new parallel slots *first*.
 setMethod("parallelSlotNames", "Hits",
-    function(x) c("queryHits", "subjectHits", callNextMethod())
+    function(x) c("from", "to", callNextMethod())
 )
 
 
@@ -38,70 +39,66 @@ setMethod("parallelSlotNames", "Hits",
 ### Accessors
 ###
 
-setGeneric("queryHits", function(x, ...) standardGeneric("queryHits"))
+setGeneric("from", function(x, ...) standardGeneric("from"))
+setMethod("from", "Hits", function(x) x@from)
 
-setMethod("queryHits", "Hits", function(x) x@queryHits)
+setGeneric("to", function(x, ...) standardGeneric("to"))
+setMethod("to", "Hits", function(x) x@to)
 
-setGeneric("subjectHits", function(x, ...) standardGeneric("subjectHits"))
+setGeneric("nLnode", function(x, ...) standardGeneric("nLnode"))
+setMethod("nLnode", "Hits", function(x) x@nLnode)
 
-setMethod("subjectHits", "Hits", function(x) x@subjectHits)
+setGeneric("nRnode", function(x, ...) standardGeneric("nRnode"))
+setMethod("nRnode", "Hits", function(x) x@nRnode)
 
-setGeneric("queryLength", function(x, ...) standardGeneric("queryLength"))
+setGeneric("countLnodeHits", function(x, ...) standardGeneric("countLnodeHits"))
 
-setMethod("queryLength", "Hits", function(x) x@queryLength)
+.count_Lnode_hits <- function(x) tabulate(from(x), nbins=nLnode(x))
+setMethod("countLnodeHits", "Hits", .count_Lnode_hits)
 
-setGeneric("subjectLength", function(x, ...) standardGeneric("subjectLength"))
+setGeneric("countRnodeHits", function(x, ...) standardGeneric("countRnodeHits"))
 
-setMethod("subjectLength", "Hits", function(x) x@subjectLength)
+.count_Rnode_hits <- function(x) tabulate(to(x), nbins=nRnode(x))
+setMethod("countRnodeHits", "Hits", .count_Rnode_hits)
 
-setGeneric("countQueryHits",
-    function(x, ...) standardGeneric("countQueryHits")
-)
-
-.count_query_hits <- function(x)
-    tabulate(queryHits(x), nbins=queryLength(x))
-
-setMethod("countQueryHits", "Hits", .count_query_hits)
-
-setGeneric("countSubjectHits",
-    function(x, ...) standardGeneric("countSubjectHits")
-)
-
-.count_subject_hits <- function(x)
-    tabulate(subjectHits(x), nbins=subjectLength(x))
-
-setMethod("countSubjectHits", "Hits", .count_subject_hits)
+### query/subject API
+queryHits <- function(x, ...) from(x, ...)
+subjectHits <- function(x, ...) to(x, ...)
+queryLength <- function(x, ...) nLnode(x, ...)
+subjectLength <- function(x, ...) nRnode(x, ...)
+countQueryHits <- function(x, ...) countLnodeHits(x, ...)
+countSubjectHits <- function(x, ...) countRnodeHits(x, ...)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity
 ###
 
-.valid.Hits.queryLength_or_subjectLength <- function(q_len, what)
+.valid.Hits.nnode <- function(nnode, side)
 {
-    if (!isSingleInteger(q_len) || q_len < 0L) {
-        msg <- wmsg("'", what, "Length(x)' must be a single non-negative ",
+    if (!isSingleInteger(nnode) || nnode < 0L) {
+        msg <- wmsg("'n", side, "node(x)' must be a single non-negative ",
                     "integer")
         return(msg)
     }
-    if (!is.null(attributes(q_len))) {
-        msg <- wmsg("'", what, "Length(x)' must be a single integer ",
-                    "with no attributes")
+    if (!is.null(attributes(nnode))) {
+        msg <- wmsg("'n", side, "node(x)' must be a single integer with ",
+                    "no attributes")
         return(msg)
     }
     NULL
 }
 
-.valid.Hits.queryHits_or_subjectHits <- function(q_hits, q_len, what)
+.valid.Hits.from_or_to <- function(from_or_to, nnode, what, side)
 {
-    if (!(is.integer(q_hits) && is.null(attributes(q_hits)))) {
-        msg <- wmsg("'", what, "Hits(x)' must be an integer vector ",
+    if (!(is.integer(from_or_to) && is.null(attributes(from_or_to)))) {
+        msg <- wmsg("'", what, "' must be an integer vector ",
                     "with no attributes")
         return(msg)
     }
-    if (anyMissingOrOutside(q_hits, 1L, q_len)) {
-        msg <- wmsg("'", what, "Hits(x)' must contain non-NA values ",
-                    ">= 1 and <= '", what, "Length(x)'")
+    if (anyMissingOrOutside(from_or_to, 1L, nnode)) {
+        msg <- wmsg("'", what, "' must contain non-NA values ",
+                    ">= 1 and <= 'n", side, "node(x)'")
         return(msg)
     }
     NULL
@@ -109,19 +106,17 @@ setMethod("countSubjectHits", "Hits", .count_subject_hits)
 
 .valid.Hits <- function(x)
 {
-    q_len <- queryLength(x)
-    s_len <- subjectLength(x)
-    c(.valid.Hits.queryLength_or_subjectLength(q_len, "query"),
-      .valid.Hits.queryLength_or_subjectLength(s_len, "subject"),
-      .valid.Hits.queryHits_or_subjectHits(queryHits(x), q_len, "query"),
-      .valid.Hits.queryHits_or_subjectHits(subjectHits(x), s_len, "subject"))
+    c(.valid.Hits.nnode(nLnode(x), "L"),
+      .valid.Hits.nnode(nRnode(x), "R"),
+      .valid.Hits.from_or_to(from(x), nLnode(x), "from(x)", "L"),
+      .valid.Hits.from_or_to(to(x), nRnode(x), "to(x)", "R"))
 }
 
 setValidity2("Hits", .valid.Hits)
 
 .valid.SortedByQueryHits <- function(x)
 {
-    if (isNotSorted(queryHits(x)))
+    if (isNotSorted(from(x)))
         return("'queryHits(x)' must be sorted")
     NULL
 }
@@ -134,52 +129,44 @@ setValidity2("SortedByQueryHits", .valid.SortedByQueryHits)
 ###
 
 ### Very low-level constructor. Doesn't try to sort the hits by query.
-.new_Hits <- function(Class, queryHits, subjectHits,
-                             queryLength, subjectLength,
-                             mcols)
+.new_Hits <- function(Class, from, to, nLnode, nRnode, mcols)
 {
-    new2(Class, queryHits=queryHits,
-                subjectHits=subjectHits,
-                queryLength=queryLength,
-                subjectLength=subjectLength,
+    new2(Class, from=from, to=to, nLnode=nLnode, nRnode=nRnode,
                 elementMetadata=mcols,
                 check=TRUE)
 }
 
 ### Low-level constructor. Sort the hits by query if Class extends
 ### SortedByQueryHits.
-new_Hits <- function(Class,
-                     queryHits=integer(0), subjectHits=integer(0),
-                     queryLength=0L, subjectLength=0L,
-                     mcols=NULL)
+new_Hits <- function(Class, from=integer(0), to=integer(0),
+                            nLnode=0L, nRnode=0L,
+                            mcols=NULL)
 {
     if (!isSingleString(Class))
         stop("'Class' must be a single character string")
     if (!extends(Class, "Hits"))
         stop("'Class' must be the name of a class that extends Hits")
 
-    if (!(is.numeric(queryHits) && is.numeric(subjectHits)))
-        stop("'queryHits' and 'subjectHits' must be integer vectors")
-    if (!is.integer(queryHits))
-        queryHits <- as.integer(queryHits)
-    if (!is.integer(subjectHits))
-        subjectHits <- as.integer(subjectHits)
+    if (!(is.numeric(from) && is.numeric(to)))
+        stop("'from' and 'to' must be integer vectors")
+    if (!is.integer(from))
+        from <- as.integer(from)
+    if (!is.integer(to))
+        to <- as.integer(to)
 
-    if (!(isSingleNumber(queryLength) && isSingleNumber(subjectLength)))
-        stop("'queryLength' and 'subjectLength' must be single integers")
-    if (!is.integer(queryLength))
-        queryLength <- as.integer(queryLength)
-    if (!is.integer(subjectLength))
-        subjectLength <- as.integer(subjectLength)
+    if (!(isSingleNumber(nLnode) && isSingleNumber(nRnode)))
+        stop("'nLnode' and 'nRnode' must be single integers")
+    if (!is.integer(nLnode))
+        nLnode <- as.integer(nLnode)
+    if (!is.integer(nRnode))
+        nRnode <- as.integer(nRnode)
 
     if (!(is.null(mcols) || is(mcols, "DataFrame")))
         stop("'mcols' must be NULL or a DataFrame object")
 
     if (!extends(Class, "SortedByQueryHits")) {
         ## No need to sort the hits by query.
-        ans <- .new_Hits(Class, queryHits, subjectHits,
-                                queryLength, subjectLength,
-                                mcols)
+        ans <- .new_Hits(Class, from, to, nLnode, nRnode, mcols)
         return(ans)
     }
 
@@ -189,10 +176,7 @@ new_Hits <- function(Class,
     } else {
         revmap_envir <- NULL
     }
-    ans <- .Call2("Hits_new", Class,
-                              queryHits, subjectHits,
-                              queryLength, subjectLength,
-                              revmap_envir,
+    ans <- .Call2("Hits_new", Class, from, to, nLnode, nRnode, revmap_envir,
                               PACKAGE="S4Vectors")
     if (!is.null(mcols)) {
         if (nrow(mcols) != length(ans))
@@ -211,8 +195,8 @@ new_Hits <- function(Class,
 ### This constructor currently returns a SortedByQueryHits instance by
 ### default.
 ### TODO: Change the default for 'sort.by.query' from TRUE to FALSE.
-Hits <- function(queryHits=integer(0), subjectHits=integer(0),
-                 queryLength=0L, subjectLength=0L,
+Hits <- function(from=integer(0), to=integer(0),
+                 nLnode=0L, nRnode=0L,
                  ..., sort.by.query=TRUE)
 {
     if (!isTRUEorFALSE(sort.by.query))
@@ -227,7 +211,7 @@ Hits <- function(queryHits=integer(0), subjectHits=integer(0),
     } else {
         mcols <- DataFrame(..., check.names=FALSE)
     }
-    new_Hits(Class, queryHits, subjectHits, queryLength, subjectLength, mcols)
+    new_Hits(Class, from, to, nLnode, nRnode, mcols)
 }
 
 
@@ -237,8 +221,8 @@ Hits <- function(queryHits=integer(0), subjectHits=integer(0),
 
 .from_Hits_to_SortedByQueryHits <- function(from)
 {
-    new_Hits("SortedByQueryHits", queryHits(from), subjectHits(from),
-                                  queryLength(from), subjectLength(from),
+    new_Hits("SortedByQueryHits", from(from), to(from),
+                                  nLnode(from), nRnode(from),
                                   mcols(from))
 }
 
@@ -246,10 +230,10 @@ Hits <- function(queryHits=integer(0), subjectHits=integer(0),
 setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
 
 setMethod("as.matrix", "Hits",
-    function(x) cbind(queryHits=queryHits(x), subjectHits=subjectHits(x))
+    function(x) cbind(queryHits=from(x), subjectHits=to(x))
 )
 
-setMethod("as.table", "Hits", .count_query_hits)
+setMethod("as.table", "Hits", .count_Lnode_hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -285,8 +269,8 @@ setMethod("classNameForDisplay", "Hits", function(x) "Hits")
     x_len <- length(x)
     x_mcols <- mcols(x)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(queryHits=as.character(queryHits(x)),
-                 subjectHits=as.character(subjectHits(x)))
+    ans <- cbind(queryHits=as.character(from(x)),
+                 subjectHits=as.character(to(x)))
     if (x_nmc > 0L) {
         tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
                                      list(check.names=FALSE)))
@@ -296,7 +280,7 @@ setMethod("classNameForDisplay", "Hits", function(x) "Hits")
 }
 
 showHits <- function(x, margin="", print.classinfo=FALSE,
-                                   print.qslengths=FALSE)
+                                   print.nnode=FALSE)
 {
     x_class <- class(x)
     x_len <- length(x)
@@ -324,17 +308,17 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
-    if (print.qslengths) {
+    if (print.nnode) {
         cat(margin, "-------\n", sep="")
-        cat(margin, "queryLength: ", queryLength(x), "\n", sep="")
-        cat(margin, "subjectLength: ", subjectLength(x), "\n", sep="")
+        cat(margin, "queryLength: ", nLnode(x), "\n", sep="")
+        cat(margin, "subjectLength: ", nRnode(x), "\n", sep="")
     }
 }
 
 setMethod("show", "Hits",
     function(object)
         showHits(object, margin="  ", print.classinfo=TRUE,
-                                      print.qslengths=TRUE)
+                                      print.nnode=TRUE)
 )
 
 
@@ -386,28 +370,28 @@ combine_Hits_objects <- function(Class, objects,
     names(objects) <- NULL  # so lapply(objects, ...) below returns an
                             # unnamed list
 
-    ## Combine "queryLength" slots.
-    queryLength_slots <- lapply(objects, function(x) x@queryLength)
-    ans_queryLength <- unlist(queryLength_slots, use.names=FALSE)
+    ## Combine "nLnode" slots.
+    nLnode_slots <- lapply(objects, function(x) x@nLnode)
+    ans_nLnode <- unlist(nLnode_slots, use.names=FALSE)
 
-    ## Combine "subjectLength" slots.
-    subjectLength_slots <- lapply(objects, function(x) x@subjectLength)
-    ans_subjectLength <- unlist(subjectLength_slots, use.names=FALSE)
+    ## Combine "nRnode" slots.
+    nRnode_slots <- lapply(objects, function(x) x@nRnode)
+    ans_nRnode <- unlist(nRnode_slots, use.names=FALSE)
 
-    if (!(all(ans_queryLength == ans_queryLength[[1L]]) &&
-          all(ans_subjectLength == ans_subjectLength[[1L]])))
+    if (!(all(ans_nLnode == ans_nLnode[[1L]]) &&
+          all(ans_nRnode == ans_nRnode[[1L]])))
         stop(wmsg("the objects to combine are incompatible Hits objects ",
-                  "by query and/or subject length"))
-    ans_queryLength <- ans_queryLength[[1L]]
-    ans_subjectLength <- ans_subjectLength[[1L]]
+                  "by number of left and/or right nodes"))
+    ans_nLnode <- ans_nLnode[[1L]]
+    ans_nRnode <- ans_nRnode[[1L]]
 
-    ## Combine "queryHits" slots.
-    queryHits_slots <- lapply(objects, function(x) x@queryHits)
-    ans_queryHits <- unlist(queryHits_slots, use.names=FALSE)
+    ## Combine "from" slots.
+    from_slots <- lapply(objects, function(x) x@from)
+    ans_from <- unlist(from_slots, use.names=FALSE)
 
-    ## Combine "subjectHits" slots.
-    subjectHits_slots <- lapply(objects, function(x) x@subjectHits)
-    ans_subjectHits <- unlist(subjectHits_slots, use.names=FALSE)
+    ## Combine "to" slots.
+    to_slots <- lapply(objects, function(x) x@to)
+    ans_to <- unlist(to_slots, use.names=FALSE)
 
     ## Combine "mcols" slots.
     if (ignore.mcols) {
@@ -417,9 +401,7 @@ combine_Hits_objects <- function(Class, objects,
     }
 
     ## Make 'ans' and return it.
-    .new_Hits(Class, ans_queryHits, ans_subjectHits,
-                     ans_queryLength, ans_subjectLength,
-                     ans_mcols)
+    .new_Hits(Class, ans_from, ans_to, ans_nLnode, ans_nRnode, ans_mcols)
 }
 
 setMethod("c", "Hits",
@@ -453,9 +435,8 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
     select <- match.arg(select)
     if (select == "all")
         return(x)
-    .Call2("select_hits",
-           queryHits(x), subjectHits(x), queryLength(x), select,
-           PACKAGE="S4Vectors")
+    .Call2("select_hits", from(x), to(x), nLnode(x), select,
+                          PACKAGE="S4Vectors")
 }
 
 
@@ -475,38 +456,38 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
 ###     'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits in it
 ###     now "fully sorted".
 revmap_Hits <- function(x)
-    new_Hits(class(x), subjectHits(x), queryHits(x),
-                       subjectLength(x), queryLength(x),
-                       mcols(x))
+    new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x), mcols(x))
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
 setMethod("t", "Hits", revmap_Hits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Remap the query and/or subject hits
+### Remap the left and/or right nodes of a Hits object.
 ###
 
 ### Returns 'arg' as a NULL, an integer vector, or a factor.
-.normargMap <- function(arg, sidename, old.length)
+.normarg_nodes.remapping <- function(arg, side, old.nnode)
 {
     if (is.null(arg))
         return(arg)
     if (!is.factor(arg)) {
         if (!is.numeric(arg))
-            stop("'" , sidename, ".map' must be a vector of integers")
+            stop("'" , side, "nodes.remappping' must be a vector ",
+                 "of integers")
         if (!is.integer(arg))
             arg <- as.integer(arg)
     }
-    if (length(arg) != old.length)
-        stop("'" , sidename, ".map' must have the length of the ", sidename)
+    if (length(arg) != old.nnode)
+        stop("'" , side, "nodes.remapping' must be of length 'n",
+             side, "node(x)'")
     arg
 }
 
-.normargNewLength <- function(arg, sidename, map)
+.normarg_new.nnode <- function(arg, side, map)
 {
     if (!isSingleNumberOrNA(arg))
-        stop("'new.", sidename, "Length' must be a single number or NA")
+        stop("'new.n", side, "node' must be a single number or NA")
     if (!is.integer(arg))
         arg <- as.integer(arg)
     if (is.null(map))
@@ -515,54 +496,53 @@ setMethod("t", "Hits", revmap_Hits)
         if (is.na(arg))
             return(nlevels(map))
         if (arg < nlevels(map))
-            stop("supplied 'new.", sidename, "Length' must ",
-                 "be >= 'nlevels(", sidename, ".map)'")
+            stop("supplied 'new.n", side, "node' must ",
+                 "be >= 'nlevels(", side, "nodes.remapping)'")
         return(arg)
     }
     if (is.na(arg))
-        stop("'new.", sidename, "Length' must be specified when ",
-             "'" , sidename, ".map' is specified and is not a factor")
+        stop("'new.n", side, "node' must be specified when ",
+             "'" , side, "s.remapping' is specified and is not a factor")
     arg
 }
 
-remapHits <- function(x, query.map=NULL, new.queryLength=NA,
-                         subject.map=NULL, new.subjectLength=NA,
+remapHits <- function(x, Lnodes.remapping=NULL, new.nLnode=NA,
+                         Rnodes.remapping=NULL, new.nRnode=NA,
                          with.counts=FALSE)
 {
     if (!is(x, "SortedByQueryHits"))
-        stop(wmsg("remapHits() only works on a SortedByQueryHits object ",
-                  "at the moment"))
-    query.map <- .normargMap(query.map, "query", queryLength(x))
-    new.queryLength <- .normargNewLength(new.queryLength,
-                                         "query", query.map)
-    subject.map <- .normargMap(subject.map, "subject", subjectLength(x))
-    new.subjectLength <- .normargNewLength(new.subjectLength,
-                                           "subject", subject.map)
+        stop("'x' must be a SortedByQueryHits object")
+    Lnodes.remapping <- .normarg_nodes.remapping(Lnodes.remapping, "L",
+                                                 nLnode(x))
+    new.nLnode <- .normarg_new.nnode(new.nLnode, "L", Lnodes.remapping)
+    Rnodes.remapping <- .normarg_nodes.remapping(Rnodes.remapping, "R",
+                                                 nRnode(x))
+    new.nRnode <- .normarg_new.nnode(new.nRnode, "R", Rnodes.remapping)
     if (!isTRUEorFALSE(with.counts))
         stop("'with.counts' must be TRUE or FALSE")
-    q_hits <- queryHits(x)
-    if (is.null(query.map)) {
-        if (is.na(new.queryLength))
-            new.queryLength <- queryLength(x)
+    x_from <- from(x)
+    if (is.null(Lnodes.remapping)) {
+        if (is.na(new.nLnode))
+            new.nLnode <- nLnode(x)
     } else {
-        if (is.factor(query.map))
-            query.map <- as.integer(query.map)
-        if (anyMissingOrOutside(query.map, 1L, new.queryLength))
-            stop("'query.map' cannot contain NAs, or values that ",
-                 "are < 1, or > 'new.queryLength'")
-        q_hits <- query.map[q_hits]
+        if (is.factor(Lnodes.remapping))
+            Lnodes.remapping <- as.integer(Lnodes.remapping)
+        if (anyMissingOrOutside(Lnodes.remapping, 1L, new.nLnode))
+            stop(wmsg("'Lnodes.remapping' cannot contain NAs, or values that ",
+                      "are < 1, or > 'new.nLnode'"))
+        x_from <- Lnodes.remapping[x_from]
     }
-    s_hits <- subjectHits(x)
-    if (is.null(subject.map)) {
-        if (is.na(new.subjectLength))
-            new.subjectLength <- subjectLength(x)
+    x_to <- to(x)
+    if (is.null(Rnodes.remapping)) {
+        if (is.na(new.nRnode))
+            new.nRnode <- nRnode(x)
     } else {
-        if (is.factor(subject.map))
-            subject.map <- as.integer(subject.map)
-        if (anyMissingOrOutside(subject.map, 1L, new.subjectLength))
-            stop("'subject.map' cannot contain NAs, or values that ",
-                 "are < 1, or > 'new.subjectLength'")
-        s_hits <- subject.map[s_hits]
+        if (is.factor(Rnodes.remapping))
+            Rnodes.remapping <- as.integer(Rnodes.remapping)
+        if (anyMissingOrOutside(Rnodes.remapping, 1L, new.nRnode))
+            stop(wmsg("'Rnodes.remapping' cannot contain NAs, or values that ",
+                      "are < 1, or > 'new.nRnode'"))
+        x_to <- Rnodes.remapping[x_to]
     }
     x_mcols <- mcols(x)
     add_counts <- function(counts) {
@@ -573,13 +553,13 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
         x_mcols$counts <- counts
         x_mcols
     }
-    if (is.null(query.map) && is.null(subject.map)) {
+    if (is.null(Lnodes.remapping) && is.null(Rnodes.remapping)) {
         if (with.counts) {
             counts <- rep.int(1L, length(x))
             x_mcols <- add_counts(counts)
         }
     } else {
-        sm <- selfmatchIntegerPairs(q_hits, s_hits)
+        sm <- selfmatchIntegerPairs(x_from, x_to)
         if (with.counts) {
             counts <- tabulate(sm, nbins=length(sm))
             x_mcols <- add_counts(counts)
@@ -587,40 +567,37 @@ remapHits <- function(x, query.map=NULL, new.queryLength=NA,
         } else {
             keep_idx <- which(sm == seq_along(sm))
         }
-        q_hits <- q_hits[keep_idx]
-        s_hits <- s_hits[keep_idx]
+        x_from <- x_from[keep_idx]
+        x_to <- x_to[keep_idx]
         x_mcols <- extractROWS(x_mcols, keep_idx)
     }
-    do.call(Hits, c(list(q_hits, s_hits,
-                         new.queryLength, new.subjectLength),
+    do.call(Hits, c(list(x_from, x_to, new.nLnode, new.nRnode),
                     as.list(x_mcols)))
 }
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Auto-hits
+### Self hits
 ###
-### When the query and subject are the same, the hits between them are
-### "auto-hits". A Hits object containing auto-hits must have its queryLength
-### equal to its subjectLength. It can be seen as an oriented graph where
-### queryLength is the nb of nodes and the hits are the (oriented) edges.
+### A Hits object where the Lnodes and Rnodes are the same is considered to
+### be a SelfHits object.
 ###
 
-.error_if_not_auto_hits <- function(x)
+.error_if_not_SelfHits_object <- function(x)
 {
     if (!is(x, "Hits"))
         stop("'x' must be a Hits object")
-    if (queryLength(x) != subjectLength(x))
-        stop("'queryLength(x)' and 'subjectLength(x)' must be equal")
+    if (nLnode(x) != nRnode(x))
+        stop("'nLnode(x)' and 'nRnode(x)' must be equal")
 }
 
 ### A "self hit" is an edge from a node to itself. For example, the 2nd hit in
-### the Hits object below is a self hit (from 3rd node to itself):
+### the SelfHits object below is a self hit (from 3rd node to itself):
 ###     Hits(c(3, 3, 3, 4, 4), c(2:4, 2:3), 4, 4)
 isSelfHit <- function(x)
 {
-    .error_if_not_auto_hits(x)
-    queryHits(x) == subjectHits(x)
+    .error_if_not_SelfHits_object(x)
+    from(x) == to(x)
 }
 
 ### When there is more than 1 edge between 2 given nodes (regardless of
@@ -631,9 +608,9 @@ isSelfHit <- function(x)
 ### 4-3) is considered to be redundant with hit 4 (edge 3-4).
 isRedundantHit <- function(x)
 {
-    .error_if_not_auto_hits(x)
-    duplicatedIntegerPairs(pmin.int(queryHits(x), subjectHits(x)),
-                           pmax.int(queryHits(x), subjectHits(x)))
+    .error_if_not_SelfHits_object(x)
+    duplicatedIntegerPairs(pmin.int(from(x), to(x)),
+                           pmax.int(from(x), to(x)))
 }
 
 ### About 10x faster and uses 4x less memory than my first attempt in pure
@@ -661,19 +638,19 @@ makeAllGroupInnerHits.old <- function(GS)
     GSr <- c(0L, GS[-NG])
     CGSr2 <- cumsum(GSr * GSr)
     GS2 <- GS * GS
-    N <- sum(GS)  # length of original vector (i.e. before grouping)
+    nnode <- sum(GS)  # length of original vector (i.e. before grouping)
 
     ## Original Group Size Assignment i.e. group size associated with each
     ## element in the original vector.
-    OGSA <- rep.int(GS, GS)  # has length N
-    q_hits <- rep.int(seq_len(N), OGSA)
-    NH <- length(q_hits)  # same as sum(GS2)
+    OGSA <- rep.int(GS, GS)  # is of length 'nnode'
+    ans_from <- rep.int(seq_len(nnode), OGSA)
+    NH <- length(ans_from)  # same as sum(GS2)
 
     ## Hit Group Assignment i.e. group associated with each hit.
     HGA <- rep.int(seq_len(NG), GS2)
     ## Hit Group Size Assignment i.e. group size associated with each hit.
     HGSA <- GS[HGA]
-    s_hits <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
-    Hits(q_hits, s_hits, N, N)
+    ans_to <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
+    Hits(ans_from, ans_to, nnode, nnode)
 }
 
