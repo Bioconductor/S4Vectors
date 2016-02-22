@@ -5,9 +5,17 @@
 \alias{HitsList-class}
 \alias{HitsList}
 
+\alias{class:SelfHitsList}
+\alias{SelfHitsList-class}
+\alias{SelfHitsList}
+
 \alias{class:SortedByQueryHitsList}
 \alias{SortedByQueryHitsList-class}
 \alias{SortedByQueryHitsList}
+
+\alias{class:SortedByQuerySelfHitsList}
+\alias{SortedByQuerySelfHitsList-class}
+\alias{SortedByQuerySelfHitsList}
 
 % accessors
 \alias{space}

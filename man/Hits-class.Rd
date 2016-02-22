@@ -5,9 +5,17 @@
 \alias{Hits-class}
 \alias{Hits}
 
+\alias{class:SelfHits}
+\alias{SelfHits-class}
+\alias{SelfHits}
+
 \alias{class:SortedByQueryHits}
 \alias{SortedByQueryHits-class}
 \alias{SortedByQueryHits}
+
+\alias{class:SortedByQuerySelfHits}
+\alias{SortedByQuerySelfHits-class}
+\alias{SortedByQuerySelfHits}
 
 \alias{parallelSlotNames,Hits-method}
 
@@ -20,6 +28,8 @@
 \alias{nLnode,Hits-method}
 \alias{nRnode}
 \alias{nRnode,Hits-method}
+\alias{nnode}
+\alias{nnode,SelfHits-method}
 \alias{countLnodeHits}
 \alias{countLnodeHits,Hits-method}
 \alias{countRnodeHits}
@@ -45,6 +55,7 @@
 
 % displaying
 \alias{classNameForDisplay,Hits-method}
+\alias{classNameForDisplay,SelfHits-method}
 \alias{show,Hits-method}
 
 % commbining
@@ -195,13 +206,16 @@ Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
 }
 
 \section{SelfHits}{
-  A SelfHits object is a Hits object where the left and right nodes are the
-  same. For a SelfHits object \code{x}, \code{nLnode(x)} is equal to
+  A SelfHits object is a Hits object where the left and right nodes are
+  identical. For a SelfHits object \code{x}, \code{nLnode(x)} is equal to
   \code{nRnode(x)}. The object can be seen as an oriented graph where
   \code{nLnode} is the nb of nodes and the hits are the (oriented) edges.
-  We provide two little utilities to operate on SelfHits objects.
+  SelfHits objects support the same set of accessors as Hits objects
+  plus the \code{nnode()} accessor that is equivalent to \code{nLnode()}
+  and \code{nRnode()}.
 
-  In the code snippets below, \code{x} is a \code{SelfHits} object.
+  We also provide two little utilities to operate on a SelfHits object
+  code{x}:
   \describe{
     \item{}{\code{isSelfHit(x)}: A \emph{self hit} is an edge from a node to
       itself. \code{isSelfHit(x)} returns a logical vector \emph{parallel}
@@ -268,16 +282,16 @@ remapHits(hits, Lnodes.remapping=Lnodes.remapping)
 ## manipulation of Hits objects.
 
 ## ---------------------------------------------------------------------
-## SelfHits
+## SelfHits objects
 ## ---------------------------------------------------------------------
 
-hits2 <- Hits(c(2, 3, 3, 3, 3, 3, 4, 4, 4), c(4, 3, 2:4, 2, 2:3, 2), 4, 4)
+hits2 <- SelfHits(c(2, 3, 3, 3, 3, 3, 4, 4, 4), c(4, 3, 2:4, 2, 2:3, 2), 4)
 ## Hits 2 and 4 are self hits (from 3rd node to itself):
 which(isSelfHit(hits2))
 ## Hits 4, 6, 7, 8, and 9, are redundant hits:
 which(isRedundantHit(hits2))
 
-hits3 <- findMatches(x, x)
+hits3 <- findMatches(x)
 hits3[!isSelfHit(hits3)]
 hits3[!(isSelfHit(hits3) | isRedundantHit(hits3))]
 }

@@ -228,6 +228,16 @@ setMethod("findMatches", c("ANY", "ANY"),
     }
 )
 
+setMethod("findMatches", c("ANY", "missing"),
+    function(x, table, select=c("all", "first", "last"), ...)
+    {
+        ans <- callGeneric(x, x, select=select, ...)
+        if (!is(ans, "Hits"))  # e.g. if 'select' is "first"
+            return(ans)
+        as(ans, "SortedByQuerySelfHits")
+    }
+)
+
 ### Default "countMatches" method. Args in ... are propagated to match() and
 ### selfmatch().
 .countMatches.default <- function(x, table, ...)

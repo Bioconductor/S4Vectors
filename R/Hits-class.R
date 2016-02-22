@@ -19,9 +19,14 @@ setClass("Hits",
     )
 )
 
+### A SelfHits object is a Hits object where the left and right nodes are
+### identical.
+setClass("SelfHits", contains="Hits")
+
 ### Hits objects where the hits are sorted by query. Coercion from
 ### SortedByQueryHits to List takes advantage of this and is very fast.
 setClass("SortedByQueryHits", contains="Hits")
+setClass("SortedByQuerySelfHits", contains=c("SelfHits", "SortedByQueryHits"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,6 +55,9 @@ setMethod("nLnode", "Hits", function(x) x@nLnode)
 
 setGeneric("nRnode", function(x, ...) standardGeneric("nRnode"))
 setMethod("nRnode", "Hits", function(x) x@nRnode)
+
+setGeneric("nnode", function(x, ...) standardGeneric("nnode"))
+setMethod("nnode", "SelfHits", function(x) nLnode(x))
 
 setGeneric("countLnodeHits", function(x, ...) standardGeneric("countLnodeHits"))
 
@@ -113,6 +121,15 @@ countSubjectHits <- function(x, ...) countRnodeHits(x, ...)
 }
 
 setValidity2("Hits", .valid.Hits)
+
+.valid.SelfHits <- function(x)
+{
+    if (nLnode(x) != nRnode(x))
+        return("'nLnode(x)' and 'nRnode(x)' must be equal")
+    NULL
+}
+
+setValidity2("SelfHits", .valid.SelfHits)
 
 .valid.SortedByQueryHits <- function(x)
 {
@@ -191,26 +208,33 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
     ans
 }
 
-### High-level constructor.
-### This constructor currently returns a SortedByQueryHits instance by
-### default.
-Hits <- function(from=integer(0), to=integer(0),
-                 nLnode=0L, nRnode=0L,
+.make_mcols <- function(...)
+{
+    if (nargs() == 0L)
+        return(NULL)
+    DataFrame(..., check.names=FALSE)
+}
+
+### 2 high-level constructors.
+
+Hits <- function(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
                  ..., sort.by.query=FALSE)
 {
     if (!isTRUEorFALSE(sort.by.query))
         stop("'sort.by.query' must be TRUE or FALSE")
-    if (sort.by.query) {
-        Class <- "SortedByQueryHits"
-    } else {
-        Class <- "Hits"
-    }
-    if (length(list(...)) == 0L) {
-        mcols <- NULL
-    } else {
-        mcols <- DataFrame(..., check.names=FALSE)
-    }
+    Class <- if (sort.by.query) "SortedByQueryHits" else "Hits"
+    mcols <- .make_mcols(...)
     new_Hits(Class, from, to, nLnode, nRnode, mcols)
+}
+
+SelfHits <- function(from=integer(0), to=integer(0), nnode=0L,
+                     ..., sort.by.query=FALSE)
+{
+    if (!isTRUEorFALSE(sort.by.query))
+        stop("'sort.by.query' must be TRUE or FALSE")
+    Class <- if (sort.by.query) "SortedByQuerySelfHits" else "SelfHits"
+    mcols <- .make_mcols(...)
+    new_Hits(Class, from, to, nnode, nnode, mcols)
 }
 
 
@@ -244,8 +268,6 @@ setMethod("updateObject", "Hits",
                                   nLnode(from), nRnode(from),
                                   mcols(from))
 }
-
-    
 setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
 
 setMethod("as.matrix", "Hits",
@@ -288,6 +310,7 @@ setMethod("extractROWS", "SortedByQueryHits",
 ###
 
 setMethod("classNameForDisplay", "Hits", function(x) "Hits")
+setMethod("classNameForDisplay", "SelfHits", function(x) "SelfHits")
 
 .make_naked_matrix_from_Hits <- function(x)
 {
@@ -343,8 +366,12 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
             cat(margin, "queryLength: ", nLnode(x),
                 " / subjectLength: ", nRnode(x), "\n", sep="")
         } else {
-            cat(margin, "nLnode: ", nLnode(x),
-                " / nRnode: ", nRnode(x), "\n", sep="")
+            if (is(x, "SelfHits")) {
+                cat(margin, "nnode: ", nnode(x), "\n", sep="")
+            } else {
+                cat(margin, "nLnode: ", nLnode(x),
+                    " / nRnode: ", nRnode(x), "\n", sep="")
+            }
         }
     }
 }
@@ -610,42 +637,39 @@ remapHits <- function(x, Lnodes.remapping=NULL, new.nLnode=NA,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Self hits
+### SelfHits methods
 ###
-### A Hits object where the Lnodes and Rnodes are the same is considered to
-### be a SelfHits object.
+### TODO: Make isSelfHit() and isRedundantHit() generic functions with
+### methods for SelfHits objects.
 ###
 
-.error_if_not_SelfHits_object <- function(x)
-{
-    if (!is(x, "Hits"))
-        stop("'x' must be a Hits object")
-    if (nLnode(x) != nRnode(x))
-        stop("'nLnode(x)' and 'nRnode(x)' must be equal")
-}
-
-### A "self hit" is an edge from a node to itself. For example, the 2nd hit in
-### the SelfHits object below is a self hit (from 3rd node to itself):
-###     Hits(c(3, 3, 3, 4, 4), c(2:4, 2:3), 4, 4)
+### A "self hit" is an edge from a node to itself. For example, the 2nd hit
+### in the SelfHits object below is a self hit (from 3rd node to itself):
+###     SelfHits(c(3, 3, 3, 4, 4), c(2:4, 2:3), 4)
 isSelfHit <- function(x)
 {
-    .error_if_not_SelfHits_object(x)
+    if (!is(x, "SelfHits"))
+        stop("'x' must be a SelfHits object")
     from(x) == to(x)
 }
 
 ### When there is more than 1 edge between 2 given nodes (regardless of
 ### orientation), the extra edges are considered to be "redundant hits". For
-### example, hits 3, 5, 7, and 8, in the Hits object below are redundant hits:
-###     Hits(c(3, 3, 3, 3, 3, 4, 4, 4), c(3, 2:4, 2, 2:3, 2), 4, 4)
+### example, hits 3, 5, 7, and 8, in the SelfHits object below are redundant
+### hits:
+###     SelftHits(c(3, 3, 3, 3, 3, 4, 4, 4), c(3, 2:4, 2, 2:3, 2), 4, 4)
 ### Note that this is regardless of the orientation of the edge so hit 7 (edge
 ### 4-3) is considered to be redundant with hit 4 (edge 3-4).
 isRedundantHit <- function(x)
 {
-    .error_if_not_SelfHits_object(x)
+    if (!is(x, "SelfHits"))
+        stop("'x' must be a SelfHits object")
     duplicatedIntegerPairs(pmin.int(from(x), to(x)),
                            pmax.int(from(x), to(x)))
 }
 
+### Specialized constructor.
+### Return a SortedByQuerySelfHits object.
 ### About 10x faster and uses 4x less memory than my first attempt in pure
 ### R below.
 ### NOT exported.
@@ -661,6 +685,7 @@ makeAllGroupInnerHits <- function(group.sizes, hit.type=0L)
            PACKAGE="S4Vectors")
 }
 
+### Return a SortedByQuerySelfHits object.
 ### NOT exported.
 ### TODO: Remove this.
 makeAllGroupInnerHits.old <- function(GS)
@@ -684,6 +709,6 @@ makeAllGroupInnerHits.old <- function(GS)
     ## Hit Group Size Assignment i.e. group size associated with each hit.
     HGSA <- GS[HGA]
     ans_to <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
-    Hits(ans_from, ans_to, nnode, nnode)
+    SelfHits(ans_from, ans_to, nnode, sort.by.query=TRUE)
 }
 

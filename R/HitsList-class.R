@@ -13,9 +13,19 @@ setClass("HitsList",
     prototype=prototype(elementType="Hits")
 )
 
+setClass("SelfHitsList",
+    contains="HitsList",
+    prototype=prototype(elementType="SelfHits")
+)
+
 setClass("SortedByQueryHitsList",
     contains="HitsList",
     prototype=prototype(elementType="SortedByQueryHits")
+)
+
+setClass("SortedByQuerySelfHitsList",
+    contains=c("SelfHitsList", "SortedByQueryHitsList"),
+    prototype=prototype(elementType="SortedByQuerySelfHits")
 )
 
 

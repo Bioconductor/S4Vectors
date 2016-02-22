@@ -20,7 +20,7 @@ exportClasses(
     NSBS,
     Annotated,
     DataTableORNULL, Vector,
-    Hits, SortedByQueryHits,
+    Hits, SelfHits, SortedByQueryHits, SortedByQuerySelfHits,
     Rle,
     List,
     SimpleList,
@@ -227,7 +227,7 @@ export(
     queryHits, subjectHits,
     queryLength, subjectLength,
     countQueryHits, countSubjectHits,
-    Hits,
+    Hits, SelfHits,
     selectHits,
     remapHits,
     isSelfHit,
@@ -291,7 +291,7 @@ export(
     findMatches, countMatches,
 
     ## Hits-class.R:
-    from, to, nLnode, nRnode, countLnodeHits, countRnodeHits,
+    from, to, nLnode, nRnode, nnode, countLnodeHits, countRnodeHits,
 
     ## Rle-class.R:
     runLength, "runLength<-", runValue, "runValue<-", nrun,
@@ -345,7 +345,7 @@ exportMethods(
     pcompare, 
     selfmatch,
     findMatches, countMatches,
-    from, to, nLnode, nRnode, countLnodeHits, countRnodeHits,
+    from, to, nLnode, nRnode, nnode, countLnodeHits, countRnodeHits,
     runLength, "runLength<-", runValue, "runValue<-", nrun,
     Rle,
     findRun,

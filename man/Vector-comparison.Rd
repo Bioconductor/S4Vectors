@@ -43,6 +43,7 @@
 
 \alias{findMatches}
 \alias{findMatches,ANY,ANY-method}
+\alias{findMatches,ANY,missing-method}
 \alias{countMatches}
 \alias{countMatches,ANY,ANY-method}
 
