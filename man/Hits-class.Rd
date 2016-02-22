@@ -25,6 +25,9 @@
 \alias{countRnodeHits}
 \alias{countRnodeHits,Hits-method}
 
+% updateObject
+\alias{updateObject,Hits-method}
+
 % coercion
 \alias{coerce,Hits,SortedByQueryHits-method}
 \alias{as.matrix,Hits-method}

@@ -184,7 +184,8 @@ exportMethods(
     union, intersect, setdiff,
     xtabs,
     start, end, width,
-    grep, grepl
+    grep, grepl,
+    updateObject
 )
 
 

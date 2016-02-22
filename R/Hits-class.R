@@ -216,6 +216,26 @@ Hits <- function(from=integer(0), to=integer(0),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Conversion from old to new internal representation
+###
+
+setMethod("updateObject", "Hits",
+    function(object, ..., verbose=FALSE)
+    {
+        if (is(try(object@queryHits, silent=TRUE), "try-error"))
+            return(object)
+        ans <- new_Hits("SortedByQueryHits", object@queryHits,
+                                             object@subjectHits,
+                                             object@queryLength,
+                                             object@subjectLength,
+                                             object@elementMetadata)
+        ans@metadata <- object@metadata
+        ans
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
 
