@@ -113,12 +113,12 @@ Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
 
   The following accessors are just aliases for the above accessors:
   \describe{
-    \item{}{\code{queryHits(x)}: alias for \code{from(x)}.
-    \item{}{\code{subjectHits(x)}: alias for \code{to(x)}.
-    \item{}{\code{queryLength(x)}: alias for \code{nLnode(x)}.
-    \item{}{\code{subjectLength(x)}: alias for \code{nRnode(x)}.
-    \item{}{\code{countQueryHits(x)}: alias for \code{countLnodeHits(x)}.
-    \item{}{\code{countSubjectHits(x)}: alias for \code{countRnodeHits(x)}.
+    \item{}{\code{queryHits(x)}: alias for \code{from(x)}.}
+    \item{}{\code{subjectHits(x)}: alias for \code{to(x)}.}
+    \item{}{\code{queryLength(x)}: alias for \code{nLnode(x)}.}
+    \item{}{\code{subjectLength(x)}: alias for \code{nRnode(x)}.}
+    \item{}{\code{countQueryHits(x)}: alias for \code{countLnodeHits(x)}.}
+    \item{}{\code{countSubjectHits(x)}: alias for \code{countRnodeHits(x)}.}
   }
 }
 
