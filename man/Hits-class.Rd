@@ -54,7 +54,7 @@
 \alias{t,Hits-method}
 \alias{remapHits}
 
-% auto-hits
+% SelfHits
 \alias{isSelfHit}
 \alias{isRedundantHit}
 
@@ -74,7 +74,7 @@
 \usage{
 ## Constructor function
 Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
-     ..., sort.by.query=TRUE)
+     ..., sort.by.query=FALSE)
 }
 
 \arguments{
@@ -234,14 +234,21 @@ Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
 }
 
 \examples{
-x <- c("a", "b", "a", "c", "d")
-table <- c("a", "e", "d", "a", "a", "d")
-hits <- findMatches(x, table)
-hits
+from <- c(5, 2, 3, 3, 3, 2)
+to <- c(11, 15, 5, 4, 5, 11)
+id <- letters[1:6]
+
+Hits(from, to, 7, 15, id)
+Hits(from, to, 7, 15, id, sort.by.query=TRUE)
 
 ## ---------------------------------------------------------------------
 ## selectHits()
 ## ---------------------------------------------------------------------
+
+x <- c("a", "b", "a", "c", "d")
+table <- c("a", "e", "d", "a", "a", "d")
+hits <- findMatches(x, table)  # sorts the hits by query
+hits
 
 selectHits(hits, select="all")  # no-op
 selectHits(hits, select="first")
@@ -261,7 +268,7 @@ remapHits(hits, Lnodes.remapping=Lnodes.remapping)
 ## manipulation of Hits objects.
 
 ## ---------------------------------------------------------------------
-## Auto-hits
+## SelfHits
 ## ---------------------------------------------------------------------
 
 hits2 <- Hits(c(2, 3, 3, 3, 3, 3, 4, 4, 4), c(4, 3, 2:4, 2, 2:3, 2), 4, 4)

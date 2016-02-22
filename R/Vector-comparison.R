@@ -204,9 +204,9 @@ setGeneric("countMatches", signature=c("x", "table"),
         table_hits <- unlist(hits_per_x, use.names=FALSE)
     }
     if (transpose) {
-        Hits(table_hits, x_hits, length(table), length(x))
+        Hits(table_hits, x_hits, length(table), length(x), sort.by.query=TRUE)
     } else {
-        Hits(x_hits, table_hits, length(x), length(table))
+        Hits(x_hits, table_hits, length(x), length(table), sort.by.query=TRUE)
     }
 }
 

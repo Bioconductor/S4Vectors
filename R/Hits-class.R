@@ -194,10 +194,9 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
 ### High-level constructor.
 ### This constructor currently returns a SortedByQueryHits instance by
 ### default.
-### TODO: Change the default for 'sort.by.query' from TRUE to FALSE.
 Hits <- function(from=integer(0), to=integer(0),
                  nLnode=0L, nRnode=0L,
-                 ..., sort.by.query=TRUE)
+                 ..., sort.by.query=FALSE)
 {
     if (!isTRUEorFALSE(sort.by.query))
         stop("'sort.by.query' must be TRUE or FALSE")
@@ -606,8 +605,7 @@ remapHits <- function(x, Lnodes.remapping=NULL, new.nLnode=NA,
         x_to <- x_to[keep_idx]
         x_mcols <- extractROWS(x_mcols, keep_idx)
     }
-    do.call(Hits, c(list(x_from, x_to, new.nLnode, new.nRnode),
-                    as.list(x_mcols)))
+    new_Hits(class(x), x_from, x_to, new.nLnode, new.nRnode, x_mcols)
 }
 
 
