@@ -61,8 +61,10 @@
 \title{Hits objects}
 
 \description{
-  The \code{Hits} class stores a set of hits between 2 vector-like objects,
-  one called the "query" and the other one the "subject".
+  The Hits class is a container for representing a set of hits between
+  a set of left nodes and a set of right nodes.
+  Note that only the hits are stored in the object. No information about
+  the left or right nodes is stored, except their number.
 
   For example, the \code{\link[IRanges]{findOverlaps}} function, defined
   and documented in the \pkg{IRanges} package, returns the hits between
