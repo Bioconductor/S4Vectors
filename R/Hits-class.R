@@ -250,7 +250,13 @@ setMethod("updateObject", "Hits",
 setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
 
 setMethod("as.matrix", "Hits",
-    function(x) cbind(queryHits=from(x), subjectHits=to(x))
+    function(x)
+    {
+        ans <- cbind(from=from(x), to=to(x))
+        if (is(x, "SortedByQueryHits"))
+            colnames(ans) <- c("queryHits", "subjectHits")
+        ans
+    }
 )
 
 setMethod("as.table", "Hits", .count_Lnode_hits)
@@ -284,13 +290,15 @@ setMethod("extractROWS", "SortedByQueryHits",
 
 setMethod("classNameForDisplay", "Hits", function(x) "Hits")
 
-.makeNakedMatFromHits <- function(x)
+.make_naked_matrix_from_Hits <- function(x)
 {
     x_len <- length(x)
     x_mcols <- mcols(x)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(queryHits=as.character(from(x)),
-                 subjectHits=as.character(to(x)))
+    ans <- cbind(from=as.character(from(x)),
+                 to=as.character(to(x)))
+    if (is(x, "SortedByQueryHits"))
+        colnames(ans) <- c("queryHits", "subjectHits")
     if (x_nmc > 0L) {
         tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
                                      list(check.names=FALSE)))
@@ -311,12 +319,14 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
         " and ",
         x_nmc, " metadata column", ifelse(x_nmc == 1L, "", "s"),
         ":\n", sep="")
-    out <- makePrettyMatrixForCompactPrinting(x, .makeNakedMatFromHits)
+    out <- makePrettyMatrixForCompactPrinting(x, .make_naked_matrix_from_Hits)
     if (print.classinfo) {
         .COL2CLASS <- c(
-            queryHits="integer",
-            subjectHits="integer"
+            from="integer",
+            to="integer"
         )
+        if (is(x, "SortedByQueryHits"))
+            names(.COL2CLASS) <- c("queryHits", "subjectHits")
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         ## A sanity check, but this should never happen!
         stopifnot(identical(colnames(classinfo), colnames(out)))
@@ -330,8 +340,13 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
     print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.nnode) {
         cat(margin, "-------\n", sep="")
-        cat(margin, "queryLength: ", nLnode(x), "\n", sep="")
-        cat(margin, "subjectLength: ", nRnode(x), "\n", sep="")
+        if (is(x, "SortedByQueryHits")) {
+            cat(margin, "queryLength: ", nLnode(x),
+                " / subjectLength: ", nRnode(x), "\n", sep="")
+        } else {
+            cat(margin, "nLnode: ", nLnode(x),
+                " / nRnode: ", nRnode(x), "\n", sep="")
+        }
     }
 }
 
