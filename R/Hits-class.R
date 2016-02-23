@@ -142,7 +142,7 @@ setValidity2("SortedByQueryHits", .valid.SortedByQueryHits)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor
+### Constructors
 ###
 
 ### Very low-level constructor. Doesn't try to sort the hits by query.
@@ -217,8 +217,8 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
 
 ### 2 high-level constructors.
 
-Hits <- function(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
-                 ..., sort.by.query=FALSE)
+Hits <- function(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L, ...,
+                 sort.by.query=FALSE)
 {
     if (!isTRUEorFALSE(sort.by.query))
         stop("'sort.by.query' must be TRUE or FALSE")
@@ -227,8 +227,8 @@ Hits <- function(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
     new_Hits(Class, from, to, nLnode, nRnode, mcols)
 }
 
-SelfHits <- function(from=integer(0), to=integer(0), nnode=0L,
-                     ..., sort.by.query=FALSE)
+SelfHits <- function(from=integer(0), to=integer(0), nnode=0L, ...,
+                     sort.by.query=FALSE)
 {
     if (!isTRUEorFALSE(sort.by.query))
         stop("'sort.by.query' must be TRUE or FALSE")

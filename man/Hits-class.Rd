@@ -83,9 +83,13 @@
 }
 
 \usage{
-## Constructor function
-Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
-     ..., sort.by.query=FALSE)
+## Constructor functions
+
+Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L, ...,
+     sort.by.query=FALSE)
+
+SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
+     sort.by.query=FALSE)
 }
 
 \arguments{
@@ -105,6 +109,9 @@ Hits(from=integer(0), to=integer(0), nLnode=0L, nRnode=0L,
     Should the hits in the returned object be sorted by query? If yes, then
     a SortedByQueryHits instance is returned (SortedByQueryHits is a subclass
     of Hits).
+  }
+  \item{nnode}{
+    Number of nodes.
   }
 }
 
