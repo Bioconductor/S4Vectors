@@ -243,8 +243,8 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
   \itemize{
     \item \link{Hits-comparison} for comparing and ordering hits.
 
-    \item \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package,
-          which generates an instance of this class.
+    \item The \code{\link[IRanges]{findOverlaps}} function in the
+          \pkg{IRanges} package which returns SortedByQueryHits object.
 
     \item \link[IRanges]{Hits-examples} in the \pkg{IRanges} package, for
           some examples of Hits object basic manipulation.
