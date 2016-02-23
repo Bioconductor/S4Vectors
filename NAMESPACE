@@ -337,7 +337,7 @@ exportMethods(
     ROWNAMES,
     as.env,
     metadata, "metadata<-",
-    parallelVectorNames,
+    parallelSlotNames, parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
