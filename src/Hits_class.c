@@ -367,8 +367,8 @@ SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 		}
 		iofeig += gs;
 	}
-	ans = new_Hits0("SortedByQueryHits", ans_from, ans_to,
-					     iofeig, iofeig);
+	ans = new_Hits0("SortedByQuerySelfHits", ans_from, ans_to,
+						 iofeig, iofeig);
 	UNPROTECT(2);
 	return ans;
 }
