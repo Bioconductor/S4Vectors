@@ -222,7 +222,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
   and \code{nRnode()}.
 
   We also provide two little utilities to operate on a SelfHits object
-  code{x}:
+  \code{x}:
   \describe{
     \item{}{\code{isSelfHit(x)}: A \emph{self hit} is an edge from a node to
       itself. \code{isSelfHit(x)} returns a logical vector \emph{parallel}
