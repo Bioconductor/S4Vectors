@@ -107,7 +107,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
   }
   \item{sort.by.query}{
     Should the hits in the returned object be sorted by query? If yes, then
-    a SortedByQueryHits instance is returned (SortedByQueryHits is a subclass
+    a SortedByQueryHits object is returned (SortedByQueryHits is a subclass
     of Hits).
   }
   \item{nnode}{
