@@ -7,12 +7,12 @@
 % accessors
 \alias{first}
 \alias{first,Pairs-method}
-\alias{last}
-\alias{last,Pairs-method}
+\alias{second}
+\alias{second,Pairs-method}
 \alias{first<-}
 \alias{first<-,Pairs-method}
-\alias{last<-}
-\alias{last<-,Pairs-method}
+\alias{second<-}
+\alias{second<-,Pairs-method}
 \alias{names,Pairs-method}
 \alias{names<-,Pairs-method}
 \alias{length,Pairs-method}
@@ -50,14 +50,14 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{Pairs(first, last, ..., names = NULL, hits = NULL)}:
+      \code{Pairs(first, second, ..., names = NULL, hits = NULL)}:
       Constructs a Pairs object by aligning the vectors \code{first} and
-      \code{last}. The vectors must have the same length, unless
+      \code{second}. The vectors must have the same length, unless
       \code{hits} is specified. Arguments in \code{\dots} are combined
       as columns in the \code{mcols} of the result. The \code{names}
       argument specifies the names on the result. If \code{hits} is not
       \code{NULL}, it should be a \code{\linkS4class{Hits}} object that
-      collates the elements in \code{first} and \code{last} to produce
+      collates the elements in \code{first} and \code{second} to produce
       the corresponding pairs.
     }
   }
@@ -70,8 +70,8 @@
       get or set the names}
     \item{}{\code{first(x)}, \code{first(x) <- value}:
       get or set the first member of each pair}
-    \item{}{\code{last(x)}, \code{last(x) <- value}:
-      get or set the last (second) member of each pair}
+    \item{}{\code{second(x)}, \code{second(x) <- value}:
+      get or set the second member of each pair}
   }
 }
 

@@ -8,17 +8,17 @@
 setClass("Pairs",
          contains="Vector",
          representation(first="ANY",
-                        last="ANY",
+                        second="ANY",
                         NAMES="characterORNULL"),
          prototype(first=logical(0L),
-                   last=logical(0L),
+                   second=logical(0L),
                    elementMetadata=DataFrame()))
 
 setValidity2("Pairs", .valid.Pairs)
 
 .valid.Pairs <- function(object) {
-    c(if (length(object@first) != length(object@last))
-          "'first' and 'last' must have the same length",
+    c(if (length(object@first) != length(object@second))
+          "'first' and 'second' must have the same length",
       if (!is.null(object@NAMES) &&
           length(object@NAMES) != length(object@first))
           "'NAMES', if not NULL, must have the same length as object"
@@ -30,22 +30,22 @@ setValidity2("Pairs", .valid.Pairs)
 ###
 
 setGeneric("first", function(x, ...) standardGeneric("first"))
-setGeneric("last", function(x, ...) standardGeneric("last"))
+setGeneric("second", function(x, ...) standardGeneric("second"))
 
 setMethod("first", "Pairs", function(x) x@first)
-setMethod("last", "Pairs", function(x) x@last)
+setMethod("second", "Pairs", function(x) x@second)
 
 setGeneric("first<-", function(x, ..., value) standardGeneric("first<-"),
            signature="x")
-setGeneric("last<-", function(x, ..., value) standardGeneric("last<-"),
+setGeneric("second<-", function(x, ..., value) standardGeneric("second<-"),
            signature="x")
 
 setReplaceMethod("first", "Pairs", function(x, value) {
                      x@first <- value
                      x
                  })
-setReplaceMethod("last", "Pairs", function(x, value) {
-                     x@last <- value
+setReplaceMethod("second", "Pairs", function(x, value) {
+                     x@second <- value
                      x
                  })
 
@@ -58,28 +58,28 @@ setReplaceMethod("names", "Pairs", function(x, value) {
 setMethod("length", "Pairs", function(x) length(first(x)))
 
 setMethod("parallelSlotNames", "Pairs", function(x)
-    c("first", "last", "NAMES", callNextMethod()))
+    c("first", "second", "NAMES", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor
 ###
 
-Pairs <- function(first, last, ..., names = NULL, hits = NULL) {
-    stopifnot(length(first) == length(last),
+Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
+    stopifnot(length(first) == length(second),
               is.null(names) || length(names) == length(first))
     if (!is.null(hits)) {
         stopifnot(is(hits, "Hits"),
                   queryLength(hits) == length(first),
-                  subjectLength(hits) == length(last))
+                  subjectLength(hits) == length(second))
         first <- first[queryHits(hits)]
-        last <- last[subjectHits(hits)]
+        second <- second[subjectHits(hits)]
     }
     if (!missing(...)) {
         elementMetadata <- DataFrame(...)
     } else {
         elementMetadata <- make_zero_col_DataFrame(length(first))
     }
-    new("Pairs", first=first, last=last, NAMES=names,
+    new("Pairs", first=first, second=second, NAMES=names,
                  elementMetadata=elementMetadata)
 }
 
@@ -91,7 +91,7 @@ setMethod("match", c("Pairs", "Pairs"),
           function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) {
               hits <- intersect(findMatches(first(x), first(table),
                                             incomparables=incomparables, ...),
-                                findMatches(last(x), last(table),
+                                findMatches(second(x), second(table),
                                             incomparables=incomparables, ...))
               ans <- selectHits(hits, "first")
               if (!identical(nomatch, NA_integer_)) {
@@ -119,7 +119,7 @@ setMethod("zipup", c("ANY", "ANY"), function(x, y) {
           })
 
 setMethod("zipup", c("Pairs", "missing"), function(x, y, ...) {
-              zipped <- zipup(first(x), last(x), ...)
+              zipped <- zipup(first(x), second(x), ...)
               names(zipped) <- names(x)
               mcols(zipped) <- mcols(x)
               zipped
@@ -141,7 +141,7 @@ setMethod("zipdown", "List", function(x) {
           })
 
 setAs("Pairs", "DataFrame", function(from) {
-          df <- DataFrame(first=first(from), last=last(from),
+          df <- DataFrame(first=first(from), second=second(from),
                           mcols(from), check.names=FALSE)
           df$names <- names(from)
           df
@@ -164,7 +164,7 @@ setMethod("as.data.frame", "Pairs",
                  0L
              else ncol(x_mcols)
     ans <- cbind(first = showAsCell(first(x)),
-                 last = showAsCell(last(x)))
+                 second = showAsCell(second(x)))
     if (x_nmc > 0L) {
         tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell), 
                                      list(check.names = FALSE)))
@@ -185,7 +185,7 @@ showPairs <- function(x, margin = "", print.classinfo = FALSE) {
         ifelse(x_nmc == 1L, "", "s"), ":\n", sep = "")
     out <- makePrettyMatrixForCompactPrinting(x, .makeNakedMatFromPairs)
     if (print.classinfo) {
-        .COL2CLASS <- c(first = class(first(x)), last = class(last(x)))
+        .COL2CLASS <- c(first = class(first(x)), second = class(second(x)))
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)

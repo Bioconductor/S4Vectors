@@ -5,7 +5,7 @@ test_Pairs <- function() {
     checkIdentical(mcols(p)$score, score)
     checkIdentical(p %in% p[1:5], c(rep(TRUE, 5), rep(FALSE, 5)))
     checkIdentical(as.data.frame(p),
-                   data.frame(first=first(p), last=last(p), score,
+                   data.frame(first=first(p), second=second(p), score,
                               names=names(p), stringsAsFactors=FALSE))
     z <- zipup(p)
     first(p) <- Rle(1:10)

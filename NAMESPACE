@@ -249,7 +249,7 @@ export(
     FilterRules, FilterMatrix,
 
     ## Pairs-class.R:
-    Pairs, first, "first<-", last, "last<-", zipup, zipdown
+    Pairs, first, "first<-", second, "second<-", zipup, zipdown
 )
 
 
