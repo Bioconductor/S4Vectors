@@ -251,7 +251,7 @@ setMethod("as.data.frame", "Vector",
           function(x, row.names=NULL, optional=FALSE, ...)
           {
               x <- as.vector(x)
-              as.data.frame(x, row.names=NULL, optional=optional, ...)
+              as.data.frame(x, row.names=row.names, optional=optional, ...)
           })
 
 makeFixedColumnEnv <- function(x, parent, tform = identity) {
