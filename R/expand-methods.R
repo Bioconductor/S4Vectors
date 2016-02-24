@@ -80,7 +80,7 @@ expandByColumnSet <- function(x, colnames, keepEmptyRows) {
     emptyRows <- elementNROWS(col) == 0L
     x[emptyRows, colnames] <- rep(NA, sum(emptyRows))
   }
-  ans <- x[togroup(x[[colnames[1L]]]),,drop=FALSE]
+  ans <- x[quick_togroup(x[[colnames[1L]]]),,drop=FALSE]
   ans[colnames] <- lapply(x[colnames], unlist, use.names = FALSE)
   ans
 }

@@ -10,14 +10,16 @@
 \alias{endoapply,data.frame-method}
 \alias{endoapply,List-method}
 
+\alias{revElements}
+\alias{revElements,list-method}
+\alias{revElements,List-method}
+
 \alias{mendoapply}
 \alias{mendoapply,list-method}
 \alias{mendoapply,data.frame-method}
 \alias{mendoapply,List-method}
 
-\alias{revElements}
-\alias{revElements,list-method}
-\alias{revElements,List-method}
+\alias{pc}
 
 \alias{Reduce,List-method}
 \alias{Filter,List-method}
@@ -46,9 +48,11 @@
 
 endoapply(X, FUN, ...)
 
+revElements(x, i)
+
 mendoapply(FUN, ..., MoreArgs=NULL)
 
-revElements(x, i)
+pc(...)
 
 ## Functional programming methods for List objects:
 ## ------------------------------------------------
@@ -80,6 +84,8 @@ revElements(x, i)
 
     For \code{mendoapply}, a set of list, data.frame or \link{List}
     objects to compute over.
+
+    For \code{pc}, one or more list-like objects.
 
     For \code{Map}, one or more \link{List} objects.
     (FIXME: Mixing \link{List} objects with ordinary lists doesn't seem
@@ -124,8 +130,22 @@ revElements(x, i)
     of \code{\link[base]{lapply}} and \code{\link[base]{mapply}} by returning
     objects of the same class as the inputs rather than a list.
 
-    \code{revElements} is a convenient way to do
+    \code{revElements(x, i)} reverses the list elements in \code{x} specified
+    by \code{i}. It's equivalent to, but faster than, doing
     \code{x[i] <- endoapply(x[i], rev)}.
+
+    \code{pc(...)} combines list-like objects in an element-wise fashion.
+    It's similar to, but faster than, \code{mapply(c, ..., SIMPLIFY=FALSE)}.
+    With the following differences:
+    \enumerate{
+      \item \code{pc()} ignores the supplied objects that are NULL.
+      \item \code{pc()} does not recycle its arguments. All the supplied
+            objects must have the same length.
+      \item If one of the supplied objects is a \link{List} object, then
+            \code{pc()} returns a \link{List} object.
+      \item \code{pc()} always returns a homogenous list or \link{List} object,
+            that is, an object where all the list elements have the same type.
+    }
   }
   \subsection{Functional programming methods for List objects}{
     The R base package defines some higher-order functions that are commonly
@@ -154,6 +174,9 @@ revElements(x, i)
   object specified in \code{\dots}, each element of which is the result
   of applying \code{FUN} to the corresponding elements of \code{\dots}.
 
+  \code{pc} returns a list or List object of the same length as the
+  input objects.
+
   See \code{?base::\link[base]{Reduce}} for the value returned by the
   functional programming methods.
 
@@ -161,7 +184,7 @@ revElements(x, i)
   \code{within}.
 }
 
-\author{P. Aboyoun}
+\author{P. Aboyoun and H. Pagès}
 
 \seealso{
   \itemize{
@@ -185,9 +208,14 @@ b <- data.frame(x = 1:10, y = rnorm(10))
 endoapply(a, function(x) (x - mean(x))/sd(x))
 mendoapply(function(e1, e2) (e1 - mean(e1)) * (e2 - mean(e2)), a, b)
 
+x <- list(a=11:13, b=26:21, c=letters)
+y <- list(-(5:1), c("foo", "bar"), 0.25)
+pc(x, y)
+
 library(IRanges)
-x <- IntegerList(a=1:3, b=16:11, c=22:21, d=31:36)
-x
+x <- IntegerList(a=11:13, b=26:21, c=31:36, d=4:2)
+y <- NumericList(-(5:1), 1:2, numeric(0), 0.25)
+pc(x, y)
 
 Reduce("+", x)
 

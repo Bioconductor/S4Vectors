@@ -13,6 +13,10 @@ last_or <- function(x, or)
     if (x_len != 0L) x[[x_len]] else or
 }
 
+### TODO: Maybe implement this in C?
+sapply_isNULL <- function(x)
+    vapply(x, is.null, logical(1), USE.NAMES=FALSE)
+
 sapply_NROW <- function(x)
 {
     if (!is.list(x))
@@ -23,7 +27,7 @@ sapply_NROW <- function(x)
         return(ans)
     }
     ## From here, 'length(x)' is guaranteed to be != 0
-    return(sapply(x, NROW))
+    return(vapply(x, NROW, integer(1)))
 }
 
 listElementType <- function(x) {

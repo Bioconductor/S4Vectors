@@ -492,6 +492,9 @@ Vector_tail <- function(x, n=6L)
 }
 setMethod("tail", "Vector", Vector_tail)
 
+## NOT exported.
+revROWS <- function(x) extractROWS(x, rev(seq_len(NROW(x))))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Internal helpers used by the "show" method of various Vector subclasses.

@@ -28,6 +28,13 @@ setGeneric("elementNROWS", function(x) standardGeneric("elementNROWS"))
 
 setMethod("elementNROWS", "ANY", sapply_NROW)
 
+### Used in the SGSeq package!
+quick_togroup <- function(x)
+{
+    x_eltNROWS <- elementNROWS(x)
+    rep.int(seq_along(x_eltNROWS), x_eltNROWS)
+}
+
 setMethod("elementNROWS", "List",
     function(x)
     {
@@ -711,31 +718,4 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
 setMethod("as.data.frame", "List", .as.data.frame.List)
 
 setAs("List", "data.frame", function(from) as.data.frame(from))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Element-wise appending for list-like objects
-###
-### TODO: Move to List-utils.R (Looping methods section).
-###
-pc <- function(...) {
-  args <- list(...)
-  args <- Filter(Negate(is.null), args)
-  if (length(args) <= 1L) {
-    return(args[[1L]])
-  }
-  if (length(unique(elementNROWS(args))) > 1L) {
-    stop("All arguments in '...' must have the same length")
-  }
-
-  ans_unlisted <- do.call(c, lapply(args, unlist, use.names=FALSE))
-  ans_group <- structure(do.call(c, lapply(args, IRanges::togroup)),
-                         class="factor",
-                         levels=as.character(seq_along(args[[1L]])))
-  
-  ans <- IRanges::splitAsList(ans_unlisted, ans_group)
-
-  names(ans) <- names(args[[1L]])
-  ans
-}
 

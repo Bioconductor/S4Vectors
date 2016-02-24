@@ -44,6 +44,29 @@ setMethod("endoapply", "List",
               X
           })
 
+setGeneric("revElements", signature="x",
+    function(x, i) standardGeneric("revElements")
+)
+
+### These 2 methods explain the concept of revElements() but they are not
+### efficient because they loop over the elements of 'x[i]'.
+### There is a fast method for CompressedList objects though.
+setMethod("revElements", "list",
+    function(x, i)
+    {
+        x[i] <- lapply(x[i], revROWS)
+        x
+    }
+)
+
+setMethod("revElements", "List",
+    function(x, i)
+    {
+        x[i] <- endoapply(x[i], revROWS)
+        x
+    }
+)
+
 setGeneric("mendoapply", signature = "...",
            function(FUN, ..., MoreArgs = NULL) standardGeneric("mendoapply"))
 
@@ -69,30 +92,36 @@ setMethod("mendoapply", "List",
               X
           })
 
-setGeneric("revElements", signature="x",
-    function(x, i) standardGeneric("revElements")
-)
+### Element-wise c() for list-like objects.
+### This is a fast mapply(c, ..., SIMPLIFY=FALSE) but with the following
+### differences:
+###   1) pc() ignores the supplied objects that are NULL.
+###   2) pc() does not recycle its arguments. All the supplied objects must
+###      have the same length.
+###   3) If one of the supplied objects is a List object, then pc() returns a
+###      List object.
+###   4) pc() always returns a homogenous list or List object, that is, an
+###      object where all the list elements have the same type.
+pc <- function(...)
+{
+    args <- unname(list(...))
+    args <- args[!sapply_isNULL(args)]
+    if (length(args) == 0L)
+        return(list())
+    if (length(args) == 1L)
+        return(args[[1L]])
+    args_NROWS <- elementNROWS(args)
+    if (!all(args_NROWS == args_NROWS[[1L]]))
+        stop("all the objects to combine must have the same length")
 
-### These 2 methods explain the concept of revElements() but they are not
-### efficient because they loop over the elements of 'x[i]'.
-### There is a fast method for CompressedList objects though.
-setMethod("revElements", "list",
-    function(x, i)
-    {
-        x[i] <- lapply(x[i], function(xx)
-                    extractROWS(xx, rev(seq_len(NROW(xx)))))
-        x
-    }
-)
-
-setMethod("revElements", "List",
-    function(x, i)
-    {
-        x[i] <- endoapply(x[i], function(xx)
-                    extractROWS(xx, rev(seq_len(NROW(xx)))))
-        x
-    }
-)
+    ans_as_List <- any(vapply(args, is, logical(1), "List", USE.NAMES=FALSE))
+    SPLIT.FUN <- if (ans_as_List) IRanges::splitAsList else split
+    ans_unlisted <- do.call(c, lapply(args, unlist, use.names=FALSE))
+    f <- structure(unlist(lapply(args, quick_togroup), use.names=FALSE),
+                   levels=as.character(seq_along(args[[1L]])),
+                   class="factor")
+    setNames(SPLIT.FUN(ans_unlisted, f), names(args[[1L]]))
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

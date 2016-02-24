@@ -410,14 +410,9 @@ combine_Hits_objects <- function(Class, objects,
     if (!isTRUEorFALSE(ignore.mcols))
         stop("'ignore.mcols' must be TRUE or FALSE")
 
-    if (length(objects) != 0L) {
-        ## TODO: Implement (in C) fast 'elementIsNull(objects)' in S4Vectors
-        ## that does 'sapply(objects, is.null, USE.NAMES=FALSE)', and use it
-        ## here.
-        null_idx <- which(sapply(objects, is.null, USE.NAMES=FALSE))
-        if (length(null_idx) != 0L)
-            objects <- objects[-null_idx]
-    }
+    NULL_idx <- which(sapply_isNULL(objects))
+    if (length(NULL_idx) != 0L)
+        objects <- objects[-NULL_idx]
     if (length(objects) == 0L)
         return(new(Class))
 
