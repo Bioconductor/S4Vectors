@@ -1,7 +1,7 @@
 useDynLib(S4Vectors)
 
 import(methods)
-importFrom(utils, head, tail)
+importFrom(utils, head, tail, head.matrix, tail.matrix)
 importFrom(stats, var, cov, cor, sd, median, quantile,
            smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames)
@@ -56,6 +56,7 @@ S3method(droplevels, Rle)
 S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
 
+S3method(head, DataTable)
 S3method(head, Vector)
 
 S3method(levels, Rle)
@@ -74,6 +75,7 @@ S3method(sort, Vector)
 
 S3method(summary, Rle)
 
+S3method(tail, DataTable)
 S3method(tail, Vector)
 
 S3method(unique, DataTable)
@@ -104,6 +106,7 @@ export(
     duplicated.DataTable,
     duplicated.Vector,
 
+    head.DataTable,
     head.Vector,
 
     levels.Rle,
@@ -120,6 +123,7 @@ export(
 
     summary.Rle,
 
+    tail.DataTable,
     tail.Vector,
 
     unique.DataTable,

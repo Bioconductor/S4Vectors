@@ -51,6 +51,12 @@ setReplaceMethod("dimnames", "DataTable",
 ### Subsetting.
 ###
 
+head.DataTable <- head.matrix
+setMethod("head", "DataTable", head.DataTable)
+
+tail.DataTable <- tail.matrix
+setMethod("tail", "DataTable", tail.DataTable)
+
 setMethod("subset", "DataTable",
           function(x, subset, select, drop = FALSE, ...) 
           {

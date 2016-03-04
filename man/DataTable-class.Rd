@@ -14,6 +14,8 @@
 \alias{dimnames,DataTable-method}
 \alias{dimnames<-,DataTable-method}
 
+\alias{head.DataTable}
+\alias{tail.DataTable}
 \alias{subset,DataTable-method}
 \alias{na.omit,DataTable-method}
 \alias{na.exclude,DataTable-method}
