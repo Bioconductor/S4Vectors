@@ -226,10 +226,10 @@ printAtomicVectorInAGrid <- function(x, prefix="", justify="left")
 ### 'makeNakedMat.FUN' must be a function returning a character matrix.
 makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
 {
-    x_NROW <- NROW(x)
-    x_ROWNAMES <- ROWNAMES(x)
     nhead <- get_showHeadLines()
     ntail <- get_showTailLines()
+    x_NROW <- NROW(x)
+    x_ROWNAMES <- ROWNAMES(x)
     wrap_in_square_brackets <- function(idx) {
         if (length(idx) == 0L)
             return(character(0))
@@ -253,10 +253,10 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
         ans <- rbind(ans_top, matrix(ellipses, nrow=1L), ans_bottom)
         ## Compute 'ans_rownames' (the matrix row names).
         if (is.null(x_ROWNAMES)) {
-            top_idx <- seq(from=1L, by=1L, length.out=nhead)
-            s1 <- wrap_in_square_brackets(top_idx)
-            bottom_idx <- seq(to=x_NROW, by=1L, length.out=ntail)
-            s2 <- wrap_in_square_brackets(bottom_idx)
+            idx1 <- seq(from=1L, by=1L, length.out=nhead)
+            idx2 <- seq(to=x_NROW, by=1L, length.out=ntail)
+            s1 <- wrap_in_square_brackets(idx1)
+            s2 <- wrap_in_square_brackets(idx2)
         } else {
             s1 <- head(x_ROWNAMES, n=nhead)
             s2 <- tail(x_ROWNAMES, n=ntail)

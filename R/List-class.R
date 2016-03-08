@@ -53,8 +53,7 @@ setMethod("elementNROWS", "List",
 
 ### In BioC 3.3 elementLengths() was renamed elementNROWS() (the old name was
 ### clearly a misnomer). For backward compatibility the old name was kept
-### around and became an "alias" for elementNROWS().
-### TODO: Deprecate elementLengths() soon.
+### around, deprecated, and became an "alias" for elementNROWS().
 setGeneric("elementLengths", function(x) standardGeneric("elementLengths"))
 setMethod("elementLengths", "ANY",
     function(x)
