@@ -31,7 +31,7 @@ setClass("NSBS",
 ### There are currently 4 NSBS concrete subclasses:
 ### - in S4Vectors:
 ###     1) NativeNSBS: subscript slot is a vector of positive integers
-###     2) WindowNSBS: subscript slot is c(start, end)
+###     2) RangeNSBS:  subscript slot is c(start, end)
 ###     3) RleNSBS:    subscript slot is an integer-Rle
 ### - in IRanges:
 ###     4) RangesNSBS: subscript slot is an IRanges
@@ -87,7 +87,7 @@ setMethod("upperBound", "NSBS", function(x) x@upper_bound)
 
 setMethod("upperBoundIsStrict", "NSBS", function(x) x@upper_bound_is_strict)
 
-### The 3 default methods below are overriden by NSBS subclasses: WindowNSBS,
+### The 3 default methods below are overriden by NSBS subclasses: RangeNSBS,
 ### RleNSBS, and RangesNSBS.
 
 setMethod("length", "NSBS", function(x) length(as.integer(x)))
@@ -241,10 +241,10 @@ setMethod("as.integer", "NativeNSBS", function(x) x@subscript)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### WindowNSBS objects.
+### RangeNSBS objects.
 ###
 
-setClass("WindowNSBS",  # not exported
+setClass("RangeNSBS",  # not exported
     contains="NSBS",
     representation(
         subscript="integer"
@@ -256,7 +256,7 @@ setClass("WindowNSBS",  # not exported
 
 ### Constructor.
 
-.normarg_window_start <- function(start, argname="start")
+.normarg_range_start <- function(start, argname="start")
 {
     if (!isSingleNumberOrNA(start))
         .subscript_error("'", argname, "' must be a single number or NA")
@@ -266,14 +266,14 @@ setClass("WindowNSBS",  # not exported
 }
 
 ### Replacement for IRanges:::solveUserSEWForSingleSeq()
-### TODO: Get rid of IRanges:::solveUserSEWForSingleSeq() and use WindowNSBS()
+### TODO: Get rid of IRanges:::solveUserSEWForSingleSeq() and use RangeNSBS()
 ### instead.
-WindowNSBS <- function(x, start=NA, end=NA, width=NA)
+RangeNSBS <- function(x, start=NA, end=NA, width=NA)
 {
     x_NROW <- NROW(x)
-    start <- .normarg_window_start(start, "start")
-    end <- .normarg_window_start(end, "end")
-    width <- .normarg_window_start(width, "width")
+    start <- .normarg_range_start(start, "start")
+    end <- .normarg_range_start(end, "end")
+    width <- .normarg_range_start(width, "width")
     if (is.na(width)) {
         if (is.na(start))
             start <- 1L
@@ -294,36 +294,54 @@ WindowNSBS <- function(x, start=NA, end=NA, width=NA)
             stop("the supplied 'start', 'end', and 'width' are incompatible")
     }
     if (!(start >= 1L && start <= x_NROW + 1L && end <= x_NROW && end >= 0L))
-        stop("the specified window is out-of-bounds")
+        stop("the specified range is out-of-bounds")
     if (end < start - 1L)
-        stop("the specified window has a negative width")
-    new2("WindowNSBS", subscript=c(start, end),
-                       upper_bound=x_NROW,
-                       check=FALSE)
+        stop("the specified range has a negative width")
+    new2("RangeNSBS", subscript=c(start, end),
+                      upper_bound=x_NROW,
+                      check=FALSE)
 }
 
-setMethod("as.integer", "WindowNSBS",
+setMethod("as.integer", "RangeNSBS",
     function(x)
     {
-        start_end <- x@subscript
-        if (diff(start_end) < 0L)
+        range <- x@subscript
+        range_start <- range[[1L]]
+        range_end <- range[[2L]]
+        if (range_end < range_start)
             return(integer(0))
-        seq.int(start_end[[1L]], start_end[[2L]])
+        seq.int(range_start, range_end)
     }
 )
 
-setMethod("length", "WindowNSBS",
+setMethod("length", "RangeNSBS",
     function(x)
     {
-        start_end <- x@subscript
-        start_end[[2L]] - start_end[[1L]] + 1L
+        range <- x@subscript
+        range_start <- range[[1L]]
+        range_end <- range[[2L]]
+        range_end - range_start + 1L
     }
 )
 
-setMethod("anyDuplicated", "WindowNSBS",
+setMethod("anyDuplicated", "RangeNSBS",
           function(x, incomparables=FALSE, ...) 0L)
 
-setMethod("isStrictlySorted", "WindowNSBS", function(x) TRUE)
+setMethod("isStrictlySorted", "RangeNSBS", function(x) TRUE)
+
+setMethod("show", "RangeNSBS",
+    function(object)
+    {
+        range <- object@subscript
+        range_start <- range[[1L]]
+        range_end <- range[[2L]]
+        cat(sprintf("%d:%d%s / 1:%d%s\n",
+                    range_start, range_end,
+                    if (length(object) == 0L) " (empty)" else "",
+                    object@upper_bound,
+                    if (object@upper_bound == 0L) " (empty)" else ""))
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -437,7 +455,7 @@ setGeneric("replaceROWS", signature="x",
 
 setMethod("extractROWS", c("ANY", "ANY"), .extractROWSWithBracket)
 
-setMethod("extractROWS", c("vectorORfactor", "WindowNSBS"),
+setMethod("extractROWS", c("vectorORfactor", "RangeNSBS"),
     function(x, i)
     {
         start <- i@subscript[[1L]]

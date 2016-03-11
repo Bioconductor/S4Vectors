@@ -763,7 +763,7 @@ SEXP ranges_to_runs_mapper(
 	SEXP method
 );
 
-SEXP Rle_extract_window(
+SEXP Rle_extract_range(
 	SEXP x,
 	SEXP start,
 	SEXP end

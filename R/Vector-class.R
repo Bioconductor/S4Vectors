@@ -451,7 +451,7 @@ setMethod("replaceROWS", "Vector",
 window.Vector <- function(x, ...) window(x, ...)
 Vector_window <- function(x, start=NA, end=NA, width=NA)
 {
-    i <- WindowNSBS(x, start=start, end=end, width=width)
+    i <- RangeNSBS(x, start=start, end=end, width=width)
     extractROWS(x, i)
 }
 setMethod("window", "Vector", Vector_window)

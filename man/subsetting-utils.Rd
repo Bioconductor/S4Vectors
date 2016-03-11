@@ -22,16 +22,21 @@
 
 \alias{as.integer,NativeNSBS-method}
 
+\alias{as.integer,RangeNSBS-method}
+\alias{length,RangeNSBS-method}
+\alias{anyDuplicated,RangeNSBS-method}
+\alias{isStrictlySorted,RangeNSBS-method}
+\alias{show,RangeNSBS-method}
+
 \alias{normalizeSingleBracketSubscript}
 \alias{normalizeSingleBracketReplacementValue}
 \alias{normalizeSingleBracketReplacementValue,ANY-method}
 
 \alias{extractROWS}
+\alias{extractROWS,ANY,ANY-method}
+\alias{extractROWS,vectorORfactor,RangeNSBS-method}
 \alias{replaceROWS}
-\alias{extractROWS,ANY-method}
 \alias{replaceROWS,ANY-method}
-\alias{extractROWS,NULL-method}
-\alias{replaceROWS,NULL-method}
 
 \alias{normalizeDoubleBracketSubscript}
 

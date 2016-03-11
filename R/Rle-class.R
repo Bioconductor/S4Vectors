@@ -163,9 +163,9 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Note that they drop the metadata columns!
 ###
 
-extract_window_from_Rle <- function(x, start, end)
+extract_range_from_Rle <- function(x, start, end)
 {
-    ans <- .Call2("Rle_extract_window", x, start, end, PACKAGE="S4Vectors")
+    ans <- .Call2("Rle_extract_range", x, start, end, PACKAGE="S4Vectors")
     as(ans, class(x))  # so the function is an endomorphism
 }
 
@@ -227,12 +227,13 @@ setMethod("extractROWS", c("Rle", "ANY"),
     }
 )
 
-setMethod("extractROWS", c("Rle", "WindowNSBS"),
+setMethod("extractROWS", c("Rle", "RangeNSBS"),
     function(x, i)
     {
-        start <- i@subscript[[1L]]
-        end <- i@subscript[[2L]]
-        ans <- extract_window_from_Rle(x, start, end)
+        range <- i@subscript
+        range_start <- range[[1L]]
+        range_end <- range[[2L]]
+        ans <- extract_range_from_Rle(x, range_start, range_end)
         mcols(ans) <- extractROWS(mcols(x), i)
         ans
     }
@@ -433,7 +434,7 @@ setMethod("NSBS", "Rle",
                 i <- as(i, "NormalIRanges")
                 ## This will call the "NSBS" method for Ranges objects defined
                 ## in the IRanges package and return a RangesNSBS, or
-                ## WindowNSBS, or NativeNSBS object.
+                ## RangeNSBS, or NativeNSBS object.
                 return(callGeneric())
             }
             warning(wmsg(

@@ -73,7 +73,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Rle_start, 1),
 	CALLMETHOD_DEF(Rle_end, 1),
 	CALLMETHOD_DEF(ranges_to_runs_mapper, 4),
-	CALLMETHOD_DEF(Rle_extract_window, 3),
+	CALLMETHOD_DEF(Rle_extract_range, 3),
 	CALLMETHOD_DEF(Rle_extract_ranges, 5),
 	CALLMETHOD_DEF(Rle_getStartEndRunAndOffset, 3),
 	CALLMETHOD_DEF(Rle_window_aslist, 5),

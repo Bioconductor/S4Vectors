@@ -51,7 +51,7 @@
 \alias{extractROWS,Rle,ANY-method}
 \alias{[,Rle-method}
 \alias{[<-,Rle-method}
-\alias{extractROWS,Rle,WindowNSBS-method}
+\alias{extractROWS,Rle,RangeNSBS-method}
 
 \alias{rev.Rle}
 \alias{rev,Rle-method}

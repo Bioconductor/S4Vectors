@@ -538,58 +538,58 @@ SEXP Rle_end(SEXP x)
 
 static char errmsg_buf[200];
 
-static const char *window2runs_mapper1(const int *run_lengths, int nrun,
-		int window_start, int window_end,
+static const char *range2runs_mapper1(const int *run_lengths, int nrun,
+		int range_start, int range_end,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
 	int offset, i, j;
 
-	if (window_start == NA_INTEGER || window_start < 1) {
+	if (range_start == NA_INTEGER || range_start < 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'start' must be >= 1");
 		return errmsg_buf;
 	}
-	if (window_end == NA_INTEGER || window_end < window_start - 1) {
+	if (range_end == NA_INTEGER || range_end < range_start - 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'end' must be >= 'start' - 1");
 		return errmsg_buf;
 	}
 	offset = 0;
-	if (window_end >= window_start) {
+	if (range_end >= range_start) {
 		for (i = 0; i < nrun; i++) {
 			offset += run_lengths[i];
-			if (offset >= window_start)
+			if (offset >= range_start)
 				break;
 		}
 		if (i < nrun)
-			*Ltrim = window_start - offset + run_lengths[i] - 1;
-		if (offset >= window_end) {
+			*Ltrim = range_start - offset + run_lengths[i] - 1;
+		if (offset >= range_end) {
 			j = i;
 		} else {
 			for (j = i + 1; j < nrun; j++) {
 				offset += run_lengths[j];
-				if (offset >= window_end)
+				if (offset >= range_end)
 					break;
 			}
 		}
-		*Rtrim = offset - window_end;
+		*Rtrim = offset - range_end;
 		*spanned_nrun = j - i + 1;
 	} else {
-		/* Zero-width window. */
+		/* Zero-width range. */
 		*spanned_nrun = 0;
 		j = -1;
-		while (offset < window_end) {
+		while (offset < range_end) {
 			j++;
 			if (j >= nrun)
 				break;
 			offset += run_lengths[j];
 		}
-		if (offset == window_end)
+		if (offset == range_end)
 			i = j + 1;
 		else
 			i = j;
 	}
-	if (window_end > offset) {
+	if (range_end > offset) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'end' must be <= 'length(x)'");
 		return errmsg_buf;
@@ -636,48 +636,48 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 }
 
 /*
- * Like window2runs_mapper1() but takes 'run_breakpoints' (obtained with
+ * Like range2runs_mapper1() but takes 'run_breakpoints' (obtained with
  * 'cumsum(run_lengths)') instead of 'run_lengths' as input and uses a binary
  * search.
  */
-static const char *window2runs_mapper2(const int *run_breakpoints, int nrun,
-		int window_start, int window_end,
+static const char *range2runs_mapper2(const int *run_breakpoints, int nrun,
+		int range_start, int range_end,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
 {
 	int x_len, end_run;
 
-	if (window_start == NA_INTEGER || window_start < 1) {
+	if (range_start == NA_INTEGER || range_start < 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'start' must be >= 1");
 		return errmsg_buf;
 	}
 	x_len = nrun == 0 ? 0 : run_breakpoints[nrun - 1];
-	if (window_end == NA_INTEGER || window_end > x_len) {
+	if (range_end == NA_INTEGER || range_end > x_len) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'end' must be <= 'length(x)'");
 		return errmsg_buf;
 	}
-	if (window_end < window_start - 1) {
+	if (range_end < range_start - 1) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
 			 "'end' must be >= 'start' - 1");
 		return errmsg_buf;
 	}
-	*offset_nrun = int_bsearch(window_start, run_breakpoints, nrun);
-	if (window_end >= window_start) {
-		end_run = int_bsearch(window_end, run_breakpoints, nrun);
+	*offset_nrun = int_bsearch(range_start, run_breakpoints, nrun);
+	if (range_end >= range_start) {
+		end_run = int_bsearch(range_end, run_breakpoints, nrun);
 		*spanned_nrun = end_run - *offset_nrun + 1;
-		*Ltrim = window_start - 1;
+		*Ltrim = range_start - 1;
 		if (*offset_nrun >= 1)
 			*Ltrim -= run_breakpoints[*offset_nrun - 1];
-		*Rtrim = run_breakpoints[end_run] - window_end;
+		*Rtrim = run_breakpoints[end_run] - range_end;
 	} else {
-		/* Zero-width window. */
+		/* Zero-width range. */
 		*spanned_nrun = 0;
 	}
 	return NULL;
 }
 
-/* Method 1: Naive algo (inefficient if more than 1 window). */
+/* Method 1: Naive algo (inefficient if more than 1 range). */
 static const char *ranges2runs_mapper1(const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
@@ -689,7 +689,7 @@ static const char *ranges2runs_mapper1(const int *run_lengths, int nrun,
 	for (i = 0; i < nranges; i++) {
 		start_i = start[i];
 		end_i = start_i - 1 + width[i];
-		errmsg = window2runs_mapper1(run_lengths, nrun,
+		errmsg = range2runs_mapper1(run_lengths, nrun,
 					start_i, end_i,
 					offset_nrun + i, spanned_nrun + i,
 					Ltrim + i, Rtrim + i);
@@ -722,7 +722,7 @@ static const char *ranges2runs_mapper2(const int *run_lengths, int nrun,
 	for (i = 0; i < nranges; i++) {
 		start_i = start[i];
 		end_i = start_i - 1 + width[i];
-		errmsg = window2runs_mapper2(run_breakpoints, nrun,
+		errmsg = range2runs_mapper2(run_breakpoints, nrun,
 					start_i, end_i,
 					offset_nrun + i, spanned_nrun + i,
 					Ltrim + i, Rtrim + i);
@@ -882,10 +882,10 @@ SEXP ranges_to_runs_mapper(SEXP run_lengths, SEXP start, SEXP width,
 
 
 /****************************************************************************
- * Rle_extract_window() and Rle_extract_ranges()
+ * Rle_extract_range() and Rle_extract_ranges()
  */
 
-static SEXP extract_Rle_window(SEXP x_values, const int *x_lengths,
+static SEXP extract_Rle_range(SEXP x_values, const int *x_lengths,
 		int start_nrun, int spanned_nrun, int Ltrim, int Rtrim)
 {
 	SEXP ans_values, ans_lengths, ans;
@@ -925,7 +925,7 @@ static SEXP subset_Rle_by_runs(SEXP x,
 	if (as_list == 1) {
 		PROTECT(ans = NEW_LIST(nranges));
 		for (i = 0; i < nranges; i++) {
-			PROTECT(ans_elt = extract_Rle_window(x_values,
+			PROTECT(ans_elt = extract_Rle_range(x_values,
 						INTEGER(x_lengths),
 						start_nrun[i], spanned_nrun[i],
 						Ltrim[i], Rtrim[i]));
@@ -936,7 +936,7 @@ static SEXP subset_Rle_by_runs(SEXP x,
 		return ans;
 	}
 	if (nranges == 1)
-		return extract_Rle_window(x_values, INTEGER(x_lengths),
+		return extract_Rle_range(x_values, INTEGER(x_lengths),
 				start_nrun[0], spanned_nrun[0],
 				Ltrim[0], Rtrim[0]);
 	PROTECT(tmp_values = _subset_vectorORfactor_by_ranges(x_values,
@@ -960,29 +960,29 @@ static SEXP subset_Rle_by_runs(SEXP x,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Rle_extract_window(SEXP x, SEXP start, SEXP end)
+SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 {
-	int nwindow, x_nrun, offset_nrun, spanned_nrun, Ltrim, Rtrim;
-	const int *window_start_p, *window_end_p;
+	int nranges, x_nrun, offset_nrun, spanned_nrun, Ltrim, Rtrim;
+	const int *range_start_p, *range_end_p;
 	SEXP x_values, x_lengths;
 	const char *errmsg;
 
-	nwindow = _check_integer_pairs(start, end,
-				       &window_start_p, &window_end_p,
+	nranges = _check_integer_pairs(start, end,
+				       &range_start_p, &range_end_p,
 				       "start", "end");
-	if (nwindow != 1)
+	if (nranges != 1)
 		error("'start' and 'end' must be of length 1");
 	x_values = GET_SLOT(x, install("values"));
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
-	errmsg = window2runs_mapper1(INTEGER(x_lengths), x_nrun,
-				window_start_p[0], window_end_p[0],
+	errmsg = range2runs_mapper1(INTEGER(x_lengths), x_nrun,
+				range_start_p[0], range_end_p[0],
 				&offset_nrun, &spanned_nrun, &Ltrim, &Rtrim);
 	if (errmsg != NULL)
 		error(errmsg);
 	offset_nrun++;  /* add 1 to get the start */
-	return extract_Rle_window(x_values, INTEGER(x_lengths),
-				  offset_nrun, spanned_nrun, Ltrim, Rtrim);
+	return extract_Rle_range(x_values, INTEGER(x_lengths),
+				 offset_nrun, spanned_nrun, Ltrim, Rtrim);
 }
 
 SEXP _subset_Rle_by_ranges(SEXP x,

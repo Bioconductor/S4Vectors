@@ -390,7 +390,7 @@ setMethod("show", "Hits",
 ### "[<-") work out-of-the-box!
 ###
 
-### 'Class' must be "Hits" or the name of a concrete subclass of Hits.
+### 'Class' must be "Hits" or the name of a concrete Hits subclass.
 ### 'objects' must be a list of Hits objects.
 ### Returns an instance of class 'Class'.
 combine_Hits_objects <- function(Class, objects,
