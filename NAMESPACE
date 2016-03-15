@@ -258,6 +258,17 @@ export(
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Export S4 generics obtained by explicit promotion of functions not
+### defined in S4Vectors to S4 generics
+###
+
+export(
+    ## DataTable-class.R:
+    rowSums, colSums, rowMeans, colMeans
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Export S4 generics defined in S4Vectors + export corresponding methods
 ###
 

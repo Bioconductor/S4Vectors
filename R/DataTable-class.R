@@ -315,3 +315,15 @@ setMethod("table", "DataTable", function(...) {
 
 ## TODO: lm, glm, loess, ...
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Row-level and column-level summary
+###
+
+### Turn the row/col-level summarization function defined in base R into S4
+### generics.
+setGeneric("rowSums", signature="x")
+setGeneric("colSums", signature="x")
+setGeneric("rowMeans", signature="x")
+setGeneric("colMeans", signature="x")
+
