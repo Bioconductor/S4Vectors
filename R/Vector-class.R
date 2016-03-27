@@ -254,6 +254,10 @@ setMethod("as.data.frame", "Vector",
               as.data.frame(x, row.names=row.names, optional=optional, ...)
           })
 
+as.matrix.Vector <- function(x, ...) {
+    as.matrix(x)
+}
+
 makeFixedColumnEnv <- function(x, parent, tform = identity) {
   env <- new.env(parent=parent)
   pvnEnv <- environment(selectMethod("parallelVectorNames", class(x)))
