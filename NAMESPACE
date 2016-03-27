@@ -44,6 +44,8 @@ S3method(as.data.frame, DataTable)
 
 S3method(as.list, Vector)
 
+S3method(as.matrix, Vector)
+
 S3method(as.vector, Rle)
 
 S3method(cbind, DataFrame)
