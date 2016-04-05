@@ -65,8 +65,6 @@ setMethod("parallelSlotNames", "Pairs", function(x)
 ###
 
 Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
-    stopifnot(length(first) == length(second),
-              is.null(names) || length(names) == length(first))
     if (!is.null(hits)) {
         stopifnot(is(hits, "Hits"),
                   queryLength(hits) == length(first),
@@ -74,6 +72,8 @@ Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
         first <- first[queryHits(hits)]
         second <- second[subjectHits(hits)]
     }
+    stopifnot(length(first) == length(second),
+              is.null(names) || length(names) == length(first))
     if (!missing(...)) {
         elementMetadata <- DataFrame(...)
     } else {
