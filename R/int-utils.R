@@ -1,7 +1,10 @@
 ### =========================================================================
-### Some low-level (not exported) utility functions to operate on integer
-### vectors
+### Some low-level utility functions to operate on integer vectors
 ### -------------------------------------------------------------------------
+###
+### Unless stated otherwise, the functions defined in this file are not
+### exported.
+###
 
 
 anyMissingOrOutside <- function(x, lower = -.Machine$integer.max,
@@ -173,6 +176,8 @@ sortedIntegerPairs <- function(a, b, decreasing=FALSE, strictly=FALSE)
     .Call2("Integer_sorted2", a, b, decreasing, strictly, PACKAGE="S4Vectors")
 }
 
+### Exported!
+###
 ### For 'a' and 'b' integer vectors of equal length with no NAs,
 ### 'orderIntegerPairs(a, b)' is equivalent to (but faster than):
 ###
@@ -216,6 +221,7 @@ orderIntegerPairs <- function(a, b, decreasing=FALSE)
            PACKAGE="S4Vectors")
 }
 
+### Exported!
 matchIntegerPairs <- function(a1, b1, a2, b2, nomatch=NA_integer_,
                               method=c("auto", "quick", "hash"))
 {
@@ -251,6 +257,7 @@ matchIntegerPairs <- function(a1, b1, a2, b2, nomatch=NA_integer_,
     .Call2("Integer_selfmatch2_hash", a, b, PACKAGE="S4Vectors")
 }
 
+### Exported!
 selfmatchIntegerPairs <- function(a, b, method=c("auto", "quick", "hash"))
 {
     a <- .normargIntegerOrFactor(a, "a")
@@ -266,6 +273,8 @@ selfmatchIntegerPairs <- function(a, b, method=c("auto", "quick", "hash"))
     ans
 }
 
+### Exported!
+###
 ### For 'a' and 'b' integer vectors of equal length with no NAs,
 ### 'duplicatedIntegerPairs(a, b)' is equivalent to (but much faster than):
 ###
@@ -339,6 +348,8 @@ sortedIntegerQuads <- function(a, b, c, d, decreasing=FALSE, strictly=FALSE)
            PACKAGE="S4Vectors")
 }
 
+### Exported!
+###
 ### For 'a', 'b', 'c' and 'd' integer vectors of equal length with no NAs,
 ### 'orderIntegerQuads(a, b, c, d)' is equivalent to (but faster than):
 ###
@@ -370,6 +381,7 @@ orderIntegerQuads <- function(a, b, c, d, decreasing=FALSE)
            PACKAGE="S4Vectors")
 }
 
+### Exported!
 matchIntegerQuads <- function(a1, b1, c1, d1, a2, b2, c2, d2,
                               nomatch=NA_integer_,
                               method=c("auto", "quick", "hash"))
@@ -415,6 +427,7 @@ matchIntegerQuads <- function(a1, b1, c1, d1, a2, b2, c2, d2,
     .Call2("Integer_selfmatch4_hash", a, b, c, d, PACKAGE="S4Vectors")
 }
 
+### Exported!
 selfmatchIntegerQuads <- function(a, b, c, d,
                                   method=c("auto", "quick", "hash"))
 {
@@ -435,6 +448,7 @@ selfmatchIntegerQuads <- function(a, b, c, d,
     ans
 }
 
+### Exported!
 duplicatedIntegerQuads <- function(a, b, c, d,
                                    fromLast=FALSE,
                                    method=c("auto", "quick", "hash"))

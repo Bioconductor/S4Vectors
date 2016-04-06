@@ -221,6 +221,12 @@ export(
     normalizeSingleBracketSubscript,
     normalizeDoubleBracketSubscript,
 
+    ## int-utils.R:
+    orderIntegerPairs,
+    matchIntegerPairs, selfmatchIntegerPairs, duplicatedIntegerPairs,
+    orderIntegerQuads,
+    matchIntegerQuads, selfmatchIntegerQuads, duplicatedIntegerQuads,
+
     ## str-utils.R:
     safeExplode,
     strsplitAsListOfIntegerVectors,
