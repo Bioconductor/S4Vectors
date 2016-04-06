@@ -28,7 +28,7 @@
 \S4method{match}{Hits,Hits}(x, table, nomatch=NA_integer_, incomparables=NULL,
       method=c("auto", "quick", "hash"))
 
-\S4method{order}{Hits}(..., na.last=TRUE, decreasing=FALSE)
+\S4method{order}{Hits}(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
 }
 
 \arguments{
@@ -44,14 +44,15 @@
     Not supported.
   }
   \item{method}{
-    Use a Quicksort-based (\code{method="quick"}) or a
+    For \code{match}: Use a Quicksort-based (\code{method="quick"}) or a
     hash-based (\code{method="hash"}) algorithm.
     The latter tends to give better performance, except maybe for some
-    pathological input that we've not been able to determine so far.
-
+    pathological input that we've not encountered so far.
     When \code{method="auto"} is specified, the most efficient algorithm will
     be used, that is, the hash-based algorithm if \code{length(x) <= 2^29},
     otherwise the Quicksort-based algorithm.
+
+    For \code{order}: The \code{method} argument is ignored.
   }
   \item{...}{
     One or more \link{Hits} objects. The additional \link{Hits} objects

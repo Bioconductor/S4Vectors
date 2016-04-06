@@ -293,7 +293,7 @@
       Prints out the Rle object in a user-friendly way.
     }
     \item{}{
-      \code{order(..., na.last = TRUE, decreasing = FALSE)}:
+      \code{order(..., na.last = TRUE, decreasing = FALSE, method = c("shell", "radix"))}:
       Returns a permutation which rearranges its first argument
       into ascending or descending order, breaking ties by further
       arguments. See \code{\link[BiocGenerics]{order}}.

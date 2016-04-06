@@ -208,14 +208,14 @@ setMethod("is.na", "List",
 ###
 
 setMethod("order", "List",
-    function(..., na.last=TRUE, decreasing=FALSE)
+    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
     {
         args <- list(...)
         if (length(args) != 1L)
             stop("\"order\" method for List objects ",
                  "can only take one input object")
         .op1_apply(order, args[[1L]],
-                   na.last=na.last, decreasing=decreasing,
+                   na.last=na.last, decreasing=decreasing, method=method,
                    ANS_CONSTRUCTOR=IntegerList)
     }
 )

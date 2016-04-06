@@ -77,8 +77,9 @@ setMethod("match", c("Hits", "Hits"),
 ### TODO: Maybe add a method for SortedByQueryHits that takes advantage of
 ### the fact that Hits objects are already sorted by 'from'.
 ### 'na.last' is pointless (Hits objects don't contain NAs) so is ignored.
+### 'method' is also ignored at the moment.
 setMethod("order", "Hits",
-    function(..., na.last=TRUE, decreasing=FALSE)
+    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
     {
         if (!isTRUEorFALSE(decreasing))
             stop("'decreasing' must be TRUE or FALSE")

@@ -674,10 +674,12 @@ setMethod("match", c("Rle", "Rle"),
 
 ### FIXME: Remove in R 3.3
 setMethod("order", "Rle",
-    function(..., na.last=TRUE, decreasing=FALSE)
+    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
     {
         args <- lapply(unname(list(...)), decodeRle)
-        do.call(order, c(args, list(na.last=na.last, decreasing=decreasing)))
+        do.call(order, c(args, list(na.last=na.last,
+                                    decreasing=decreasing,
+                                    method=method)))
     }
 )
 
