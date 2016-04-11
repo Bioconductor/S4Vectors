@@ -689,12 +689,7 @@ setMethod("order", "Rle",
         if (anyMissing(runValue(x)))
             x <- x[!is.na(x)]
     }
-    if (is.integer(runValue(x)) || is.factor(runValue(x)))
-        ord <- orderInteger(runValue(x), decreasing=decreasing,
-                                         na.last=na.last)
-    else
-        ord <- order(runValue(x), decreasing=decreasing,
-                     na.last=na.last)
+    ord <- base::order(runValue(x), na.last=na.last, decreasing=decreasing)
     new_Rle(runValue(x)[ord], runLength(x)[ord], check=FALSE)
 }
 setMethod("sort", "Rle", .sort.Rle)
