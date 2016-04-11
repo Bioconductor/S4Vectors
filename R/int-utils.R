@@ -116,34 +116,12 @@ sortedIntegerPairs <- function(a, b, decreasing=FALSE, strictly=FALSE)
 }
 
 ### Exported!
-###
-### For 'a' and 'b' integer vectors of equal length with no NAs,
-### 'orderIntegerPairs(a, b)' is equivalent to (but faster than):
-###
-###   order(a, b)
-###
-### Benchmarking:
-###
-###   # Generating random pairs (representing ranges).
-###   library(S4Vectors)
-###   N <- 20000000L  # nb of ranges
-###   W <- 40L        # average width of the ranges
-###   max_end <- 55000000L
-###   set.seed(777)
-###   a <- sample(max_end - W - 2L, N, replace=TRUE)
-###   b <- W + sample(-3:3, N, replace=TRUE)
-###   ## Takes < 10 sec.:
-###   oo <- orderIntegerPairs(a, b)
-###   ## Takes about 1 min.:
-###   oo2 <- order(a, b)
-###   identical(oo, oo2)  # TRUE
-###
-### For efficiency reasons, we don't support (and don't even check) for NAs.
 orderIntegerPairs <- function(a, b, decreasing=FALSE)
 {
     a <- .normargIntegerOrFactor(a, "a")
     b <- .normargIntegerOrFactor(b, "b")
-    .Call2("Integer_order2", a, b, decreasing, PACKAGE="S4Vectors")
+    #.Call2("Integer_order2", a, b, decreasing, PACKAGE="S4Vectors")
+    base::order(a, b, decreasing=decreasing)
 }
 
 .matchIntegerPairs_quick <- function(a1, b1, a2, b2, nomatch=NA_integer_)
@@ -288,20 +266,14 @@ sortedIntegerQuads <- function(a, b, c, d, decreasing=FALSE, strictly=FALSE)
 }
 
 ### Exported!
-###
-### For 'a', 'b', 'c' and 'd' integer vectors of equal length with no NAs,
-### 'orderIntegerQuads(a, b, c, d)' is equivalent to (but faster than):
-###
-###   order(a, b, c, d)
-###
-### For efficiency reasons, we don't support (and don't even check) for NAs.
 orderIntegerQuads <- function(a, b, c, d, decreasing=FALSE)
 {
     a <- .normargIntegerOrFactor(a, "a")
     b <- .normargIntegerOrFactor(b, "b")
     c <- .normargIntegerOrFactor(c, "c")
     d <- .normargIntegerOrFactor(d, "d")
-    .Call2("Integer_order4", a, b, c, d, decreasing, PACKAGE="S4Vectors")
+    #.Call2("Integer_order4", a, b, c, d, decreasing, PACKAGE="S4Vectors")
+    base::order(a, b, c, d, decreasing=decreasing)
 }
 
 .matchIntegerQuads_quick <- function(a1, b1, c1, d1, a2, b2, c2, d2,
