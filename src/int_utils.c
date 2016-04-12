@@ -1,6 +1,7 @@
 #include "S4Vectors.h"
 
-#include <limits.h> /* for INT_MAX */
+#include <stdlib.h>  /* for malloc(), free() */
+#include <limits.h>  /* for INT_MAX */
 
 
 static int get_bucket_idx_for_int_pair(const struct htab *htab,
@@ -171,18 +172,53 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last)
 
 /****************************************************************************
  * Fast ordering of an integer vector.
- * --- .Call ENTRY POINT ---
  */
 
+static void free_radix_buffers(unsigned short int *tmp_buf1, int *tmp_buf2)
+{
+	if (tmp_buf1 != NULL)
+		free(tmp_buf1);
+	if (tmp_buf2 != NULL)
+		free(tmp_buf2);
+	return;
+}
+
+/* --- .Call ENTRY POINT --- */
 SEXP Integer_order(SEXP x, SEXP decreasing)
 {
-	int ans_length;
+	int use_radix, ans_length, *tmp_buf2;
+	unsigned short int *tmp_buf1;
 	SEXP ans;
 
+	use_radix = _can_use_radix_sort();
 	ans_length = LENGTH(x);
+	if (use_radix) {
+/*
+		tmp_buf1 = (unsigned short int *)
+			   R_alloc(sizeof(unsigned short int), ans_length);
+		tmp_buf2 = (int *) R_alloc(sizeof(int), ans_length);
+*/
+		tmp_buf1 = (unsigned short int *)
+			   malloc(sizeof(unsigned short int) * ans_length);
+		tmp_buf2 = (int *) malloc(sizeof(int) * ans_length);
+		if (tmp_buf1 == NULL || tmp_buf2 == NULL) {
+			free_radix_buffers(tmp_buf1, tmp_buf2);
+			error("S4Vectors internal error in Integer_order(): "
+			      "memory allocation failed");
+		}
+	}
 	PROTECT(ans = NEW_INTEGER(ans_length));
-	_get_order_of_int_array(INTEGER(x), ans_length,
-				LOGICAL(decreasing)[0], INTEGER(ans), 1);
+	if (use_radix) {
+		_get_radix_order_of_int_array(INTEGER(x), ans_length,
+					      LOGICAL(decreasing)[0],
+					      INTEGER(ans), 1,
+					      tmp_buf1, tmp_buf2);
+		free_radix_buffers(tmp_buf1, tmp_buf2);
+	} else {
+		_get_order_of_int_array(INTEGER(x), ans_length,
+					LOGICAL(decreasing)[0],
+					INTEGER(ans), 1);
+	}
 	UNPROTECT(1);
 	return ans;
 }

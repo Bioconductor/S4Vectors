@@ -41,6 +41,18 @@ void _get_order_of_int_array(
 	int out_shift
 );
 
+int _can_use_radix_sort();
+
+void _get_radix_order_of_int_array(
+	const int *x,
+	int nelt,
+	int desc,
+	int *out,
+	int out_shift,
+	unsigned short int *tmp_buf1,
+	int *tmp_buf2
+);
+
 void _pcompare_int_pairs(
 	const int *a1,
 	const int *b1,

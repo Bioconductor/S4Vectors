@@ -78,7 +78,7 @@ static void qsort_hits(int *from_in, const int *to_in,
 }
 
 /* Tabulated sorting. Time is O(nhit).
-    WARNINGS: 'nhit' MUST be >= 'nLnode'. 'from_in' is ALWAYS modified. */
+   WARNINGS: 'nhit' MUST be >= 'nLnode'. 'from_in' is ALWAYS modified. */
 static void tsort_hits(int *from_in, const int *to_in,
 		       int *from_out, int *to_out, int nhit, int nLnode,
 		       int *revmap)

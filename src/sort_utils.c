@@ -82,6 +82,127 @@ void _get_order_of_int_array(const int *x, int nelt,
 	return;
 }
 
+/*
+ * A radix-based version of _get_order_of_int_array().
+ * The current implementation assumes that sizeof(int) is 4 and
+ * sizeof(unsigned short int) is 2.
+ */
+
+int _can_use_radix_sort()
+{
+	return sizeof(int) == 4 && sizeof(unsigned short int) == 2;
+}
+
+#define	RADIX_LEVELS		2
+#define	BITS_PER_RADIX_LEVEL	(sizeof(unsigned short int) * CHAR_BIT)
+#define	NBUCKETS		(1 << BITS_PER_RADIX_LEVEL)
+
+static int bucket_sizes_buf[NBUCKETS * RADIX_LEVELS];
+static int bucket_offsets[NBUCKETS];
+static unsigned short int *ushort_bucket_idx_buf;
+static int desc_radix, (*radix_compar)(const void *, const void *);
+
+static void radix_sort_rec(const int *x, int *x_subset, int x_subset_len,
+		int *out, int right_shift, int *bucket_sizes)
+{
+	int bucket_idx, *previous_bucket_sizes;
+	static int i, bucket_size;
+	static unsigned short int ushort_bucket_idx;
+
+	if (x_subset_len == 0)
+		return;
+	if (x_subset_len == 1) {
+		*out = *x_subset;
+		return;
+	}
+	if (x_subset_len < NBUCKETS) {
+		aa = x;
+		qsort(x_subset, x_subset_len, sizeof(int), radix_compar);
+		memcpy(out, x_subset, sizeof(int) * x_subset_len);
+		return;
+	}
+	/* Compute bucket sizes. */
+	memset(bucket_sizes, 0, sizeof(int) * NBUCKETS);
+	if (right_shift == 0) {
+		for (i = 0; i < x_subset_len; i++) {
+			ushort_bucket_idx = x[x_subset[i]];
+			ushort_bucket_idx_buf[i] = ushort_bucket_idx;
+			bucket_sizes[ushort_bucket_idx]++;
+		}
+	} else {
+		for (i = 0; i < x_subset_len; i++) {
+			ushort_bucket_idx = x[x_subset[i]] >> right_shift;
+			ushort_bucket_idx += 0x8000;
+			ushort_bucket_idx_buf[i] = ushort_bucket_idx;
+			bucket_sizes[ushort_bucket_idx]++;
+		}
+	}
+	/* Compute bucket offsets. */
+	if (desc_radix) {
+		/* Last bucket goes first. */
+		bucket_offsets[NBUCKETS - 1] = 0;
+		for (bucket_idx = NBUCKETS - 1; bucket_idx > 0; bucket_idx--) {
+			bucket_size = bucket_sizes[bucket_idx];
+			bucket_offsets[bucket_idx - 1] =
+				bucket_offsets[bucket_idx] + bucket_size;
+		}
+	} else {
+		bucket_offsets[0] = 0;
+		for (bucket_idx = 0; bucket_idx < NBUCKETS - 1; bucket_idx++) {
+			bucket_size = bucket_sizes[bucket_idx];
+			bucket_offsets[bucket_idx + 1] =
+				bucket_offsets[bucket_idx] + bucket_size;
+		}
+	}
+	/* Sort 'x_subset' in 'out'. */
+	for (i = 0; i < x_subset_len; i++)
+		out[bucket_offsets[ushort_bucket_idx_buf[i]]++] = x_subset[i];
+	if (right_shift == 0)
+		return;
+	/* Order each bucket. */
+	right_shift -= BITS_PER_RADIX_LEVEL;
+	previous_bucket_sizes = bucket_sizes;
+	bucket_sizes += NBUCKETS;
+	if (desc_radix) {
+		/* Last bucket goes first. */
+		for (bucket_idx = NBUCKETS - 1; bucket_idx >= 0; bucket_idx--) {
+			x_subset_len = previous_bucket_sizes[bucket_idx];
+			radix_sort_rec(x, out, x_subset_len, x_subset,
+				       right_shift, bucket_sizes);
+			out += x_subset_len;
+			x_subset += x_subset_len;
+		}
+	} else {
+		for (bucket_idx = 0; bucket_idx < NBUCKETS; bucket_idx++) {
+			x_subset_len = previous_bucket_sizes[bucket_idx];
+			radix_sort_rec(x, out, x_subset_len, x_subset,
+				       right_shift, bucket_sizes);
+			out += x_subset_len;
+			x_subset += x_subset_len;
+		}
+	}
+	return;
+}
+
+void _get_radix_order_of_int_array(const int *x, int nelt,
+		int desc, int *out, int out_shift,
+		unsigned short int *tmp_buf1, int *tmp_buf2)
+{
+	int i;
+
+	for (i = 0; i < nelt; i++)
+		out[i] = i;
+	ushort_bucket_idx_buf = tmp_buf1;
+	desc_radix = desc;
+	radix_compar = desc ? compar_aa_for_stable_desc_order :
+			      compar_aa_for_stable_asc_order;
+	radix_sort_rec(x, out, nelt, tmp_buf2,
+		       32 - BITS_PER_RADIX_LEVEL, bucket_sizes_buf);
+	for (i = 0; i < nelt; i++)
+		out[i] += out_shift;
+	return;
+}
+
 
 /****************************************************************************
  * Getting the order of 2 int arrays of the same length.
