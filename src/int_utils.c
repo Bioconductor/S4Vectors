@@ -310,10 +310,8 @@ SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 	if (LENGTH(decreasing) != 2)
 		error("S4Vectors internal error in Integer_order2(): "
 		      "'decreasing' must be of length 2");
-	//use_radix = _can_use_radix_sort();
-	use_radix = 0;
+	use_radix = _can_use_radix_sort();
 	ans_length = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
-/*
 	if (use_radix) {
 		tmp_buf1 = (unsigned short int *)
 			   malloc(sizeof(unsigned short int) * ans_length);
@@ -324,17 +322,14 @@ SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 			      "memory allocation failed");
 		}
 	}
-*/
 	PROTECT(ans = NEW_INTEGER(ans_length));
 	if (use_radix) {
-/*
 		_get_radix_order_of_int_pairs(a_p, b_p, ans_length,
 					      LOGICAL(decreasing)[0],
 					      LOGICAL(decreasing)[1],
 					      INTEGER(ans), 1,
 					      tmp_buf1, tmp_buf2);
 		free_radix_buffers(tmp_buf1, tmp_buf2);
-*/
 	} else {
 		_get_order_of_int_pairs(a_p, b_p, ans_length,
 					LOGICAL(decreasing)[0],

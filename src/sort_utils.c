@@ -78,59 +78,60 @@ int _can_use_radix_sort()
 }
 
 #define	MAX_RXTARGETS		4
+static const int *rxtargets[MAX_RXTARGETS];
+static int rxdescs[MAX_RXTARGETS];
+static int last_level;
+static unsigned short int *ushort_rxbucket_idx_buf;
+
 #define	RXLEVELS_PER_RXTARGET	2
 #define	BITS_PER_RXLEVEL	(sizeof(unsigned short int) * CHAR_BIT)
 #define	RXBUCKETS		(1 << BITS_PER_RXLEVEL)
-
-static const int *rxtargets[MAX_RXTARGETS];
 static int rxbucket_sizes_bufs[RXBUCKETS *
 			       RXLEVELS_PER_RXTARGET * MAX_RXTARGETS];
-static int last_level;
-
-static unsigned short int *ushort_rxbucket_idx_buf;
 static int rxbucket_offsets[RXBUCKETS];
 
-static void radix_sort_rec(int level,
-			   int *rxtarget_subset, int subset_len, int *out)
+static void radix_sort_rec(int level, int *target_subset, int subset_len,
+			   int *out)
 {
-	const int *rxtarget;
-	int *rxbucket_sizes_buf, rxb_idx;
-	static int i, rxb_size;
-	static unsigned short int ushort_rxbucket_idx;
+	static const int *target;
+	static int i, bucket_size;
+	static unsigned short int ushort_bucket_idx;
+	int *bucket_sizes_buf, bucket_idx;
 
 	if (subset_len == 0)
 		return;
 	if (subset_len == 1) {
-		*out = *rxtarget_subset;
+		*out = *target_subset;
 		return;
 	}
-	rxtarget = rxtargets[level / 2];
-	if (subset_len < RXBUCKETS / 2) {
-		aa = rxtarget;
-		qsort(rxtarget_subset, subset_len, sizeof(int),
+	target = rxtargets[level >> 1];
+	aa_desc = rxdescs[level >> 1];
+	if (subset_len < RXBUCKETS >> 1) {
+		aa = target;
+		qsort(target_subset, subset_len, sizeof(int),
 		      compar_aa_for_stable_order);
-		memcpy(out, rxtarget_subset, sizeof(int) * subset_len);
+		memcpy(out, target_subset, sizeof(int) * subset_len);
 		return;
 	}
 
 	/* Compute bucket indices and bucket sizes. */
-	rxbucket_sizes_buf = rxbucket_sizes_bufs + level * RXBUCKETS;
-	memset(rxbucket_sizes_buf, 0, sizeof(int) * RXBUCKETS);
+	bucket_sizes_buf = rxbucket_sizes_bufs + level * RXBUCKETS;
+	memset(bucket_sizes_buf, 0, sizeof(int) * RXBUCKETS);
 	if (level % 2 == 0) {
 		/* Use 16 bits on the left to compute the bucket indices. */
 		for (i = 0; i < subset_len; i++) {
-			ushort_rxbucket_idx = rxtarget[rxtarget_subset[i]] >>
-					      BITS_PER_RXLEVEL;
-			ushort_rxbucket_idx += 0x8000;
-			ushort_rxbucket_idx_buf[i] = ushort_rxbucket_idx;
-			rxbucket_sizes_buf[ushort_rxbucket_idx]++;
+			ushort_bucket_idx = target[target_subset[i]] >>
+					    BITS_PER_RXLEVEL;
+			ushort_bucket_idx += 0x8000;
+			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
+			bucket_sizes_buf[ushort_bucket_idx]++;
 		}
 	} else {
 		/* Use 16 bits on the right to compute the bucket indices. */
 		for (i = 0; i < subset_len; i++) {
-			ushort_rxbucket_idx = rxtarget[rxtarget_subset[i]];
-			ushort_rxbucket_idx_buf[i] = ushort_rxbucket_idx;
-			rxbucket_sizes_buf[ushort_rxbucket_idx]++;
+			ushort_bucket_idx = target[target_subset[i]];
+			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
+			bucket_sizes_buf[ushort_bucket_idx]++;
 		}
 	}
 
@@ -138,24 +139,24 @@ static void radix_sort_rec(int level,
 	if (aa_desc) {
 		/* Last bucket goes first. */
 		rxbucket_offsets[RXBUCKETS - 1] = 0;
-		for (rxb_idx = RXBUCKETS - 1; rxb_idx > 0; rxb_idx--) {
-			rxb_size = rxbucket_sizes_buf[rxb_idx];
-			rxbucket_offsets[rxb_idx - 1] =
-				rxbucket_offsets[rxb_idx] + rxb_size;
+		for (bucket_idx = RXBUCKETS - 1; bucket_idx > 0; bucket_idx--) {
+			bucket_size = bucket_sizes_buf[bucket_idx];
+			rxbucket_offsets[bucket_idx - 1] =
+				rxbucket_offsets[bucket_idx] + bucket_size;
 		}
 	} else {
 		rxbucket_offsets[0] = 0;
-		for (rxb_idx = 0; rxb_idx < RXBUCKETS - 1; rxb_idx++) {
-			rxb_size = rxbucket_sizes_buf[rxb_idx];
-			rxbucket_offsets[rxb_idx + 1] =
-				rxbucket_offsets[rxb_idx] + rxb_size;
+		for (bucket_idx = 0; bucket_idx < RXBUCKETS - 1; bucket_idx++) {
+			bucket_size = bucket_sizes_buf[bucket_idx];
+			rxbucket_offsets[bucket_idx + 1] =
+				rxbucket_offsets[bucket_idx] + bucket_size;
 		}
 	}
 
-	/* Sort 'rxtarget_subset' in 'out'. */
+	/* Sort 'target_subset' in 'out'. */
 	for (i = 0; i < subset_len; i++)
 		out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] =
-			rxtarget_subset[i];
+			target_subset[i];
 	if (level == last_level)
 		return;
 
@@ -163,18 +164,20 @@ static void radix_sort_rec(int level,
 	level++;
 	if (aa_desc) {
 		/* Last bucket goes first. */
-		for (rxb_idx = RXBUCKETS - 1; rxb_idx >= 0; rxb_idx--) {
-			subset_len = rxbucket_sizes_buf[rxb_idx];
-			radix_sort_rec(level, out, subset_len, rxtarget_subset);
+		for (bucket_idx = RXBUCKETS - 1; bucket_idx >= 0; bucket_idx--)
+		{
+			subset_len = bucket_sizes_buf[bucket_idx];
+			radix_sort_rec(level, out, subset_len, target_subset);
 			out += subset_len;
-			rxtarget_subset += subset_len;
+			target_subset += subset_len;
 		}
 	} else {
-		for (rxb_idx = 0; rxb_idx < RXBUCKETS; rxb_idx++) {
-			subset_len = rxbucket_sizes_buf[rxb_idx];
-			radix_sort_rec(level, out, subset_len, rxtarget_subset);
+		for (bucket_idx = 0; bucket_idx < RXBUCKETS; bucket_idx++)
+		{
+			subset_len = bucket_sizes_buf[bucket_idx];
+			radix_sort_rec(level, out, subset_len, target_subset);
 			out += subset_len;
-			rxtarget_subset += subset_len;
+			target_subset += subset_len;
 		}
 	}
 	return;
@@ -186,12 +189,13 @@ void _get_radix_order_of_int_array(const int *x, int nelt,
 {
 	int i;
 
-	for (i = 0; i < nelt; i++)
-		out[i] = i;
 	rxtargets[0] = x;
+	rxdescs[0] = desc;
 	last_level = 1;
 	ushort_rxbucket_idx_buf = tmp_buf1;
-	aa_desc = desc;
+
+	for (i = 0; i < nelt; i++)
+		out[i] = i;
 	radix_sort_rec(0, out, nelt, tmp_buf2);
 	for (i = 0; i < nelt; i++)
 		out[i] += out_shift;
@@ -302,31 +306,26 @@ void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
 	return;
 }
 
-/*
 void _get_radix_order_of_int_pairs(const int *a, const int *b, int nelt,
 		int a_desc, int b_desc, int *out, int out_shift,
 		unsigned short int *tmp_buf1, int *tmp_buf2)
 {
 	int i;
 
+	rxtargets[0] = a;
+	rxtargets[1] = b;
+	rxdescs[0] = a_desc;
+	rxdescs[1] = b_desc;
+	last_level = 3;
+	ushort_rxbucket_idx_buf = tmp_buf1;
+
 	for (i = 0; i < nelt; i++)
 		out[i] = i;
-	last_level = 2;
-	ushort_rxbucket_idx_buf = tmp_buf1;
-	aa_desc = a_desc;
-	radix_sort_rec(a,
-		out, nelt, tmp_buf2,
-		1, rxbucket_sizes_bufs);
-	last_level = 2;
-	aa_desc = b_desc;
-	radix_sort_rec(b,
-		out, nelt, tmp_buf2,
-		1, rxbucket_sizes_bufs);
+	radix_sort_rec(0, out, nelt, tmp_buf2);
 	for (i = 0; i < nelt; i++)
 		out[i] += out_shift;
 	return;
 }
-*/
 
 void _get_matches_of_ordered_int_pairs(
 		const int *a1, const int *b1, const int *o1, int nelt1,

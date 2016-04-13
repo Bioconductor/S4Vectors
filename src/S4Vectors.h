@@ -83,7 +83,6 @@ void _get_order_of_int_pairs(
 	int out_shift
 );
 
-/*
 void _get_radix_order_of_int_pairs(
 	const int *a,
 	const int *b,
@@ -95,7 +94,6 @@ void _get_radix_order_of_int_pairs(
 	unsigned short int *tmp_buf1,
 	int *tmp_buf2
 );
-*/
 
 void _get_matches_of_ordered_int_pairs(
 	const int *a1,
