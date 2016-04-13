@@ -1,17 +1,11 @@
 /****************************************************************************
  * Low-level sorting utilities                                              *
  * ---------------------------                                              *
- *                                                                          *
- * All sortings/orderings are based on the qsort() function from the        *
- * standard C lib.                                                          *
- * Note that C qsort() is NOT "stable" so the ordering functions below      *
- * (_get_order_of_*() functions) need to ultimately break ties by position  *
- * (this is done by adding a little extra code at the end of the comparison *
- * function used in the call to qsort()).                                   *
  ****************************************************************************/
 #include "S4Vectors.h"
 #include <stdlib.h>  /* for qsort() */
 #include <limits.h>  /* for INT_MIN and INT_MAX */
+
 
 static int aa_desc, bb_desc, cc_desc, dd_desc;
 static const int *aa, *bb, *cc, *dd;
@@ -41,7 +35,7 @@ void _sort_int_array(int *x, int nelt, int desc)
 	return;
 }
 
-static int compar_aa_for_stable_order(const void *p1, const void *p2)
+static int compar_aa_stable(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
@@ -64,7 +58,7 @@ void _get_order_of_int_array(const int *x, int nelt,
 	aa = x - out_shift;
 	for (i = 0; i < nelt; i++)
 		out[i] = i + out_shift;
-	qsort(out, nelt, sizeof(int), compar_aa_for_stable_order);
+	qsort(out, nelt, sizeof(int), compar_aa_stable);
 	return;
 }
 
@@ -93,10 +87,35 @@ static int rxbucket_sizes_bufs[RXBUCKETS *
 			       RXLEVELS_PER_RXTARGET * MAX_RXTARGETS];
 static int rxbucket_offsets[RXBUCKETS];
 
+static int base_is_sorted(const int *base, int base_len,
+			  const int *target, int desc)
+{
+	int prev_tval, tval, i;
+
+	if (desc) {
+		prev_tval = INT_MAX;
+		for (i = 0; i < base_len; i++) {
+			tval = target[base[i]];
+			if (tval > prev_tval)
+				return 0;
+			prev_tval = tval;
+		}
+	} else {
+		prev_tval = INT_MIN;
+		for (i = 0; i < base_len; i++) {
+			tval = target[base[i]];
+			if (tval < prev_tval)
+				return 0;
+			prev_tval = tval;
+		}
+	}
+	return 1;
+}
+
 static void rxsort_rec(int *base, int base_len, int level, int *out)
 {
 	static const int *target;
-	static int desc, is_sorted, prev_tval, tval, i, offset, bucket_size;
+	static int desc, is_sorted, tval, i, offset, bucket_size;
 	static unsigned short int ushort_bucket_idx;
 	int *bucket_sizes_buf, first_bucket, last_bucket, bucket_idx;
 
@@ -106,39 +125,33 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 		*out = *base;
 		return;
 	}
+/*
+	if (level < last_rxlevel - 1 && base_len < RXBUCKETS) {
+		qsort(base, base_len, sizeof(int), rxcompar);
+		if (level % 2 == 1)
+			memcpy(out, base, sizeof(int) * base_len);
+		return;
+	}
+*/
+
 	target = rxtargets[level >> 1];
 	desc = rxdescs[level >> 1];
 
-	/* Find out whether 'base' is already sorted or not. */
-	is_sorted = 1;
-	if (desc) {
-		prev_tval = INT_MAX;
-		for (i = 0; i < base_len; i++) {
-			tval = target[base[i]];
-			if (tval > prev_tval) {
-				is_sorted = 0;
-				break;
-			}
-			prev_tval = tval;
-		}
-	} else {
-		prev_tval = INT_MIN;
-		for (i = 0; i < base_len; i++) {
-			tval = target[base[i]];
-			if (tval < prev_tval) {
-				is_sorted = 0;
-				break;
-			}
-			prev_tval = tval;
-		}
-	}
+	/* Find out whether 'base' is already sorted with respect to current
+	   target. */
+	is_sorted = base_is_sorted(base, base_len, target, desc);
 
-	/* Special treatment of level before last. */
-	if (level == last_rxlevel - 1) {
-		if (is_sorted)
+	/* Special treatment of last 2 levels. */
+	if (level >= last_rxlevel - 1) {
+		if (is_sorted) {
+			if (level == last_rxlevel)
+				memcpy(out, base, sizeof(int) * base_len);
 			return;
-		if (base_len < RXBUCKETS) {
+		}
+		if (level == last_rxlevel - 1 && base_len < RXBUCKETS) {
 			qsort(base, base_len, sizeof(int), rxcompar);
+			//if (level == last_rxlevel)
+			//	memcpy(out, base, sizeof(int) * base_len);
 			return;
 		}
 	}
@@ -253,11 +266,13 @@ int _sort_ints(int *base, int base_len,
 
 	aa = x;
 	aa_desc = desc;
-	rxcompar = compar_aa_for_stable_order;
+	rxcompar = compar_aa_stable;
+
 	if (!use_radix || !can_use_rxsort()) {
 		qsort(base, base_len, sizeof(int), rxcompar);
 		return 0;
 	}
+
 	auto_rxbuf1 = rxbuf1 == NULL;
 	if (auto_rxbuf1) {
 		rxbuf1 = (unsigned short int *)
@@ -274,11 +289,13 @@ int _sort_ints(int *base, int base_len,
 			return -2;
 		}
 	}
+
 	rxtargets[0] = x;
 	rxdescs[0] = desc;
 	last_rxlevel = 1;
 	ushort_rxbucket_idx_buf = rxbuf1;
 	rxsort_rec(base, base_len, 0, rxbuf2);
+
 	if (auto_rxbuf2)
 		free(rxbuf2);
 	if (auto_rxbuf1)
@@ -362,7 +379,7 @@ static int compar_aabb(int i1, int i2)
 	return ret;
 }
 
-static int compar_aabb_for_stable_order(const void *p1, const void *p2)
+static int compar_aabb_stable(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
@@ -387,7 +404,7 @@ void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
 	bb = b - out_shift;
 	for (i = 0; i < nelt; i++, out_shift++)
 		out[i] = out_shift;
-	qsort(out, nelt, sizeof(int), compar_aabb_for_stable_order);
+	qsort(out, nelt, sizeof(int), compar_aabb_stable);
 	return;
 }
 
@@ -404,11 +421,13 @@ int _sort_int_pairs(int *base, int base_len,
 	bb = b;
 	aa_desc = a_desc;
 	bb_desc = b_desc;
-	rxcompar = compar_aabb_for_stable_order;
+	rxcompar = compar_aabb_stable;
+
 	if (!use_radix || !can_use_rxsort()) {
 		qsort(base, base_len, sizeof(int), rxcompar);
 		return 0;
 	}
+
 	auto_rxbuf1 = rxbuf1 == NULL;
 	if (auto_rxbuf1) {
 		rxbuf1 = (unsigned short int *)
@@ -425,6 +444,7 @@ int _sort_int_pairs(int *base, int base_len,
 			return -2;
 		}
 	}
+
 	rxtargets[0] = a;
 	rxtargets[1] = b;
 	rxdescs[0] = a_desc;
@@ -432,6 +452,7 @@ int _sort_int_pairs(int *base, int base_len,
 	last_rxlevel = 3;
 	ushort_rxbucket_idx_buf = rxbuf1;
 	rxsort_rec(base, base_len, 0, rxbuf2);
+
 	if (auto_rxbuf2)
 		free(rxbuf2);
 	if (auto_rxbuf1)
@@ -529,7 +550,7 @@ static int compar_aabbccdd(int i1, int i2)
 	return ret;
 }
 
-static int compar_aabbccdd_for_stable_order(const void *p1, const void *p2)
+static int compar_aabbccdd_stable(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
@@ -559,7 +580,7 @@ void _get_order_of_int_quads(const int *a, const int *b,
 	dd = d - out_shift;
 	for (i = 0; i < nelt; i++, out_shift++)
 		out[i] = out_shift;
-	qsort(out, nelt, sizeof(int), compar_aabbccdd_for_stable_order);
+	qsort(out, nelt, sizeof(int), compar_aabbccdd_stable);
 	return;
 }
 

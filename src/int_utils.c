@@ -187,6 +187,33 @@ SEXP Integer_order(SEXP x, SEXP decreasing)
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	for (i = 1, ans_elt_p = INTEGER(ans); i <= ans_len; i++, ans_elt_p++)
 		*ans_elt_p = i;
+/*
+	ans_elt_p = INTEGER(ans);
+	const int *xi_elt_p = INTEGER(x);
+	is_sorted = 1;
+	int prev_xi;
+	if (LOGICAL(decreasing)[0]) {
+		prev_xi = INT_MAX;
+		for (i = 1; i <= ans_len; i++) {
+			*(ans_elt_p++) = i;
+			if (*xi_elt_p > prev_xi)
+				is_sorted = 0;
+			prev_xi = *(xi_elt_p++);
+		}
+	} else {
+		prev_xi = INT_MIN;
+		for (i = 1; i <= ans_len; i++) {
+			*(ans_elt_p++++) = i;
+			if (*xi_elt_p < prev_xi)
+				is_sorted = 0;
+			prev_xi = *(xi_elt_p++);
+		}
+	}
+	if (is_sorted) {
+		UNPROTECT(1);
+		return ans;
+	}
+*/
 	i = _sort_ints(INTEGER(ans), ans_len,
 		       INTEGER(x) - 1,
 		       LOGICAL(decreasing)[0],
