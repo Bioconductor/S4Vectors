@@ -92,26 +92,25 @@ static int rxbucket_sizes_bufs[RXBUCKETS *
 			       RXLEVELS_PER_RXTARGET * MAX_RXTARGETS];
 static int rxbucket_offsets[RXBUCKETS];
 
-static void rxsort_rec(int level, int *target_subset, int subset_len, int *out)
+static void rxsort_rec(int *base, int base_len, int level, int *out)
 {
 	static const int *target;
 	static int i, bucket_size;
 	static unsigned short int ushort_bucket_idx;
 	int *bucket_sizes_buf, bucket_idx;
 
-	if (subset_len == 0)
+	if (base_len == 0)
 		return;
-	if (subset_len == 1) {
-		*out = *target_subset;
+	if (base_len == 1) {
+		*out = *base;
 		return;
 	}
 	target = rxtargets[level >> 1];
 	aa_desc = rxdescs[level >> 1];
-	if (subset_len < RXBUCKETS >> 1) {
+	if (base_len < RXBUCKETS >> 1) {
 		aa = target;
-		qsort(target_subset, subset_len, sizeof(int),
-		      compar_aa_for_stable_order);
-		memcpy(out, target_subset, sizeof(int) * subset_len);
+		qsort(base, base_len, sizeof(int), compar_aa_for_stable_order);
+		memcpy(out, base, sizeof(int) * base_len);
 		return;
 	}
 
@@ -120,8 +119,8 @@ static void rxsort_rec(int level, int *target_subset, int subset_len, int *out)
 	memset(bucket_sizes_buf, 0, sizeof(int) * RXBUCKETS);
 	if (level % 2 == 0) {
 		/* Use 16 bits on the left to compute the bucket indices. */
-		for (i = 0; i < subset_len; i++) {
-			ushort_bucket_idx = target[target_subset[i]] >>
+		for (i = 0; i < base_len; i++) {
+			ushort_bucket_idx = target[base[i]] >>
 					    BITS_PER_RXLEVEL;
 			ushort_bucket_idx += 0x8000;
 			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
@@ -129,8 +128,8 @@ static void rxsort_rec(int level, int *target_subset, int subset_len, int *out)
 		}
 	} else {
 		/* Use 16 bits on the right to compute the bucket indices. */
-		for (i = 0; i < subset_len; i++) {
-			ushort_bucket_idx = target[target_subset[i]];
+		for (i = 0; i < base_len; i++) {
+			ushort_bucket_idx = target[base[i]];
 			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
 			bucket_sizes_buf[ushort_bucket_idx]++;
 		}
@@ -154,10 +153,9 @@ static void rxsort_rec(int level, int *target_subset, int subset_len, int *out)
 		}
 	}
 
-	/* Sort 'target_subset' in 'out'. */
-	for (i = 0; i < subset_len; i++)
-		out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] =
-			target_subset[i];
+	/* Sort 'base' in 'out'. */
+	for (i = 0; i < base_len; i++)
+		out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] = base[i];
 	if (level == last_level)
 		return;
 
@@ -167,18 +165,18 @@ static void rxsort_rec(int level, int *target_subset, int subset_len, int *out)
 		/* Last bucket goes first. */
 		for (bucket_idx = RXBUCKETS - 1; bucket_idx >= 0; bucket_idx--)
 		{
-			subset_len = bucket_sizes_buf[bucket_idx];
-			rxsort_rec(level, out, subset_len, target_subset);
-			out += subset_len;
-			target_subset += subset_len;
+			base_len = bucket_sizes_buf[bucket_idx];
+			rxsort_rec(out, base_len, level, base);
+			out += base_len;
+			base += base_len;
 		}
 	} else {
 		for (bucket_idx = 0; bucket_idx < RXBUCKETS; bucket_idx++)
 		{
-			subset_len = bucket_sizes_buf[bucket_idx];
-			rxsort_rec(level, out, subset_len, target_subset);
-			out += subset_len;
-			target_subset += subset_len;
+			base_len = bucket_sizes_buf[bucket_idx];
+			rxsort_rec(out, base_len, level, base);
+			out += base_len;
+			base += base_len;
 		}
 	}
 	return;
@@ -220,7 +218,7 @@ int _sort_ints(int *base, int base_len,
 	rxdescs[0] = desc;
 	last_level = 1;
 	ushort_rxbucket_idx_buf = rxbuf1;
-	rxsort_rec(0, base, base_len, rxbuf2);
+	rxsort_rec(base, base_len, 0, rxbuf2);
 	if (auto_rxbuf2)
 		free(rxbuf2);
 	if (auto_rxbuf1)
@@ -373,7 +371,7 @@ int _sort_int_pairs(int *base, int base_len,
 	rxdescs[1] = b_desc;
 	last_level = 3;
 	ushort_rxbucket_idx_buf = rxbuf1;
-	rxsort_rec(0, base, base_len, rxbuf2);
+	rxsort_rec(base, base_len, 0, rxbuf2);
 	if (auto_rxbuf2)
 		free(rxbuf2);
 	if (auto_rxbuf1)
