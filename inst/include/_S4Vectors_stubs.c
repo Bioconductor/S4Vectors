@@ -65,9 +65,9 @@ DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_array,
 	(           x,     nelt,     desc,      out,     out_shift)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(get_rxorder_of_int_array,
-	(const int *x, int nelt, int desc, int *out, int out_shift, unsigned short int *rxbuf1, int *rxbuf2),
-	(           x,     nelt,     desc,      out,     out_shift,                     rxbuf1,      rxbuf2)
+DEFINE_CCALLABLE_STUB(int, sort_ints,
+	(int *base, int base_len, const int *x, int desc, int use_radix, unsigned short int *rxbuf1, int *rxbuf2),
+	(     base,     base_len,            x,     desc,     use_radix,                     rxbuf1,      rxbuf2)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_pairs,
@@ -75,9 +75,9 @@ DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_pairs,
 	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(get_rxorder_of_int_pairs,
-	(const int *a, const int *b, int nelt, int a_desc, int b_desc, int *out, int out_shift, unsigned short int *rxbuf1, int *rxbuf2),
-	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift,                     rxbuf1,      rxbuf2)
+DEFINE_CCALLABLE_STUB(int, sort_int_pairs,
+	(int *base, int base_len, const int *a, const int *b, int a_desc, int b_desc, int use_radix, unsigned short int *rxbuf1, int *rxbuf2),
+	(     base,     base_len,            a,            b,     a_desc,     b_desc,     use_radix,                     rxbuf1,      rxbuf2)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_pairs,

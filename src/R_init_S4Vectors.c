@@ -98,11 +98,11 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_safe_int_mult);
 
 /* sort_utils.c */
-	REGISTER_CCALLABLE(_sort_int_array);
+	REGISTER_CCALLABLE(_sort_ints);
 	REGISTER_CCALLABLE(_get_order_of_int_array);
-	REGISTER_CCALLABLE(_get_rxorder_of_int_array);
+	REGISTER_CCALLABLE(_sort_int_array);
 	REGISTER_CCALLABLE(_get_order_of_int_pairs);
-	REGISTER_CCALLABLE(_get_rxorder_of_int_pairs);
+	REGISTER_CCALLABLE(_sort_int_pairs);
 	REGISTER_CCALLABLE(_get_matches_of_ordered_int_pairs);
 	REGISTER_CCALLABLE(_get_order_of_int_quads);
 	REGISTER_CCALLABLE(_get_matches_of_ordered_int_quads);

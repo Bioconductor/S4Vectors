@@ -31,6 +31,7 @@ static int compar_ints_for_desc_sort(const void *p1, const void *p2)
 	return compar_ints_for_asc_sort(p2, p1);
 }
 
+/* If efficiency matters, use _sort_ints() in radix mode instead. */
 void _sort_int_array(int *x, int nelt, int desc)
 {
 	int (*compar)(const void *, const void *);
@@ -53,6 +54,7 @@ static int compar_aa_for_stable_order(const void *p1, const void *p2)
 	return i1 - i2;
 }
 
+/* If efficiency matters, use _sort_ints() in radix mode instead. */
 void _get_order_of_int_array(const int *x, int nelt,
 		int desc, int *out, int out_shift)
 {
@@ -67,12 +69,12 @@ void _get_order_of_int_array(const int *x, int nelt,
 }
 
 /*
- * A radix-based version of _get_order_of_int_array().
+ * A radix-based sort for integers.
  * The current implementation assumes that sizeof(int) is 4 and
  * sizeof(unsigned short int) is 2.
  */
 
-int _can_use_rxorder()
+static int can_use_rxsort()
 {
 	return sizeof(int) == 4 && sizeof(unsigned short int) == 2;
 }
@@ -90,8 +92,7 @@ static int rxbucket_sizes_bufs[RXBUCKETS *
 			       RXLEVELS_PER_RXTARGET * MAX_RXTARGETS];
 static int rxbucket_offsets[RXBUCKETS];
 
-static void get_rxorder_rec(int level, int *target_subset, int subset_len,
-			    int *out)
+static void rxsort_rec(int level, int *target_subset, int subset_len, int *out)
 {
 	static const int *target;
 	static int i, bucket_size;
@@ -167,7 +168,7 @@ static void get_rxorder_rec(int level, int *target_subset, int subset_len,
 		for (bucket_idx = RXBUCKETS - 1; bucket_idx >= 0; bucket_idx--)
 		{
 			subset_len = bucket_sizes_buf[bucket_idx];
-			get_rxorder_rec(level, out, subset_len, target_subset);
+			rxsort_rec(level, out, subset_len, target_subset);
 			out += subset_len;
 			target_subset += subset_len;
 		}
@@ -175,7 +176,7 @@ static void get_rxorder_rec(int level, int *target_subset, int subset_len,
 		for (bucket_idx = 0; bucket_idx < RXBUCKETS; bucket_idx++)
 		{
 			subset_len = bucket_sizes_buf[bucket_idx];
-			get_rxorder_rec(level, out, subset_len, target_subset);
+			rxsort_rec(level, out, subset_len, target_subset);
 			out += subset_len;
 			target_subset += subset_len;
 		}
@@ -183,23 +184,48 @@ static void get_rxorder_rec(int level, int *target_subset, int subset_len,
 	return;
 }
 
-void _get_rxorder_of_int_array(const int *x, int nelt,
-		int desc, int *out, int out_shift,
-		unsigned short int *rxbuf1, int *rxbuf2)
+/* base: 0-based indices into 'x'.
+   rxbuf1, rxbuf2: NULL or user-allocated buffers of length 'base_len'. */
+int _sort_ints(int *base, int base_len,
+	       const int *x,
+	       int desc,
+	       int use_radix, unsigned short int *rxbuf1, int *rxbuf2)
 {
-	int i;
+	int auto_rxbuf1, auto_rxbuf2;
 
+	if (!use_radix || !can_use_rxsort()) {
+		aa_desc = desc;
+		aa = x;
+		qsort(base, base_len, sizeof(int),
+		      compar_aa_for_stable_order);
+		return 0;
+	}
+	auto_rxbuf1 = rxbuf1 == NULL;
+	if (auto_rxbuf1) {
+		rxbuf1 = (unsigned short int *)
+			 malloc(sizeof(unsigned short int) * base_len);
+		if (rxbuf1 == NULL)
+			return -1;
+	}
+	auto_rxbuf2 = rxbuf2 == NULL;
+	if (auto_rxbuf2) {
+		rxbuf2 = (int *) malloc(sizeof(int) * base_len);
+		if (rxbuf2 == NULL) {
+			if (auto_rxbuf1)
+				free(rxbuf1);
+			return -2;
+		}
+	}
 	rxtargets[0] = x;
 	rxdescs[0] = desc;
 	last_level = 1;
 	ushort_rxbucket_idx_buf = rxbuf1;
-
-	for (i = 0; i < nelt; i++)
-		out[i] = i;
-	get_rxorder_rec(0, out, nelt, rxbuf2);
-	for (i = 0; i < nelt; i++)
-		out[i] += out_shift;
-	return;
+	rxsort_rec(0, base, base_len, rxbuf2);
+	if (auto_rxbuf2)
+		free(rxbuf2);
+	if (auto_rxbuf1)
+		free(rxbuf1);
+	return 0;
 }
 
 
@@ -291,6 +317,7 @@ static int compar_aabb_for_stable_order(const void *p1, const void *p2)
 	return i1 - i2;
 }
 
+/* If efficiency matters, use _sort_int_pairs() in radix mode instead. */
 void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
 		int a_desc, int b_desc, int *out, int out_shift)
 {
@@ -306,25 +333,52 @@ void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
 	return;
 }
 
-void _get_rxorder_of_int_pairs(const int *a, const int *b, int nelt,
-		int a_desc, int b_desc, int *out, int out_shift,
-		unsigned short int *rxbuf1, int *rxbuf2)
+/* base: 0-based indices into 'a' and 'b'.
+   rxbuf1, rxbuf2: NULL or user-allocated buffers of length 'base_len'. */
+int _sort_int_pairs(int *base, int base_len,
+		const int *a, const int *b,
+		int a_desc, int b_desc,
+		int use_radix, unsigned short int *rxbuf1, int *rxbuf2)
 {
-	int i;
+	int auto_rxbuf1, auto_rxbuf2;
 
+	if (!use_radix || !can_use_rxsort()) {
+		aa_desc = a_desc;
+		bb_desc = b_desc;
+		aa = a;
+		bb = b;
+		qsort(base, base_len, sizeof(int),
+		      compar_aabb_for_stable_order);
+		return 0;
+	}
+	auto_rxbuf1 = rxbuf1 == NULL;
+	if (auto_rxbuf1) {
+		rxbuf1 = (unsigned short int *)
+			 malloc(sizeof(unsigned short int) * base_len);
+		if (rxbuf1 == NULL)
+			return -1;
+	}
+	auto_rxbuf2 = rxbuf2 == NULL;
+	if (auto_rxbuf2) {
+		rxbuf2 = (int *) malloc(sizeof(int) * base_len);
+		if (rxbuf2 == NULL) {
+			if (auto_rxbuf1)
+				free(rxbuf1);
+			return -2;
+		}
+	}
 	rxtargets[0] = a;
 	rxtargets[1] = b;
 	rxdescs[0] = a_desc;
 	rxdescs[1] = b_desc;
 	last_level = 3;
 	ushort_rxbucket_idx_buf = rxbuf1;
-
-	for (i = 0; i < nelt; i++)
-		out[i] = i;
-	get_rxorder_rec(0, out, nelt, rxbuf2);
-	for (i = 0; i < nelt; i++)
-		out[i] += out_shift;
-	return;
+	rxsort_rec(0, base, base_len, rxbuf2);
+	if (auto_rxbuf2)
+		free(rxbuf2);
+	if (auto_rxbuf1)
+		free(rxbuf1);
+	return 0;
 }
 
 void _get_matches_of_ordered_int_pairs(

@@ -174,55 +174,27 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last)
  * Fast ordering of an integer vector.
  */
 
-static void free_rxbufs(unsigned short int *rxbuf1, int *rxbuf2)
-{
-	if (rxbuf1 != NULL)
-		free(rxbuf1);
-	if (rxbuf2 != NULL)
-		free(rxbuf2);
-	return;
-}
-
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order(SEXP x, SEXP decreasing)
 {
-	int use_radix, ans_length, *rxbuf2;
-	unsigned short int *rxbuf1;
+	int ans_len, i;
 	SEXP ans;
 
 	if (LENGTH(decreasing) != 1)
 		error("S4Vectors internal error in Integer_order(): "
 		      "'decreasing' must be of length 1");
-	use_radix = _can_use_rxorder();
-	ans_length = LENGTH(x);
-	if (use_radix) {
-/*
-		rxbuf1 = (unsigned short int *)
-			 R_alloc(sizeof(unsigned short int), ans_length);
-		rxbuf2 = (int *) R_alloc(sizeof(int), ans_length);
-*/
-		rxbuf1 = (unsigned short int *)
-			 malloc(sizeof(unsigned short int) * ans_length);
-		rxbuf2 = (int *) malloc(sizeof(int) * ans_length);
-		if (rxbuf1 == NULL || rxbuf2 == NULL) {
-			free_rxbufs(rxbuf1, rxbuf2);
-			error("S4Vectors internal error in Integer_order(): "
-			      "memory allocation failed");
-		}
-	}
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	if (use_radix) {
-		_get_rxorder_of_int_array(INTEGER(x), ans_length,
-					  LOGICAL(decreasing)[0],
-					  INTEGER(ans), 1,
-					  rxbuf1, rxbuf2);
-		free_rxbufs(rxbuf1, rxbuf2);
-	} else {
-		_get_order_of_int_array(INTEGER(x), ans_length,
-					LOGICAL(decreasing)[0],
-					INTEGER(ans), 1);
-	}
+	ans_len = LENGTH(x);
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	for (i = 0; i < ans_len; i++)
+		INTEGER(ans)[i] = i + 1;
+	i = _sort_ints(INTEGER(ans), ans_len,
+		       INTEGER(x) - 1,
+		       LOGICAL(decreasing)[0],
+		       1, NULL, NULL);
 	UNPROTECT(1);
+	if (i != 0)
+		error("S4Vectors internal error in Integer_order(): "
+		      "memory allocation failed");
 	return ans;
 }
 
@@ -302,41 +274,26 @@ SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 {
-	int use_radix, ans_length, *rxbuf2;
+	int ans_len, i;
 	const int *a_p, *b_p;
-	unsigned short int *rxbuf1;
 	SEXP ans;
 
 	if (LENGTH(decreasing) != 2)
 		error("S4Vectors internal error in Integer_order2(): "
 		      "'decreasing' must be of length 2");
-	use_radix = _can_use_rxorder();
-	ans_length = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
-	if (use_radix) {
-		rxbuf1 = (unsigned short int *)
-			 malloc(sizeof(unsigned short int) * ans_length);
-		rxbuf2 = (int *) malloc(sizeof(int) * ans_length);
-		if (rxbuf1 == NULL || rxbuf2 == NULL) {
-			free_rxbufs(rxbuf1, rxbuf2);
-			error("S4Vectors internal error in Integer_order2(): "
-			      "memory allocation failed");
-		}
-	}
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	if (use_radix) {
-		_get_rxorder_of_int_pairs(a_p, b_p, ans_length,
-					  LOGICAL(decreasing)[0],
-					  LOGICAL(decreasing)[1],
-					  INTEGER(ans), 1,
-					  rxbuf1, rxbuf2);
-		free_rxbufs(rxbuf1, rxbuf2);
-	} else {
-		_get_order_of_int_pairs(a_p, b_p, ans_length,
-					LOGICAL(decreasing)[0],
-					LOGICAL(decreasing)[1],
-					INTEGER(ans), 1);
-	}
+	ans_len = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	for (i = 0; i < ans_len; i++)
+		INTEGER(ans)[i] = i + 1;
+	i = _sort_int_pairs(INTEGER(ans), ans_len,
+			    a_p - 1, b_p - 1,
+			    LOGICAL(decreasing)[0],
+			    LOGICAL(decreasing)[1],
+			    1, NULL, NULL);
 	UNPROTECT(1);
+	if (i != 0)
+		error("S4Vectors internal error in Integer_order2(): "
+		      "memory allocation failed");
 	return ans;
 }
 
@@ -418,16 +375,16 @@ SEXP Integer_match2_hash(SEXP a1, SEXP b1, SEXP a2, SEXP b2, SEXP nomatch)
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_selfmatch2_hash(SEXP a, SEXP b)
 {
-	int ans_length, *ans0, i, bucket_idx, i2;
+	int ans_len, *ans0, i, bucket_idx, i2;
 	const int *a_p, *b_p;
 	struct htab htab;
 	SEXP ans;
 
-	ans_length = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
-	htab = _new_htab(ans_length);
-	PROTECT(ans = NEW_INTEGER(ans_length));
+	ans_len = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
+	htab = _new_htab(ans_len);
+	PROTECT(ans = NEW_INTEGER(ans_len));
 	ans0 = INTEGER(ans);
-	for (i = 0; i < ans_length; i++) {
+	for (i = 0; i < ans_len; i++) {
 		bucket_idx = get_bucket_idx_for_int_pair(&htab,
 					a_p[i], b_p[i],
 					a_p, b_p);
@@ -499,18 +456,18 @@ SEXP Integer_sorted4(SEXP a, SEXP b, SEXP c, SEXP d,
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order4(SEXP a, SEXP b, SEXP c, SEXP d, SEXP decreasing)
 {
-	int ans_length;
+	int ans_len;
 	const int *a_p, *b_p, *c_p, *d_p;
 	SEXP ans;
 
 	if (LENGTH(decreasing) != 4)
 		error("S4Vectors internal error in Integer_order4(): "
 		      "'decreasing' must be of length 4");
-	ans_length = _check_integer_quads(a, b, c, d,
-					  &a_p, &b_p, &c_p, &d_p,
-					  "a", "b", "c", "d");
-	PROTECT(ans = NEW_INTEGER(ans_length));
-	_get_order_of_int_quads(a_p, b_p, c_p, d_p, ans_length,
+	ans_len = _check_integer_quads(a, b, c, d,
+				       &a_p, &b_p, &c_p, &d_p,
+				       "a", "b", "c", "d");
+	PROTECT(ans = NEW_INTEGER(ans_len));
+	_get_order_of_int_quads(a_p, b_p, c_p, d_p, ans_len,
 				LOGICAL(decreasing)[0],
 				LOGICAL(decreasing)[1],
 				LOGICAL(decreasing)[2],
@@ -612,18 +569,18 @@ SEXP Integer_match4_hash(SEXP a1, SEXP b1, SEXP c1, SEXP d1,
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_selfmatch4_hash(SEXP a, SEXP b, SEXP c, SEXP d)
 {
-	int ans_length, *ans0, i, bucket_idx, i2;
+	int ans_len, *ans0, i, bucket_idx, i2;
 	const int *a_p, *b_p, *c_p, *d_p;
 	struct htab htab;
 	SEXP ans;
 
-	ans_length = _check_integer_quads(a, b, c, d,
-					  &a_p, &b_p, &c_p, &d_p,
-					  "a", "b", "c", "d");
-	htab = _new_htab(ans_length);
-	PROTECT(ans = NEW_INTEGER(ans_length));
+	ans_len = _check_integer_quads(a, b, c, d,
+				       &a_p, &b_p, &c_p, &d_p,
+				       "a", "b", "c", "d");
+	htab = _new_htab(ans_len);
+	PROTECT(ans = NEW_INTEGER(ans_len));
 	ans0 = INTEGER(ans);
-	for (i = 0; i < ans_length; i++) {
+	for (i = 0; i < ans_len; i++) {
 		bucket_idx = get_bucket_idx_for_int_quad(&htab,
 					a_p[i], b_p[i], c_p[i], d_p[i],
 					a_p, b_p, c_p, d_p);
@@ -802,7 +759,7 @@ SEXP Integer_sorted_merge(SEXP x, SEXP y)
 
 SEXP Integer_mseq(SEXP from, SEXP to)
 {
-	int i, j, n, ans_length, *from_elt, *to_elt, *ans_elt;
+	int i, j, n, ans_len, *from_elt, *to_elt, *ans_elt;
 	SEXP ans;
 
 	if (!IS_INTEGER(from) || !IS_INTEGER(to))
@@ -812,14 +769,14 @@ SEXP Integer_mseq(SEXP from, SEXP to)
 	if (n != LENGTH(to))
 		error("lengths of 'from' and 'to' must be equal");
 
-	ans_length = 0;
+	ans_len = 0;
 	for (i = 0, from_elt = INTEGER(from), to_elt = INTEGER(to); i < n;
 		 i++, from_elt++, to_elt++) {
-		ans_length += (*from_elt <= *to_elt ? *to_elt - *from_elt
-						    : *from_elt - *to_elt) + 1;
+		ans_len += (*from_elt <= *to_elt ? *to_elt - *from_elt
+						 : *from_elt - *to_elt) + 1;
 	}
 
-	PROTECT(ans = NEW_INTEGER(ans_length));
+	PROTECT(ans = NEW_INTEGER(ans_len));
 	ans_elt = INTEGER(ans);
 	for (i = 0, from_elt = INTEGER(from), to_elt = INTEGER(to); i < n;
 		 i++, from_elt++, to_elt++) {
@@ -844,23 +801,23 @@ SEXP Integer_mseq(SEXP from, SEXP to)
 
 SEXP Integer_fancy_mseq(SEXP lengths, SEXP offset, SEXP rev)
 {
-	int lengths_length, offset_length, rev_length, ans_length,
+	int lengths_len, offset_len, rev_len, ans_len,
 	    i, length, *ans_elt, i2, i3, offset_elt, rev_elt, j;
 	const int *lengths_elt;
 	SEXP ans;
 
-	lengths_length = LENGTH(lengths);
-	offset_length = LENGTH(offset);
-	rev_length = LENGTH(rev);
-	if (lengths_length != 0) {
-		if (offset_length == 0)
+	lengths_len = LENGTH(lengths);
+	offset_len = LENGTH(offset);
+	rev_len = LENGTH(rev);
+	if (lengths_len != 0) {
+		if (offset_len == 0)
 			error("'offset' has length 0 but not 'lengths'");
-		if (rev_length == 0)
+		if (rev_len == 0)
 			error("'rev' has length 0 but not 'lengths'");
 	}
-	ans_length = 0;
+	ans_len = 0;
 	for (i = 0, lengths_elt = INTEGER(lengths);
-	     i < lengths_length;
+	     i < lengths_len;
 	     i++, lengths_elt++)
 	{
 		length = *lengths_elt;
@@ -868,17 +825,17 @@ SEXP Integer_fancy_mseq(SEXP lengths, SEXP offset, SEXP rev)
 			error("'lengths' contains NAs");
 		if (length < 0)
 			length = -length;
-		ans_length += length;
+		ans_len += length;
 	}
-	PROTECT(ans = NEW_INTEGER(ans_length));
+	PROTECT(ans = NEW_INTEGER(ans_len));
 	ans_elt = INTEGER(ans);
 	for (i = i2 = i3 = 0, lengths_elt = INTEGER(lengths);
-	     i < lengths_length;
+	     i < lengths_len;
 	     i++, i2++, i3++, lengths_elt++)
 	{
-		if (i2 >= offset_length)
+		if (i2 >= offset_len)
 			i2 = 0; /* recycle */
-		if (i3 >= rev_length)
+		if (i3 >= rev_len)
 			i3 = 0; /* recycle */
 		length = *lengths_elt;
 		offset_elt = INTEGER(offset)[i2];

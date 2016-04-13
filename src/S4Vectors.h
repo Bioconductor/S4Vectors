@@ -41,14 +41,12 @@ void _get_order_of_int_array(
 	int out_shift
 );
 
-int _can_use_rxorder();
-
-void _get_rxorder_of_int_array(
+int _sort_ints(
+	int *base,
+	int base_len,
 	const int *x,
-	int nelt,
 	int desc,
-	int *out,
-	int out_shift,
+	int use_radix,
 	unsigned short int *rxbuf1,
 	int *rxbuf2
 );
@@ -83,14 +81,14 @@ void _get_order_of_int_pairs(
 	int out_shift
 );
 
-void _get_rxorder_of_int_pairs(
+int _sort_int_pairs(
+	int *base,
+	int base_len,
 	const int *a,
 	const int *b,
-	int nelt,
 	int a_desc,
 	int b_desc,
-	int *out,
-	int out_shift,
+	int use_radix,
 	unsigned short int *rxbuf1,
 	int *rxbuf2
 );
