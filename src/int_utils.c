@@ -174,49 +174,49 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last)
  * Fast ordering of an integer vector.
  */
 
-static void free_radix_buffers(unsigned short int *tmp_buf1, int *tmp_buf2)
+static void free_rxbufs(unsigned short int *rxbuf1, int *rxbuf2)
 {
-	if (tmp_buf1 != NULL)
-		free(tmp_buf1);
-	if (tmp_buf2 != NULL)
-		free(tmp_buf2);
+	if (rxbuf1 != NULL)
+		free(rxbuf1);
+	if (rxbuf2 != NULL)
+		free(rxbuf2);
 	return;
 }
 
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order(SEXP x, SEXP decreasing)
 {
-	int use_radix, ans_length, *tmp_buf2;
-	unsigned short int *tmp_buf1;
+	int use_radix, ans_length, *rxbuf2;
+	unsigned short int *rxbuf1;
 	SEXP ans;
 
 	if (LENGTH(decreasing) != 1)
 		error("S4Vectors internal error in Integer_order(): "
 		      "'decreasing' must be of length 1");
-	use_radix = _can_use_radix_sort();
+	use_radix = _can_use_rxorder();
 	ans_length = LENGTH(x);
 	if (use_radix) {
 /*
-		tmp_buf1 = (unsigned short int *)
-			   R_alloc(sizeof(unsigned short int), ans_length);
-		tmp_buf2 = (int *) R_alloc(sizeof(int), ans_length);
+		rxbuf1 = (unsigned short int *)
+			 R_alloc(sizeof(unsigned short int), ans_length);
+		rxbuf2 = (int *) R_alloc(sizeof(int), ans_length);
 */
-		tmp_buf1 = (unsigned short int *)
-			   malloc(sizeof(unsigned short int) * ans_length);
-		tmp_buf2 = (int *) malloc(sizeof(int) * ans_length);
-		if (tmp_buf1 == NULL || tmp_buf2 == NULL) {
-			free_radix_buffers(tmp_buf1, tmp_buf2);
+		rxbuf1 = (unsigned short int *)
+			 malloc(sizeof(unsigned short int) * ans_length);
+		rxbuf2 = (int *) malloc(sizeof(int) * ans_length);
+		if (rxbuf1 == NULL || rxbuf2 == NULL) {
+			free_rxbufs(rxbuf1, rxbuf2);
 			error("S4Vectors internal error in Integer_order(): "
 			      "memory allocation failed");
 		}
 	}
 	PROTECT(ans = NEW_INTEGER(ans_length));
 	if (use_radix) {
-		_get_radix_order_of_int_array(INTEGER(x), ans_length,
-					      LOGICAL(decreasing)[0],
-					      INTEGER(ans), 1,
-					      tmp_buf1, tmp_buf2);
-		free_radix_buffers(tmp_buf1, tmp_buf2);
+		_get_rxorder_of_int_array(INTEGER(x), ans_length,
+					  LOGICAL(decreasing)[0],
+					  INTEGER(ans), 1,
+					  rxbuf1, rxbuf2);
+		free_rxbufs(rxbuf1, rxbuf2);
 	} else {
 		_get_order_of_int_array(INTEGER(x), ans_length,
 					LOGICAL(decreasing)[0],
@@ -302,34 +302,34 @@ SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 {
-	int use_radix, ans_length, *tmp_buf2;
+	int use_radix, ans_length, *rxbuf2;
 	const int *a_p, *b_p;
-	unsigned short int *tmp_buf1;
+	unsigned short int *rxbuf1;
 	SEXP ans;
 
 	if (LENGTH(decreasing) != 2)
 		error("S4Vectors internal error in Integer_order2(): "
 		      "'decreasing' must be of length 2");
-	use_radix = _can_use_radix_sort();
+	use_radix = _can_use_rxorder();
 	ans_length = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
 	if (use_radix) {
-		tmp_buf1 = (unsigned short int *)
-			   malloc(sizeof(unsigned short int) * ans_length);
-		tmp_buf2 = (int *) malloc(sizeof(int) * ans_length);
-		if (tmp_buf1 == NULL || tmp_buf2 == NULL) {
-			free_radix_buffers(tmp_buf1, tmp_buf2);
+		rxbuf1 = (unsigned short int *)
+			 malloc(sizeof(unsigned short int) * ans_length);
+		rxbuf2 = (int *) malloc(sizeof(int) * ans_length);
+		if (rxbuf1 == NULL || rxbuf2 == NULL) {
+			free_rxbufs(rxbuf1, rxbuf2);
 			error("S4Vectors internal error in Integer_order2(): "
 			      "memory allocation failed");
 		}
 	}
 	PROTECT(ans = NEW_INTEGER(ans_length));
 	if (use_radix) {
-		_get_radix_order_of_int_pairs(a_p, b_p, ans_length,
-					      LOGICAL(decreasing)[0],
-					      LOGICAL(decreasing)[1],
-					      INTEGER(ans), 1,
-					      tmp_buf1, tmp_buf2);
-		free_radix_buffers(tmp_buf1, tmp_buf2);
+		_get_rxorder_of_int_pairs(a_p, b_p, ans_length,
+					  LOGICAL(decreasing)[0],
+					  LOGICAL(decreasing)[1],
+					  INTEGER(ans), 1,
+					  rxbuf1, rxbuf2);
+		free_rxbufs(rxbuf1, rxbuf2);
 	} else {
 		_get_order_of_int_pairs(a_p, b_p, ans_length,
 					LOGICAL(decreasing)[0],

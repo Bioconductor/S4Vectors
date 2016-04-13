@@ -41,16 +41,16 @@ void _get_order_of_int_array(
 	int out_shift
 );
 
-int _can_use_radix_sort();
+int _can_use_rxorder();
 
-void _get_radix_order_of_int_array(
+void _get_rxorder_of_int_array(
 	const int *x,
 	int nelt,
 	int desc,
 	int *out,
 	int out_shift,
-	unsigned short int *tmp_buf1,
-	int *tmp_buf2
+	unsigned short int *rxbuf1,
+	int *rxbuf2
 );
 
 void _pcompare_int_pairs(
@@ -83,7 +83,7 @@ void _get_order_of_int_pairs(
 	int out_shift
 );
 
-void _get_radix_order_of_int_pairs(
+void _get_rxorder_of_int_pairs(
 	const int *a,
 	const int *b,
 	int nelt,
@@ -91,8 +91,8 @@ void _get_radix_order_of_int_pairs(
 	int b_desc,
 	int *out,
 	int out_shift,
-	unsigned short int *tmp_buf1,
-	int *tmp_buf2
+	unsigned short int *rxbuf1,
+	int *rxbuf2
 );
 
 void _get_matches_of_ordered_int_pairs(

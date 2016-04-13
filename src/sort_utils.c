@@ -72,7 +72,7 @@ void _get_order_of_int_array(const int *x, int nelt,
  * sizeof(unsigned short int) is 2.
  */
 
-int _can_use_radix_sort()
+int _can_use_rxorder()
 {
 	return sizeof(int) == 4 && sizeof(unsigned short int) == 2;
 }
@@ -90,8 +90,8 @@ static int rxbucket_sizes_bufs[RXBUCKETS *
 			       RXLEVELS_PER_RXTARGET * MAX_RXTARGETS];
 static int rxbucket_offsets[RXBUCKETS];
 
-static void radix_sort_rec(int level, int *target_subset, int subset_len,
-			   int *out)
+static void get_rxorder_rec(int level, int *target_subset, int subset_len,
+			    int *out)
 {
 	static const int *target;
 	static int i, bucket_size;
@@ -167,7 +167,7 @@ static void radix_sort_rec(int level, int *target_subset, int subset_len,
 		for (bucket_idx = RXBUCKETS - 1; bucket_idx >= 0; bucket_idx--)
 		{
 			subset_len = bucket_sizes_buf[bucket_idx];
-			radix_sort_rec(level, out, subset_len, target_subset);
+			get_rxorder_rec(level, out, subset_len, target_subset);
 			out += subset_len;
 			target_subset += subset_len;
 		}
@@ -175,7 +175,7 @@ static void radix_sort_rec(int level, int *target_subset, int subset_len,
 		for (bucket_idx = 0; bucket_idx < RXBUCKETS; bucket_idx++)
 		{
 			subset_len = bucket_sizes_buf[bucket_idx];
-			radix_sort_rec(level, out, subset_len, target_subset);
+			get_rxorder_rec(level, out, subset_len, target_subset);
 			out += subset_len;
 			target_subset += subset_len;
 		}
@@ -183,20 +183,20 @@ static void radix_sort_rec(int level, int *target_subset, int subset_len,
 	return;
 }
 
-void _get_radix_order_of_int_array(const int *x, int nelt,
+void _get_rxorder_of_int_array(const int *x, int nelt,
 		int desc, int *out, int out_shift,
-		unsigned short int *tmp_buf1, int *tmp_buf2)
+		unsigned short int *rxbuf1, int *rxbuf2)
 {
 	int i;
 
 	rxtargets[0] = x;
 	rxdescs[0] = desc;
 	last_level = 1;
-	ushort_rxbucket_idx_buf = tmp_buf1;
+	ushort_rxbucket_idx_buf = rxbuf1;
 
 	for (i = 0; i < nelt; i++)
 		out[i] = i;
-	radix_sort_rec(0, out, nelt, tmp_buf2);
+	get_rxorder_rec(0, out, nelt, rxbuf2);
 	for (i = 0; i < nelt; i++)
 		out[i] += out_shift;
 	return;
@@ -306,9 +306,9 @@ void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
 	return;
 }
 
-void _get_radix_order_of_int_pairs(const int *a, const int *b, int nelt,
+void _get_rxorder_of_int_pairs(const int *a, const int *b, int nelt,
 		int a_desc, int b_desc, int *out, int out_shift,
-		unsigned short int *tmp_buf1, int *tmp_buf2)
+		unsigned short int *rxbuf1, int *rxbuf2)
 {
 	int i;
 
@@ -317,11 +317,11 @@ void _get_radix_order_of_int_pairs(const int *a, const int *b, int nelt,
 	rxdescs[0] = a_desc;
 	rxdescs[1] = b_desc;
 	last_level = 3;
-	ushort_rxbucket_idx_buf = tmp_buf1;
+	ushort_rxbucket_idx_buf = rxbuf1;
 
 	for (i = 0; i < nelt; i++)
 		out[i] = i;
-	radix_sort_rec(0, out, nelt, tmp_buf2);
+	get_rxorder_rec(0, out, nelt, rxbuf2);
 	for (i = 0; i < nelt; i++)
 		out[i] += out_shift;
 	return;

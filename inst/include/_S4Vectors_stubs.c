@@ -65,9 +65,19 @@ DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_array,
 	(           x,     nelt,     desc,      out,     out_shift)
 )
 
+DEFINE_NOVALUE_CCALLABLE_STUB(get_rxorder_of_int_array,
+	(const int *x, int nelt, int desc, int *out, int out_shift, unsigned short int *rxbuf1, int *rxbuf2),
+	(           x,     nelt,     desc,      out,     out_shift,                     rxbuf1,      rxbuf2)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_pairs,
 	(const int *a, const int *b, int nelt, int a_desc, int b_desc, int *out, int out_shift),
 	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(get_rxorder_of_int_pairs,
+	(const int *a, const int *b, int nelt, int a_desc, int b_desc, int *out, int out_shift, unsigned short int *rxbuf1, int *rxbuf2),
+	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift,                     rxbuf1,      rxbuf2)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_pairs,
