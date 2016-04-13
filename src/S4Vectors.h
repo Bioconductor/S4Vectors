@@ -77,10 +77,25 @@ void _get_order_of_int_pairs(
 	const int *a,
 	const int *b,
 	int nelt,
-	int desc,
+	int a_desc,
+	int b_desc,
 	int *out,
 	int out_shift
 );
+
+/*
+void _get_radix_order_of_int_pairs(
+	const int *a,
+	const int *b,
+	int nelt,
+	int a_desc,
+	int b_desc,
+	int *out,
+	int out_shift,
+	unsigned short int *tmp_buf1,
+	int *tmp_buf2
+);
+*/
 
 void _get_matches_of_ordered_int_pairs(
 	const int *a1,
@@ -112,7 +127,10 @@ void _get_order_of_int_quads(
 	const int *c,
 	const int *d,
 	int nelt,
-	int desc,
+	int a_desc,
+	int b_desc,
+	int c_desc,
+	int d_desc,
 	int *out,
 	int out_shift
 );

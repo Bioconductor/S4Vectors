@@ -13,6 +13,7 @@
 #include <stdlib.h> /* for qsort() */
 
 
+static int aa_desc, bb_desc, cc_desc, dd_desc;
 static const int *aa, *bb, *cc, *dd;
 
 
@@ -39,29 +40,13 @@ void _sort_int_array(int *x, int nelt, int desc)
 	return;
 }
 
-static int compar_aa_for_stable_asc_order(const void *p1, const void *p2)
+static int compar_aa_for_stable_order(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
 	i1 = *((const int *) p1);
 	i2 = *((const int *) p2);
-	ret = aa[i1] - aa[i2];
-	if (ret != 0)
-		return ret;
-	/* Break tie by position so the ordering is "stable". */
-	return i1 - i2;
-}
-
-/* We cannot just define compar_aa_for_stable_desc_order(p1, p2) to be
- * compar_aa_for_stable_asc_order(p2, p1) because of the tie-break
- * by position. */
-static int compar_aa_for_stable_desc_order(const void *p1, const void *p2)
-{
-	int i1, i2, ret;
-
-	i1 = *((const int *) p1);
-	i2 = *((const int *) p2);
-	ret = aa[i2] - aa[i1];
+	ret = aa_desc ? aa[i2] - aa[i1] : aa[i1] - aa[i2];
 	if (ret != 0)
 		return ret;
 	/* Break tie by position so the ordering is "stable". */
@@ -71,14 +56,13 @@ static int compar_aa_for_stable_desc_order(const void *p1, const void *p2)
 void _get_order_of_int_array(const int *x, int nelt,
 		int desc, int *out, int out_shift)
 {
-	int i, (*compar)(const void *, const void *);
+	int i;
 
+	aa_desc = desc;
 	aa = x - out_shift;
 	for (i = 0; i < nelt; i++)
 		out[i] = i + out_shift;
-	compar = desc ? compar_aa_for_stable_desc_order :
-			compar_aa_for_stable_asc_order;
-	qsort(out, nelt, sizeof(int), compar);
+	qsort(out, nelt, sizeof(int), compar_aa_for_stable_order);
 	return;
 }
 
@@ -100,10 +84,10 @@ int _can_use_radix_sort()
 static int bucket_sizes_buf[NBUCKETS * RADIX_LEVELS];
 static int bucket_offsets[NBUCKETS];
 static unsigned short int *ushort_bucket_idx_buf;
-static int desc_radix, (*radix_compar)(const void *, const void *);
 
-static void radix_sort_rec(const int *x, int *x_subset, int x_subset_len,
-		int *out, int right_shift, int *bucket_sizes)
+static void radix_sort_rec(const int *x,
+		int *x_subset, int x_subset_len, int *out,
+		int right_shift, int *bucket_sizes)
 {
 	int bucket_idx, *previous_bucket_sizes;
 	static int i, bucket_size;
@@ -117,7 +101,8 @@ static void radix_sort_rec(const int *x, int *x_subset, int x_subset_len,
 	}
 	if (x_subset_len < NBUCKETS) {
 		aa = x;
-		qsort(x_subset, x_subset_len, sizeof(int), radix_compar);
+		qsort(x_subset, x_subset_len, sizeof(int),
+		      compar_aa_for_stable_order);
 		memcpy(out, x_subset, sizeof(int) * x_subset_len);
 		return;
 	}
@@ -138,7 +123,7 @@ static void radix_sort_rec(const int *x, int *x_subset, int x_subset_len,
 		}
 	}
 	/* Compute bucket offsets. */
-	if (desc_radix) {
+	if (aa_desc) {
 		/* Last bucket goes first. */
 		bucket_offsets[NBUCKETS - 1] = 0;
 		for (bucket_idx = NBUCKETS - 1; bucket_idx > 0; bucket_idx--) {
@@ -163,20 +148,22 @@ static void radix_sort_rec(const int *x, int *x_subset, int x_subset_len,
 	right_shift -= BITS_PER_RADIX_LEVEL;
 	previous_bucket_sizes = bucket_sizes;
 	bucket_sizes += NBUCKETS;
-	if (desc_radix) {
+	if (aa_desc) {
 		/* Last bucket goes first. */
 		for (bucket_idx = NBUCKETS - 1; bucket_idx >= 0; bucket_idx--) {
 			x_subset_len = previous_bucket_sizes[bucket_idx];
-			radix_sort_rec(x, out, x_subset_len, x_subset,
-				       right_shift, bucket_sizes);
+			radix_sort_rec(x,
+				out, x_subset_len, x_subset,
+				right_shift, bucket_sizes);
 			out += x_subset_len;
 			x_subset += x_subset_len;
 		}
 	} else {
 		for (bucket_idx = 0; bucket_idx < NBUCKETS; bucket_idx++) {
 			x_subset_len = previous_bucket_sizes[bucket_idx];
-			radix_sort_rec(x, out, x_subset_len, x_subset,
-				       right_shift, bucket_sizes);
+			radix_sort_rec(x,
+				out, x_subset_len, x_subset,
+				right_shift, bucket_sizes);
 			out += x_subset_len;
 			x_subset += x_subset_len;
 		}
@@ -193,11 +180,10 @@ void _get_radix_order_of_int_array(const int *x, int nelt,
 	for (i = 0; i < nelt; i++)
 		out[i] = i;
 	ushort_bucket_idx_buf = tmp_buf1;
-	desc_radix = desc;
-	radix_compar = desc ? compar_aa_for_stable_desc_order :
-			      compar_aa_for_stable_asc_order;
-	radix_sort_rec(x, out, nelt, tmp_buf2,
-		       32 - BITS_PER_RADIX_LEVEL, bucket_sizes_buf);
+	aa_desc = desc;
+	radix_sort_rec(x,
+		out, nelt, tmp_buf2,
+		32 - BITS_PER_RADIX_LEVEL, bucket_sizes_buf);
 	for (i = 0; i < nelt; i++)
 		out[i] += out_shift;
 	return;
@@ -272,14 +258,14 @@ static int compar_aabb(int i1, int i2)
 {
 	int ret;
 
-	ret = aa[i1] - aa[i2];
+	ret = aa_desc ? aa[i2] - aa[i1] : aa[i1] - aa[i2];
 	if (ret != 0)
 		return ret;
-	ret = bb[i1] - bb[i2];
+	ret = bb_desc ? bb[i2] - bb[i1] : bb[i1] - bb[i2];
 	return ret;
 }
 
-static int compar_aabb_for_stable_asc_order(const void *p1, const void *p2)
+static int compar_aabb_for_stable_order(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
@@ -292,36 +278,44 @@ static int compar_aabb_for_stable_asc_order(const void *p1, const void *p2)
 	return i1 - i2;
 }
 
-/* We cannot just define compar_aabb_for_stable_desc_order(p1, p2) to be
- * compar_aabb_for_stable_asc_order(p2, p1) because of the tie-break
- * by position. */
-static int compar_aabb_for_stable_desc_order(const void *p1, const void *p2)
-{
-	int i1, i2, ret;
-
-	i1 = *((const int *) p1);
-	i2 = *((const int *) p2);
-	ret = compar_aabb(i2, i1);
-	if (ret != 0)
-		return ret;
-	/* Break tie by position so the ordering is "stable". */
-	return i1 - i2;
-}
-
 void _get_order_of_int_pairs(const int *a, const int *b, int nelt,
-		int desc, int *out, int out_shift)
+		int a_desc, int b_desc, int *out, int out_shift)
 {
-	int i, (*compar)(const void *, const void *);
+	int i;
 
+	aa_desc = a_desc;
+	bb_desc = b_desc;
 	aa = a - out_shift;
 	bb = b - out_shift;
 	for (i = 0; i < nelt; i++, out_shift++)
 		out[i] = out_shift;
-	compar = desc ? compar_aabb_for_stable_desc_order :
-			compar_aabb_for_stable_asc_order;
-	qsort(out, nelt, sizeof(int), compar);
+	qsort(out, nelt, sizeof(int), compar_aabb_for_stable_order);
 	return;
 }
+
+/*
+void _get_radix_order_of_int_pairs(const int *a, const int *b, int nelt,
+		int a_desc, int b_desc, int *out, int out_shift,
+		unsigned short int *tmp_buf1, int *tmp_buf2)
+{
+	int i;
+
+	for (i = 0; i < nelt; i++)
+		out[i] = i;
+	ushort_bucket_idx_buf = tmp_buf1;
+	aa_desc = a_desc;
+	radix_sort_rec(a,
+		out, nelt, tmp_buf2,
+		32 - BITS_PER_RADIX_LEVEL, bucket_sizes_buf);
+	aa_desc = b_desc;
+	radix_sort_rec(b,
+		out, nelt, tmp_buf2,
+		32 - BITS_PER_RADIX_LEVEL, bucket_sizes_buf);
+	for (i = 0; i < nelt; i++)
+		out[i] += out_shift;
+	return;
+}
+*/
 
 void _get_matches_of_ordered_int_pairs(
 		const int *a1, const int *b1, const int *o1, int nelt1,
@@ -406,14 +400,14 @@ static int compar_aabbccdd(int i1, int i2)
 	ret = compar_aabb(i1, i2);
 	if (ret != 0)
 		return ret;
-	ret = cc[i1] - cc[i2];
+	ret = cc_desc ? cc[i2] - cc[i1] : cc[i1] - cc[i2];
 	if (ret != 0)
 		return ret;
-	ret = dd[i1] - dd[i2];
+	ret = dd_desc ? dd[i2] - dd[i1] : dd[i1] - dd[i2];
 	return ret;
 }
 
-static int compar_aabbccdd_for_stable_asc_order(const void *p1, const void *p2)
+static int compar_aabbccdd_for_stable_order(const void *p1, const void *p2)
 {
 	int i1, i2, ret;
 
@@ -426,37 +420,24 @@ static int compar_aabbccdd_for_stable_asc_order(const void *p1, const void *p2)
 	return i1 - i2;
 }
 
-/* We cannot just define compar_aabbccdd_for_stable_desc_order(p1, p2) to be
- * compar_aabbccdd_for_stable_asc_order(p2, p1) because of the tie-break
- * by position. */
-static int compar_aabbccdd_for_stable_desc_order(const void *p1, const void *p2)
-{
-	int i1, i2, ret;
-
-	i1 = *((const int *) p1);
-	i2 = *((const int *) p2);
-	ret = compar_aabbccdd(i2, i1);
-	if (ret != 0)
-		return ret;
-	/* Break tie by position so the ordering is "stable". */
-	return i1 - i2;
-}
-
 void _get_order_of_int_quads(const int *a, const int *b,
 		const int *c, const int *d, int nelt,
-		int desc, int *out, int out_shift)
+		int a_desc, int b_desc, int c_desc, int d_desc,
+		int *out, int out_shift)
 {
-	int i, (*compar)(const void *, const void *);
+	int i;
 
+	aa_desc = a_desc;
+	bb_desc = b_desc;
+	cc_desc = c_desc;
+	dd_desc = d_desc;
 	aa = a - out_shift;
 	bb = b - out_shift;
 	cc = c - out_shift;
 	dd = d - out_shift;
 	for (i = 0; i < nelt; i++, out_shift++)
 		out[i] = out_shift;
-	compar = desc ? compar_aabbccdd_for_stable_desc_order :
-			compar_aabbccdd_for_stable_asc_order;
-	qsort(out, nelt, sizeof(int), compar);
+	qsort(out, nelt, sizeof(int), compar_aabbccdd_for_stable_order);
 	return;
 }
 

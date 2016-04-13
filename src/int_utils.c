@@ -190,6 +190,9 @@ SEXP Integer_order(SEXP x, SEXP decreasing)
 	unsigned short int *tmp_buf1;
 	SEXP ans;
 
+	if (LENGTH(decreasing) != 1)
+		error("S4Vectors internal error in Integer_order(): "
+		      "'decreasing' must be of length 1");
 	use_radix = _can_use_radix_sort();
 	ans_length = LENGTH(x);
 	if (use_radix) {
@@ -299,14 +302,45 @@ SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 {
-	int ans_length;
+	int use_radix, ans_length, *tmp_buf2;
 	const int *a_p, *b_p;
+	unsigned short int *tmp_buf1;
 	SEXP ans;
 
+	if (LENGTH(decreasing) != 2)
+		error("S4Vectors internal error in Integer_order2(): "
+		      "'decreasing' must be of length 2");
+	//use_radix = _can_use_radix_sort();
+	use_radix = 0;
 	ans_length = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
+/*
+	if (use_radix) {
+		tmp_buf1 = (unsigned short int *)
+			   malloc(sizeof(unsigned short int) * ans_length);
+		tmp_buf2 = (int *) malloc(sizeof(int) * ans_length);
+		if (tmp_buf1 == NULL || tmp_buf2 == NULL) {
+			free_radix_buffers(tmp_buf1, tmp_buf2);
+			error("S4Vectors internal error in Integer_order2(): "
+			      "memory allocation failed");
+		}
+	}
+*/
 	PROTECT(ans = NEW_INTEGER(ans_length));
-	_get_order_of_int_pairs(a_p, b_p, ans_length,
-				LOGICAL(decreasing)[0], INTEGER(ans), 1);
+	if (use_radix) {
+/*
+		_get_radix_order_of_int_pairs(a_p, b_p, ans_length,
+					      LOGICAL(decreasing)[0],
+					      LOGICAL(decreasing)[1],
+					      INTEGER(ans), 1,
+					      tmp_buf1, tmp_buf2);
+		free_radix_buffers(tmp_buf1, tmp_buf2);
+*/
+	} else {
+		_get_order_of_int_pairs(a_p, b_p, ans_length,
+					LOGICAL(decreasing)[0],
+					LOGICAL(decreasing)[1],
+					INTEGER(ans), 1);
+	}
 	UNPROTECT(1);
 	return ans;
 }
@@ -323,8 +357,8 @@ SEXP Integer_match2_quick(SEXP a1, SEXP b1, SEXP a2, SEXP b2, SEXP nomatch)
 	nomatch0 = INTEGER(nomatch)[0];
 	o1 = (int *) R_alloc(sizeof(int), len1);
 	o2 = (int *) R_alloc(sizeof(int), len2);
-	_get_order_of_int_pairs(a1_p, b1_p, len1, 0, o1, 0);
-	_get_order_of_int_pairs(a2_p, b2_p, len2, 0, o2, 0);
+	_get_order_of_int_pairs(a1_p, b1_p, len1, 0, 0, o1, 0);
+	_get_order_of_int_pairs(a2_p, b2_p, len2, 0, 0, o2, 0);
 	PROTECT(ans = NEW_INTEGER(len1));
 	_get_matches_of_ordered_int_pairs(a1_p, b1_p, o1, len1,
 					  a2_p, b2_p, o2, len2,
@@ -342,7 +376,7 @@ SEXP Integer_selfmatch2_quick(SEXP a, SEXP b)
 
 	len = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
 	o1 = (int *) R_alloc(sizeof(int), len);
-	_get_order_of_int_pairs(a_p, b_p, len, 0, o1, 0);
+	_get_order_of_int_pairs(a_p, b_p, len, 0, 0, o1, 0);
 	PROTECT(ans = NEW_INTEGER(len));
 	_get_matches_of_ordered_int_pairs(a_p, b_p, o1, len,
 					  a_p, b_p, o1, len,
@@ -474,12 +508,19 @@ SEXP Integer_order4(SEXP a, SEXP b, SEXP c, SEXP d, SEXP decreasing)
 	const int *a_p, *b_p, *c_p, *d_p;
 	SEXP ans;
 
+	if (LENGTH(decreasing) != 4)
+		error("S4Vectors internal error in Integer_order4(): "
+		      "'decreasing' must be of length 4");
 	ans_length = _check_integer_quads(a, b, c, d,
 					  &a_p, &b_p, &c_p, &d_p,
 					  "a", "b", "c", "d");
 	PROTECT(ans = NEW_INTEGER(ans_length));
 	_get_order_of_int_quads(a_p, b_p, c_p, d_p, ans_length,
-				LOGICAL(decreasing)[0], INTEGER(ans), 1);
+				LOGICAL(decreasing)[0],
+				LOGICAL(decreasing)[1],
+				LOGICAL(decreasing)[2],
+				LOGICAL(decreasing)[3],
+				INTEGER(ans), 1);
 	UNPROTECT(1);
 	return ans;
 }
@@ -501,8 +542,10 @@ SEXP Integer_match4_quick(SEXP a1, SEXP b1, SEXP c1, SEXP d1,
 	nomatch0 = INTEGER(nomatch)[0];
 	o1 = (int *) R_alloc(sizeof(int), len1);
 	o2 = (int *) R_alloc(sizeof(int), len2);
-	_get_order_of_int_quads(a1_p, b1_p, c1_p, d1_p, len1, 0, o1, 0);
-	_get_order_of_int_quads(a2_p, b2_p, c2_p, d2_p, len2, 0, o2, 0);
+	_get_order_of_int_quads(a1_p, b1_p, c1_p, d1_p, len1,
+				0, 0, 0, 0, o1, 0);
+	_get_order_of_int_quads(a2_p, b2_p, c2_p, d2_p, len2,
+				0, 0, 0, 0, o2, 0);
 	PROTECT(ans = NEW_INTEGER(len1));
 	_get_matches_of_ordered_int_quads(a1_p, b1_p, c1_p, d1_p, o1, len1,
 					  a2_p, b2_p, c2_p, d2_p, o2, len2,
@@ -522,7 +565,7 @@ SEXP Integer_selfmatch4_quick(SEXP a, SEXP b, SEXP c, SEXP d)
 				   &a_p, &b_p, &c_p, &d_p,
 				   "a", "b", "c", "d");
 	o1 = (int *) R_alloc(sizeof(int), len);
-	_get_order_of_int_quads(a_p, b_p, c_p, d_p, len, 0, o1, 0);
+	_get_order_of_int_quads(a_p, b_p, c_p, d_p, len, 0, 0, 0, 0, o1, 0);
 	PROTECT(ans = NEW_INTEGER(len));
 	_get_matches_of_ordered_int_quads(a_p, b_p, c_p, d_p, o1, len,
 					  a_p, b_p, c_p, d_p, o1, len,

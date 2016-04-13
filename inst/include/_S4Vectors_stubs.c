@@ -66,8 +66,8 @@ DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_array,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_pairs,
-	(const int *a, const int *b, int nelt, int desc, int *out, int out_shift),
-	(           a,            b,     nelt,     desc,      out,     out_shift)
+	(const int *a, const int *b, int nelt, int a_desc, int b_desc, int *out, int out_shift),
+	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_pairs,
@@ -76,8 +76,8 @@ DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_pairs,
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_quads,
-	(const int *a, const int *b, const int *c, const int *d, int nelt, int desc, int *out, int out_shift),
-	(           a,            b,            c,            d,     nelt,     desc,      out,     out_shift)
+	(const int *a, const int *b, const int *c, const int *d, int nelt, int a_desc, int b_desc, int c_desc, int d_desc, int *out, int out_shift),
+	(           a,            b,            c,            d,     nelt,     a_desc,     b_desc,     c_desc,     d_desc,      out,     out_shift)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_quads,

@@ -54,7 +54,8 @@ void get_order_of_int_pairs(
 	const int *a,
 	const int *b,
 	int nelt,
-	int desc,
+	int a_desc,
+	int b_desc,
 	int *out,
 	int out_shift
 );
@@ -79,7 +80,10 @@ void get_order_of_int_quads(
 	const int *c,
 	const int *d,
 	int nelt,
-	int desc,
+	int a_desc,
+	int b_desc,
+	int c_desc,
+	int d_desc,
 	int *out,
 	int out_shift
 );
