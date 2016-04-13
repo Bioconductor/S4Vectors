@@ -177,7 +177,7 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last)
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order(SEXP x, SEXP decreasing)
 {
-	int ans_len, i;
+	int ans_len, i, *ans_elt_p;
 	SEXP ans;
 
 	if (LENGTH(decreasing) != 1)
@@ -185,8 +185,8 @@ SEXP Integer_order(SEXP x, SEXP decreasing)
 		      "'decreasing' must be of length 1");
 	ans_len = LENGTH(x);
 	PROTECT(ans = NEW_INTEGER(ans_len));
-	for (i = 0; i < ans_len; i++)
-		INTEGER(ans)[i] = i + 1;
+	for (i = 1, ans_elt_p = INTEGER(ans); i <= ans_len; i++, ans_elt_p++)
+		*ans_elt_p = i;
 	i = _sort_ints(INTEGER(ans), ans_len,
 		       INTEGER(x) - 1,
 		       LOGICAL(decreasing)[0],
@@ -274,7 +274,7 @@ SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
 /* --- .Call ENTRY POINT --- */
 SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 {
-	int ans_len, i;
+	int ans_len, i, *ans_elt_p;
 	const int *a_p, *b_p;
 	SEXP ans;
 
@@ -283,8 +283,8 @@ SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 		      "'decreasing' must be of length 2");
 	ans_len = _check_integer_pairs(a, b, &a_p, &b_p, "a", "b");
 	PROTECT(ans = NEW_INTEGER(ans_len));
-	for (i = 0; i < ans_len; i++)
-		INTEGER(ans)[i] = i + 1;
+	for (i = 1, ans_elt_p = INTEGER(ans); i <= ans_len; i++, ans_elt_p++)
+		*ans_elt_p = i;
 	i = _sort_int_pairs(INTEGER(ans), ans_len,
 			    a_p - 1, b_p - 1,
 			    LOGICAL(decreasing)[0],
