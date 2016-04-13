@@ -96,9 +96,9 @@ static int rxbucket_offsets[RXBUCKETS];
 static void rxsort_rec(int *base, int base_len, int level, int *out)
 {
 	static const int *target;
-	static int desc, i, bucket_size;
+	static int desc, i, offset, bucket_size;
 	static unsigned short int ushort_bucket_idx;
-	int *bucket_sizes_buf, bucket_idx;
+	int *bucket_sizes_buf, first_bucket, last_bucket, bucket_idx;
 
 	if (base_len == 0)
 		return;
@@ -135,35 +135,61 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 		}
 	}
 
-	/* Compute bucket offsets. */
+	/* Find indices of first and last non-empty buckets, and compute
+	   bucket offsets. */
+	first_bucket = last_bucket = -1;
+	offset = 0;
 	if (desc) {
-		/* Last bucket goes first. */
-		rxbucket_offsets[RXBUCKETS - 1] = 0;
-		for (bucket_idx = RXBUCKETS - 1; bucket_idx > 0; bucket_idx--) {
+		/* Process buckets from last to first. */
+		for (bucket_idx = RXBUCKETS - 1;
+		     bucket_idx >= 0;
+		     bucket_idx--)
+		{
 			bucket_size = bucket_sizes_buf[bucket_idx];
-			rxbucket_offsets[bucket_idx - 1] =
-				rxbucket_offsets[bucket_idx] + bucket_size;
+			if (bucket_size != 0) {
+				first_bucket = bucket_idx;
+				if (last_bucket == -1)
+					last_bucket = bucket_idx;
+			}
+			rxbucket_offsets[bucket_idx] = offset;
+			offset += bucket_size;
 		}
 	} else {
-		rxbucket_offsets[0] = 0;
-		for (bucket_idx = 0; bucket_idx < RXBUCKETS - 1; bucket_idx++) {
+		/* Process buckets from first to last. */
+		for (bucket_idx = 0;
+		     bucket_idx < RXBUCKETS;
+		     bucket_idx++)
+		{
 			bucket_size = bucket_sizes_buf[bucket_idx];
-			rxbucket_offsets[bucket_idx + 1] =
-				rxbucket_offsets[bucket_idx] + bucket_size;
+			if (bucket_size != 0) {
+				if (first_bucket == -1)
+					first_bucket = bucket_idx;
+				last_bucket = bucket_idx;
+			}
+			rxbucket_offsets[bucket_idx] = offset;
+			offset += bucket_size;
 		}
 	}
 
-	/* Sort 'base' in 'out'. */
-	for (i = 0; i < base_len; i++)
-		out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] = base[i];
+	if (first_bucket == last_bucket) {
+		/* 'base' is already sorted. */
+		memcpy(out, base, sizeof(int) * base_len);
+	} else {
+		/* Sort 'base' in 'out'. */
+		for (i = 0; i < base_len; i++)
+			out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] =
+				base[i];
+	}
 	if (level == last_rxlevel)
 		return;
 
 	/* Order each bucket. */
 	level++;
 	if (desc) {
-		/* Last bucket goes first. */
-		for (bucket_idx = RXBUCKETS - 1; bucket_idx >= 0; bucket_idx--)
+		/* Process buckets from last to first. */
+		for (bucket_idx = last_bucket;
+		     bucket_idx >= first_bucket;
+		     bucket_idx--)
 		{
 			base_len = bucket_sizes_buf[bucket_idx];
 			rxsort_rec(out, base_len, level, base);
@@ -171,7 +197,10 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 			base += base_len;
 		}
 	} else {
-		for (bucket_idx = 0; bucket_idx < RXBUCKETS; bucket_idx++)
+		/* Process buckets from first to last. */
+		for (bucket_idx = first_bucket;
+		     bucket_idx <= last_bucket;
+		     bucket_idx++)
 		{
 			base_len = bucket_sizes_buf[bucket_idx];
 			rxsort_rec(out, base_len, level, base);
