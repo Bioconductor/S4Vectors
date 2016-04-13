@@ -10,8 +10,8 @@
  * function used in the call to qsort()).                                   *
  ****************************************************************************/
 #include "S4Vectors.h"
-#include <stdlib.h> /* for qsort() */
-
+#include <stdlib.h>  /* for qsort() */
+#include <limits.h>  /* for INT_MIN and INT_MAX */
 
 static int aa_desc, bb_desc, cc_desc, dd_desc;
 static const int *aa, *bb, *cc, *dd;
@@ -96,7 +96,7 @@ static int rxbucket_offsets[RXBUCKETS];
 static void rxsort_rec(int *base, int base_len, int level, int *out)
 {
 	static const int *target;
-	static int desc, i, offset, bucket_size;
+	static int desc, is_sorted, prev_tval, tval, i, offset, bucket_size;
 	static unsigned short int ushort_bucket_idx;
 	int *bucket_sizes_buf, first_bucket, last_bucket, bucket_idx;
 
@@ -108,10 +108,39 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 	}
 	target = rxtargets[level >> 1];
 	desc = rxdescs[level >> 1];
-	if (base_len < RXBUCKETS >> 1) {
-		qsort(base, base_len, sizeof(int), rxcompar);
-		memcpy(out, base, sizeof(int) * base_len);
-		return;
+
+	/* Find out whether 'base' is already sorted or not. */
+	is_sorted = 1;
+	if (desc) {
+		prev_tval = INT_MAX;
+		for (i = 0; i < base_len; i++) {
+			tval = target[base[i]];
+			if (tval > prev_tval) {
+				is_sorted = 0;
+				break;
+			}
+			prev_tval = tval;
+		}
+	} else {
+		prev_tval = INT_MIN;
+		for (i = 0; i < base_len; i++) {
+			tval = target[base[i]];
+			if (tval < prev_tval) {
+				is_sorted = 0;
+				break;
+			}
+			prev_tval = tval;
+		}
+	}
+
+	/* Special treatment of level before last. */
+	if (level == last_rxlevel - 1) {
+		if (is_sorted)
+			return;
+		if (base_len < RXBUCKETS) {
+			qsort(base, base_len, sizeof(int), rxcompar);
+			return;
+		}
 	}
 
 	/* Compute bucket indices and bucket sizes. */
@@ -120,8 +149,8 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 	if (level % 2 == 0) {
 		/* Use 16 bits on the left to compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
-			ushort_bucket_idx = target[base[i]] >>
-					    BITS_PER_RXLEVEL;
+			tval = target[base[i]];
+			ushort_bucket_idx = tval >> BITS_PER_RXLEVEL;
 			ushort_bucket_idx += 0x8000;
 			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
 			bucket_sizes_buf[ushort_bucket_idx]++;
@@ -129,7 +158,8 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 	} else {
 		/* Use 16 bits on the right to compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
-			ushort_bucket_idx = target[base[i]];
+			tval = target[base[i]];
+			ushort_bucket_idx = tval;
 			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
 			bucket_sizes_buf[ushort_bucket_idx]++;
 		}
@@ -171,11 +201,12 @@ static void rxsort_rec(int *base, int base_len, int level, int *out)
 		}
 	}
 
-	if (first_bucket == last_bucket) {
-		/* 'base' is already sorted. */
+	/* Sort 'base' with respect to current radix level.
+	   The sorted version of 'base' must go in 'out', even if 'base' is
+	   already sorted. */
+	if (is_sorted || last_bucket == first_bucket) {
 		memcpy(out, base, sizeof(int) * base_len);
 	} else {
-		/* Sort 'base' in 'out'. */
 		for (i = 0; i < base_len; i++)
 			out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] =
 				base[i];
