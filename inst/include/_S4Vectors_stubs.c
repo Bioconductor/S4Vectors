@@ -90,6 +90,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_quads,
 	(           a,            b,            c,            d,     nelt,     a_desc,     b_desc,     c_desc,     d_desc,      out,     out_shift)
 )
 
+DEFINE_CCALLABLE_STUB(int, sort_int_quads,
+	(int *base, int base_len, const int *a, const int *b, const int *c, const int *d, int a_desc, int b_desc, int c_desc, int d_desc, int use_radix, unsigned short int *rxbuf1, int *rxbuf2),
+	(     base,     base_len,            a,            b,            c,            d,     a_desc,     b_desc,     c_desc,     d_desc,     use_radix,                     rxbuf1,      rxbuf2)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_quads,
 	(const int *a1, const int *b1, const int *c1, const int *d1, const int *o1, int nelt1, const int *a2, const int *b2, const int *c2, const int *d2, const int *o2, int nelt2, int nomatch, int *out, int out_shift),
 	(           a1,            b1,            c1,            d1,            o1,     nelt1,            a2,            b2,            c2,            d2,            o2,     nelt2,     nomatch,      out,     out_shift)

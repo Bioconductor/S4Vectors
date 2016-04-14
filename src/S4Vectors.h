@@ -131,6 +131,22 @@ void _get_order_of_int_quads(
 	int out_shift
 );
 
+int _sort_int_quads(
+	int *base,
+	int base_len,
+	const int *a,
+	const int *b,
+	const int *c,
+	const int *d,
+	int a_desc,
+	int b_desc,
+	int c_desc,
+	int d_desc,
+	int use_radix,
+	unsigned short int *rxbuf1,
+	int *rxbuf2
+);
+
 void _get_matches_of_ordered_int_quads(
 	const int *a1,
 	const int *b1,
@@ -500,7 +516,8 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last);
 
 SEXP Integer_order(
 	SEXP x,
-	SEXP decreasing
+	SEXP decreasing,
+	SEXP use_radix
 );
 
 int _check_integer_pairs(
@@ -529,7 +546,8 @@ SEXP Integer_sorted2(
 SEXP Integer_order2(
 	SEXP a,
 	SEXP b,
-	SEXP decreasing
+	SEXP decreasing,
+	SEXP use_radix
 );
 
 SEXP Integer_match2_quick(
@@ -587,7 +605,8 @@ SEXP Integer_order4(
 	SEXP b,
 	SEXP c,
 	SEXP d,
-	SEXP decreasing
+	SEXP decreasing,
+	SEXP use_radix
 );
 
 SEXP Integer_match4_quick(

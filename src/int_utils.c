@@ -175,7 +175,7 @@ SEXP Integer_diff_with_last(SEXP x, SEXP last)
  */
 
 /* --- .Call ENTRY POINT --- */
-SEXP Integer_order(SEXP x, SEXP decreasing)
+SEXP Integer_order(SEXP x, SEXP decreasing, SEXP use_radix)
 {
 	int ans_len, i, *ans_elt_p;
 	SEXP ans;
@@ -187,37 +187,10 @@ SEXP Integer_order(SEXP x, SEXP decreasing)
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	for (i = 1, ans_elt_p = INTEGER(ans); i <= ans_len; i++, ans_elt_p++)
 		*ans_elt_p = i;
-/*
-	ans_elt_p = INTEGER(ans);
-	const int *xi_elt_p = INTEGER(x);
-	is_sorted = 1;
-	int prev_xi;
-	if (LOGICAL(decreasing)[0]) {
-		prev_xi = INT_MAX;
-		for (i = 1; i <= ans_len; i++) {
-			*(ans_elt_p++) = i;
-			if (*xi_elt_p > prev_xi)
-				is_sorted = 0;
-			prev_xi = *(xi_elt_p++);
-		}
-	} else {
-		prev_xi = INT_MIN;
-		for (i = 1; i <= ans_len; i++) {
-			*(ans_elt_p++++) = i;
-			if (*xi_elt_p < prev_xi)
-				is_sorted = 0;
-			prev_xi = *(xi_elt_p++);
-		}
-	}
-	if (is_sorted) {
-		UNPROTECT(1);
-		return ans;
-	}
-*/
 	i = _sort_ints(INTEGER(ans), ans_len,
 		       INTEGER(x) - 1,
 		       LOGICAL(decreasing)[0],
-		       1, NULL, NULL);
+		       LOGICAL(use_radix)[0], NULL, NULL);
 	UNPROTECT(1);
 	if (i != 0)
 		error("S4Vectors internal error in Integer_order(): "
@@ -299,7 +272,7 @@ SEXP Integer_sorted2(SEXP a, SEXP b, SEXP decreasing, SEXP strictly)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
+SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing, SEXP use_radix)
 {
 	int ans_len, i, *ans_elt_p;
 	const int *a_p, *b_p;
@@ -316,7 +289,7 @@ SEXP Integer_order2(SEXP a, SEXP b, SEXP decreasing)
 			    a_p - 1, b_p - 1,
 			    LOGICAL(decreasing)[0],
 			    LOGICAL(decreasing)[1],
-			    1, NULL, NULL);
+			    LOGICAL(use_radix)[0], NULL, NULL);
 	UNPROTECT(1);
 	if (i != 0)
 		error("S4Vectors internal error in Integer_order2(): "
@@ -481,9 +454,10 @@ SEXP Integer_sorted4(SEXP a, SEXP b, SEXP c, SEXP d,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Integer_order4(SEXP a, SEXP b, SEXP c, SEXP d, SEXP decreasing)
+SEXP Integer_order4(SEXP a, SEXP b, SEXP c, SEXP d,
+		    SEXP decreasing, SEXP use_radix)
 {
-	int ans_len;
+	int ans_len, i, *ans_elt_p;
 	const int *a_p, *b_p, *c_p, *d_p;
 	SEXP ans;
 
@@ -494,13 +468,19 @@ SEXP Integer_order4(SEXP a, SEXP b, SEXP c, SEXP d, SEXP decreasing)
 				       &a_p, &b_p, &c_p, &d_p,
 				       "a", "b", "c", "d");
 	PROTECT(ans = NEW_INTEGER(ans_len));
-	_get_order_of_int_quads(a_p, b_p, c_p, d_p, ans_len,
-				LOGICAL(decreasing)[0],
-				LOGICAL(decreasing)[1],
-				LOGICAL(decreasing)[2],
-				LOGICAL(decreasing)[3],
-				INTEGER(ans), 1);
+	for (i = 1, ans_elt_p = INTEGER(ans); i <= ans_len; i++, ans_elt_p++)
+		*ans_elt_p = i;
+	i = _sort_int_quads(INTEGER(ans), ans_len,
+			    a_p - 1, b_p - 1, c_p - 1, d_p - 1,
+			    LOGICAL(decreasing)[0],
+			    LOGICAL(decreasing)[1],
+			    LOGICAL(decreasing)[2],
+			    LOGICAL(decreasing)[3],
+			    LOGICAL(use_radix)[0], NULL, NULL);
 	UNPROTECT(1);
+	if (i != 0)
+		error("S4Vectors internal error in Integer_order4(): "
+		      "memory allocation failed");
 	return ans;
 }
 

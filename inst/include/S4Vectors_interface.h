@@ -110,6 +110,22 @@ void get_order_of_int_quads(
 	int out_shift
 );
 
+int sort_int_quads(
+	int *base,
+	int base_len,
+	const int *a,
+	const int *b,
+	const int *c,
+	const int *d,
+	int a_desc,
+	int b_desc,
+	int c_desc,
+	int d_desc,
+	int use_radix,
+	unsigned short int *rxbuf1,
+	int *rxbuf2
+);
+
 void get_matches_of_ordered_int_quads(
 	const int *a1,
 	const int *b1,
