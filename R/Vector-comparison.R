@@ -381,16 +381,10 @@ setMethod("table", "Vector",
     }
 )
 
-setMethod("xtabs", "Vector",
-          function (formula = ~., data = parent.frame(),
-                    subset, sparse = FALSE, 
-                    na.action, exclude = c(NA, NaN),
-                    drop.unused.levels = FALSE) {
-              stopifnot(missing(subset))
-              stopifnot(identical(sparse, FALSE))
-              stopifnot(missing(na.action))
-              stopifnot(identical(drop.unused.levels, FALSE))
-              do.call(table, c(as.character(data),
-                               formulaValues(data, formula),
-                               exclude=exclude))
-          })
+setMethod("xtabs", signature(data = "Vector"),
+          function(formula = ~., data, subset, na.action, exclude = c(NA, NaN),
+                   drop.unused.levels = FALSE)
+{
+    data <- as(data, "data.frame")
+    callGeneric()
+})
