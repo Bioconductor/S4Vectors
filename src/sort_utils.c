@@ -218,9 +218,10 @@ static void qsort_targets(int *base, int base_len,
 
 
 /****************************************************************************
- * Sorting an array of short ints
+ * Sorting an array of unsigned short ints
  */
 
+/* I believe this is broken. Not sure why...
 static int compar_ushorts_for_asc_sort(const void *p1, const void *p2)
 {
 	static unsigned short int u1, u2;
@@ -247,10 +248,231 @@ static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
 		      : compar_ushorts_for_desc_sort;
 	qsort(x, nelt, sizeof(unsigned short int), compar);
 }
+*/
+
+/****************************************************************************
+ * Mini radix: A simple radix-based sort of a single array of *distinct*
+ * unsigned short ints
+ */
+
+#define	MINIRX_BASE_MAXLENGTH	(1 << (2 * CHAR_BIT))
+#define	MINIRX_BUCKETS		(1 << CHAR_BIT)
+
+static const unsigned short int *minirx_target;
+static int			minirx_desc;
+static unsigned char		minirx_base_uidx_buf[MINIRX_BASE_MAXLENGTH];
+static int			minirx_bucket_counts_bufs[MINIRX_BUCKETS * 2];
+static int			minirx_bucket_offsets[MINIRX_BUCKETS];
+
+/* Populate 'minirx_bucket_counts_buf' and 'minirx_base_uidx_buf'. */
+static int minirx_compute_bucket_counts(const int *base, int base_len,
+		int use_lsb, int *minirx_bucket_counts_buf)
+{
+	int nbucket, i;
+	unsigned short int tval;
+	unsigned char uc;
+
+	memset(minirx_bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
+	nbucket = 0;
+	if (use_lsb) {
+		/* Use 8 most significant bits of the target values to
+		   compute the bucket indices. */
+		for (i = 0; i < base_len; i++) {
+			tval = minirx_target[base[i]];
+			uc = (unsigned char) (tval >> CHAR_BIT);
+			minirx_base_uidx_buf[i] = uc;
+			if (minirx_bucket_counts_buf[uc]++ == 0)
+				nbucket++;
+		}
+	} else {
+		/* Use 8 less significant bits of the target values to
+		   compute the bucket indices. */
+		for (i = 0; i < base_len; i++) {
+			tval = minirx_target[base[i]];
+			uc = (unsigned char) tval;
+			minirx_base_uidx_buf[i] = uc;
+			if (minirx_bucket_counts_buf[uc]++ == 0)
+				nbucket++;
+		}
+	}
+	return nbucket;
+}
+
+static int sorted_uchar_buf(const unsigned char *uchar_buf, int buf_len,
+			    int desc)
+{
+	unsigned char prev_uc, uc;
+	int i;
+
+	prev_uc = uchar_buf[0];
+	if (desc) {
+		for (i = 1; i < buf_len; i++) {
+			uc = uchar_buf[i];
+			if (uc > prev_uc)
+				return 0;
+			prev_uc = uc;
+		}
+	} else {
+		for (i = 1; i < buf_len; i++) {
+			uc = uchar_buf[i];
+			if (uc < prev_uc)
+				return 0;
+			prev_uc = uc;
+		}
+	}
+	return 1;
+}
+
+static void minirx_compute_bucket_offsets(
+		const int *minirx_bucket_counts_buf, int desc,
+		int *first_bucket, int *last_bucket)
+{
+	int offset, bucket_idx, bucket_count;
+
+	offset = 0;
+	*first_bucket = *last_bucket = -1;
+	if (desc) {
+		/* Process buckets from last to first. */
+		for (bucket_idx = MINIRX_BUCKETS - 1;
+		     bucket_idx >= 0;
+		     bucket_idx--)
+		{
+			minirx_bucket_offsets[bucket_idx] = offset;
+			bucket_count = minirx_bucket_counts_buf[bucket_idx];
+			offset += bucket_count;
+			if (bucket_count != 0) {
+				*first_bucket = bucket_idx;
+				if (*last_bucket == -1)
+					*last_bucket = bucket_idx;
+			}
+		}
+	} else {
+		/* Process buckets from first to last. */
+		for (bucket_idx = 0;
+		     bucket_idx <= MINIRX_BUCKETS - 1;
+		     bucket_idx++)
+		{
+			minirx_bucket_offsets[bucket_idx] = offset;
+			bucket_count = minirx_bucket_counts_buf[bucket_idx];
+			offset += bucket_count;
+			if (bucket_count != 0) {
+				if (*first_bucket == -1)
+					*first_bucket = bucket_idx;
+				*last_bucket = bucket_idx;
+			}
+		}
+	}
+	return;
+}
+
+static void minirx_sort_rec(int *base, int base_len, int *out,
+			     int level, int swapped)
+{
+	static int minirx_base_uidx_buf_is_sorted, *tmp;
+	
+	int *bucket_counts_buf, nbucket, first_bucket, last_bucket,
+	    i, bucket_idx;
+
+	/* --- HANDLE THE EASY SITUATIONS --- */
+
+	if (base_len == 0)
+		return;
+
+	if (base_len == 1) {
+		if (swapped)
+			*out = *base;
+		return;
+	}
+
+	/* --- COMPUTE BUCKET INDICES, BUCKET COUNTS, AND LIST OF
+	       USED BUCKETS --- */
+
+	bucket_counts_buf = minirx_bucket_counts_bufs +
+			    MINIRX_BUCKETS * level;
+	nbucket = minirx_compute_bucket_counts(base, base_len, level == 0,
+					       bucket_counts_buf);
+
+	/* --- ARE BUCKET INDICES SORTED? --- */
+
+	minirx_base_uidx_buf_is_sorted = nbucket > 1 ?
+		sorted_uchar_buf(minirx_base_uidx_buf, base_len, minirx_desc) : 1;
+
+	first_bucket = 0;
+	last_bucket = MINIRX_BUCKETS - 1;
+
+	if (!minirx_base_uidx_buf_is_sorted) {
+
+		/* --- SORT 'base' BY BUCKET --- */
+
+		minirx_compute_bucket_offsets(bucket_counts_buf, minirx_desc,
+					      &first_bucket, &last_bucket);
+
+		for (i = 0; i < base_len; i++)
+			out[minirx_bucket_offsets[minirx_base_uidx_buf[i]]++] =
+				base[i];
+
+		/* Swap 'base' and 'out'. */
+		tmp = out;
+		out = base;
+		base = tmp;
+		swapped = !swapped;
+	}
+
+	if (level == 1) {
+		if (swapped)
+			memcpy(out, base, sizeof(int) * base_len);
+		return;
+	}
+
+	/* --- ORDER EACH BUCKET --- */
+
+	level++;
+	if (minirx_desc) {
+		/* Process buckets from last to first. */
+		for (bucket_idx = last_bucket;
+		     bucket_idx >= first_bucket;
+		     bucket_idx--)
+		{
+			base_len = bucket_counts_buf[bucket_idx];
+			minirx_sort_rec(base, base_len, out, level, swapped);
+			base += base_len;
+			out += base_len;
+		}
+	} else {
+		/* Process buckets from first to last. */
+		for (bucket_idx = first_bucket;
+		     bucket_idx <= last_bucket;
+		     bucket_idx++)
+		{
+			base_len = bucket_counts_buf[bucket_idx];
+			minirx_sort_rec(base, base_len, out, level, swapped);
+			base += base_len;
+			out += base_len;
+		}
+	}
+	return;
+}
+
+static void sort_ushort_array2(unsigned short int *x, int nelt, int desc)
+{
+	static int base[MINIRX_BASE_MAXLENGTH], out[MINIRX_BASE_MAXLENGTH];
+	static unsigned short int y[MINIRX_BASE_MAXLENGTH];
+	int i;
+
+	for (i = 0; i < nelt; i++)
+		base[i] = i;
+	minirx_target = x;
+	minirx_desc = desc;
+	minirx_sort_rec(base, nelt, out, 0, 0);
+	for (i = 0; i < nelt; i++)
+		y[i] = x[base[i]];
+	memcpy(x, y, sizeof(unsigned short int) * nelt);
+	return;
+}
 
 
 /****************************************************************************
- * A radix-based sort for integers
+ * RADIX SORT of arrays of integers
  *
  * The current implementation assumes that sizeof(int) is 4 and
  * sizeof(unsigned short int) is 2.
@@ -381,7 +603,7 @@ static void compute_bucket_offsets(const int *bucket_counts_buf, int desc,
 	} else {
 		/* Process buckets from first to last. */
 		for (bucket_idx = 0;
-		     bucket_idx < RXBUCKETS;
+		     bucket_idx <= RXBUCKETS - 1;
 		     bucket_idx++)
 		{
 			rxbucket_offsets[bucket_idx] = offset;
@@ -480,9 +702,9 @@ static void rxsort_rec(int *base, int base_len, int *out,
 	} else {
 		bucket_used_buf_is_sorted =
 			sorted_uidx_buf(bucket_used_buf, nbucket, desc);
-		/* Cut-off of 1024 based on empirical observation. */
-		if (!bucket_used_buf_is_sorted && nbucket <= 1024) {
-			sort_ushort_array(bucket_used_buf, nbucket, desc);
+		/* Cut-off of 4096 based on empirical observation. */
+		if (!bucket_used_buf_is_sorted && nbucket <= 4096) {
+			sort_ushort_array2(bucket_used_buf, nbucket, desc);
 			bucket_used_buf_is_sorted = 1;
 		}
 	}
