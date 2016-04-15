@@ -270,7 +270,7 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 {
 	int nbucket, i;
 	unsigned short int tval;
-	unsigned char uc;
+	unsigned char uidx;
 
 	memset(minirx_bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
 	nbucket = 0;
@@ -279,9 +279,9 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 		   compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
 			tval = minirx_target[base[i]];
-			uc = (unsigned char) (tval >> CHAR_BIT);
-			minirx_base_uidx_buf[i] = uc;
-			if (minirx_bucket_counts_buf[uc]++ == 0)
+			uidx = (unsigned char) (tval >> CHAR_BIT);
+			minirx_base_uidx_buf[i] = uidx;
+			if (minirx_bucket_counts_buf[uidx]++ == 0)
 				nbucket++;
 		}
 	} else {
@@ -289,9 +289,9 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 		   compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
 			tval = minirx_target[base[i]];
-			uc = (unsigned char) tval;
-			minirx_base_uidx_buf[i] = uc;
-			if (minirx_bucket_counts_buf[uc]++ == 0)
+			uidx = (unsigned char) tval;
+			minirx_base_uidx_buf[i] = uidx;
+			if (minirx_bucket_counts_buf[uidx]++ == 0)
 				nbucket++;
 		}
 	}
@@ -301,23 +301,23 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 static int sorted_uchar_buf(const unsigned char *uchar_buf, int buf_len,
 			    int desc)
 {
-	unsigned char prev_uc, uc;
+	unsigned char prev_uidx, uidx;
 	int i;
 
-	prev_uc = uchar_buf[0];
+	prev_uidx = uchar_buf[0];
 	if (desc) {
 		for (i = 1; i < buf_len; i++) {
-			uc = uchar_buf[i];
-			if (uc > prev_uc)
+			uidx = uchar_buf[i];
+			if (uidx > prev_uidx)
 				return 0;
-			prev_uc = uc;
+			prev_uidx = uidx;
 		}
 	} else {
 		for (i = 1; i < buf_len; i++) {
-			uc = uchar_buf[i];
-			if (uc < prev_uc)
+			uidx = uchar_buf[i];
+			if (uidx < prev_uidx)
 				return 0;
-			prev_uc = uc;
+			prev_uidx = uidx;
 		}
 	}
 	return 1;
@@ -384,8 +384,7 @@ static void minirx_sort_rec(int *base, int base_len, int *out,
 		return;
 	}
 
-	/* --- COMPUTE BUCKET INDICES, BUCKET COUNTS, AND LIST OF
-	       USED BUCKETS --- */
+	/* --- COMPUTE BUCKET INDICES AND BUCKET COUNTS --- */
 
 	bucket_counts_buf = minirx_bucket_counts_bufs +
 			    MINIRX_BUCKETS * level;
@@ -395,7 +394,7 @@ static void minirx_sort_rec(int *base, int base_len, int *out,
 	/* --- ARE BUCKET INDICES SORTED? --- */
 
 	minirx_base_uidx_buf_is_sorted = nbucket > 1 ?
-		sorted_uchar_buf(minirx_base_uidx_buf, base_len, minirx_desc) : 1;
+	    sorted_uchar_buf(minirx_base_uidx_buf, base_len, minirx_desc) : 1;
 
 	first_bucket = 0;
 	last_bucket = MINIRX_BUCKETS - 1;
