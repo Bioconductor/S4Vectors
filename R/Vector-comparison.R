@@ -385,6 +385,6 @@ setMethod("xtabs", signature(data = "Vector"),
           function(formula = ~., data, subset, na.action, exclude = c(NA, NaN),
                    drop.unused.levels = FALSE)
 {
-    data <- as.env(data, environment(formula))
+    data <- as.env(data, environment(formula), tform=decode)
     callGeneric()
 })

@@ -74,7 +74,8 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                              simplify=simplify)
             return(DataFrame(ans))
         } else if (is(by, "formula")) {
-            ans <- aggregate(by, as.env(x, environment(by)), FUN=FUN, ...)
+            ans <- aggregate(by, as.env(x, environment(by), tform=decode),
+                             FUN=FUN, ...)
             return(DataFrame(ans))
         }
         start <- structure(start(by), names=names(by))

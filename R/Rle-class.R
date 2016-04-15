@@ -138,7 +138,11 @@ asFactorOrFactorRle <- function(x) {
 .as.list.Rle <- function(x) as.list(as.vector(x))
 setMethod("as.list", "Rle", .as.list.Rle)
 
+setGeneric("decode", function(x, ...) standardGeneric("decode"))
+setMethod("decode", "ANY", identity)
+
 decodeRle <- function(x) rep.int(runValue(x), runLength(x))
+setMethod("decode", "Rle", decodeRle)
 
 .as.data.frame.Rle <- function(x, row.names=NULL, optional=FALSE, ...)
 {
