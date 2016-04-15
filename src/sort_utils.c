@@ -323,14 +323,14 @@ static void rxsort_rec(int *base, int base_len, int *out,
 
 	          target_no |     0     |     1     |     2     |     3
 	     --------------------------------------------------------------
-	      with 1 target | 128 * 1/1 |           |           |
-	     with 2 targets | 128 * 1/2 | 128 * 2/2 |           |
-	     with 4 targets | 128 * 1/4 | 128 * 2/4 | 128 * 3/4 | 128 * 4/4
+	      with 1 target | 512 * 1/1 |           |           |
+	     with 2 targets | 512 * 1/2 | 512 * 2/2 |           |
+	     with 4 targets | 512 * 1/4 | 512 * 2/4 | 512 * 3/4 | 512 * 4/4
 
-	   The choice of 128 as max cut-off is based on empirical observation.
+	   The choice of 512 as max cut-off is based on empirical observation.
 	   TODO: All these things need more fine tuning...
 	*/
-	qsort_cutoff = 128 * (target_no + 1) / ((last_rxlevel + 1) >> 1);
+	qsort_cutoff = 512 * (target_no + 1) / ((last_rxlevel + 1) >> 1);
 	if (base_len <= qsort_cutoff) {
 		rxqsort(base, base_len,
 			rxtargets + target_no, rxdescs + target_no,
