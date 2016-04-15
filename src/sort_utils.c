@@ -266,7 +266,7 @@ static int			minirx_bucket_offsets[MINIRX_BUCKETS];
 
 /* Populate 'minirx_bucket_counts_buf' and 'minirx_base_uidx_buf'. */
 static int minirx_compute_bucket_counts(const int *base, int base_len,
-		int use_lsb, int *minirx_bucket_counts_buf)
+		int use_msb, int *minirx_bucket_counts_buf)
 {
 	int nbucket, i;
 	unsigned short int tval;
@@ -274,7 +274,7 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 
 	memset(minirx_bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
 	nbucket = 0;
-	if (use_lsb) {
+	if (use_msb) {
 		/* Use 8 most significant bits of the target values to
 		   compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
@@ -501,7 +501,7 @@ static int			rxbucket_offsets[RXBUCKETS];
 
 /* Populate 'bucket_counts_buf', 'bucket_used_buf', and 'base_uidx_buf'. */
 static int compute_bucket_counts(const int *base, int base_len,
-		const int *target, int use_lsb,
+		const int *target, int use_msb,
 		int *bucket_counts_buf, unsigned short int *bucket_used_buf)
 {
 	int nbucket, i, tval;
@@ -509,7 +509,7 @@ static int compute_bucket_counts(const int *base, int base_len,
 
 	memset(bucket_counts_buf, 0, sizeof(int) * RXBUCKETS);
 	nbucket = 0;
-	if (use_lsb) {
+	if (use_msb) {
 		/* Use 16 most significant bits of the target values to
 		   compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
@@ -535,28 +535,64 @@ static int compute_bucket_counts(const int *base, int base_len,
 }
 
 static int sorted_uidx_buf(const unsigned short int *uidx_buf, int buf_len,
-			   int desc)
+			   int desc,
+			   unsigned short int *first_uidx,
+			   unsigned short int *last_uidx)
 {
 	unsigned short int prev_uidx, uidx;
-	int i;
+	int is_sorted, i;
 
 	prev_uidx = uidx_buf[0];
+	if (first_uidx == NULL || last_uidx == NULL) {
+		if (desc) {
+			for (i = 1; i < buf_len; i++) {
+				uidx = uidx_buf[i];
+				if (uidx > prev_uidx)
+					return 0;
+				prev_uidx = uidx;
+			}
+		} else {
+			for (i = 1; i < buf_len; i++) {
+				uidx = uidx_buf[i];
+				if (uidx < prev_uidx)
+					return 0;
+				prev_uidx = uidx;
+			}
+		}
+		return 1;
+	}
+	/* No early bailout in that case. */
+	is_sorted = 1;
 	if (desc) {
-		for (i = 1; i < buf_len; i++) {
+		*first_uidx = 0x0000;
+		*last_uidx = 0xffff;
+		for (i = 0; i < buf_len; i++) {
 			uidx = uidx_buf[i];
-			if (uidx > prev_uidx)
-				return 0;
+			if (uidx <= *last_uidx) {
+				*last_uidx = uidx;
+			} else {
+				is_sorted = 0;
+			}
+			if (uidx > *first_uidx)
+				*first_uidx = uidx;
 			prev_uidx = uidx;
 		}
 	} else {
-		for (i = 1; i < buf_len; i++) {
+		*first_uidx = 0xffff;
+		*last_uidx = 0x0000;
+		for (i = 0; i < buf_len; i++) {
 			uidx = uidx_buf[i];
-			if (uidx < prev_uidx)
-				return 0;
+			if (uidx >= *last_uidx) {
+				*last_uidx = uidx;
+			} else {
+				is_sorted = 0;
+			}
+			if (uidx < *first_uidx)
+				*first_uidx = uidx;
 			prev_uidx = uidx;
 		}
 	}
-	return 1;
+	return is_sorted;
 }
 
 /* Walk only on buckets IN USE. */
@@ -577,43 +613,30 @@ static void compute_bucket_offsets_fast(const int *bucket_counts_buf,
 }
 
 /* Walk on ALL buckets. */
-static void compute_bucket_offsets(const int *bucket_counts_buf, int desc,
-				int *first_bucket, int *last_bucket)
+static void compute_bucket_offsets(const int *bucket_counts_buf,
+				   unsigned short int first_uidx,
+				   unsigned short int last_uidx,
+				   int desc)
 {
-	int offset, bucket_idx, bucket_count;
+	int offset, bucket_count;
+	unsigned short int uidx;
 
 	offset = 0;
-	*first_bucket = *last_bucket = -1;
+	uidx = first_uidx;
 	if (desc) {
-		/* Process buckets from last to first. */
-		for (bucket_idx = RXBUCKETS - 1;
-		     bucket_idx >= 0;
-		     bucket_idx--)
-		{
-			rxbucket_offsets[bucket_idx] = offset;
-			bucket_count = bucket_counts_buf[bucket_idx];
+		do {
+			rxbucket_offsets[uidx] = offset;
+			bucket_count = bucket_counts_buf[uidx];
 			offset += bucket_count;
-			if (bucket_count != 0) {
-				*first_bucket = bucket_idx;
-				if (*last_bucket == -1)
-					*last_bucket = bucket_idx;
-			}
-		}
+
+		} while (uidx-- != last_uidx);
 	} else {
-		/* Process buckets from first to last. */
-		for (bucket_idx = 0;
-		     bucket_idx <= RXBUCKETS - 1;
-		     bucket_idx++)
-		{
-			rxbucket_offsets[bucket_idx] = offset;
-			bucket_count = bucket_counts_buf[bucket_idx];
+		do {
+			rxbucket_offsets[uidx] = offset;
+			bucket_count = bucket_counts_buf[uidx];
 			offset += bucket_count;
-			if (bucket_count != 0) {
-				if (*first_bucket == -1)
-					*first_bucket = bucket_idx;
-				*last_bucket = bucket_idx;
-			}
-		}
+
+		} while (uidx++ != last_uidx);
 	}
 	return;
 }
@@ -622,12 +645,12 @@ static void rxsort_rec(int *base, int base_len, int *out,
 		       int level, int swapped)
 {
 	static int target_no, remaining_targets_are_sorted, qsort_cutoff, desc,
-		   base_uidx_buf_is_sorted, bucket_used_buf_is_sorted, *tmp;
+		   base_uidx_buf_is_sorted, bucket_used_buf_is_sorted,
+		   uidx_range, *tmp;
 	static const int *target;
 	
-	int *bucket_counts_buf, nbucket, first_bucket, last_bucket,
-	    i, bucket_idx;
-	unsigned short int *bucket_used_buf;
+	int *bucket_counts_buf, nbucket, i;
+	unsigned short int *bucket_used_buf, first_uidx, last_uidx, uidx;
 
 	/* --- HANDLE THE EASY SITUATIONS --- */
 
@@ -694,22 +717,27 @@ static void rxsort_rec(int *base, int base_len, int *out,
 	/* --- ARE BUCKET INDICES SORTED? --- */
 
 	base_uidx_buf_is_sorted = nbucket > 1 ?
-		sorted_uidx_buf(base_uidx_buf, base_len, desc) : 1;
+		sorted_uidx_buf(base_uidx_buf, base_len, desc, NULL, NULL) : 1;
 
 	if (base_uidx_buf_is_sorted) {
 		bucket_used_buf_is_sorted = 1;
 	} else {
 		bucket_used_buf_is_sorted =
-			sorted_uidx_buf(bucket_used_buf, nbucket, desc);
-		/* Cut-off of 4096 based on empirical observation. */
-		if (!bucket_used_buf_is_sorted && nbucket <= 4096) {
-			sort_ushort_array2(bucket_used_buf, nbucket, desc);
-			bucket_used_buf_is_sorted = 1;
+			sorted_uidx_buf(bucket_used_buf, nbucket, desc,
+					&first_uidx, &last_uidx);
+		if (!bucket_used_buf_is_sorted) {
+			uidx_range = desc ? first_uidx - last_uidx + 1
+					  : last_uidx - first_uidx + 1;
+			/* Don't bother sorting if that's going to cost more
+			   than just walking on the range of buckets. Cut-off
+			   value of 8 based on empirical observation. */
+			if ((uidx_range >= 4 * nbucket) && (nbucket <= 4096)) {
+				sort_ushort_array2(bucket_used_buf, nbucket,
+						   desc);
+				bucket_used_buf_is_sorted = 1;
+			}
 		}
 	}
-
-	first_bucket = 0;
-	last_bucket = RXBUCKETS - 1;
 
 	if (!base_uidx_buf_is_sorted) {
 
@@ -722,10 +750,9 @@ static void rxsort_rec(int *base, int base_len, int *out,
 				bucket_used_buf, nbucket);
 		} else {
 			/* Walk on ALL buckets. */
-			compute_bucket_offsets(bucket_counts_buf, desc,
-				&first_bucket, &last_bucket);
+			compute_bucket_offsets(bucket_counts_buf,
+					       first_uidx, last_uidx, desc);
 		}
-
 		for (i = 0; i < base_len; i++)
 			out[rxbucket_offsets[base_uidx_buf[i]]++] = base[i];
 
@@ -748,38 +775,30 @@ static void rxsort_rec(int *base, int base_len, int *out,
 	if (bucket_used_buf_is_sorted) {
 		/* Walk only on buckets IN USE. */
 		for (i = 0; i < nbucket; i++) {
-			bucket_idx = bucket_used_buf[i];
-			base_len = bucket_counts_buf[bucket_idx];
+			uidx = bucket_used_buf[i];
+			base_len = bucket_counts_buf[uidx];
 			rxsort_rec(base, base_len, out, level, swapped);
 			base += base_len;
 			out += base_len;
 		}
 	} else {
-		/* Walk on ALL buckets in the (first,last) range. */
+		uidx = first_uidx;
 		if (desc) {
-			/* Process buckets from last to first. */
-			for (bucket_idx = last_bucket;
-			     bucket_idx >= first_bucket;
-			     bucket_idx--)
-			{
-				base_len = bucket_counts_buf[bucket_idx];
+			do {
+				base_len = bucket_counts_buf[uidx];
 				rxsort_rec(base, base_len, out, level,
 					   swapped);
 				base += base_len;
 				out += base_len;
-			}
+			} while (uidx-- != last_uidx);
 		} else {
-			/* Process buckets from first to last. */
-			for (bucket_idx = first_bucket;
-			     bucket_idx <= last_bucket;
-			     bucket_idx++)
-			{
-				base_len = bucket_counts_buf[bucket_idx];
+			do {
+				base_len = bucket_counts_buf[uidx];
 				rxsort_rec(base, base_len, out, level,
 					   swapped);
 				base += base_len;
 				out += base_len;
-			}
+			} while (uidx++ != last_uidx);
 		}
 	}
 	return;
