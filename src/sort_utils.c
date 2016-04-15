@@ -730,7 +730,7 @@ static void rxsort_rec(int *base, int base_len, int *out,
 					  : last_uidx - first_uidx + 1;
 			/* Don't bother sorting if that's going to cost more
 			   than just walking on the range of buckets. Cut-off
-			   value of 8 based on empirical observation. */
+			   value of 4 based on empirical observation. */
 			if ((uidx_range >= 4 * nbucket) && (nbucket <= 4096)) {
 				sort_ushort_array2(bucket_used_buf, nbucket,
 						   desc);
@@ -753,6 +753,7 @@ static void rxsort_rec(int *base, int base_len, int *out,
 			compute_bucket_offsets(bucket_counts_buf,
 					       first_uidx, last_uidx, desc);
 		}
+
 		for (i = 0; i < base_len; i++)
 			out[rxbucket_offsets[base_uidx_buf[i]]++] = base[i];
 
