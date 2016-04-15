@@ -8,7 +8,7 @@
 
 
 /****************************************************************************
- * 4 wrappers to qsort()
+ * Low-level wrappers to qsort()
  */
 
 static const int *aa, *bb, *cc, *dd;
@@ -134,7 +134,456 @@ static void qsort4(int *base, int base_len,
 
 
 /****************************************************************************
- * Sorting or getting the order of an int array.
+ * sorted_targets() and qsort_targets()
+ */
+
+static int sorted_target(const int *base, int base_len,
+			 const int *target, int desc)
+{
+	int prev_tval, tval, i;
+
+	if (base_len == 0)
+		return 1;
+	prev_tval = target[base[0]];
+	if (desc) {
+		for (i = 1; i < base_len; i++) {
+			tval = target[base[i]];
+			if (tval > prev_tval)
+				return 0;
+			prev_tval = tval;
+		}
+	} else {
+		for (i = 1; i < base_len; i++) {
+			tval = target[base[i]];
+			if (tval < prev_tval)
+				return 0;
+			prev_tval = tval;
+		}
+	}
+	return 1;
+}
+
+static int sorted_targets(const int *base, int base_len,
+			  const int **targets, int *descs, int ntarget)
+{
+	int i, j, desc, tval, prev_tval;
+	const int *target;
+
+	if (ntarget == 1)
+		return sorted_target(base, base_len, targets[0], descs[0]);
+	for (i = 1; i < base_len; i++) {
+		for (j = 0; j < ntarget; j++) {
+			target = targets[j];
+			desc = descs[j];
+			tval = target[base[i]];
+			prev_tval = target[base[i - 1]];
+			if (tval != prev_tval) {
+				if (desc != (tval < prev_tval))
+					return 0;
+				break;
+			}
+		}
+	}
+	return 1;
+}
+
+/* Pretty dummy and doesn't scale :-(  Should be easy to change. */
+static void qsort_targets(int *base, int base_len,
+			  const int **targets, int *descs, int ntarget)
+{
+	if (ntarget == 1) {
+		qsort1(base, base_len, targets[0], descs[0]);
+		return;
+	}
+	if (ntarget == 2) {
+		qsort2(base, base_len, targets[0], targets[1],
+				       descs[0], descs[1]);
+		return;
+	}
+	if (ntarget == 3) {
+		qsort3(base, base_len, targets[0], targets[1], targets[2],
+				       descs[0], descs[1], descs[2]);
+		return;
+	}
+	if (ntarget == 4) {
+		qsort4(base, base_len, targets[0], targets[1],
+				       targets[2], targets[3],
+				       descs[0], descs[1], descs[2], descs[3]);
+		return;
+	}
+	error("S4Vectors internal error in qsort_targets(): "
+	      "ntarget must be between >= 1 and <= 4");
+	return;
+}
+
+
+/****************************************************************************
+ * Sorting an array of short ints
+ */
+
+static int compar_ushorts_for_asc_sort(const void *p1, const void *p2)
+{
+	static unsigned short int u1, u2;
+
+	u1 = *((const unsigned short int *) p1);
+	u2 = *((const unsigned short int *) p2);
+	return (int) u1 - (int) u2;
+}
+
+static int compar_ushorts_for_desc_sort(const void *p1, const void *p2)
+{
+	static unsigned short int u1, u2;
+
+	u1 = *((const unsigned short int *) p1);
+	u2 = *((const unsigned short int *) p2);
+	return (int) u2 - (int) u1;
+}
+
+static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
+{
+	int (*compar)(const void *, const void *);
+
+	compar = desc ? compar_ushorts_for_asc_sort
+		      : compar_ushorts_for_desc_sort;
+	qsort(x, nelt, sizeof(unsigned short int), compar);
+}
+
+
+/****************************************************************************
+ * A radix-based sort for integers
+ *
+ * The current implementation assumes that sizeof(int) is 4 and
+ * sizeof(unsigned short int) is 2.
+ */
+
+static int can_use_rxsort()
+{
+	return sizeof(int) == 4 && sizeof(unsigned short int) == 2;
+}
+
+/* Dummy qsort_targets() above would need to be modified if were to support
+   more than 4 targets. */
+#define	MAX_RXTARGETS		4
+static const int *		rxtargets[MAX_RXTARGETS];
+static int			rxdescs[MAX_RXTARGETS];
+static int			last_rxlevel;
+static unsigned short int *	base_uidx_buf;
+
+#define	RXLEVELS_PER_RXTARGET	2
+#define	BITS_PER_RXLEVEL	(sizeof(unsigned short int) * CHAR_BIT)
+#define	MAX_RXLEVELS		(MAX_RXTARGETS * RXLEVELS_PER_RXTARGET)
+#define	RXBUCKETS		(1 << BITS_PER_RXLEVEL)
+
+static int			rxbucket_counts_bufs[RXBUCKETS * MAX_RXLEVELS];
+static unsigned short int	rxbucket_used_bufs[RXBUCKETS * MAX_RXLEVELS];
+static int			rxbucket_offsets[RXBUCKETS];
+
+/* Populate 'bucket_counts_buf', 'bucket_used_buf', and 'base_uidx_buf'. */
+static int compute_bucket_counts(const int *base, int base_len,
+		const int *target, int use_lsb,
+		int *bucket_counts_buf, unsigned short int *bucket_used_buf)
+{
+	int nbucket, i, tval;
+	unsigned short int uidx;
+
+	memset(bucket_counts_buf, 0, sizeof(int) * RXBUCKETS);
+	nbucket = 0;
+	if (use_lsb) {
+		/* Use 16 most significant bits of the target values to
+		   compute the bucket indices. */
+		for (i = 0; i < base_len; i++) {
+			tval = target[base[i]];
+			uidx = (unsigned short int) (tval >> BITS_PER_RXLEVEL);
+			uidx += 0x8000;
+			base_uidx_buf[i] = uidx;
+			if (bucket_counts_buf[uidx]++ == 0)
+				bucket_used_buf[nbucket++] = uidx;
+		}
+	} else {
+		/* Use 16 less significant bits of the target values to
+		   compute the bucket indices. */
+		for (i = 0; i < base_len; i++) {
+			tval = target[base[i]];
+			uidx = (unsigned short int) tval;
+			base_uidx_buf[i] = uidx;
+			if (bucket_counts_buf[uidx]++ == 0)
+				bucket_used_buf[nbucket++] = uidx;
+		}
+	}
+	return nbucket;
+}
+
+static int sorted_uidx_buf(const unsigned short int *uidx_buf, int buf_len,
+			   int desc)
+{
+	unsigned short int prev_uidx, uidx;
+	int i;
+
+	prev_uidx = uidx_buf[0];
+	if (desc) {
+		for (i = 1; i < buf_len; i++) {
+			uidx = uidx_buf[i];
+			if (uidx > prev_uidx)
+				return 0;
+			prev_uidx = uidx;
+		}
+	} else {
+		for (i = 1; i < buf_len; i++) {
+			uidx = uidx_buf[i];
+			if (uidx < prev_uidx)
+				return 0;
+			prev_uidx = uidx;
+		}
+	}
+	return 1;
+}
+
+/* Walk only on buckets IN USE. */
+static void compute_bucket_offsets_fast(const int *bucket_counts_buf,
+				const unsigned short int *bucket_used_buf,
+				int nbucket)
+{
+	int offset, i;
+	unsigned short int uidx;
+
+	offset = 0;
+	for (i = 0; i < nbucket; i++) {
+		uidx = bucket_used_buf[i];
+		rxbucket_offsets[uidx] = offset;
+		offset += bucket_counts_buf[uidx];
+	}
+	return;
+}
+
+/* Walk on ALL buckets. */
+static void compute_bucket_offsets(const int *bucket_counts_buf, int desc,
+				int *first_bucket, int *last_bucket)
+{
+	int offset, bucket_idx, bucket_count;
+
+	offset = 0;
+	*first_bucket = *last_bucket = -1;
+	if (desc) {
+		/* Process buckets from last to first. */
+		for (bucket_idx = RXBUCKETS - 1;
+		     bucket_idx >= 0;
+		     bucket_idx--)
+		{
+			rxbucket_offsets[bucket_idx] = offset;
+			bucket_count = bucket_counts_buf[bucket_idx];
+			offset += bucket_count;
+			if (bucket_count != 0) {
+				*first_bucket = bucket_idx;
+				if (*last_bucket == -1)
+					*last_bucket = bucket_idx;
+			}
+		}
+	} else {
+		/* Process buckets from first to last. */
+		for (bucket_idx = 0;
+		     bucket_idx < RXBUCKETS;
+		     bucket_idx++)
+		{
+			rxbucket_offsets[bucket_idx] = offset;
+			bucket_count = bucket_counts_buf[bucket_idx];
+			offset += bucket_count;
+			if (bucket_count != 0) {
+				if (*first_bucket == -1)
+					*first_bucket = bucket_idx;
+				*last_bucket = bucket_idx;
+			}
+		}
+	}
+	return;
+}
+
+static void rxsort_rec(int *base, int base_len, int *out,
+		       int level, int swapped)
+{
+	static int target_no, remaining_targets_are_sorted, qsort_cutoff, desc,
+		   base_uidx_buf_is_sorted, bucket_used_buf_is_sorted, *tmp;
+	static const int *target;
+	
+	int *bucket_counts_buf, nbucket, first_bucket, last_bucket,
+	    i, bucket_idx;
+	unsigned short int *bucket_used_buf;
+
+	/* --- HANDLE THE EASY SITUATIONS --- */
+
+	if (base_len == 0)
+		return;
+
+	if (base_len == 1) {
+		if (swapped)
+			*out = *base;
+		return;
+	}
+
+	target_no = level >> 1;
+
+	/* Find out whether 'base' is already sorted with respect to all
+	   remaining targets (including current). */
+	remaining_targets_are_sorted = sorted_targets(base, base_len,
+				rxtargets + target_no, rxdescs + target_no,
+				((last_rxlevel - level) >> 1) + 1);
+	if (remaining_targets_are_sorted) {
+		if (swapped)
+			memcpy(out, base, sizeof(int) * base_len);
+		return;
+	}
+
+	/* The formula for computing the qsort cut-off makes the bold
+	   assumption that the cost of qsort_targets() is linear with respect
+	   to the number of targets involved in the sort ('ntarget' argument).
+	   That tends to be the case when there is a high percentage of ties
+	   but the reality is more complex.
+	   The current formula leads to the following cut-off values:
+
+	          target_no |     0     |     1     |     2     |     3
+	     --------------------------------------------------------------
+	      with 1 target | 512 * 1/1 |           |           |
+	     with 2 targets | 512 * 1/2 | 512 * 2/2 |           |
+	     with 4 targets | 512 * 1/4 | 512 * 2/4 | 512 * 3/4 | 512 * 4/4
+
+	   The choice of 512 as max cut-off is based on empirical observation.
+	   TODO: All these things need more fine tuning...
+	*/
+	qsort_cutoff = 512 * (target_no + 1) / ((last_rxlevel + 1) >> 1);
+	if (base_len <= qsort_cutoff) {
+		qsort_targets(base, base_len,
+			      rxtargets + target_no, rxdescs + target_no,
+			      ((last_rxlevel - level) >> 1) + 1);
+		if (swapped)
+			memcpy(out, base, sizeof(int) * base_len);
+		return;
+	}
+
+	/* --- COMPUTE BUCKET INDICES, BUCKET COUNTS, AND LIST OF
+	       USED BUCKETS --- */
+
+	target = rxtargets[target_no];
+	desc = rxdescs[target_no];
+
+	bucket_counts_buf = rxbucket_counts_bufs + RXBUCKETS * level;
+	bucket_used_buf = rxbucket_used_bufs + RXBUCKETS * level;
+	nbucket = compute_bucket_counts(base, base_len,
+					target, level % 2 == 0,
+					bucket_counts_buf, bucket_used_buf);
+
+	/* --- ARE BUCKET INDICES SORTED? --- */
+
+	base_uidx_buf_is_sorted = nbucket > 1 ?
+		sorted_uidx_buf(base_uidx_buf, base_len, desc) : 1;
+
+	if (base_uidx_buf_is_sorted) {
+		bucket_used_buf_is_sorted = 1;
+	} else {
+		bucket_used_buf_is_sorted =
+			sorted_uidx_buf(bucket_used_buf, nbucket, desc);
+		/* Cut-off of 1024 based on empirical observation. */
+		if (!bucket_used_buf_is_sorted && nbucket <= 1024) {
+			sort_ushort_array(bucket_used_buf, nbucket, desc);
+			bucket_used_buf_is_sorted = 1;
+		}
+	}
+
+	first_bucket = 0;
+	last_bucket = RXBUCKETS - 1;
+
+	if (!base_uidx_buf_is_sorted) {
+
+		/* --- SORT 'base' BY BUCKET --- */
+
+		/* Compute bucket offsets. */
+		if (bucket_used_buf_is_sorted) {
+			/* Walk only on buckets IN USE. */
+			compute_bucket_offsets_fast(bucket_counts_buf,
+				bucket_used_buf, nbucket);
+		} else {
+			/* Walk on ALL buckets. */
+			compute_bucket_offsets(bucket_counts_buf, desc,
+				&first_bucket, &last_bucket);
+		}
+
+		for (i = 0; i < base_len; i++)
+			out[rxbucket_offsets[base_uidx_buf[i]]++] = base[i];
+
+		/* Swap 'base' and 'out'. */
+		tmp = out;
+		out = base;
+		base = tmp;
+		swapped = !swapped;
+	}
+
+	if (level == last_rxlevel) {
+		if (swapped)
+			memcpy(out, base, sizeof(int) * base_len);
+		return;
+	}
+
+	/* --- ORDER EACH BUCKET --- */
+
+	level++;
+	if (bucket_used_buf_is_sorted) {
+		/* Walk only on buckets IN USE. */
+		for (i = 0; i < nbucket; i++) {
+			bucket_idx = bucket_used_buf[i];
+			base_len = bucket_counts_buf[bucket_idx];
+			rxsort_rec(base, base_len, out, level, swapped);
+			base += base_len;
+			out += base_len;
+		}
+	} else {
+		/* Walk on ALL buckets in the (first,last) range. */
+		if (desc) {
+			/* Process buckets from last to first. */
+			for (bucket_idx = last_bucket;
+			     bucket_idx >= first_bucket;
+			     bucket_idx--)
+			{
+				base_len = bucket_counts_buf[bucket_idx];
+				rxsort_rec(base, base_len, out, level,
+					   swapped);
+				base += base_len;
+				out += base_len;
+			}
+		} else {
+			/* Process buckets from first to last. */
+			for (bucket_idx = first_bucket;
+			     bucket_idx <= last_bucket;
+			     bucket_idx++)
+			{
+				base_len = bucket_counts_buf[bucket_idx];
+				rxsort_rec(base, base_len, out, level,
+					   swapped);
+				base += base_len;
+				out += base_len;
+			}
+		}
+	}
+	return;
+}
+
+static unsigned short int *alloc_rxbuf1(int base_len)
+{
+	return (unsigned short int *)
+		malloc(sizeof(unsigned short int) * base_len);
+}
+
+static int *alloc_rxbuf2(int base_len,
+		unsigned short int *rxbuf1, int auto_rxbuf1)
+{
+	int *rxbuf2;
+
+	rxbuf2 = (int *) malloc(sizeof(int) * base_len);
+	if (rxbuf2 == NULL && auto_rxbuf1)
+		free(rxbuf1);
+	return rxbuf2;
+}
+
+
+/****************************************************************************
+ * Sorting or getting the order of an int array
  */
 
 static int compar_ints_for_asc_sort(const void *p1, const void *p2)
@@ -169,363 +618,6 @@ void _get_order_of_int_array(const int *x, int nelt,
 	return;
 }
 
-/*
- * A radix-based sort for integers.
- * The current implementation assumes that sizeof(int) is 4 and
- * sizeof(unsigned short int) is 2.
- */
-
-static int can_use_rxsort()
-{
-	return sizeof(int) == 4 && sizeof(unsigned short int) == 2;
-}
-
-/* Dummy rxqsort() below would need to be modified if were to support more
-   than 4 targets. */
-#define	MAX_RXTARGETS		4
-static const int *rxtargets[MAX_RXTARGETS];
-static int rxdescs[MAX_RXTARGETS];
-static int last_rxlevel;
-static unsigned short int *ushort_rxbucket_idx_buf;
-
-#define	RXLEVELS_PER_RXTARGET	2
-#define	BITS_PER_RXLEVEL	(sizeof(unsigned short int) * CHAR_BIT)
-#define	MAX_RXLEVELS		(MAX_RXTARGETS * RXLEVELS_PER_RXTARGET)
-#define	RXBUCKETS		(1 << BITS_PER_RXLEVEL)
-static int rxbucket_counts_bufs[RXBUCKETS * MAX_RXLEVELS];
-static int rxbucket_used_bufs[RXBUCKETS * MAX_RXLEVELS];
-static int rxbucket_offsets[RXBUCKETS];
-
-static int base_is_sorted1(const int *base, int base_len,
-			   const int *target, int desc)
-{
-	int prev_tval, tval, i;
-
-	if (desc) {
-		prev_tval = INT_MAX;
-		for (i = 0; i < base_len; i++) {
-			tval = target[base[i]];
-			if (tval > prev_tval)
-				return 0;
-			prev_tval = tval;
-		}
-	} else {
-		prev_tval = INT_MIN;
-		for (i = 0; i < base_len; i++) {
-			tval = target[base[i]];
-			if (tval < prev_tval)
-				return 0;
-			prev_tval = tval;
-		}
-	}
-	return 1;
-}
-
-static int base_is_sorted2(const int *base, int base_len,
-			   const int **targets, int *descs, int ntarget)
-{
-	int i, j, desc, tval, prev_tval;
-	const int *target;
-
-	if (ntarget == 1)
-		return base_is_sorted1(base, base_len, targets[0], descs[0]);
-	for (i = 0; i < base_len; i++) {
-		for (j = 0; j < ntarget; j++) {
-			target = targets[j];
-			desc = descs[j];
-			tval = target[base[i]];
-			prev_tval = i != 0 ? target[base[i - 1]]
-					   : (desc ? INT_MAX : INT_MIN);
-			if (tval != prev_tval) {
-				if (desc != (tval < prev_tval))
-					return 0;
-				break;
-			}
-		}
-	}
-	return 1;
-}
-
-/* Pretty dummy and doesn't scale :-(
-   Should be easy to change. */
-static void rxqsort(int *base, int base_len,
-		    const int **targets, int *descs, int ntarget)
-{
-	if (ntarget == 1) {
-		qsort1(base, base_len, targets[0], descs[0]);
-		return;
-	}
-	if (ntarget == 2) {
-		qsort2(base, base_len, targets[0], targets[1],
-				       descs[0], descs[1]);
-		return;
-	}
-	if (ntarget == 3) {
-		qsort3(base, base_len, targets[0], targets[1], targets[2],
-				       descs[0], descs[1], descs[2]);
-		return;
-	}
-	if (ntarget == 4) {
-		qsort4(base, base_len, targets[0], targets[1],
-				       targets[2], targets[3],
-				       descs[0], descs[1], descs[2], descs[3]);
-		return;
-	}
-	error("S4Vectors internal error in rxqsort(): "
-	      "ntarget must be between >= 1 and <= 4");
-	return;
-}
-
-static void rxsort_rec(int *base, int base_len, int *out,
-		       int level, int flipped)
-{
-	static int target_no, desc, is_sorted, qsort_cutoff, tval, offset,
-		   bucket_count, *tmp;
-	static const int *target;
-	static unsigned short int ushort_bucket_idx;
-	int i, *bucket_counts_buf, *bucket_used_buf, nbucket,
-	       first_bucket, last_bucket, bucket_idx;
-
-	/* --- HANDLE THE EASY SITUATIONS --- */
-
-	if (base_len == 0)
-		return;
-	if (base_len == 1) {
-		if (flipped)
-			*out = *base;
-		return;
-	}
-	target_no = level >> 1;
-	target = rxtargets[target_no];
-	desc = rxdescs[target_no];
-
-	/* Find out whether 'base' is already sorted with respect to current
-	   target.
-	   TODO: Should probably use base_is_sorted2() instead. If 'base' is
-	   already sorted with respect to *all* targets then we can bailout
-	   anytime, not only when we are on the last target. */
-	is_sorted = base_is_sorted1(base, base_len, target, desc);
-	/* Bailout if 'base' is sorted with respect to current target. Can
-	   only do this if we are on the last 2 levels (i.e. on the last
-	   target). */
-	if (is_sorted && level >= last_rxlevel - 1) {
-		if (flipped)
-			memcpy(out, base, sizeof(int) * base_len);
-		return;
-	}
-
-	/* The formula for computing the qsort cut-off makes the bold
-	   assumption that the cost of rxqsort() is linear with respect to
-	   the number of targets involved in the sort ('ntarget' argument).
-	   That tends to be the case when there is a high percentage of ties
-	   but the reality is more complex.
-	   The current formula leads to the following cut-off values:
-
-	          target_no |     0     |     1     |     2     |     3
-	     --------------------------------------------------------------
-	      with 1 target | 512 * 1/1 |           |           |
-	     with 2 targets | 512 * 1/2 | 512 * 2/2 |           |
-	     with 4 targets | 512 * 1/4 | 512 * 2/4 | 512 * 3/4 | 512 * 4/4
-
-	   The choice of 512 as max cut-off is based on empirical observation.
-	   TODO: All these things need more fine tuning...
-	*/
-	qsort_cutoff = 512 * (target_no + 1) / ((last_rxlevel + 1) >> 1);
-	if (base_len <= qsort_cutoff) {
-		rxqsort(base, base_len,
-			rxtargets + target_no, rxdescs + target_no,
-			((last_rxlevel - level) >> 1) + 1);
-		if (flipped)
-			memcpy(out, base, sizeof(int) * base_len);
-		return;
-	}
-
-	/* --- COMPUTE BUCKET INDICES AND COUNTS --- */
-
-	bucket_counts_buf = rxbucket_counts_bufs + RXBUCKETS * level;
-	memset(bucket_counts_buf, 0, sizeof(int) * RXBUCKETS);
-	bucket_used_buf = rxbucket_used_bufs + RXBUCKETS * level;
-	nbucket = 0;
-	if (level % 2 == 0) {
-		/* Use 16 bits on the left to compute the bucket indices. */
-		for (i = 0; i < base_len; i++) {
-			tval = target[base[i]];
-			ushort_bucket_idx = tval >> BITS_PER_RXLEVEL;
-			ushort_bucket_idx += 0x8000;
-			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
-			if (bucket_counts_buf[ushort_bucket_idx]++ == 0)
-				bucket_used_buf[nbucket++] = ushort_bucket_idx;
-		}
-	} else {
-		/* Use 16 bits on the right to compute the bucket indices. */
-		for (i = 0; i < base_len; i++) {
-			tval = target[base[i]];
-			ushort_bucket_idx = tval;
-			ushort_rxbucket_idx_buf[i] = ushort_bucket_idx;
-			if (bucket_counts_buf[ushort_bucket_idx]++ == 0)
-				bucket_used_buf[nbucket++] = ushort_bucket_idx;
-		}
-	}
-
-	/* --- COMPUTE BUCKET OFFSETS --- */
-
-	offset = 0;
-#define	MAX_BUCKETS_FOR_QSORT 512  // also based on empirical observation
-	if (nbucket <= MAX_BUCKETS_FOR_QSORT) {
-		/* Walk only on BUCKETS IN USE. */
-		int sort_buckets_in_use = 0;
-		for (i = 1; i < nbucket; i++) {
-			if (bucket_used_buf[i] < bucket_used_buf[i - 1]) {
-				sort_buckets_in_use = 1;
-				break;
-			}
-		}
-		if (sort_buckets_in_use) {
-			/* Sort buckets in use. */
-			_sort_int_array(bucket_used_buf, nbucket, 0);
-		}
-		if (desc) {
-			/* Process buckets from last to first. */
-			for (i = nbucket - 1; i >= 0; i--) {
-				bucket_idx = bucket_used_buf[i];
-				bucket_count = bucket_counts_buf[bucket_idx];
-				rxbucket_offsets[bucket_idx] = offset;
-				offset += bucket_count;
-			}
-		} else {
-			/* Process buckets from first to last. */
-			for (i = 0; i < nbucket; i++) {
-				bucket_idx = bucket_used_buf[i];
-				bucket_count = bucket_counts_buf[bucket_idx];
-				rxbucket_offsets[bucket_idx] = offset;
-				offset += bucket_count;
-			}
-		}
-	} else {
-		/* Walk on ALL BUCKETS. */
-		first_bucket = last_bucket = -1;
-		if (desc) {
-			/* Process buckets from last to first. */
-			for (bucket_idx = RXBUCKETS - 1;
-			     bucket_idx >= 0;
-			     bucket_idx--)
-			{
-				bucket_count = bucket_counts_buf[bucket_idx];
-				if (bucket_count != 0) {
-					first_bucket = bucket_idx;
-					if (last_bucket == -1)
-						last_bucket = bucket_idx;
-				}
-				rxbucket_offsets[bucket_idx] = offset;
-				offset += bucket_count;
-			}
-		} else {
-			/* Process buckets from first to last. */
-			for (bucket_idx = 0;
-			     bucket_idx < RXBUCKETS;
-			     bucket_idx++)
-			{
-				bucket_count = bucket_counts_buf[bucket_idx];
-				if (bucket_count != 0) {
-					if (first_bucket == -1)
-						first_bucket = bucket_idx;
-					last_bucket = bucket_idx;
-				}
-				rxbucket_offsets[bucket_idx] = offset;
-				offset += bucket_count;
-			}
-		}
-	}
-
-	/* --- SORT 'base' WITH RESPECT TO CURRENT RADIX LEVEL --- */
-
-	if (!(is_sorted || nbucket == 1)) {
-		for (i = 0; i < base_len; i++)
-			out[rxbucket_offsets[ushort_rxbucket_idx_buf[i]]++] =
-				base[i];
-		/* Flip 'base' and 'out'. */
-		tmp = out;
-		out = base;
-		base = tmp;
-		flipped = !flipped;
-	}
-
-	if (level == last_rxlevel) {
-		if (flipped)
-			memcpy(out, base, sizeof(int) * base_len);
-		return;
-	}
-
-	/* --- ORDER EACH BUCKET --- */
-
-	level++;
-	if (nbucket <= MAX_BUCKETS_FOR_QSORT) {
-		/* Walk only on BUCKETS IN USE. */
-		if (desc) {
-			/* Process buckets from last to first. */
-			for (i = nbucket - 1; i >= 0; i--) {
-				bucket_idx = bucket_used_buf[i];
-				base_len = bucket_counts_buf[bucket_idx];
-				rxsort_rec(base, base_len, out, level, flipped);
-				base += base_len;
-				out += base_len;
-			}
-		} else {
-			/* Process buckets from first to last. */
-			for (i = 0; i < nbucket; i++) {
-				bucket_idx = bucket_used_buf[i];
-				base_len = bucket_counts_buf[bucket_idx];
-				rxsort_rec(base, base_len, out, level, flipped);
-				base += base_len;
-				out += base_len;
-			}
-		}
-	} else {
-		/* Walk on ALL BUCKETS in the first:last bucket range. */
-		if (desc) {
-			/* Process buckets from last to first. */
-			for (bucket_idx = last_bucket;
-			     bucket_idx >= first_bucket;
-			     bucket_idx--)
-			{
-				base_len = bucket_counts_buf[bucket_idx];
-				rxsort_rec(base, base_len, out, level, flipped);
-				base += base_len;
-				out += base_len;
-			}
-		} else {
-			/* Process buckets from first to last. */
-			for (bucket_idx = first_bucket;
-			     bucket_idx <= last_bucket;
-			     bucket_idx++)
-			{
-				base_len = bucket_counts_buf[bucket_idx];
-				rxsort_rec(base, base_len, out, level, flipped);
-				base += base_len;
-				out += base_len;
-			}
-		}
-	}
-	return;
-}
-
-static unsigned short int *alloc_rxbuf1(int base_len)
-{
-	return (unsigned short int *)
-		malloc(sizeof(unsigned short int) * base_len);
-}
-
-static int *alloc_rxbuf2(int base_len,
-		unsigned short int *rxbuf1, int auto_rxbuf1)
-{
-	int *rxbuf2;
-
-	rxbuf2 = (int *) malloc(sizeof(int) * base_len);
-	if (rxbuf2 == NULL && auto_rxbuf1)
-		free(rxbuf1);
-	return rxbuf2;
-}
-
 /* base: 0-based indices into 'x'.
    rxbuf1, rxbuf2: NULL or user-allocated buffers of length 'base_len'. */
 int _sort_ints(int *base, int base_len,
@@ -556,7 +648,7 @@ int _sort_ints(int *base, int base_len,
 	rxtargets[0] = x;
 	rxdescs[0] = desc;
 	last_rxlevel = 1;
-	ushort_rxbucket_idx_buf = rxbuf1;
+	base_uidx_buf = rxbuf1;
 	rxsort_rec(base, base_len, rxbuf2, 0, 0);
 
 	if (auto_rxbuf2)
@@ -568,8 +660,9 @@ int _sort_ints(int *base, int base_len,
 
 
 /****************************************************************************
- * Getting the order of 2 int arrays of the same length.
- * The second array ('b') is used to break ties in the first array ('a').
+ * Getting the order of 2 int arrays of the same length
+ *
+ * The second array (b) is used to break ties in the first array (a).
  */
 
 static int compar_int_pairs(int a1, int b1, int a2, int b2)
@@ -675,7 +768,7 @@ int _sort_int_pairs(int *base, int base_len,
 	rxdescs[0] = a_desc;
 	rxdescs[1] = b_desc;
 	last_rxlevel = 3;
-	ushort_rxbucket_idx_buf = rxbuf1;
+	base_uidx_buf = rxbuf1;
 	rxsort_rec(base, base_len, rxbuf2, 0, 0);
 
 	if (auto_rxbuf2)
@@ -710,7 +803,8 @@ void _get_matches_of_ordered_int_pairs(
 
 
 /****************************************************************************
- * Getting the order of 4 int arrays of the same length.
+ * Getting the order of 4 int arrays of the same length
+ *
  * 2nd, 3rd and 4th arrays are used to successively break ties.
  */
 
@@ -813,7 +907,7 @@ int _sort_int_quads(int *base, int base_len,
 	rxdescs[2] = c_desc;
 	rxdescs[3] = d_desc;
 	last_rxlevel = 7;
-	ushort_rxbucket_idx_buf = rxbuf1;
+	base_uidx_buf = rxbuf1;
 	rxsort_rec(base, base_len, rxbuf2, 0, 0);
 
 	if (auto_rxbuf2)
