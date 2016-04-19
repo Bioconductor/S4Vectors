@@ -230,15 +230,15 @@ static unsigned char		minirx_base_uidx_buf[MINIRX_BASE_MAXLENGTH];
 static int			minirx_bucket_counts_bufs[MINIRX_BUCKETS * 2];
 static int			minirx_bucket_offsets[MINIRX_BUCKETS];
 
-/* Populate 'minirx_bucket_counts_buf' and 'minirx_base_uidx_buf'. */
+/* Populate 'bucket_counts_buf' and 'minirx_base_uidx_buf'. */
 static int minirx_compute_bucket_counts(
 		const unsigned short int *base, int base_len,
-		int use_msb, int *minirx_bucket_counts_buf)
+		int use_msb, int *bucket_counts_buf)
 {
 	int nbucket, i;
 	unsigned char uidx;
 
-	memset(minirx_bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
+	memset(bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
 	nbucket = 0;
 	if (use_msb) {
 		/* Use 8 most significant bits of the target values to
@@ -246,7 +246,7 @@ static int minirx_compute_bucket_counts(
 		for (i = 0; i < base_len; i++) {
 			uidx = (unsigned char) (base[i] >> CHAR_BIT);
 			minirx_base_uidx_buf[i] = uidx;
-			if (minirx_bucket_counts_buf[uidx]++ == 0)
+			if (bucket_counts_buf[uidx]++ == 0)
 				nbucket++;
 		}
 	} else {
@@ -255,7 +255,7 @@ static int minirx_compute_bucket_counts(
 		for (i = 0; i < base_len; i++) {
 			uidx = (unsigned char) base[i];
 			minirx_base_uidx_buf[i] = uidx;
-			if (minirx_bucket_counts_buf[uidx]++ == 0)
+			if (bucket_counts_buf[uidx]++ == 0)
 				nbucket++;
 		}
 	}
@@ -288,7 +288,7 @@ static int sorted_uchar_buf(const unsigned char *uchar_buf, int buf_len,
 }
 
 static void minirx_compute_bucket_offsets(
-		const int *minirx_bucket_counts_buf, int desc,
+		const int *bucket_counts_buf, int desc,
 		int *first_bucket, int *last_bucket)
 {
 	int offset, bucket_idx, bucket_count;
@@ -302,7 +302,7 @@ static void minirx_compute_bucket_offsets(
 		     bucket_idx--)
 		{
 			minirx_bucket_offsets[bucket_idx] = offset;
-			bucket_count = minirx_bucket_counts_buf[bucket_idx];
+			bucket_count = bucket_counts_buf[bucket_idx];
 			offset += bucket_count;
 			if (bucket_count != 0) {
 				*first_bucket = bucket_idx;
@@ -317,7 +317,7 @@ static void minirx_compute_bucket_offsets(
 		     bucket_idx++)
 		{
 			minirx_bucket_offsets[bucket_idx] = offset;
-			bucket_count = minirx_bucket_counts_buf[bucket_idx];
+			bucket_count = bucket_counts_buf[bucket_idx];
 			offset += bucket_count;
 			if (bucket_count != 0) {
 				if (*first_bucket == -1)
@@ -333,7 +333,7 @@ static void minirx_sort_rec(unsigned short int *base, int base_len,
 			    unsigned short int *out,
 			     int level, int swapped)
 {
-	static int minirx_base_uidx_buf_is_sorted;
+	static int base_uidx_buf_is_sorted;
 	static unsigned short int *tmp;
 	
 	int *bucket_counts_buf, nbucket, first_bucket, last_bucket,
@@ -359,13 +359,13 @@ static void minirx_sort_rec(unsigned short int *base, int base_len,
 
 	/* --- ARE BUCKET INDICES SORTED? --- */
 
-	minirx_base_uidx_buf_is_sorted = nbucket > 1 ?
+	base_uidx_buf_is_sorted = nbucket > 1 ?
 	    sorted_uchar_buf(minirx_base_uidx_buf, base_len, minirx_desc) : 1;
 
 	first_bucket = 0;
 	last_bucket = MINIRX_BUCKETS - 1;
 
-	if (!minirx_base_uidx_buf_is_sorted) {
+	if (!base_uidx_buf_is_sorted) {
 
 		/* --- SORT 'base' BY BUCKET --- */
 
