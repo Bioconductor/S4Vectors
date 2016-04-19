@@ -218,40 +218,6 @@ static void qsort_targets(int *base, int base_len,
 
 
 /****************************************************************************
- * Sorting an array of unsigned short ints
- */
-
-/*
-static int compar_ushorts_for_asc_sort(const void *p1, const void *p2)
-{
-	static unsigned short int u1, u2;
-
-	u1 = *((const unsigned short int *) p1);
-	u2 = *((const unsigned short int *) p2);
-	return (int) u1 - (int) u2;
-}
-
-static int compar_ushorts_for_desc_sort(const void *p1, const void *p2)
-{
-	static unsigned short int u1, u2;
-
-	u1 = *((const unsigned short int *) p1);
-	u2 = *((const unsigned short int *) p2);
-	return (int) u2 - (int) u1;
-}
-
-static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
-{
-	int (*compar)(const void *, const void *);
-
-	compar = desc ? compar_ushorts_for_desc_sort
-		      : compar_ushorts_for_asc_sort;
-	qsort(x, nelt, sizeof(unsigned short int), compar);
-}
-*/
-
-
-/****************************************************************************
  * Mini radix: A simple radix-based sort of a single array of *distinct*
  * unsigned short ints
  */
@@ -453,7 +419,9 @@ static void minirx_sort_rec(unsigned short int *base, int base_len,
 	return;
 }
 
-static void sort_ushort_array2(unsigned short int *x, int nelt, int desc)
+/* Between 10x (for small 'nelt') and 25x (for big 'nelt') faster than using
+   qsort(). */
+static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
 {
 	static unsigned short int out[MINIRX_BASE_MAXLENGTH];
 
@@ -725,8 +693,8 @@ static void rxsort_rec(int *base, int base_len, int *out,
 			   than just walking on the range of buckets. Cut-off
 			   value of 4 based on empirical observation. */
 			if ((uidx_range >= 4 * nbucket) && (nbucket <= 4096)) {
-				sort_ushort_array2(bucket_used_buf, nbucket,
-						   desc);
+				sort_ushort_array(bucket_used_buf, nbucket,
+						  desc);
 				bucket_used_buf_is_sorted = 1;
 			}
 		}
