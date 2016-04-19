@@ -221,7 +221,7 @@ static void qsort_targets(int *base, int base_len,
  * Sorting an array of unsigned short ints
  */
 
-/* I believe this is broken. Not sure why...
+/*
 static int compar_ushorts_for_asc_sort(const void *p1, const void *p2)
 {
 	static unsigned short int u1, u2;
@@ -244,11 +244,12 @@ static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
 {
 	int (*compar)(const void *, const void *);
 
-	compar = desc ? compar_ushorts_for_asc_sort
-		      : compar_ushorts_for_desc_sort;
+	compar = desc ? compar_ushorts_for_desc_sort
+		      : compar_ushorts_for_asc_sort;
 	qsort(x, nelt, sizeof(unsigned short int), compar);
 }
 */
+
 
 /****************************************************************************
  * Mini radix: A simple radix-based sort of a single array of *distinct*
@@ -258,18 +259,17 @@ static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
 #define	MINIRX_BASE_MAXLENGTH	(1 << (2 * CHAR_BIT))
 #define	MINIRX_BUCKETS		(1 << CHAR_BIT)
 
-static const unsigned short int *minirx_target;
 static int			minirx_desc;
 static unsigned char		minirx_base_uidx_buf[MINIRX_BASE_MAXLENGTH];
 static int			minirx_bucket_counts_bufs[MINIRX_BUCKETS * 2];
 static int			minirx_bucket_offsets[MINIRX_BUCKETS];
 
 /* Populate 'minirx_bucket_counts_buf' and 'minirx_base_uidx_buf'. */
-static int minirx_compute_bucket_counts(const int *base, int base_len,
+static int minirx_compute_bucket_counts(
+		const unsigned short int *base, int base_len,
 		int use_msb, int *minirx_bucket_counts_buf)
 {
 	int nbucket, i;
-	unsigned short int tval;
 	unsigned char uidx;
 
 	memset(minirx_bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
@@ -278,8 +278,7 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 		/* Use 8 most significant bits of the target values to
 		   compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
-			tval = minirx_target[base[i]];
-			uidx = (unsigned char) (tval >> CHAR_BIT);
+			uidx = (unsigned char) (base[i] >> CHAR_BIT);
 			minirx_base_uidx_buf[i] = uidx;
 			if (minirx_bucket_counts_buf[uidx]++ == 0)
 				nbucket++;
@@ -288,8 +287,7 @@ static int minirx_compute_bucket_counts(const int *base, int base_len,
 		/* Use 8 less significant bits of the target values to
 		   compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
-			tval = minirx_target[base[i]];
-			uidx = (unsigned char) tval;
+			uidx = (unsigned char) base[i];
 			minirx_base_uidx_buf[i] = uidx;
 			if (minirx_bucket_counts_buf[uidx]++ == 0)
 				nbucket++;
@@ -365,10 +363,12 @@ static void minirx_compute_bucket_offsets(
 	return;
 }
 
-static void minirx_sort_rec(int *base, int base_len, int *out,
+static void minirx_sort_rec(unsigned short int *base, int base_len,
+			    unsigned short int *out,
 			     int level, int swapped)
 {
-	static int minirx_base_uidx_buf_is_sorted, *tmp;
+	static int minirx_base_uidx_buf_is_sorted;
+	static unsigned short int *tmp;
 	
 	int *bucket_counts_buf, nbucket, first_bucket, last_bucket,
 	    i, bucket_idx;
@@ -419,7 +419,8 @@ static void minirx_sort_rec(int *base, int base_len, int *out,
 
 	if (level == 1) {
 		if (swapped)
-			memcpy(out, base, sizeof(int) * base_len);
+			memcpy(out, base,
+			       sizeof(unsigned short int) * base_len);
 		return;
 	}
 
@@ -454,18 +455,10 @@ static void minirx_sort_rec(int *base, int base_len, int *out,
 
 static void sort_ushort_array2(unsigned short int *x, int nelt, int desc)
 {
-	static int base[MINIRX_BASE_MAXLENGTH], out[MINIRX_BASE_MAXLENGTH];
-	static unsigned short int y[MINIRX_BASE_MAXLENGTH];
-	int i;
+	static unsigned short int out[MINIRX_BASE_MAXLENGTH];
 
-	for (i = 0; i < nelt; i++)
-		base[i] = i;
-	minirx_target = x;
 	minirx_desc = desc;
-	minirx_sort_rec(base, nelt, out, 0, 0);
-	for (i = 0; i < nelt; i++)
-		y[i] = x[base[i]];
-	memcpy(x, y, sizeof(unsigned short int) * nelt);
+	minirx_sort_rec(x, nelt, out, 0, 0);
 	return;
 }
 
