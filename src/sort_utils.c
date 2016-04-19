@@ -241,8 +241,8 @@ static int minirx_compute_bucket_counts(
 	memset(bucket_counts_buf, 0, sizeof(int) * MINIRX_BUCKETS);
 	nbucket = 0;
 	if (use_msb) {
-		/* Use 8 most significant bits of the target values to
-		   compute the bucket indices. */
+		/* Use 8 most significant bits of the base values (unsigned
+		   short ints) to compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
 			uidx = (unsigned char) (base[i] >> CHAR_BIT);
 			minirx_base_uidx_buf[i] = uidx;
@@ -250,8 +250,8 @@ static int minirx_compute_bucket_counts(
 				nbucket++;
 		}
 	} else {
-		/* Use 8 less significant bits of the target values to
-		   compute the bucket indices. */
+		/* Use 8 less significant bits of the base values (unsigned
+		   short ints) to compute the bucket indices. */
 		for (i = 0; i < base_len; i++) {
 			uidx = (unsigned char) base[i];
 			minirx_base_uidx_buf[i] = uidx;
