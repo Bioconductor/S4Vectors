@@ -456,34 +456,29 @@ static void minirx_compute_bucket_offsets_fast(
 	return;
 }
 
-static void compute_first_last_uchar_buf(
-		const unsigned char *uchar_buf, int buf_len, int desc,
-		unsigned char *first_uidx, unsigned char *last_uidx)
+static void compute_min_max_uchar_buf(
+		const unsigned char *uchar_buf, int buf_len,
+		unsigned char *min_uidx, unsigned char *max_uidx)
 {
-	unsigned char min_uidx, max_uidx, uidx;
+	unsigned char min, max, uidx;
 	int i;
 
-	min_uidx = UCHAR_MAX;  /* 0xff */
-	max_uidx = 0x00;
+	min = UCHAR_MAX;  /* 0xff */
+	max = 0x00;
 	for (i = 0; i < buf_len; i++) {
 		uidx = uchar_buf[i];
-		if (uidx < min_uidx)
-			min_uidx = uidx;
-		if (uidx > max_uidx)
-			max_uidx = uidx;
+		if (uidx < min)
+			min = uidx;
+		if (uidx > max)
+			max = uidx;
 	}
-	if (desc) {
-		*first_uidx = max_uidx;
-		*last_uidx = min_uidx;
-	} else {
-		*first_uidx = min_uidx;
-		*last_uidx = max_uidx;
-	}
+	*min_uidx = min;
+	*max_uidx = max;
 	return;
 }
 
 static void minirx_compute_bucket_offsets(int desc,
-		unsigned char first_uidx, unsigned char last_uidx,
+		unsigned char min_uidx, unsigned char max_uidx,
 		const unsigned char *bucket_counts_buf,
 		int *bucket_offsets_buf)
 {
@@ -491,17 +486,18 @@ static void minirx_compute_bucket_offsets(int desc,
 	unsigned char uidx;
 
 	offset = 0;
-	uidx = first_uidx;
 	if (desc) {
+		uidx = max_uidx;
 		do {
 			offset += bucket_counts_buf[uidx];
 			bucket_offsets_buf[uidx] = offset;
-		} while (uidx-- != last_uidx);
+		} while (uidx-- != min_uidx);
 	} else {
+		uidx = min_uidx;
 		do {
 			offset += bucket_counts_buf[uidx];
 			bucket_offsets_buf[uidx] = offset;
-		} while (uidx++ != last_uidx);
+		} while (uidx++ != max_uidx);
 	}
 	return;
 }
@@ -512,36 +508,38 @@ static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 		int *bucket_offsets_buf,
 		unsigned char *bucket_used_buf, int nbucket, int desc)
 {
-	int bucket_used_buf_is_sorted, uidx_range, i;
-	unsigned char first_uidx, last_uidx;
+	int bucket_used_buf_is_sorted, i;
+	unsigned char min_uidx, max_uidx;
 
 	/* Should we sort 'bucket_used_buf'? */
 	bucket_used_buf_is_sorted =
 		sorted_uchar_buf(bucket_used_buf, nbucket, desc);
 
 	if (!bucket_used_buf_is_sorted) {
-		//if (nbucket >= 128) {
-		//	/* Too expensive to find the first and last buckets. */
-		//	if (desc) {
-		//		first_uidx = UCHAR_MAX;
-		//		last_uidx = 0x00;
-		//	} else {
-		//		first_uidx = 0x00;
-		//		last_uidx = UCHAR_MAX;
-		//	}
+		//if (nbucket == 2) {
+		//	min_uidx = bucket_used_buf[0];
+		//	bucket_used_buf[0] = bucket_used_buf[1];
+		//	bucket_used_buf[1] = min_uidx;
+		//	bucket_used_buf_is_sorted = 1;
+		//} else if (nbucket >= 0xe0) {  /* 14/16 * 256 = 224 */
+		//	/* Too expensive to find the real min/max uidx. */
+		//	min_uidx = 0x00;
+		//	max_uidx = UCHAR_MAX;  /* 0xff */
 		//} else {
-			compute_first_last_uchar_buf(
-					bucket_used_buf, nbucket, desc,
-					&first_uidx, &last_uidx);
-			//uidx_range = desc ? first_uidx - last_uidx + 1
-			//		    : last_uidx - first_uidx + 1;
+			compute_min_max_uchar_buf(
+					bucket_used_buf, nbucket,
+					&min_uidx, &max_uidx);
 			/* Don't bother sorting if that's going to cost more
-			   than just walking on the range of buckets. Cut-off
-			   value of 2 based on empirical observation. */
-			//if (uidx_range >= 2 * nbucket) {
-			//	sort_uchar_array(bucket_used_buf, nbucket,
-			//			 desc);
-			//	bucket_used_buf_is_sorted = 1;
+			   than just walking on the range of buckets. */
+			//if (nbucket <= 4) {
+			//	/* Cut-off value of 240 based on empirical
+			//	   observation. */
+			//	if ((int) max_uidx - min_uidx >= 240) {
+			//		sort_uchar_array(bucket_used_buf,
+			//				 nbucket,
+			//				 desc);
+			//		bucket_used_buf_is_sorted = 1;
+			//	}
 			//}
 		//}
 	}
@@ -551,7 +549,7 @@ static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 		minirx_compute_bucket_offsets_fast(bucket_used_buf, nbucket,
 					bucket_counts_buf, bucket_offsets_buf);
 	} else {
-		minirx_compute_bucket_offsets(desc, first_uidx, last_uidx,
+		minirx_compute_bucket_offsets(desc, min_uidx, max_uidx,
 					bucket_counts_buf, bucket_offsets_buf);
 	}
 
@@ -730,51 +728,47 @@ static void compute_bucket_offsets_fast(
 	return;
 }
 
-static void compute_first_last_ushort_buf(
-		const unsigned short int *ushort_buf, int buf_len, int desc,
-		unsigned short int *first_uidx, unsigned short int *last_uidx)
+static void compute_min_max_ushort_buf(
+		const unsigned short int *ushort_buf, int buf_len,
+		unsigned short int *min_uidx, unsigned short int *max_uidx)
 {
-	unsigned short int min_uidx, max_uidx, uidx;
+	unsigned short int min, max, uidx;
 	int i;
 
-	min_uidx = USHRT_MAX;  /* 0xffff */
-	max_uidx = 0x0000;
+	min = USHRT_MAX;  /* 0xffff */
+	max = 0x0000;
 	for (i = 0; i < buf_len; i++) {
 		uidx = ushort_buf[i];
-		if (uidx < min_uidx)
-			min_uidx = uidx;
-		if (uidx > max_uidx)
-			max_uidx = uidx;
+		if (uidx < min)
+			min = uidx;
+		if (uidx > max)
+			max = uidx;
 	}
-	if (desc) {
-		*first_uidx = max_uidx;
-		*last_uidx = min_uidx;
-	} else {
-		*first_uidx = min_uidx;
-		*last_uidx = max_uidx;
-	}
+	*min_uidx = min;
+	*max_uidx = max;
 	return;
 }
 
 static void compute_bucket_offsets(int desc,
-		unsigned short int first_uidx, unsigned short int last_uidx,
+		unsigned short int min_uidx, unsigned short int max_uidx,
 		const int *bucket_counts_buf, int *bucket_offsets_buf)
 {
 	int offset;
 	unsigned short int uidx;
 
 	offset = 0;
-	uidx = first_uidx;
 	if (desc) {
+		uidx = max_uidx;
 		do {
 			offset += bucket_counts_buf[uidx];
 			bucket_offsets_buf[uidx] = offset;
-		} while (uidx-- != last_uidx);
+		} while (uidx-- != min_uidx);
 	} else {
+		uidx = min_uidx;
 		do {
 			offset += bucket_counts_buf[uidx];
 			bucket_offsets_buf[uidx] = offset;
-		} while (uidx++ != last_uidx);
+		} while (uidx++ != max_uidx);
 	}
 	return;
 }
@@ -784,36 +778,38 @@ static int sort_base_by_bucket(int *base, int base_len,
 		const int *bucket_counts_buf, int *bucket_offsets_buf,
 		unsigned short int *bucket_used_buf, int nbucket, int desc)
 {
-	int bucket_used_buf_is_sorted, uidx_range, i;
-	unsigned short int first_uidx, last_uidx;
+	int bucket_used_buf_is_sorted, i;
+	unsigned short int min_uidx, max_uidx;
 
 	/* Should we sort 'bucket_used_buf'? */
 	bucket_used_buf_is_sorted =
 		sorted_ushort_buf(bucket_used_buf, nbucket, desc);
 
 	if (!bucket_used_buf_is_sorted) {
-		//if (nbucket >= 32768) {
-		//	/* Too expensive to find the first and last buckets. */
-		//	if (desc) {
-		//		first_uidx = USHRT_MAX;
-		//		last_uidx = 0x0000;
-		//	} else {
-		//		first_uidx = 0x0000;
-		//		last_uidx = USHRT_MAX;
-		//	}
+		//if (nbucket == 2) {
+		//	min_uidx = bucket_used_buf[0];
+		//	bucket_used_buf[0] = bucket_used_buf[1];
+		//	bucket_used_buf[1] = min_uidx;
+		//	bucket_used_buf_is_sorted = 1;
+		//} else if (nbucket >= 0xe000) {  /* 14/16 * 65536 = 57344 */
+		//	/* Too expensive to find the real min/max uidx. */
+		//	min_uidx = 0x0000;
+		//	max_uidx = USHRT_MAX;  /* 0xffff */
 		//} else {
-			compute_first_last_ushort_buf(
-					bucket_used_buf, nbucket, desc,
-					&first_uidx, &last_uidx);
-			uidx_range = desc ? first_uidx - last_uidx + 1
-					  : last_uidx - first_uidx + 1;
+			compute_min_max_ushort_buf(
+					bucket_used_buf, nbucket,
+					&min_uidx, &max_uidx);
 			/* Don't bother sorting if that's going to cost more
-			   than just walking on the range of buckets. Cut-off
-			   value of 4 based on empirical observation. */
-			if ((uidx_range >= 4 * nbucket) && (nbucket < 4096)) {
-				sort_ushort_array(bucket_used_buf, nbucket,
-						  desc);
-				bucket_used_buf_is_sorted = 1;
+			   than just walking on the range of buckets. */
+			if (nbucket < 4096) {
+			   	/* Cut-off value of 4 based on empirical
+				   observation. */
+				if ((int) max_uidx - min_uidx >= 4 * nbucket) {
+					sort_ushort_array(bucket_used_buf,
+							  nbucket,
+							  desc);
+					bucket_used_buf_is_sorted = 1;
+				}
 			}
 		//}
 	}
@@ -823,7 +819,7 @@ static int sort_base_by_bucket(int *base, int base_len,
 		compute_bucket_offsets_fast(bucket_used_buf, nbucket,
 					bucket_counts_buf, bucket_offsets_buf);
 	} else {
-		compute_bucket_offsets(desc, first_uidx, last_uidx,
+		compute_bucket_offsets(desc, min_uidx, max_uidx,
 					bucket_counts_buf, bucket_offsets_buf);
 	}
 
@@ -855,7 +851,7 @@ static void rxsort_rec(int *base, int base_len, int *out,
 		return;
 	}
 
-	target_no = level >> 1;
+	target_no = level / RXLEVELS_PER_RXTARGET;
 
 	/* The formula for computing the qsort cut-off makes the bold
 	   assumption that the cost of qsort_targets() is linear with respect
@@ -873,11 +869,12 @@ static void rxsort_rec(int *base, int base_len, int *out,
 	   The choice of 512 as max cut-off is based on empirical observation.
 	   TODO: All these things need more fine tuning...
 	*/
-	qsort_cutoff = 512 * (target_no + 1) / ((last_rxlevel + 1) >> 1);
+	qsort_cutoff = 512 * (target_no + 1) /
+			     ((last_rxlevel + 1) / RXLEVELS_PER_RXTARGET);
 	if (lucky_sort_targets(base, base_len,
-			       rxtargets + target_no, rxdescs + target_no,
-			       ((last_rxlevel - level) >> 1) + 1,
-			       qsort_cutoff))
+			rxtargets + target_no, rxdescs + target_no,
+			((last_rxlevel - level) / RXLEVELS_PER_RXTARGET) + 1,
+			qsort_cutoff))
 	{
 		if (swapped)
 			memcpy(out, base, sizeof(int) * base_len);
