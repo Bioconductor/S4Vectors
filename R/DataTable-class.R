@@ -245,7 +245,7 @@ setMethod("show", "DataTable",
                   sep = "")
               if (nr > 0 && nc > 0) {
                   nms <- rownames(object)
-                  if (nr < (nhead + ntail + 1L)) {
+                  if (nr <= (nhead + ntail + 1L)) {
                       out <-
                         as.matrix(format(as.data.frame(
                                          lapply(object, showAsCell),
