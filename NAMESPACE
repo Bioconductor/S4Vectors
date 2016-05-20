@@ -187,7 +187,7 @@ exportMethods(
     Reduce, Filter,
     unlist,
     do.call,
-    union, intersect, setdiff,
+    union, intersect, setdiff, setequal,
     xtabs,
     start, end, width,
     grep, grepl,

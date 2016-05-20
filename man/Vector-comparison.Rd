@@ -325,6 +325,8 @@ setMethod(">", c("Vector", "Vector"),
 
     \item \link{Hits-comparison} for comparing and ordering hits.
 
+    \item \link{Vector-setops} for set operations on vector-like objects.
+
     \item \link[IRanges]{Ranges-comparison} in the \pkg{IRanges} package for
           comparing and ordering ranges.
 
