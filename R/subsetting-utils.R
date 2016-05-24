@@ -16,15 +16,18 @@ setClass("NSBS",
     representation(
         "VIRTUAL",
         ## 'subscript' is an object that holds integer values >= 1 and
-        ## <= upper_bound. The precise type of the object depends on the NSBS
-        ## subclass and is specified in the subclass definition.
+        ## <= upper_bound, or NA_integer_ values. The precise type of the
+        ## object depends on the NSBS subclass and is specified in the
+        ## definition of the subclass.
         subscript="ANY",
-        upper_bound="integer",           # single integer >= 0
-        upper_bound_is_strict="logical"  # TRUE or FALSE
+        upper_bound="integer",            # single integer >= 0
+        upper_bound_is_strict="logical",  # TRUE or FALSE
+        has_NAs="logical"
     ),
     prototype(
         upper_bound=0L,
-        upper_bound_is_strict=TRUE
+        upper_bound_is_strict=TRUE,
+        has_NAs=FALSE
     )
 )
 
@@ -40,8 +43,6 @@ setClass("NSBS",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### NSBS API:
 ###   - NSBS() constructor function
-###   - upperBound()
-###   - upperBoundIsStrict()
 ###   - as.integer()
 ###   - length()
 ###   - anyDuplicated()
@@ -49,14 +50,8 @@ setClass("NSBS",
 ###
 
 setGeneric("NSBS", signature="i",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
         standardGeneric("NSBS")
-)
-
-setGeneric("upperBound", function(x) standardGeneric("upperBound"))
-
-setGeneric("upperBoundIsStrict",
-    function(x) standardGeneric("upperBoundIsStrict")
 )
 
 
@@ -65,30 +60,34 @@ setGeneric("upperBoundIsStrict",
 ###
 
 ### Used in IRanges.
-### We use 'call.=FALSE' to hide the function call because displaying it might
-### confuse some users.
+### We use 'call.=FALSE' to hide the function call because displaying it seems
+### to confuse some users.
 .subscript_error <- function(...) stop(wmsg(...), call.=FALSE)
 
 setMethod("NSBS", "NSBS",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         x_NROW <- NROW(x)
-        if (upperBound(i) != x_NROW ||
-            upperBoundIsStrict(i) < upperBoundIsStrict)
+        if (i@upper_bound != x_NROW ||
+            i@upper_bound_is_strict < strict.upper.bound)
             .subscript_error(
                 "subscript is a NSBS object that is incompatible ",
                 "with the current subsetting operation"
             )
+        if (!allow.NAs && i@has_NAs)
+            .subscript_error("subscript contains NAs")
         i
     }
 )
 
-setMethod("upperBound", "NSBS", function(x) x@upper_bound)
+### NSBS concrete subclasses NativeNSBS, RangeNSBS, and RleNSBS override this
+### default method.
+setMethod("as.integer", "NSBS", function(x) as.integer(x@subscript))
 
-setMethod("upperBoundIsStrict", "NSBS", function(x) x@upper_bound_is_strict)
-
-### The 3 default methods below are overriden by NSBS subclasses: RangeNSBS,
-### RleNSBS, and RangesNSBS.
+### The 3 default methods below work out-of-the-box on NSBS objects for which
+### as.integer() works. However, concrete subclasses RangeNSBS, RleNSBS, and
+### RangesNSBS override some of them with more efficient versions that avoid
+### expanding 'x' into an integer vector.
 
 setMethod("length", "NSBS", function(x) length(as.integer(x)))
 
@@ -120,67 +119,67 @@ setClass("NativeNSBS",  # not exported
 ### Construction methods.
 ### Supplied arguments are trusted so we don't check them!
 
-.NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict)
+.NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict, has_NAs)
     new2("NativeNSBS", subscript=subscript,
                        upper_bound=upper_bound,
                        upper_bound_is_strict=upper_bound_is_strict,
+                       has_NAs=has_NAs,
                        check=FALSE)
 
 setMethod("NSBS", "missing",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         x_NROW <- NROW(x)
         i <- seq_len(x_NROW)
-        .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+        .NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
     }
 )
 
 setMethod("NSBS", "NULL",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         x_NROW <- NROW(x)
         i <- integer(0)
-        .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+        .NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
     }
 )
 
-.NSBS.numeric <- function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+.NSBS.numeric <- function(i, x, exact=TRUE, strict.upper.bound=TRUE,
+                                allow.NAs=FALSE)
 {
     x_NROW <- NROW(x)
     if (!is.integer(i))
         i <- as.integer(i)
-    if (upperBoundIsStrict) {
-        if (anyMissingOrOutside(i, upper=x_NROW))
-            .subscript_error("subscript contains NAs or out-of-bounds indices")
+    has_NAs <- anyNA(i)
+    if (!allow.NAs && has_NAs)
+        .subscript_error("subscript contains NAs")
+    ## Strangely, this is much faster than using range().
+    i_max <- suppressWarnings(max(i, na.rm=TRUE))
+    i_min <- suppressWarnings(min(i, na.rm=TRUE))
+    if (strict.upper.bound && i_max > x_NROW)
+        .subscript_error("subscript contains out-of-bounds indices")
+    if (i_min < 0L) {
+        ## Translate into positive indices.
+        i <- seq_len(x_NROW)[i]
     } else {
-        if (any(is.na(i)))
-            .subscript_error("subscript contains NAs")
+        ## Remove 0's from subscript.
+        zero_idx <- which(!is.na(i) & i == 0L)
+        if (length(zero_idx) != 0L)
+            i <- i[-zero_idx]
     }
-    nonzero_idx <- which(i != 0L)
-    i <- i[nonzero_idx]
-    if (length(i) != 0L) {
-        any_pos <- any(i > 0L)
-        any_neg <- any(i < 0L)
-        if (any_neg && any_pos)
-            .subscript_error("cannot mix negative with positive indices")
-        ## From here, indices are guaranteed to be either all positive or
-        ## all negative.
-        if (any_neg)
-            i <- seq_len(x_NROW)[i]
-    }
-    .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+    .NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
 }
 
 setMethod("NSBS", "numeric", .NSBS.numeric)
 
 setMethod("NSBS", "logical",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         x_NROW <- NROW(x)
-        if (anyMissing(i))
-            .subscript_error("subscript contains NAs")
+        if (anyNA(i))
+            .subscript_error("logical subscript contains NAs")
         li <- length(i)
-        if (upperBoundIsStrict && li > x_NROW) {
+        if (strict.upper.bound && li > x_NROW) {
             if (any(i[(x_NROW+1L):li]))
                 .subscript_error(
                     "subscript is a logical vector with out-of-bounds ",
@@ -191,35 +190,37 @@ setMethod("NSBS", "logical",
         if (li < x_NROW)
             i <- rep(i, length.out=x_NROW)
         i <- which(i)
-        .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+        .NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
     }
 )
 
-.NSBS.characterORfactor <- function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+.NSBS.characterORfactor <- function(i, x, exact=TRUE, strict.upper.bound=TRUE,
+                                          allow.NAs=FALSE)
 {
     x_NROW <- NROW(x)
     x_ROWNAMES <- ROWNAMES(x)
     what <- if (length(dim(x)) != 0L) "rownames" else "names"
     if (is.null(x_ROWNAMES)) {
-        if (upperBoundIsStrict)
+        if (strict.upper.bound)
             .subscript_error("cannot subset by character when ", what,
                              " are NULL")
         i <- x_NROW + seq_along(i)
-        return(i)
+        return(.NativeNSBS(i, x_NROW, FALSE, FALSE))
     }
     if (exact) {
         i <- match(i, x_ROWNAMES, incomparables=c(NA_character_, ""))
     } else {
         i <- pmatch(i, x_ROWNAMES, duplicates.ok=TRUE)
     }
-    if (!upperBoundIsStrict) {
+    if (!strict.upper.bound) {
         na_idx <- which(is.na(i))
         i[na_idx] <- x_NROW + seq_along(na_idx)
-        return(i)
+        return(.NativeNSBS(i, x_NROW, FALSE, FALSE))
     }
-    if (anyMissing(i))
+    has_NAs <- anyNA(i)
+    if (!allow.NAs && has_NAs)
         .subscript_error("subscript contains invalid ", what)
-    .NativeNSBS(i, x_NROW, upperBoundIsStrict)
+    .NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
 }
 
 setMethod("NSBS", "character", .NSBS.characterORfactor)
@@ -227,7 +228,7 @@ setMethod("NSBS", "character", .NSBS.characterORfactor)
 setMethod("NSBS", "factor", .NSBS.characterORfactor)
 
 setMethod("NSBS", "array",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         warning("subscript is an array, passing it thru as.vector() first")
         i <- as.vector(i)
@@ -325,7 +326,8 @@ setMethod("length", "RangeNSBS",
 )
 
 setMethod("anyDuplicated", "RangeNSBS",
-          function(x, incomparables=FALSE, ...) 0L)
+    function(x, incomparables=FALSE, ...) 0L
+)
 
 setMethod("isStrictlySorted", "RangeNSBS", function(x) TRUE)
 
@@ -348,8 +350,9 @@ setMethod("show", "RangeNSBS",
 ### normalizeSingleBracketSubscript()
 ###
 
-normalizeSingleBracketSubscript <- function(i, x, exact=TRUE,
-                                            allow.append=FALSE,
+normalizeSingleBracketSubscript <- function(i, x,
+                                            exact=TRUE, allow.append=FALSE,
+                                            allow.NAs=FALSE,
                                             as.NSBS=FALSE)
 {
     if (!isTRUEorFALSE(exact))
@@ -359,9 +362,11 @@ normalizeSingleBracketSubscript <- function(i, x, exact=TRUE,
     if (!isTRUEorFALSE(as.NSBS))
         stop("'as.NSBS' must be TRUE or FALSE")
     if (missing(i)) {
-        i <- NSBS( , x, exact=exact, upperBoundIsStrict=!allow.append)
+        i <- NSBS( , x, exact=exact, strict.upper.bound=!allow.append,
+                        allow.NAs=allow.NAs)
     } else {
-        i <- NSBS(i, x, exact=exact, upperBoundIsStrict=!allow.append)
+        i <- NSBS(i, x, exact=exact, strict.upper.bound=!allow.append,
+                        allow.NAs=allow.NAs)
     }
     if (!as.NSBS)
         i <- as.integer(i)
@@ -432,7 +437,7 @@ setGeneric("replaceROWS", signature="x",
     return(x)
   ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
   ndim <- max(length(dim(x)), 1L)
-  i <- normalizeSingleBracketSubscript(i, x)
+  i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE)
   args <- rep(alist(foo=), ndim)
   names(args) <- NULL
   args[[1]] <- i

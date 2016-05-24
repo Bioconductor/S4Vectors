@@ -236,7 +236,8 @@ setReplaceMethod("[[", "DataFrame",
 setMethod("extractROWS", "DataFrame",
     function(x, i)
     {
-        i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, as.NSBS=TRUE)
+        i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, allow.NAs=TRUE,
+                                                   as.NSBS=TRUE)
         slot(x, "listData", check=FALSE) <-
             lapply(structure(seq_len(ncol(x)), names=names(x)),
                    function(j) extractROWS(x[[j]], i))

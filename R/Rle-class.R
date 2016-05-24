@@ -209,12 +209,17 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
     lapply(ans, as, x_class)
 }
 
-### TODO: Optimize this, maybe by implementing a simpler version of .Call
-### entry point "Rle_extract_ranges" that takes 1 integer vector instead of 2.
+### TODO: extract_positions_from_Rle() should call its own .Call entry point.
+### This entry point would be a simpler version of .Call entry point
+### "Rle_extract_ranges" that takes 1 integer vector instead of 2 and supports
+### NAs.
 extract_positions_from_Rle <- function(x, i)
 {
     if (!is.integer(i))
         stop("'i' must be an integer vector")
+    ## NAs not supported for now but will be soon (see TODO above).
+    if (anyNA(i))
+        stop("numeric subscript cannot contain NAs yet when subsetting an Rle")
     extract_ranges_from_Rle(x, i, rep.int(1L, length(i)))
 }
 
@@ -226,7 +231,7 @@ extract_positions_from_Rle <- function(x, i)
 setMethod("extractROWS", c("Rle", "ANY"),
     function (x, i) 
     {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE, as.NSBS=TRUE)
         callGeneric()
     }
 )
@@ -423,12 +428,12 @@ setClass("RleNSBS",      # not exported
 ### Supplied arguments are trusted so we don't check them!
 
 setMethod("NSBS", "Rle",
-    function(i, x, exact=TRUE, upperBoundIsStrict=TRUE)
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         x_NROW <- NROW(x)
         i_vals <- runValue(i)
         if (is.logical(i_vals) && length(i_vals) != 0L) {
-            if (anyMissing(i_vals))
+            if (anyNA(i_vals))
                 stop("subscript contains NAs")
             if (length(i) < x_NROW)
                 i <- rep(i, length.out=x_NROW)
@@ -449,13 +454,14 @@ setMethod("NSBS", "Rle",
             i <- which(i)
             return(callGeneric())  # will return a NativeNSBS object
         }
-        i_vals <- as.integer(NSBS(i_vals, x,
-                                  exact=exact,
-                                  upperBoundIsStrict=upperBoundIsStrict))
-        runValue(i) <- i_vals
+        i_vals <- NSBS(i_vals, x, exact=exact,
+                                  strict.upper.bound=strict.upper.bound,
+                                  allow.NAs=allow.NAs)
+        runValue(i) <- as.integer(i_vals)
         new2("RleNSBS", subscript=i,
                         upper_bound=x_NROW,
-                        upper_bound_is_strict=upperBoundIsStrict,
+                        upper_bound_is_strict=strict.upper.bound,
+                        has_NAs=i_vals@has_NAs,
                         check=FALSE)
     }
 )
@@ -690,7 +696,7 @@ setMethod("order", "Rle",
 .sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
 {
     if (is.na(na.last)) {
-        if (anyMissing(runValue(x)))
+        if (anyNA(runValue(x)))
             x <- x[!is.na(x)]
     }
     ord <- base::order(runValue(x), na.last=na.last, decreasing=decreasing)
