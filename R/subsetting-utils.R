@@ -438,8 +438,7 @@ setGeneric("replaceROWS", signature="x",
   ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
   ndim <- max(length(dim(x)), 1L)
   i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE)
-  args <- rep(alist(foo=), ndim)
-  names(args) <- NULL
+  args <- rep.int(alist(foo=), ndim)
   args[[1]] <- i
   args <- c(list(x), args, list(drop=FALSE))
   do.call(`[`, args)
@@ -451,8 +450,7 @@ setGeneric("replaceROWS", signature="x",
     return(x)
   ndim <- max(length(dim(x)), 1L)
   i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
-  args <- rep(alist(foo=), ndim)
-  names(args) <- NULL
+  args <- rep.int(alist(foo=), ndim)
   args[[1]] <- i
   args <- c(list(x), args, list(value=value))
   do.call(`[<-`, args)
