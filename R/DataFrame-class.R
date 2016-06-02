@@ -182,7 +182,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
     if (!all(nrows == nr))
       stop("different row counts implied by arguments")
     varlist <- unlist(varlist, recursive = FALSE, use.names = FALSE)
-    nms <- unlist(varnames[ncols > 0L])
+    nms <- as.character(unlist(varnames[ncols > 0L]))
     if (check.names)
       nms <- make.names(nms, unique = TRUE)
     names(varlist) <- nms
