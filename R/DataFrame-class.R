@@ -108,8 +108,7 @@ setReplaceMethod("colnames", "DataFrame",
 
 .valid.DataFrame.names <- function(x)
 {
-  ## DataFrames with no columns can have NULL column name
-  if (is.null(names(x)) && ncol(x) != 0)
+  if (is.null(names(x)))
     return("column names should not be NULL")
   if (length(names(x)) != ncol(x))
     return("number of columns and number of column names differ")
