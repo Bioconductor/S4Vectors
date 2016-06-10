@@ -279,10 +279,17 @@ sort.Vector <- function(x, decreasing=FALSE, ...)
     sort(x, decreasing=decreasing, ...)
 setMethod("sort", "Vector", .sort.Vector)
 
-formulaAsListCall <- function(formula) attr(terms(formula), "variables")
+formulaAsListCall <- function(formula) {
+    attr(terms(formula), "variables")
+}
 
 formulaValues <- function(x, formula) {
-    eval(formulaAsListCall(formula), as.env(x, environment(formula)))
+    listCall <- formulaAsListCall(formula)
+    vals <- eval(listCall, as.env(x, environment(formula)))
+    names(vals) <- vapply(listCall, function(x) {
+        paste(deparse(x, width.cutoff = 500), collapse = " ")
+    }, character(1L))[-1L]
+    vals
 }
 
 orderBy <- function(formula, x, decreasing=FALSE, na.last=TRUE) {
