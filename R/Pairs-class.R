@@ -154,6 +154,27 @@ setMethod("as.data.frame", "Pairs",
           })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combine
+###
+
+.unlist_list_of_Pairs <- function(x) {
+    Pairs(do.call(c, lapply(x, first)),
+          do.call(c, lapply(x, second)),
+          do.call(rbind, lapply(x, mcols)),
+### FIXME: breaks if only some names are NULL
+          names = unlist(lapply(x, names)))
+}
+
+setMethod("c", "Pairs", function (x, ..., recursive = FALSE) {
+    if (!identical(recursive, FALSE)) 
+        stop("'recursive' argument not supported")
+    if (missing(x))
+        args <- unname(list(...))
+    else args <- unname(list(x, ...))
+    .unlist_list_of_Pairs(args)
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Show
 ###
 
