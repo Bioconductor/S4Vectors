@@ -214,9 +214,9 @@ setMethod("within", "List",
           function(data, expr, ...)
           {
             ## cannot use active bindings here, as they break for replacement
-            e <- list2env(as.list(data))
-            ##e <- as.env(data)
-            safeEval(substitute(expr), e, top_prenv(expr))
+            enclos <- top_prenv(expr)
+            e <- list2env(as.list(data), parent=enclos)
+            safeEval(substitute(expr), e, enclos)
             l <- mget(ls(e), e)
             l <- l[!sapply(l, is.null)]
             nD <- length(del <- setdiff(names(data), (nl <- names(l))))
