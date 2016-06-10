@@ -495,6 +495,18 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
                           PACKAGE="S4Vectors")
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### breakTies()
+###
+
+breakTies <- function(x, method=c("first", "last")) {
+    if (!is(x, "Hits"))
+        stop("'x' must be a Hits object")
+    method <- match.arg(method)
+    to <- selectHits(x, method)
+    .new_Hits("SortedByQueryHits", which(!is.na(to)), to[!is.na(to)],
+              nLnode(x), nRnode(x), NULL)
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### revmap()
