@@ -241,6 +241,7 @@ export(
     countQueryHits, countSubjectHits,
     Hits, SelfHits,
     selectHits,
+    breakTies,
     remapHits,
     isSelfHit,
     isRedundantHit,
@@ -319,7 +320,7 @@ export(
     ## Rle-class.R:
     runLength, "runLength<-", runValue, "runValue<-", nrun,
     Rle,
-    findRun,
+    findRun, decode,
 
     ## Rle-utils.R:
     runsum, runmean, runwtsum, runq,

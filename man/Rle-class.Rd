@@ -47,6 +47,9 @@
 \alias{coerce,Rle,raw-method}
 \alias{coerce,Rle,factor-method}
 \alias{coerce,Rle,data.frame-method}
+\alias{decode}
+\alias{decode,ANY-method}
+\alias{decode,Rle-method}
 
 \alias{extractROWS,Rle,ANY-method}
 \alias{[,Rle-method}
@@ -190,6 +193,12 @@
         \code{as.data.frame(x)}, \code{as(from, "data.frame")}: Creates
         a \code{data.frame} with a single column holding the result of
         \code{as.vector(x)}.
+      }
+      \item{}{
+        \code{decode(x)}: Converts an Rle to its native form, such as an
+        atomic vector or factor. Calling \code{decode} on a non-Rle will
+        return \code{x} by default, so it is generally safe for ensuring
+        that an object is native.
       }
     }
   }

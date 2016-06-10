@@ -64,6 +64,7 @@
 % other transformations
 \alias{t,Hits-method}
 \alias{remapHits}
+\alias{breakTies}
 
 % SelfHits
 \alias{isSelfHit}
@@ -208,6 +209,13 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
       the "subject map" ascending then the remapping will preserve the order
       of the hits, so, in that case, step (3) is also a no-op (but is still
       performed).
+    }
+    \item{}{\code{breakTies(x, method=c("first", "last"))}: Restrict the
+      hits so that every left node maps to at most one right node. If
+      \code{method} is \dQuote{first}, for each left node, select the
+      edge with the first (lowest rank) right node, if any. If
+      \code{method} is \dQuote{last}, select the edge with the last
+      (highest rank) right node.
     }
   }
 }
