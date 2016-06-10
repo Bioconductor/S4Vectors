@@ -243,3 +243,11 @@ coerceToSimpleList <- function(from, element.type, ...) {
   }
 }
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### unique()
+###
+
+.unique.SimpleList <- function(x, incomparables=FALSE, ...) {
+    as(lapply(x, unique, incomparables=incomparables, ...), class(x))
+}
+setMethod("unique", "SimpleList", .unique.SimpleList)

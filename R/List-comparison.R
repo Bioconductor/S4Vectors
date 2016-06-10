@@ -179,12 +179,6 @@ setMethod("duplicated", "List", .duplicated.List)
 }
 setMethod("unique", "List", .unique.List)
 
-.unique.SimpleList <- function(x, incomparables=FALSE, ...) {
-    as(lapply(x, unique, incomparables=incomparables, ...), class(x))
-}
-setMethod("unique", "SimpleList", .unique.SimpleList)
-
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### %in%
 ###
