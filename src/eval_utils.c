@@ -25,7 +25,7 @@ SEXP top_prenv(SEXP nm, SEXP env)
 SEXP top_prenv_dots(SEXP env)
 {
   SEXP dots = findVar(R_DotsSymbol, env);
-  SEXP ans = allocVector(VECSXP, length(dots));
+  SEXP ans = allocVector(VECSXP, TYPEOF(dots) == DOTSXP ? length(dots) : 0);
   if (TYPEOF(dots) == DOTSXP) {
     int i = 0;
     for (SEXP p = dots; p != R_NilValue; p = CDR(p)) {
