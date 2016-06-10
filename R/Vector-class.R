@@ -107,7 +107,7 @@ setGeneric("values", function(x, ...) standardGeneric("values"))
 
 setMethod("values", "Vector", function(x, ...) elementMetadata(x, ...))
 
-setMethod("anyNA", "Vector", function(x) any(is.na(x)))
+setMethod("anyNA", "Vector", function(x, recursive=FALSE) any(is.na(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -264,8 +264,12 @@ setMethod("as.matrix", "Vector", function(x) {
 
 makeFixedColumnEnv <- function(x, parent, tform = identity) {
   env <- new.env(parent=parent)
-  pvnEnv <- environment(selectMethod("parallelVectorNames", class(x)))
-  lapply(parallelVectorNames(x), function(nm) {
+  pkg <- packageSlot(class(x))
+  pvnEnv <- .GlobalEnv
+  if (!is.null(pkg)) {
+      pvnEnv <- getNamespace(pkg)
+  }
+  lapply(c("names", parallelVectorNames(x)), function(nm) {
     accessor <- get(nm, pvnEnv, mode="function")
     makeActiveBinding(nm, function() {
       val <- tform(accessor(x))
@@ -552,7 +556,7 @@ setMethod("showAsCell", "ANY", function(object) {
 })
 
 setMethod("showAsCell", "Vector", function(object)
-          rep.int("########", length(object)))
+          rep.int("########", NROW(object)))
 
 setMethod("showAsCell", "Date", function(object) object)
 setMethod("showAsCell", "POSIXt", function(object) object)

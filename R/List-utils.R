@@ -247,3 +247,16 @@ droplevels.List <- function(x, ...) droplevels(x, ...)
 }
 
 setMethod("droplevels", "List", .droplevels.List)
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Summarizing.
+###
+
+setMethod("anyNA", "List", function(x, recursive=FALSE) {
+    stopifnot(isTRUEorFALSE(recursive))
+    if (recursive) {
+        anyNA(as.list(x), recursive=TRUE)
+    } else {
+        callNextMethod()
+    }
+})
