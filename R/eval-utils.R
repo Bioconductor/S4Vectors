@@ -2,7 +2,7 @@
 ### Helpers for environments and evaluation
 ### -------------------------------------------------------------------------
 
-safeEval <- function(expr, envir, enclos, strict=FALSE) {
+safeEval <- function(expr, envir, enclos=parent.env(envir), strict=FALSE) {
   expr <- eval(call("bquote", expr, enclos))
   if (strict) {
     enclos <- makeGlobalWarningEnv(expr, envir, enclos)
