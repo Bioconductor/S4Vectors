@@ -67,8 +67,9 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
 .aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
                               frequency=NULL, delta=NULL, ..., simplify=TRUE)
 {
-    FUN <- match.fun(FUN)
-    if (!missing(by)) {
+    if (missing(FUN)) {
+        return(aggregateWithDots(x, by, ...))
+    } else if (!missing(by)) {
         if (is.list(by)) {
             ans <- aggregate(as.data.frame(x), by=by, FUN=FUN, ...,
                              simplify=simplify)
@@ -91,6 +92,7 @@ aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
         start <- as(start, "integer")
         end <- as(end, "integer")
     }
+    FUN <- match.fun(FUN)
     if (length(start) != length(end))
         stop("'start', 'end', and 'width' arguments have unequal length")
     n <- length(start)
@@ -177,3 +179,52 @@ setMethod("aggregate", "Rle", .aggregate.Rle)
 }
 setMethod("aggregate", "List", .aggregate.List)
 
+ModelFrame <- function(formula, x) {
+    if (length(formula) != 2L) 
+        stop("'formula' must not have a left side")
+    DataFrame(formulaValues(x, formula))
+}
+
+aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
+    stopifnot(isTRUEorFALSE(drop))
+
+    endomorphism <- FALSE
+    if (missing(by)) {
+        endomorphism <- TRUE
+        by <- x
+    }
+    
+    if (is(by, "formula")) {
+        by <- ModelFrame(by, x)
+    } else if (is.list(by) || (is(by, "List") && !is(by, "Grouping"))) {
+        by <- FactorList(by)
+    }
+
+    by <- as(by, "Grouping")
+    if (IRanges::nobj(by) != NROW(x)) {
+        stop("'by' does not have the same number of objects as 'x'")
+    }
+
+    if (drop) {
+        by <- by[lengths(by) > 0L]
+    }
+    
+    by <- unname(by)
+    
+    prenvs <- top_prenv_dots(...)
+    exprs <- substitute(list(...))[-1L]
+    envs <- lapply(prenvs, function(p) {
+        as.env(x, p, tform = function(col) extractList(col, by))
+    })
+    stats <- DataFrame(mapply(safeEval, exprs, envs, SIMPLIFY=FALSE))
+
+    if (endomorphism && !is(x, "DataFrame")) {
+        ans <- x[end(PartitioningByEnd(by))]
+        mcols(by) <- NULL
+        mcols(ans) <- DataFrame(grouping = by, stats)
+    } else {
+        ans <- DataFrame(by, stats)
+        colnames(ans)[1L] <- "grouping"
+    }
+    ans
+}
