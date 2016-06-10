@@ -594,11 +594,15 @@ setMethod("c", "Rle",
           function(x, ..., recursive = FALSE)
           {
               args <- lapply(unname(list(x, ...)), Rle)
-              args <- args[sapply(args, length) > 0]
-              if (length(args) == 0L)
-                  return(x)
-              ans_values <- unlist(lapply(args, slot, "values"))
-              ans_lengths <- unlist(lapply(args, slot, "lengths"))
+              args_values <- lapply(args, slot, "values")
+              ## use unlist() for factors:
+              ans_values <- unlist(args_values, recursive=FALSE)
+              if (is.null(ans_values)) {
+                  ## use c() to get type promotion right in zero-length case:
+                  ans_values <- do.call(c, args_values)
+              }
+              ans_lengths <- unlist(lapply(args, slot, "lengths"),
+                                    recursive=FALSE)
               Rle(ans_values, ans_lengths)
           })
 
