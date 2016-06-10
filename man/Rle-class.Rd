@@ -75,6 +75,7 @@
 \alias{order,Rle-method}
 \alias{sort,Rle-method}
 \alias{table,Rle-method}
+\alias{tabulate,Rle-method}
 \alias{unique,Rle-method}
 \alias{duplicated,Rle-method}
 
@@ -328,6 +329,10 @@
       Returns a table containing the counts of the unique values. Supported
       arguments include \code{useNA} with values of `no' and `ifany'.
       Multiple Rle's must be combined with \code{c()} before calling \code{table}.
+    }
+    \item{}{
+      \code{tabulate(bin, nbins = max(bin, 1L, na.rm = TRUE))}:
+      Just like \code{\link{tabulate}}, except optimized for Rle.
     }
     \item{}{
       \code{tail(x, n = 6L)}:
