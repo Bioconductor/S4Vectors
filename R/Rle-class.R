@@ -776,6 +776,11 @@ setMethod("table", "Rle",
     }
 }
 
+setMethod("tabulate", "Rle",
+          function (bin, nbins = max(bin, 1L, na.rm = TRUE)) {
+              tabulate2(runValue(bin), nbins, runLength(bin))
+          })
+
 .duplicated.Rle <- function(x, incomparables=FALSE, fromLast=FALSE)
     stop("no \"duplicated\" method for Rle objects yet, sorry")
 setMethod("duplicated", "Rle", .duplicated.Rle)
