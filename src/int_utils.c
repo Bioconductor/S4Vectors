@@ -918,13 +918,12 @@ SEXP _find_interv_and_start_from_width(const int *x, int x_len,
 			x_elt = x + *x_order_elt;
 			interval_elt = INTEGER(ans_interval) + *x_order_elt;
 			start_elt = INTEGER(ans_start) + *x_order_elt;
-			if (*x_elt == NA_INTEGER)
-				error("'x' cannot contain missing values");
-			else if (*x_elt < 0)
-				error("'x' must contain non-negative values");
 			if (*x_elt == 0) {
 				*interval_elt = 0;
 				*start_elt = NA_INTEGER;
+			} else if (*x_elt < 0 || *x_elt == NA_INTEGER) {
+			        *interval_elt = NA_INTEGER;
+			        *start_elt = NA_INTEGER;
 			} else {
 				while (interval < width_len && *x_elt >= (start + *width_elt)) {
 					interval++;

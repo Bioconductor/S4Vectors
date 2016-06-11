@@ -631,7 +631,7 @@ setMethod("findRun", signature = c(vec = "Rle"),
           function(x, vec) {
             runs <- findIntervalAndStartFromWidth(as.integer(x),
                                          runLength(vec))[["interval"]]
-            runs[x == 0 | x > length(vec)] <- NA
+            runs[is.na(runs) | x == 0 | x > length(vec)] <- NA
             runs
           })
 
