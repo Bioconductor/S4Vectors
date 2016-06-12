@@ -190,17 +190,26 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
 
     endomorphism <- FALSE
     if (missing(by)) {
-        endomorphism <- TRUE
-        by <- x
+        if (is(x, "List") && !is(x, "DataTable")) {
+            by <- PartitioningByEnd(x)
+            x <- unlist(x, use.names=FALSE)
+        } else {
+            endomorphism <- TRUE
+            by <- x
+        }
+    }
+
+    if (is(by, "IntegerList")) {
+        by <- ManyToManyGrouping(by, nobj=NROW(x))
     }
     
     if (is(by, "formula")) {
         by <- ModelFrame(by, x)
-    } else if (is.list(by) || (is(by, "List") && !is(by, "Grouping"))) {
-        by <- FactorList(by)
+    } else if (is.list(by) || is(by, "DataTable")) {
+        by <- FactorList(by, compress=FALSE)
     }
-
-    by <- as(by, "Grouping")
+    
+    by <- as(by, "Grouping", strict=FALSE)
     if (IRanges::nobj(by) != NROW(x)) {
         stop("'by' does not have the same number of objects as 'x'")
     }
