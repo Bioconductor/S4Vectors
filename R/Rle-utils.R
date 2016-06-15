@@ -194,18 +194,6 @@ setMethod("which.max", "Rle",
             start(x)[which.max(runValue(x))]
           })
 
-## base::ifelse works fine for S4 'test', but not for S4 yes/no
-.ifelse_generic_defunct_msg <- c(
-    "  The \"ifelse\" methods for Rle objects are defunct. Please use",
-    "\n\n      as(ifelse(test, as.vector(yes), as.vector(no)), \"Rle\")",
-    "\n\n  instead."
-)
-setMethod("ifelse", c(yes = "Rle"), function(test, yes, no) 
-            .Defunct(msg=.ifelse_generic_defunct_msg))
-setMethod("ifelse", c(no = "Rle"), function(test, yes, no) 
-            .Defunct(msg=.ifelse_generic_defunct_msg))
-setMethod("ifelse", c(yes = "Rle", no = "Rle"), function(test, yes, no) 
-            .Defunct(msg=.ifelse_generic_defunct_msg))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Other numerical data methods
