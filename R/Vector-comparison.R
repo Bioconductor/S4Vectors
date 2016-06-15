@@ -60,7 +60,7 @@ setMethods("<", .OP2_SIGNATURES, function(e1, e2) { !(e2 <= e1) })
 
 setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 
-compare <- function(...) {.Deprecated("pcompare"); pcompare(...)}
+compare <- function(...) .Defunct("pcompare")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

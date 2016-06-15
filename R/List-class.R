@@ -55,13 +55,7 @@ setMethod("elementNROWS", "List",
 ### clearly a misnomer). For backward compatibility the old name was kept
 ### around, deprecated, and became an "alias" for elementNROWS().
 setGeneric("elementLengths", function(x) standardGeneric("elementLengths"))
-setMethod("elementLengths", "ANY",
-    function(x)
-    {
-        .Deprecated("elementNROWS")
-        elementNROWS(x)
-    }
-)
+setMethod("elementLengths", "ANY", function(x) .Defunct("elementNROWS"))
 
 setGeneric("isEmpty", function(x) standardGeneric("isEmpty"))
 setMethod("isEmpty", "ANY",

@@ -128,11 +128,6 @@
       the elements. Equivalent to \code{sapply(x, NROW)}.
     }
     \item{}{
-      \code{elementLengths(x)}:
-      Equivalent to \code{elementNROWS(x)}. Clearly a misnomer. Will be
-      deprecated soon.
-    }
-    \item{}{
       \code{isEmpty(x)}:
       Returns a logical indicating either if the sequence has no elements
       or if all its elements are empty.
