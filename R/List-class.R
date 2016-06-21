@@ -622,24 +622,8 @@ setAs("List", "list", function(from) as.list(from))
 }
 setMethod("as.list", "List", .as.list.List)
 
-setMethod("as.env", "List",
-          function(x, enclos = parent.frame(2), tform = identity) {
-              nms <- names(x)
-              if (is.null(nms))
-                  stop("cannot convert to environment when names are NULL")
-              env <- new.env(parent = enclos)
-              lapply(nms,
-                     function(col) {
-                         colFun <- function() {
-                             val <- tform(x[[col]])
-                             rm(list=col, envir=env)
-                             assign(col, val, env)
-                             val
-                         }
-                         makeActiveBinding(col, colFun, env)
-                     })
-              env
-          })
+setMethod("parallelVectorNames", "List",
+          function(x) setdiff(callNextMethod(), c("group", "group_name")))
 
 listClassName <- function(impl, element.type) {
   if (is.null(impl))
