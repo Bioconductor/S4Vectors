@@ -31,6 +31,7 @@
 
 \alias{selfmatch}
 \alias{selfmatch,ANY-method}
+\alias{selfmatch,factor-method}
 
 \alias{duplicated,Vector-method}
 \alias{duplicated.Vector}

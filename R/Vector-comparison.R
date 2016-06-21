@@ -74,6 +74,16 @@ setGeneric("selfmatch", function(x, ...) standardGeneric("selfmatch"))
 ### Default "selfmatch" method. Args in ... are propagated to match().
 setMethod("selfmatch", "ANY", function(x, ...) match(x, x, ...))
 
+### Optimized "selfmatch" method for factors.
+setMethod("selfmatch", "factor", function(x, ..., incomparables = NULL) {
+    ignore.na <- isTRUE(is.na(incomparables))
+    has.incomparables <- !is.null(incomparables) && !ignore.na
+    if (!missing(...) || has.incomparables || (!ignore.na && anyNA(x)) ||
+          is.unsorted(x))
+        callNextMethod()
+    else as.integer(x)
+})
+
 ### 'selfmatch_mapping' must be an integer vector like one returned by
 ### selfmatch(), that is, values are non-NAs and such that any value 'v' in it
 ### must appear for the first time at *position* 'v'.
