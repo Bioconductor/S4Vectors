@@ -17,6 +17,7 @@
 \alias{isEmpty}
 \alias{isEmpty,ANY-method}
 \alias{isEmpty,List-method}
+\alias{parallelVectorNames,List-method}
 
 \alias{relistToClass}
 \alias{relistToClass,ANY-method}
@@ -25,7 +26,6 @@
 \alias{coerce,ANY,List-method}
 \alias{coerce,integer,List-method}
 \alias{as.list,List-method}
-\alias{as.env,List-method}
 \alias{unlist,List-method}
 \alias{as.data.frame,List-method}
 \alias{coerce,List,data.frame-method}
@@ -188,16 +188,6 @@
       groups in \code{x} should be done using the \code{group} column as 
       the \code{f} argument to \code{splitAsList}. To relist data, use
       \code{x} as the \code{skeleton} argument to \code{relist}.
-    }
-    \item{}{
-      \code{as.env(x, enclos = parent.frame())}:
-      Creates an environment from \code{x} with a symbol for each
-      \code{names(x)}. The values are not actually copied into the
-      environment. Rather, they are dynamically bound using
-      \code{\link{makeActiveBinding}}. This prevents unnecessary copying
-      of the data from the external vectors into R vectors. The values
-      are cached, so that the data is not copied every time the symbol
-      is accessed.
     }
   }
 }
