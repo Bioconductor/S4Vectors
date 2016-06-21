@@ -160,8 +160,38 @@ setMethod("rbind2", c("DataTable", "DataTable"), function(x, y, ...) {
   rbind(x, y, ...)
 })
 
-setMethod("merge", c("DataTable", "DataTable"), function(x, y, ...) {
-  as(merge(as(x, "data.frame"), as(y, "data.frame"), ...), class(x))
+.mergeByHits <- function(x, y, by, all.x=FALSE, all.y=FALSE, sort = TRUE, 
+                         suffixes = c(".x", ".y"))
+{    
+    nm.x <- colnames(x)
+    nm.y <- colnames(y)
+    cnm <- nm.x %in% nm.y
+    if (any(cnm) && nzchar(suffixes[1L])) 
+        nm.x[cnm] <- paste0(nm.x[cnm], suffixes[1L])
+    cnm <- nm.y %in% nm.x
+    if (any(cnm) && nzchar(suffixes[2L]))
+        nm.y[cnm] <- paste0(nm.y[cnm], suffixes[2L])
+
+    if (all.x) {
+        x.alone <- which(countLnodeHits(by) == 0L)
+    }
+    x <- x[c(from(by), if (all.x) x.alone), , drop = FALSE]
+    if (all.y) {
+        y.alone <- which(countRnodeHits(by) == 0L)
+        xa <- x[rep.int(NA_integer_, length(y.alone)), , drop = FALSE]
+        x <- rbind(x, xa)
+    }
+    y <- y[c(to(by), if (all.x) rep.int(NA_integer_, length(x.alone)),
+             if (all.y) y.alone), , drop = FALSE]
+    
+    cbind(x, y)
+}
+
+setMethod("merge", c("DataTable", "DataTable"), function(x, y, by, ...) {
+    if (is(by, "Hits")) {
+        return(.mergeByHits(x, y, by, ...))
+    }
+    as(merge(as(x, "data.frame"), as(y, "data.frame"), by, ...), class(x))
 })
 setMethod("merge", c("data.frame", "DataTable"), function(x, y, ...) {
   as(merge(x, as(y, "data.frame"), ...), class(y))

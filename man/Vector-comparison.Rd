@@ -54,6 +54,7 @@
 
 \alias{table,Vector-method}
 
+\alias{merge,Vector,Vector-method}
 
 \title{Compare, order, tabulate vector-like objects}
 
@@ -126,6 +127,13 @@ countMatches(x, table, ...)
 ## -------
 
 \S4method{table}{Vector}(...)
+
+## merge()
+## -------
+
+\S4method{merge}{Vector,Vector}(x, y,
+                                all=FALSE, all.x=all, all.y=all, sort=TRUE,
+                                suffixes=c(".x", ".y"))
 }
 
 \arguments{
@@ -155,6 +163,26 @@ countMatches(x, table, ...)
   \item{by}{A formula referencing the metadata columns by which to sort,
     e.g., \code{~ x + y} sorts by column \dQuote{x}, breaking ties with
     column \dQuote{y}.
+  }
+  \item{all}{
+    If \code{TRUE}, perform a full outer join when merging, i.e., all
+    records from both \code{x} and \code{y} are preserved, even if they
+    have no match.
+  }
+  \item{all.x}{
+    If \code{TRUE}, perform a left outer join. All records in \code{x}
+    are kept, even if there is no matching \code{y} record.
+  }
+  \item{all.y}{
+    If \code{TRUE}, perform a right outer join. All records in \code{y}
+    are kept, even if there is no matching \code{x} record.
+  }
+  \item{sort}{
+    Whether to sort the merged result.
+  }
+  \item{suffixes}{
+    Character vector of length two, giving the suffix applied to
+    metadata columns with the same name in order to dodge them.
   }
   \item{...}{
     A \link{Vector} object for \code{table} (the \code{table} method for
@@ -217,6 +245,11 @@ countMatches(x, table, ...)
   \code{countMatches} returns an integer vector of the length of \code{x}
   containing the number of matches in \code{table} for each element
   in \code{x}.
+
+  \code{merge} acts much like \code{\link{merge.data.frame}}, except the
+  matching is based on the vector values, not arbitrary columns in a
+  table. The \code{mcols()} are merged in the same way
+  \code{merge.data.frame} handles the non-key columns.
 }
 
 \value{
