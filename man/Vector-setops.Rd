@@ -79,6 +79,8 @@
     \item \link{Vector-comparison} for comparing and ordering vector-like
           objects.
 
+    \item \link{Vector-merge} for merging vector-like objects.
+
     \item \link{Vector} objects.
 
     \item \code{BiocGenerics::\link[BiocGenerics]{union}},

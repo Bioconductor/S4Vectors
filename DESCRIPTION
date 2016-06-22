@@ -32,6 +32,7 @@ Collate: S4-utils.R
 	Vector-class.R
 	Vector-comparison.R
 	Vector-setops.R
+	Vector-merge.R
 	Hits-class.R
 	Hits-comparison.R
 	Hits-setops.R

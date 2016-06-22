@@ -258,6 +258,8 @@
 
     \item \link{Vector-setops} for set operations on vector-like objects.
 
+    \item \link{Vector-merge} for merging vector-like objects.
+
     \item \link{List} for a direct Vector extension that serves a similar
           role as \link[base]{list} in base R.
 
