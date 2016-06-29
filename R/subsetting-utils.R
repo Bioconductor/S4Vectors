@@ -119,7 +119,7 @@ setClass("NativeNSBS",  # not exported
 ### Construction methods.
 ### Supplied arguments are trusted so we don't check them!
 
-.NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict, has_NAs)
+NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict, has_NAs)
     new2("NativeNSBS", subscript=subscript,
                        upper_bound=upper_bound,
                        upper_bound_is_strict=upper_bound_is_strict,
@@ -131,7 +131,7 @@ setMethod("NSBS", "missing",
     {
         x_NROW <- NROW(x)
         i <- seq_len(x_NROW)
-        .NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
+        NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
     }
 )
 
@@ -140,7 +140,7 @@ setMethod("NSBS", "NULL",
     {
         x_NROW <- NROW(x)
         i <- integer(0)
-        .NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
+        NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
     }
 )
 
@@ -167,7 +167,7 @@ setMethod("NSBS", "NULL",
         if (length(zero_idx) != 0L)
             i <- i[-zero_idx]
     }
-    .NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
+    NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
 }
 
 setMethod("NSBS", "numeric", .NSBS.numeric)
@@ -190,7 +190,7 @@ setMethod("NSBS", "logical",
         if (li < x_NROW)
             i <- rep(i, length.out=x_NROW)
         i <- which(i)
-        .NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
+        NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
     }
 )
 
@@ -205,7 +205,7 @@ setMethod("NSBS", "logical",
             .subscript_error("cannot subset by character when ", what,
                              " are NULL")
         i <- x_NROW + seq_along(i)
-        return(.NativeNSBS(i, x_NROW, FALSE, FALSE))
+        return(NativeNSBS(i, x_NROW, FALSE, FALSE))
     }
     if (exact) {
         i <- match(i, x_ROWNAMES, incomparables=c(NA_character_, ""))
@@ -215,12 +215,12 @@ setMethod("NSBS", "logical",
     if (!strict.upper.bound) {
         na_idx <- which(is.na(i))
         i[na_idx] <- x_NROW + seq_along(na_idx)
-        return(.NativeNSBS(i, x_NROW, FALSE, FALSE))
+        return(NativeNSBS(i, x_NROW, FALSE, FALSE))
     }
     has_NAs <- anyNA(i)
     if (!allow.NAs && has_NAs)
         .subscript_error("subscript contains invalid ", what)
-    .NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
+    NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
 }
 
 setMethod("NSBS", "character", .NSBS.characterORfactor)

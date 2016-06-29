@@ -435,14 +435,27 @@ setMethod("replaceROWS", "Vector",
     {
         idx <- seq_along(x)
         i <- extractROWS(setNames(idx, names(x)), i)
-        ## Assuming that c() works on objects of class 'class(x)' and does the
+
+        ## --- 1. Concatenate 'x' and 'value' with c() ---
+
+        ## We assume that c() works on objects of class 'class(x)' and does the
         ## right thing (i.e. returns an object of the same class as 'x' and of
         ## length 'length(x) + length(value)').
         ans <- c(x, value)
-        ## Assuming that [ works on objects of class 'class(x)'.
+
+        ## --- 2. Subset 'c(x, value)' ---
+
         idx[i] <- length(x) + seq_along(value)
-        ans <- ans[idx]
-        ## Restore the original decoration.
+        ## Because of how we constructed it, 'idx' is a valid subscript to
+        ## use in 'extractROWS(ans, idx)'. By wrapping it inside a NativeNSBS
+        ## object, extractROWS() won't waste time checking it and trying to
+        ## normalize it.
+        idx <- NativeNSBS(idx, length(ans), TRUE, FALSE)
+        ## We assume that extractROWS() works on an object of class 'class(x)'.
+        ans <- extractROWS(ans, idx)
+
+        ## --- 3. Restore the original decoration ---
+
         metadata(ans) <- metadata(x)
         names(ans) <- names(x)
         ## However, we want the replaced elements in 'x' to get their
