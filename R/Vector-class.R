@@ -428,33 +428,32 @@ setReplaceMethod("[", "Vector",
     }
 )
 
-### Works on any Vector object for which c() and [ work. Assumes 'value' is
-### compatible with 'x'.
+### Work on any Vector object for which c() and extractROWS() work.
+### Assume 'value' is compatible with 'x'.
 setMethod("replaceROWS", "Vector",
     function(x, i, value)
     {
-        idx <- seq_along(x)
-        i <- extractROWS(setNames(idx, names(x)), i)
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
 
-        ## --- 1. Concatenate 'x' and 'value' with c() ---
+        ## --<1>-- Concatenate 'x' and 'value' with c() -----
 
-        ## We assume that c() works on objects of class 'class(x)' and does the
-        ## right thing (i.e. returns an object of the same class as 'x' and of
-        ## length 'length(x) + length(value)').
+        ## We assume that c() works on objects of class 'class(x)' and that it
+        ## does the right thing i.e. that it returns an object of the same
+        ## class as 'x' and of length 'length(x) + length(value)'.
         ans <- c(x, value)
 
-        ## --- 2. Subset 'c(x, value)' ---
+        ## --<2>-- Subset 'c(x, value)' with extractROWS() -----
 
-        idx[i] <- length(x) + seq_along(value)
-        ## Because of how we constructed it, 'idx' is a valid subscript to
-        ## use in 'extractROWS(ans, idx)'. By wrapping it inside a NativeNSBS
-        ## object, extractROWS() won't waste time checking it and trying to
-        ## normalize it.
+        idx <- replaceROWS(seq_along(x), i, seq_along(value) + length(x))
+        ## Because of how we constructed it, 'idx' is guaranteed to be a valid
+        ## subscript to use in 'extractROWS(ans, idx)'. By wrapping it inside a
+        ## NativeNSBS object, extractROWS() won't waste time checking it or
+        ## trying to normalize it.
         idx <- NativeNSBS(idx, length(ans), TRUE, FALSE)
         ## We assume that extractROWS() works on an object of class 'class(x)'.
         ans <- extractROWS(ans, idx)
 
-        ## --- 3. Restore the original decoration ---
+        ## --<3>-- Restore the original decoration -----
 
         metadata(ans) <- metadata(x)
         names(ans) <- names(x)
@@ -463,6 +462,7 @@ setMethod("replaceROWS", "Vector",
         ## metadata columns. See this thread on bioc-devel:
         ##  https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
         #mcols(ans) <- mcols(x)
+
         ans
     }
 )
