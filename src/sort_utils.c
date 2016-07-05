@@ -394,13 +394,13 @@ static unsigned char		minirx_base_uidx_buf[MINIRX_BASE_MAXLENGTH];
    'minirx_base_uidx_buf'. */
 static int minirx_compute_bucket_counts(
 		const unsigned short int *base, int base_len,
-		unsigned char *bucket_counts_buf,
+		int *bucket_counts_buf,
 		unsigned char *bucket_used_buf)
 {
 	int nbucket, i;
 	unsigned char uidx;
 
-	memset(bucket_counts_buf, 0, sizeof(unsigned char) * MINIRX_NBUCKET);
+	memset(bucket_counts_buf, 0, sizeof(int) * MINIRX_NBUCKET);
 	nbucket = 0;
 	/* Use 8 most significant bits of the base values (unsigned
 	   short ints) to compute the bucket indices. */
@@ -441,7 +441,7 @@ static int sorted_uchar_buf(const unsigned char *uchar_buf, int buf_len,
 /* Walk only on buckets IN USE. */
 static void minirx_compute_bucket_offsets_fast(
 		const unsigned char *bucket_used_buf, int nbucket,
-		const unsigned char *bucket_counts_buf,
+		const int *bucket_counts_buf,
 		int *bucket_offsets_buf)
 {
 	int offset, i;
@@ -479,7 +479,7 @@ static void compute_min_max_uchar_buf(
 
 static void minirx_compute_bucket_offsets(int desc,
 		unsigned char min_uidx, unsigned char max_uidx,
-		const unsigned char *bucket_counts_buf,
+		const int *bucket_counts_buf,
 		int *bucket_offsets_buf)
 {
 	int offset;
@@ -504,7 +504,7 @@ static void minirx_compute_bucket_offsets(int desc,
 
 static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 		unsigned short int *out,
-		const unsigned char *bucket_counts_buf,
+		const int *bucket_counts_buf,
 		int *bucket_offsets_buf,
 		unsigned char *bucket_used_buf, int nbucket, int desc)
 {
@@ -563,8 +563,8 @@ static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 static void minirx_sort(unsigned short int *base, int base_len,
 			unsigned short int *out, int swapped)
 {
-	static unsigned char bucket_counts_buf[MINIRX_NBUCKET];
-	static int bucket_offsets_buf[MINIRX_NBUCKET];
+	static int bucket_counts_buf[MINIRX_NBUCKET],
+		   bucket_offsets_buf[MINIRX_NBUCKET];
 	static unsigned char bucket_used_buf[MINIRX_NBUCKET];
 
 	static int base_uidx_buf_is_sorted, bucket_used_buf_is_sorted;
