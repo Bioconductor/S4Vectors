@@ -6,7 +6,7 @@
 #include <stdlib.h>  /* for malloc, free, realloc */
 
 #define MAX_BUFLENGTH_INC (32 * 1024 * 1024)
-#define MAX_BUFLENGTH (32 * MAX_BUFLENGTH_INC)
+#define MAX_BUFLENGTH (63 * MAX_BUFLENGTH_INC)
 
 
 /****************************************************************************
