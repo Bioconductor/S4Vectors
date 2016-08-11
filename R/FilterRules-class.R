@@ -238,6 +238,9 @@ setMethod("eval", signature(expr="FilterRules", envir="ANY"),
                     min(NROW(envir), length(val)) != 0)))
                 stop("filter rule evaluated to inconsistent length: ",
                      names(rule)[i])
+              if (anyNA(val)) {
+                  val[is.na(val)] <- FALSE
+              }
               if (length(rules) > 1L)
                 envir <- extractROWS(envir, val)
               result[result] <- val
