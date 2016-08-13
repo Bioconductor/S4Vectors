@@ -156,9 +156,6 @@ make_unlist_result_names <- function(names1, names2)
 setMethod("unlist", "List",
     function(x, recursive=TRUE, use.names=TRUE)
     {
-        if (!identical(recursive, TRUE))
-            stop("\"unlist\" method for List objects ",
-                 "does not support the 'recursive' argument")
         if (!isTRUEorFALSE(use.names))
             stop("'use.names' must be TRUE or FALSE")
         if (length(x) == 0L)
