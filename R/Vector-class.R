@@ -538,21 +538,35 @@ setMethod("classNameForDisplay", "ANY",
    }
 )
 
-setMethod("classNameForDisplay", "AsIs", function(x) {
-  class(x) <- setdiff(class(x), "AsIs")
-  classNameForDisplay(x)
-})
+.drop_AsIs <- function(x)
+{
+    #x_class <- class(x)
+    #if (x_class[[1L]] == "AsIs")
+    #    class(x) <- x_class[-1L]
+
+    ## Simpler, and probably more robust, than the above.
+    class(x) <- setdiff(class(x), "AsIs")
+    x
+}
+
+setMethod("classNameForDisplay", "AsIs",
+    function(x) classNameForDisplay(.drop_AsIs(x))
+)
 
 
+### All "showAsCell" methods should return a character vector.
 setGeneric("showAsCell",
     function(object) standardGeneric("showAsCell")
+)
+
+setMethod("showAsCell", "AsIs",
+    function(object) showAsCell(.drop_AsIs(object))
 )
 
 setMethod("showAsCell", "ANY", function(object) {
   if (length(dim(object)) > 2)
     dim(object) <- c(nrow(object), prod(tail(dim(object), -1)))
   if (NCOL(object) > 1) {
-    class(object) <- setdiff(class(object), "AsIs")
     df <- as.data.frame(object[, head(seq_len(ncol(object)), 3), drop = FALSE])
     attempt <- do.call(paste, df)
     if (ncol(object) > 3)
@@ -571,6 +585,7 @@ setMethod("showAsCell", "ANY", function(object) {
 setMethod("showAsCell", "Vector", function(object)
           rep.int("########", NROW(object)))
 
+### Mmmh... these methods don't return a character vector. Is that ok?
 setMethod("showAsCell", "Date", function(object) object)
 setMethod("showAsCell", "POSIXt", function(object) object)
 
