@@ -453,7 +453,7 @@ combine_Hits_objects <- function(Class, objects,
     if (ignore.mcols) {
         ans_mcols <- NULL
     } else {
-        ans_mcols <- do.call(S4Vectors:::rbind_mcols, objects)
+        ans_mcols <- do.call(rbind_mcols, objects)
     }
 
     ## Make 'ans' and return it.

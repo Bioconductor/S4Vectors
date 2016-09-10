@@ -17,7 +17,10 @@
 
 \arguments{
   \item{x, y, ...}{
-    Vector-like objects, typically all of the same class.
+    Vector-like objects, typically all of the same class and typically not
+    list-like objects (even though some list-like objects like
+    \link[IRanges]{Ranges} and \link[Biostrings]{DNAStringSet} are
+    supported).
     Duplicated elements in each object are removed with a warning.
   }
   \item{all}{
@@ -55,6 +58,10 @@
     \item This \code{merge} method accepts an arbitrary number of vector-like
           objects (n-ary merge).
   }
+
+  If some of the objects to merge are list-like objects not supported by
+  the method described here, then the merging is simply done by calling
+  \code{base::merge()} on the objects. This might succeed or not...
 }
 
 \value{

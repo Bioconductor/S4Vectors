@@ -93,6 +93,8 @@
     all_mcolnames <- unique(unlist(
         lapply(objects, function(object) colnames(mcols(object)))
     ))
+    if (length(all_mcolnames) == 0L)
+        return(NULL)
 
     revmaps <- lapply(objects, match, x=x)
 
@@ -164,6 +166,22 @@ setMethod("merge", c("Vector", "Vector"),
             } else {
                 objects <- list(x, y, ...)
             }
+        }
+        ## .merge_Vector_objects() won't work if some of the objects to merge
+        ## are list-like objects that pcompare recursively. In that case, we
+        ## fallback on base::merge() but this one is a binary merge only.
+        comp_rec <- vapply(objects,
+            function(object) {
+                is.list(object) ||
+                  is(object, "List") && pcompareRecursively(object)
+            },
+            logical(1))
+        if (any(comp_rec)) {
+            if (length(objects) > 2L)
+                stop(wmsg("cannot merge more than 2 objects ",
+                          "when some of them are list-like objects"))
+            ans <- base::merge(x, y, all=all, sort=sort)
+            return(ans)
         }
         .merge_Vector_objects(objects,
                               all=all, all.x=all.x, all.y=all.y,
