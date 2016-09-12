@@ -4,6 +4,7 @@
 
 % accessors
 \alias{filterRules,FilterMatrix-method}
+\alias{filterRules}
 
 % subsetting
 \alias{[,FilterMatrix-method}
