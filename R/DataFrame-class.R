@@ -560,6 +560,14 @@ setAs("data.frame", "DataFrame",
         new2("DataFrame", listData=from, nrows=nr, rownames=rn, check=FALSE)
       })
 
+setAs("data.table", "DataFrame",
+    function(from)
+    {
+        df <- data.table:::as.data.frame.data.table(from)
+        as(df, "DataFrame")
+    }
+)
+
 setAs("table", "DataFrame",
       function(from) {
         df <- as.data.frame(from)

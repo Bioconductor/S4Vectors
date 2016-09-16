@@ -29,6 +29,7 @@
 \alias{coerce,integer,DataFrame-method}
 \alias{coerce,Vector,DataFrame-method}
 \alias{coerce,data.frame,DataFrame-method}
+\alias{coerce,data.table,DataFrame-method}
 \alias{coerce,NULL,DataFrame-method}
 \alias{coerce,table,DataFrame-method}
 \alias{coerce,AsIs,DataFrame-method}
