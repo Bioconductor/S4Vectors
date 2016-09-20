@@ -53,6 +53,9 @@ setReplaceMethod("active", "FilterRules", function(x, value) {
   } else stop("unsupported type of 'value'")
 })
 
+setMethod("parallelSlotNames", "FilterRules",
+          function(x) c(callNextMethod(), "active"))
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.
 ###
