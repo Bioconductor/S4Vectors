@@ -76,7 +76,7 @@ FilterRules.parseRule <- function(expr) {
 ## takes logical expressions, character vectors, or functions to parse
 
 FilterRules <- function(exprs = list(), ..., active = TRUE) {
-  exprs <- c(as.list(substitute(list(...)))[-1L], exprs)
+  exprs <- c(exprs, as.list(substitute(list(...)))[-1L])
   if (length(names(exprs)) == 0) {
     funs <- as.logical(sapply(exprs, is.function))
     nonfuns <- exprs[!funs]
