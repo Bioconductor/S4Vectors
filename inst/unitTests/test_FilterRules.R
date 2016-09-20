@@ -31,7 +31,7 @@ test_FilterRules_construct <- function() {
   ## mix them up
   filters <- FilterRules(filts, diffexp = de)
   checkTrue(validObject(filters))
-  checkIdentical(as.list(filters), c(list(diffexp = expression(de)), filts))
+  checkIdentical(as.list(filters), c(filts, list(diffexp = expression(de))))
   filts <- as.list(filters)
   
   checkException(FilterRules(c(filts, 1)), silent = TRUE)
