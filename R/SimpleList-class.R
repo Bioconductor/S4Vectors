@@ -107,33 +107,8 @@ setMethod("classNameForDisplay", "SimpleList",
 ### Subsetting.
 ###
 
-setMethod("extractROWS", "SimpleList",
-    function(x, i)
-    {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        ans_listData <- extractROWS(x@listData, i)
-        ans_elementMetadata <- extractROWS(x@elementMetadata, i)
-        BiocGenerics:::replaceSlots(x,
-            listData=ans_listData,
-            elementMetadata=ans_elementMetadata)
-    }
-)
-
-### The replaced elements in 'x' must get their metadata columns from 'value'.
-### See this thread on bioc-devel:
-###   https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
-setMethod("replaceROWS", "SimpleList",
-    function(x, i, value)
-    {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        ans_listData <- replaceROWS(x@listData, i, value@listData)
-        ans_elementMetadata <- replaceROWS(x@elementMetadata, i,
-                                           value@elementMetadata)
-        BiocGenerics:::replaceSlots(x,
-            listData=ans_listData,
-            elementMetadata=ans_elementMetadata)
-    }
-)
+setMethod("parallelSlotNames", "SimpleList",
+          function(x) c("listData", callNextMethod()))
 
 setMethod("getListElement", "SimpleList",
     function(x, i, exact=TRUE)

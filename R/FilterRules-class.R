@@ -54,7 +54,7 @@ setReplaceMethod("active", "FilterRules", function(x, value) {
 })
 
 setMethod("parallelSlotNames", "FilterRules",
-          function(x) c(callNextMethod(), "active"))
+          function(x) c("active", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.
@@ -125,18 +125,6 @@ setReplaceMethod("[[", "FilterRules",
                    names(x) <- make.names(names(x), unique = TRUE)
                    x
                  })
-
-setMethod("[", "FilterRules",
-          function(x, i, j, ..., drop)
-          {
-            if (!missing(j) || length(list(...)) > 0)
-              stop("invalid subsetting")
-            if (!missing(i)) {
-              x@active <- setNames(setNames(x@active, names(x))[i], NULL)
-              x <- callNextMethod(x, i)
-            }
-            x
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.
