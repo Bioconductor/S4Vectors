@@ -260,3 +260,36 @@ setMethod("anyNA", "List", function(x, recursive=FALSE) {
         callNextMethod()
     }
 })
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Matrix construction
+###
+
+normBindArgs <- function(..., deparse.level=1L) {
+    stopifnot(isSingleNumber(deparse.level),
+              deparse.level >= 0L,
+              deparse.level <= 2L)
+    args <- list(...)
+    if (deparse.level > 0L) {
+        exprs <- as.list(substitute(list(...)))[-1L]
+        genName <- if (is.null(names(args))) TRUE else names(args) == ""
+        if (deparse.level == 1L && any(genName))
+            genName <- genName & vapply(exprs, is.name, logical(1L))
+        if (any(genName)) {
+            if (is.null(names(args)))
+                names(args) <- rep("", length(args))
+            names(args)[genName] <- as.character(exprs[genName])
+        }
+    }
+    args
+}
+
+setMethod("rbind", "List", function(..., deparse.level=1L) {
+    args <- normBindArgs(..., deparse.level=deparse.level)
+    do.call(rbind, lapply(args, as.list))
+})
+
+setMethod("cbind", "List", function(..., deparse.level=1L) {
+    args <- normBindArgs(..., deparse.level=deparse.level)
+    do.call(cbind, lapply(args, as.list))
+})

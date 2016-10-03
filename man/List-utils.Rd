@@ -29,6 +29,8 @@
 
 \alias{within,List-method}
 
+\alias{rbind,List-method}
+\alias{cbind,List-method}
 
 \title{Common operations on List objects}
 
@@ -67,6 +69,12 @@ pc(...)
 ## ---------------------------------------------
 
 \S4method{within}{List}(data, expr, ...)
+
+## Constructing list matrices:
+## ---------------------------------------------
+
+\S4method{rbind}{List}(..., deparse.level=1L)
+\S4method{cbind}{List}(..., deparse.level=1L)
 }
 
 \arguments{
@@ -163,6 +171,12 @@ pc(...)
     new symbols have their value appended to \code{data}, and assigning
     new values to existing symbols results in replacement.
   }
+  \subsection{Binding Lists into a matrix}{
+    There are methods for \code{cbind} and \code{rbind} that will bind
+    multiple lists together into a basic list matrix. The usual
+    geometric constraints apply. In the future, this might return a List
+    (+ dimensions), but for now the return value is an ordinary list.
+  }
 }
 
 \value{
@@ -182,6 +196,8 @@ pc(...)
 
   See \code{?base::\link[base]{within}} for the value returned by
   \code{within}.
+
+  \code{cbind} and \code{rbind} return a list matrix.
 }
 
 \author{P. Aboyoun and H. Pagès}
@@ -198,6 +214,10 @@ pc(...)
 
     \item \code{base::\link[base]{within}} for the default \code{within}
           method.
+
+   \item \code{base::\link[base]{cbind}} and
+         \code{base::\link[base]{rbind}} for the default matrix binding
+         methods.
   }
 }
 
@@ -229,6 +249,9 @@ stopifnot(identical(Find(is.unsorted, x, right=TRUE), x[[pos2]]))
 
 y <- x * 1000L
 Map("c", x, y)
+
+rbind(x, y)
+cbind(x, y)
 }
 
 \keyword{utilities}
