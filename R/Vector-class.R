@@ -564,16 +564,25 @@ setMethod("showAsCell", "AsIs",
 )
 
 setMethod("showAsCell", "ANY", function(object) {
+  if (NROW(object) == 0L)
+    return(character(0L))
   if (length(dim(object)) > 2)
     dim(object) <- c(nrow(object), prod(tail(dim(object), -1)))
   if (NCOL(object) > 1) {
     df <- as.data.frame(object[, head(seq_len(ncol(object)), 3), drop = FALSE])
-    attempt <- do.call(paste, df)
-    if (ncol(object) > 3)
-      attempt <- paste(attempt, "...")
+    attempt <- do.call(paste, c(df, sep=":"))
+    if (ncol(object) > 3L)
+      attempt <- paste0(attempt, ":...")
     attempt
   } else if (NCOL(object) == 0L) {
     rep.int("", NROW(object))
+  } else if (is.list(object) || is(object, "List")) {
+    vapply(object, function(x) {
+      str <- paste(head(x, 3L), collapse = ",") 
+      if (length(x) > 3L)
+        str <- paste0(str, ",...")
+      str
+    }, character(1L))
   } else {
     attempt <- try(as.vector(object), silent=TRUE)
     if (is(attempt, "try-error"))
@@ -581,9 +590,6 @@ setMethod("showAsCell", "ANY", function(object) {
     else attempt
   }
 })
-
-setMethod("showAsCell", "Vector", function(object)
-          rep.int("########", NROW(object)))
 
 ### Mmmh... these methods don't return a character vector. Is that ok?
 setMethod("showAsCell", "Date", function(object) object)
