@@ -77,6 +77,9 @@ S3method(sort, Vector)
 
 S3method(summary, Rle)
 
+S3method(t, Hits)
+S3method(t, HitsList)
+
 S3method(tail, DataTable)
 S3method(tail, Vector)
 

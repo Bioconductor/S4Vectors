@@ -527,6 +527,7 @@ revmap_Hits <- function(x)
     new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x), mcols(x))
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
+t.Hits <- function(x) t(x)
 setMethod("t", "Hits", revmap_Hits)
 
 

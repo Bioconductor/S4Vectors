@@ -105,6 +105,7 @@ setMethod("as.table", "HitsList", function(x, ...) {
   as.table(array(counts, length(counts), list(range = seq_along(counts))))
 })
 
+t.HitsList <- function(x) t(x)
 setMethod("t", "HitsList", function(x) {
   x@elements <- lapply(as.list(x, use.names = FALSE), t)
   x
