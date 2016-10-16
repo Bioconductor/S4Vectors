@@ -1,3 +1,66 @@
+CHANGES IN VERSION 0.12.0
+-------------------------
+
+NEW FEATURES
+
+    o Add n-ary "merge" method for Vector objects.
+
+    o "extractROWS" methods for atomic vectors and DataFrame objects now
+      support NAs in the subscript. As a consequence a DataFrame can now
+      be subsetted by row with a subscript that contains NAs. However that
+      will only succeed if all the columns in the DataFrame can also be
+      subsetted with a subscript that contains NAs (e.g. it would fail at
+      the moment if some columns are Rle's but we have plans to make this
+      work in the future).
+
+    o Add "union", "intersect", "setdiff", and "setequal" methods for Vector
+      objects.
+
+    o Add coercion from data.table to DataFrame.
+
+    o Add t() S3 methods for Hits and HitsList.
+
+    o Add "c" method for Pairs objects.
+
+    o Add rbind/cbind methods for List, returning a list matrix.
+
+    o aggregate() now supports named aggregator expressions when 'FUN' is
+      missing.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o "c" method for Rle objects handles factor data more gracefully.
+
+    o "eval" method for FilterRules objects now excludes NA results, like
+      subset(), instead of failing on NAs.
+
+    o Drop "as.env" method for List objects so that as.env() behaves more like
+      as.data.frame() on these objects.
+
+    o Speed up "replaceROWS" method for Vector objects when 'x' has names.
+
+    o Optimize selfmatch for factors.
+
+DOCUMENTATION IMPROVEMENTS
+
+    o Add S4QuickOverview vignette.
+
+DEPRECATED AND DEFUNCT
+
+    o elementLengths() and compare() are now defunct (were deprecated in
+      BioC 3.3).
+
+    o Remove "ifelse" methods for Rle objects (were defunct in BioC 3.3),
+
+BUG FIXES
+
+    o Fix bug in showAsCell(x) when 'x' is an AsIs object.
+
+    o DataFrame() avoids NULL names when there are no columns.
+
+    o DataFrame with NULL colnames are now considered invalid.
+
+
 CHANGES IN VERSION 0.10.0
 -------------------------
 

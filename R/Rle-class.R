@@ -776,6 +776,7 @@ setMethod("table", "Rle",
     }
 }
 
+### Not exported? Broken on numeric-Rle and factor-Rle. H.P. -- Oct 16, 2016
 setMethod("tabulate", "Rle",
           function (bin, nbins = max(bin, 1L, na.rm = TRUE)) {
               tabulate2(runValue(bin), nbins, runLength(bin))

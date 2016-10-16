@@ -498,6 +498,10 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### breakTies()
 ###
+### Redundant with selectHits. The only difference is that it returns a Hits
+### object. That alone doesn't justify introducing a new verb. Should be
+### controlled via an extra arg to selectHits() e.g. 'as.Hits' (FALSE by
+### default). H.P. -- Oct 16, 2016
 
 breakTies <- function(x, method=c("first", "last")) {
     if (!is(x, "Hits"))
