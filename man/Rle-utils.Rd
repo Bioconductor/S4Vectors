@@ -52,6 +52,9 @@
 \alias{levels,Rle-method}
 \alias{levels<-,Rle-method}
 
+\alias{droplevels.Rle}
+\alias{droplevels,Rle-method}
+
 % old stuff (Deprecated or Defunct)
 \alias{ifelse,ANY,ANY,Rle-method}
 \alias{ifelse,ANY,Rle,ANY-method}
@@ -295,6 +298,10 @@
     \item{}{
       \code{nlevels(x)}:
       Returns the number of factor levels.
+    }
+    \item{}{
+      \code{droplevels(x)}:
+      Drops unused factor levels.
     }
   }
 }

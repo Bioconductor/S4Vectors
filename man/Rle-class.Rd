@@ -24,6 +24,7 @@
 \alias{runValue<-,Rle-method}
 
 \alias{as.vector,Rle-method}
+\alias{as.vector.Rle}
 \alias{as.vectorORfactor}
 \alias{as.vectorORfactor,Rle-method}
 \alias{as.factor,Rle-method}

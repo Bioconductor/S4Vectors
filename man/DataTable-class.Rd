@@ -38,6 +38,13 @@
 \alias{as.env}
 \alias{as.env,NULL-method}
 \alias{as.env,DataTable-method}
+\alias{as.data.frame.DataTable}
+\alias{as.data.frame,DataTable-method}
+
+\alias{rowSums}
+\alias{colSums}
+\alias{rowMeans}
+\alias{colMeans}
 
 \alias{show,DataTable-method}
 
@@ -198,6 +205,10 @@
       of the data from the external vectors into R vectors. The values
       are cached, so that the data is not copied every time the symbol
       is accessed.
+    }
+    \item{}{\code{as.data.frame(x, row.names=NULL, optional=FALSE,
+	...)}: 
+      Creates the corresponding data.frame.
     }
   }
 }

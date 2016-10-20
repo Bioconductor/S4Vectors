@@ -70,6 +70,9 @@
 
 \alias{append,Vector,Vector-method}
 
+\alias{expand.grid}
+\alias{expand.grid,Vector-method}
+
 \alias{classNameForDisplay}
 \alias{classNameForDisplay,ANY-method}
 \alias{classNameForDisplay,AsIs-method}
@@ -222,6 +225,11 @@
       \code{Vector} \code{values} onto \code{x} at the position given by
       \code{after}. \code{values} must have an \code{elementType} that extends
       that of \code{x}.
+    }
+    \item{}{\code{expand.grid(...)}: Find cartesian product of every
+      vector in \code{\dots} and return a data.frame, each column of
+      which corresponds to an argument.
+      See \code{\link[base]{expand.grid}}.
     }
   }
 }

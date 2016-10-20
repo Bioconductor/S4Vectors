@@ -32,6 +32,9 @@
 \alias{rbind,List-method}
 \alias{cbind,List-method}
 
+\alias{droplevels.List}
+\alias{droplevels,List-method}
+
 \title{Common operations on List objects}
 
 \description{

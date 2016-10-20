@@ -28,7 +28,19 @@
 \alias{isSingleStringOrNA}
 \alias{recycleIntegerArg}
 \alias{recycleNumericArg}
+\alias{recycleCharacterArg}
+\alias{recycleLogicalArg}
+\alias{recycleArg}
 \alias{fold}
+
+\alias{duplicatedIntegerPairs}
+\alias{duplicatedIntegerQuads}
+\alias{matchIntegerPairs}
+\alias{matchIntegerQuads}
+\alias{orderIntegerPairs}
+\alias{orderIntegerQuads}
+\alias{selfmatchIntegerPairs}
+\alias{selfmatchIntegerQuads}
 
 \title{S4Vectors internals}
 
