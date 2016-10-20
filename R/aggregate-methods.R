@@ -191,7 +191,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
     endomorphism <- FALSE
     if (missing(by)) {
         if (is(x, "List") && !is(x, "DataTable")) {
-            by <- PartitioningByEnd(x)
+            by <- IRanges::PartitioningByEnd(x)
             x <- unlist(x, use.names=FALSE)
         } else {
             endomorphism <- TRUE
@@ -200,13 +200,13 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
     }
 
     if (is(by, "IntegerList")) {
-        by <- ManyToManyGrouping(by, nobj=NROW(x))
+        by <- IRanges::ManyToManyGrouping(by, nobj=NROW(x))
     }
     
     if (is(by, "formula")) {
         by <- ModelFrame(by, x)
     } else if (is.list(by) || is(by, "DataTable")) {
-        by <- FactorList(by, compress=FALSE)
+        by <- IRanges::FactorList(by, compress=FALSE)
     }
     
     by <- as(by, "Grouping", strict=FALSE)
@@ -223,7 +223,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
     prenvs <- top_prenv_dots(...)
     exprs <- substitute(list(...))[-1L]
     envs <- lapply(prenvs, function(p) {
-        as.env(x, p, tform = function(col) extractList(col, by))
+        as.env(x, p, tform = function(col) IRanges::extractList(col, by))
     })
     stats <- DataFrame(mapply(safeEval, exprs, envs, SIMPLIFY=FALSE))
 

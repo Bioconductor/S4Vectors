@@ -99,15 +99,15 @@ setMethod("pcompareRecursively", "list", function(x) TRUE)
 ###
 
 setMethods("pcompare", .OP2_SIGNATURES,
-    function(x, y) .op2_apply(pcompare, x, y, ANS_CONSTRUCTOR=IntegerList)
+           function(x, y) .op2_apply(pcompare, x, y, ANS_CONSTRUCTOR=IRanges::IntegerList)
 )
 
 setMethods("==", .OP2_SIGNATURES,
-    function(e1, e2) .op2_apply(`==`, e1, e2, ANS_CONSTRUCTOR=LogicalList)
+           function(e1, e2) .op2_apply(`==`, e1, e2, ANS_CONSTRUCTOR=IRanges::LogicalList)
 )
 
 setMethods("<=", .OP2_SIGNATURES,
-    function(e1, e2) .op2_apply(`<=`, e1, e2, ANS_CONSTRUCTOR=LogicalList)
+           function(e1, e2) .op2_apply(`<=`, e1, e2, ANS_CONSTRUCTOR=IRanges::LogicalList)
 )
 
 ### The remaining comparison binary operators (!=, >=, <, >) will work
@@ -117,9 +117,9 @@ setMethod("!", "List",
     function(x)
     {
         if (is(x, "RleList")) {
-            ANS_CONSTRUCTOR <- RleList
+            ANS_CONSTRUCTOR <- IRanges::RleList
         } else {
-            ANS_CONSTRUCTOR <- LogicalList
+            ANS_CONSTRUCTOR <- IRanges::LogicalList
         }
         .op1_apply(`!`, x, ANS_CONSTRUCTOR=ANS_CONSTRUCTOR)
     }
@@ -134,9 +134,9 @@ setMethods("match", .OP2_SIGNATURES,
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
         if (is(x, "RleList")) {
-            ANS_CONSTRUCTOR <- RleList
+            ANS_CONSTRUCTOR <- IRanges::RleList
         } else {
-            ANS_CONSTRUCTOR <- IntegerList
+            ANS_CONSTRUCTOR <- IRanges::IntegerList
         }
         .op2_apply(match, x, table,
                    nomatch=nomatch, incomparables=incomparables, ...,
@@ -166,7 +166,7 @@ setMethods("match", list(c("List", "vector"), c("List", "Vector")),
 {
     .op1_apply(duplicated, x,
                incomparables=incomparables, fromLast=fromLast, ...,
-               ANS_CONSTRUCTOR=LogicalList)
+               ANS_CONSTRUCTOR=IRanges::LogicalList)
 }
 setMethod("duplicated", "List", .duplicated.List)
 
@@ -188,9 +188,9 @@ setMethod("is.na", "List",
     function(x)
     {
         if (is(x, "RleList")) {
-            ANS_CONSTRUCTOR <- RleList
+            ANS_CONSTRUCTOR <- IRanges::RleList
         } else {
-            ANS_CONSTRUCTOR <- LogicalList
+            ANS_CONSTRUCTOR <- IRanges::LogicalList
         }
         .op1_apply(is.na, x, ANS_CONSTRUCTOR=ANS_CONSTRUCTOR)
     }
@@ -210,7 +210,7 @@ setMethod("order", "List",
                  "can only take one input object")
         .op1_apply(order, args[[1L]],
                    na.last=na.last, decreasing=decreasing, method=method,
-                   ANS_CONSTRUCTOR=IntegerList)
+                   ANS_CONSTRUCTOR=IRanges::IntegerList)
     }
 )
 
@@ -229,7 +229,7 @@ setMethod("rank", "List",
     {
         .op1_apply(rank, x,
                    na.last=na.last, ties.method=ties.method,
-                   ANS_CONSTRUCTOR=IntegerList)
+                   ANS_CONSTRUCTOR=IRanges::IntegerList)
     }
 )
 
