@@ -137,7 +137,7 @@ setMethod("Complex", "Rle",
               new_Rle(callGeneric(runValue(z)), runLength(z), check=FALSE))
 
 ### S3/S4 combo for summary.Rle
-summary.Rle <- function(object, ..., digits=max(3, getOption("digits") - 3)) 
+summary.Rle <- function(object, ..., digits) 
 {
     value <-
         if (is.logical(runValue(object))) 
@@ -151,7 +151,9 @@ summary.Rle <- function(object, ..., digits=max(3, getOption("digits") - 3))
             nas <- is.na(object)
             object <- object[!nas]
             qq <- quantile(object)
-            qq <- signif(c(qq[1L:3L], mean(object), qq[4L:5L]), digits)
+            qq <- c(qq[1L:3L], mean(object), qq[4L:5L])
+            if (!missing(digits)) 
+                qq <- signif(qq, digits)
             names(qq) <-
                 c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max.")
             if (any(nas)) 

@@ -1,3 +1,6 @@
+library(IRanges)  # many tests in this file use functionalities defined
+                  # in IRanges
+
 test_Rle_groupGeneric <- function() {
     set.seed(0)
     x <- sample(0:3, 50, replace = TRUE)
