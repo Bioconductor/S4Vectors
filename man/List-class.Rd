@@ -12,8 +12,6 @@
 \alias{elementNROWS}
 \alias{elementNROWS,ANY-method}
 \alias{elementNROWS,List-method}
-\alias{elementLengths}
-\alias{elementLengths,ANY-method}
 \alias{isEmpty}
 \alias{isEmpty,ANY-method}
 \alias{isEmpty,List-method}

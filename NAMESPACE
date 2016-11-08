@@ -325,7 +325,7 @@ export(
     runsum, runmean, runwtsum, runq,
 
     ## List-class.R:
-    elementType, elementNROWS, elementLengths, lengths,
+    elementType, elementNROWS, lengths,
     isEmpty,
     relistToClass,
 
@@ -373,7 +373,7 @@ exportMethods(
     Rle,
     findRun,
     runsum, runmean, runwtsum, runq,
-    elementType, elementNROWS, elementLengths, lengths,
+    elementType, elementNROWS, lengths,
     isEmpty,
     relistToClass,
     pcompareRecursively,
