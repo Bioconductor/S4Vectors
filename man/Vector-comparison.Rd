@@ -3,7 +3,6 @@
 \alias{Vector-comparison}
 
 \alias{pcompare}
-\alias{compare}
 
 \alias{==,Vector,Vector-method}
 \alias{==,Vector,ANY-method}

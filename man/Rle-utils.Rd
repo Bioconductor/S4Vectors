@@ -55,11 +55,6 @@
 \alias{droplevels.Rle}
 \alias{droplevels,Rle-method}
 
-% old stuff (Deprecated or Defunct)
-\alias{ifelse,ANY,ANY,Rle-method}
-\alias{ifelse,ANY,Rle,ANY-method}
-\alias{ifelse,ANY,Rle,Rle-method}
-
 \title{Common operations on Rle objects}
 
 \description{

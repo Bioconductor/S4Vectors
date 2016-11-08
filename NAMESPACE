@@ -170,6 +170,7 @@ exportMethods(
     "[[", "[[<-", "$", "$<-",
     split,
     eval, with, within,
+    expand.grid,
 
     ## Methods for generics defined in the methods package:
     coerce, show,
@@ -233,9 +234,6 @@ export(
     safeExplode,
     strsplitAsListOfIntegerVectors,
     svn.time,
-
-    ## Vector-comparison.R:
-    compare,
 
     ## Hits-class.R:
     queryHits, subjectHits,
@@ -309,7 +307,6 @@ export(
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
     classNameForDisplay, showAsCell,
-    expand.grid,
 
     ## Vector-comparison.R:
     pcompare,
