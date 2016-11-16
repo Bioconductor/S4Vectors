@@ -217,6 +217,11 @@ setMethod("duplicated", "DataTable", duplicated.DataTable)
 unique.DataTable <- unique.data.frame
 setMethod("unique", "DataTable", unique.DataTable)
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Comparison methods.
+###
+
+setMethod("sort", "DataTable", .sort.Vector)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
