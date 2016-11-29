@@ -131,7 +131,7 @@ setMethod("show", "List",
 ### unlist()
 ###
 
-### NOT exported. Assumes 'names1' is not NULL.
+### NOT exported. Assume 'names1' is not NULL.
 make_unlist_result_names <- function(names1, names2)
 {
     if (is.null(names2))
@@ -191,7 +191,7 @@ setMethod("unlist", "List",
 ### Subsetting.
 ###
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
 ### Returns TRUE iff 'i' contains non-NA positive values that are compatible
 ### with the shape of 'x'.
 .is_valid_NL_subscript <- function(i, x)
@@ -208,7 +208,7 @@ setMethod("unlist", "List",
     return(TRUE)
 }
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
 ### Returns the name of one of the 3 supported fast paths ("LL", "NL", "RL")
 ### or NA if no fast path can be used.
 .select_fast_path <- function(i, x)
@@ -246,7 +246,7 @@ setMethod("unlist", "List",
     return(NA_character_)
 }
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
 ### Truncate or recycle each list element of 'i' to the length of the
 ### corresponding element in 'x'.
 .adjust_elt_lengths <- function(i, x)
@@ -262,7 +262,7 @@ setMethod("unlist", "List",
     return(i)
 }
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length),
+### Assume 'x' and 'i' are parallel List objects (i.e. same length),
 ### and 'i' is a List of logical vectors or logical-Rle objects.
 .unlist_LL_subscript <- function(i, x)
 {
@@ -270,7 +270,7 @@ setMethod("unlist", "List",
     unlist(i, use.names=FALSE)
 }
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length),
+### Assume 'x' and 'i' are parallel List objects (i.e. same length),
 ### and 'i' is a List of numeric vectors or numeric-Rle objects.
 .unlist_NL_subscript <- function(i, x)
 {
@@ -279,7 +279,7 @@ setMethod("unlist", "List",
     unlist(i, use.names=FALSE)
 }
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length),
+### Assume 'x' and 'i' are parallel List objects (i.e. same length),
 ### and 'i' is a List of Ranges objects.
 .unlist_RL_subscript <- function(i, x)
 {
@@ -289,7 +289,9 @@ setMethod("unlist", "List",
 }
 
 ### Fast subset by List of logical vectors or logical-Rle objects.
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
+### Propagate 'names(x)' only. Caller is responsible for propagating 'mcols(x)'
+### and 'metadata(x)'.
 .fast_subset_List_by_LL <- function(x, i)
 {
     ## Unlist 'x' and 'i'.
@@ -302,14 +304,15 @@ setMethod("unlist", "List",
     ## Relist.
     group <- rep.int(seq_along(x), elementNROWS(x))
     group <- extractROWS(group, unlisted_i)
-    ans_skeleton <- IRanges::PartitioningByEnd(group, NG=length(x), names=names(x))
-    ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
-    metadata(ans) <- metadata(x)
-    ans
+    ans_skeleton <- IRanges::PartitioningByEnd(group, NG=length(x),
+                                               names=names(x))
+    relist(unlisted_ans, ans_skeleton)
 }
 
 ### Fast subset by List of numeric vectors or numeric-Rle objects.
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
+### Propagate 'names(x)' only. Caller is responsible for propagating 'mcols(x)'
+### and 'metadata(x)'.
 .fast_subset_List_by_NL <- function(x, i)
 {
     ## Unlist 'x' and 'i'.
@@ -322,13 +325,13 @@ setMethod("unlist", "List",
     ## Relist.
     ans_breakpoints <- cumsum(unname(elementNROWS(i)))
     ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
-    ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
-    metadata(ans) <- metadata(x)
-    ans
+    relist(unlisted_ans, ans_skeleton)
 }
 
 ### Fast subset by List of Ranges objects.
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
+### Propagate 'names(x)' only. Caller is responsible for propagating 'mcols(x)'
+### and 'metadata(x)'.
 .fast_subset_List_by_RL <- function(x, i)
 {
     ## Unlist 'x' and 'i'.
@@ -341,9 +344,7 @@ setMethod("unlist", "List",
     ## Relist.
     ans_breakpoints <- cumsum(unlist(sum(width(i)), use.names=FALSE))
     ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
-    ans <- as(relist(unlisted_ans, ans_skeleton), class(x))
-    metadata(ans) <- metadata(x)
-    ans
+    relist(unlisted_ans, ans_skeleton)
 }
 
 ### Subset a List object by a list-like subscript.
@@ -392,7 +393,11 @@ subset_List_by_List <- function(x, i)
                                     LL=.fast_subset_List_by_LL,
                                     NL=.fast_subset_List_by_NL,
                                     RL=.fast_subset_List_by_RL)
-            return(fast_path_FUN(x, i))  # fast path
+            ans <- as(fast_path_FUN(x, i), class(x))  # fast path
+            ## Propagate 'metadata(x)' and 'mcols(x)'.
+            metadata(ans) <- metadata(x)
+            mcols(ans) <- mcols(x)
+            return(ans)
         }
     }
     ## Slow path (loops over the list elements of 'x').
@@ -412,7 +417,7 @@ subset_List_by_List <- function(x, i)
     rep(value, length.out=i_len)
 }
 
-### Assumes 'x' and 'i' are parallel List objects (i.e. same length).
+### Assume 'x' and 'i' are parallel List objects (i.e. same length).
 .fast_lsubset_List_by_List <- function(x, i, value)
 {
     ## Unlist 'x', 'i', and 'value'.
