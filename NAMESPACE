@@ -2,7 +2,7 @@ useDynLib(S4Vectors)
 
 import(methods)
 importFrom(utils, head, tail, head.matrix, tail.matrix, getS3method)
-importFrom(stats, var, cov, cor, sd, median, quantile,
+importFrom(stats, cov, cor, median, quantile,
            smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames, terms)
 importFrom(stats4, summary, update)
