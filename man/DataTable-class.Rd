@@ -41,11 +41,6 @@
 \alias{as.data.frame.DataTable}
 \alias{as.data.frame,DataTable-method}
 
-\alias{rowSums}
-\alias{colSums}
-\alias{rowMeans}
-\alias{colMeans}
-
 \alias{show,DataTable-method}
 
 \alias{xtabs,DataTable-method}
