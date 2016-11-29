@@ -273,16 +273,6 @@ setMethod("countMatches", c("ANY", "ANY"), .countMatches.default)
 ### The method below is implemented on top of order().
 ###
 
-### S3/S4 combo for sort.Vector
-.sort.Vector <- function(x, decreasing=FALSE, na.last=NA, by)
-{
-    if (!missing(by)) {
-        i <- orderBy(by, x, decreasing=decreasing, na.last=na.last)
-    } else {
-        i <- order(x, na.last=na.last, decreasing=decreasing)
-    }
-    extractROWS(x, i)
-}
 sort.Vector <- function(x, decreasing=FALSE, ...)
     sort(x, decreasing=decreasing, ...)
 setMethod("sort", "Vector", .sort.Vector)

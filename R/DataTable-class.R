@@ -221,6 +221,15 @@ setMethod("unique", "DataTable", unique.DataTable)
 ### Comparison methods.
 ###
 
+.sort.Vector <- function(x, decreasing=FALSE, na.last=NA, by)
+{
+    if (!missing(by)) {
+        i <- orderBy(by, x, decreasing=decreasing, na.last=na.last)
+    } else {
+        i <- order(x, na.last=na.last, decreasing=decreasing)
+    }
+    extractROWS(x, i)
+}
 setMethod("sort", "DataTable", .sort.Vector)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
