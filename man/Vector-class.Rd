@@ -78,7 +78,6 @@
 \alias{classNameForDisplay,AsIs-method}
 \alias{showAsCell}
 \alias{showAsCell,ANY-method}
-\alias{showAsCell,Vector-method}
 \alias{showAsCell,AsIs-method}
 
 \alias{parallelVectorNames}
