@@ -76,3 +76,4 @@ o FilterRules:
   - refactor, using ShortRead filter framework (becomes FilterList)
   - support subsetting DataFrame/RangedData directly
 
+
