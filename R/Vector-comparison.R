@@ -295,10 +295,6 @@ orderBy <- function(formula, x, decreasing=FALSE, na.last=TRUE) {
   do.call(order, c(decreasing=decreasing, na.last=na.last, values))
 }
 
-setMethod("xtfrm", "Vector", function(x) {
-    as.vector(rank(x, ties.method = "min", na.last = "keep"))
-})
-
 setMethod("rank", "Vector",
           function(x, na.last=TRUE,
                    ties.method=c("average", "first", "random", "max", "min"))
