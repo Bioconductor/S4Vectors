@@ -296,25 +296,23 @@ orderBy <- function(formula, x, decreasing=FALSE, na.last=TRUE) {
 }
 
 setMethod("rank", "Vector",
-          function(x, na.last=TRUE,
-                   ties.method=c("average", "first", "random", "max", "min"))
-          {
-            if (missing(ties.method)) {
-              ties.method <- "first"
-            }
-            ties.method <- match.arg(ties.method)
-            if (ties.method == "first") {
-              oo <- order(x, na.last=na.last)
-              ## 'ans' is the reverse permutation of 'oo'
-              ans <- integer(length(oo))
-              ans[oo] <- seq_len(length(oo))
-              ans
-            } else if (ties.method == "min") {
-              rank(x, na.last=na.last, ties.method="first")[selfmatch(x)]
-            } else {
-              stop("only tie methods \"first\" and \"min\" are supported")
-            }
-          })
+    function(x, na.last=TRUE,
+             ties.method=c("average", "first", "last", "random", "max", "min"))
+    {
+        ties.method <- match.arg(ties.method)
+        oo <- order(x, na.last=na.last)
+        ## 'ans' is the reverse permutation of 'oo'.
+        ans <- integer(length(oo))
+        ans[oo] <- seq_along(oo)
+        if (ties.method == "first")
+            return(ans)
+        ans <- ans[selfmatch(x)]
+        if (ties.method == "min")
+            return(ans)
+        ## Other ties methods.
+        rank(ans, ties.method=ties.method)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
