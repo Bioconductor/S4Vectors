@@ -113,7 +113,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_set_hbucket_val);
 
 /* AEbufs.c */
-	REGISTER_CCALLABLE(_get_new_buflength);
+	REGISTER_CCALLABLE(_increase_buflength);
 	REGISTER_CCALLABLE(_IntAE_get_nelt);
 	REGISTER_CCALLABLE(_IntAE_set_nelt);
 	REGISTER_CCALLABLE(_IntAE_set_val);
@@ -123,9 +123,8 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_IntAE_delete_at);
 	REGISTER_CCALLABLE(_IntAE_shift);
 	REGISTER_CCALLABLE(_IntAE_sum_and_shift);
-	REGISTER_CCALLABLE(_IntAE_append_shifted_vals);
 	REGISTER_CCALLABLE(_IntAE_qsort);
-	REGISTER_CCALLABLE(_IntAE_delete_adjdups);
+	REGISTER_CCALLABLE(_IntAE_uniq);
 	REGISTER_CCALLABLE(_new_INTEGER_from_IntAE);
 	REGISTER_CCALLABLE(_new_IntAE_from_INTEGER);
 	REGISTER_CCALLABLE(_new_IntAE_from_CHARACTER);
@@ -133,7 +132,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_IntAEAE_set_nelt);
 	REGISTER_CCALLABLE(_IntAEAE_insert_at);
 	REGISTER_CCALLABLE(_new_IntAEAE);
-	REGISTER_CCALLABLE(_IntAEAE_eltwise_append);
+	REGISTER_CCALLABLE(_IntAEAE_pappend);
 	REGISTER_CCALLABLE(_IntAEAE_shift);
 	REGISTER_CCALLABLE(_IntAEAE_sum_and_shift);
 	REGISTER_CCALLABLE(_new_LIST_from_IntAEAE);

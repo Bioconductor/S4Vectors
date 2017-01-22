@@ -976,7 +976,7 @@ static int compar_ints_for_desc_sort(const void *p1, const void *p2)
 }
 
 /* If efficiency matters, use _sort_ints() in radix mode instead. */
-void _sort_int_array(int *x, int nelt, int desc)
+void _sort_int_array(int *x, size_t nelt, int desc)
 {
 	int (*compar)(const void *, const void *);
 

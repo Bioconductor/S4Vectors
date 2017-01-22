@@ -47,14 +47,14 @@ struct htab {
  */
 
 typedef struct int_ae {
-	int _buflength;
-	int _nelt;
+	size_t _buflength;
+	size_t _nelt;
 	int *elts;
 } IntAE;
 
 typedef struct int_aeae {
-	int _buflength;
-	int _nelt;
+	size_t _buflength;
+	size_t _nelt;
 	IntAE **elts;
 } IntAEAE; 
 
@@ -64,26 +64,26 @@ typedef struct intpair_ae {
 } IntPairAE;
 
 typedef struct intpair_aeae {
-	int _buflength;
-	int _nelt;
+	size_t _buflength;
+	size_t _nelt;
 	IntPairAE **elts;
 } IntPairAEAE;
 
 typedef struct longlong_ae {
-	int _buflength;
-	int _nelt;
-	long long *elts;
+	size_t _buflength;
+	size_t _nelt;
+	long long int *elts;
 } LLongAE;
 
 typedef struct char_ae {
-	int _buflength;
-	int _nelt;
+	size_t _buflength;
+	size_t _nelt;
 	char *elts;
 } CharAE; 
 
 typedef struct char_aeae {
-	int _buflength;
-	int _nelt;
+	size_t _buflength;
+	size_t _nelt;
 	CharAE **elts;
 } CharAEAE; 
 

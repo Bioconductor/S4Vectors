@@ -38,7 +38,7 @@ int safe_int_mult(
 
 void sort_int_array(
 	int *x,
-	int nelt,
+	size_t nelt,
 	int desc
 );
 
@@ -167,13 +167,13 @@ void set_hbucket_val(
  * (see AEbufs.c)
  */
 
-int get_new_buflength(int buflength);
+size_t increase_buflength(size_t buflength);
 
-int IntAE_get_nelt(const IntAE *ae);
+size_t IntAE_get_nelt(const IntAE *ae);
 
-int IntAE_set_nelt(
+size_t IntAE_set_nelt(
 	IntAE *ae,
-	int nelt
+	size_t nelt
 );
 
 void IntAE_set_val(
@@ -183,29 +183,31 @@ void IntAE_set_val(
 
 void IntAE_insert_at(
 	IntAE *ae,
-	int at,
+	size_t at,
 	int val
 );
 
 IntAE *new_IntAE(
-	int buflength,
-	int nelt,
+	size_t buflength,
+	size_t nelt,
 	int val
 );
 
 void IntAE_append(
 	IntAE *ae,
 	const int *newvals,
-	int nnewval
+	size_t nnewval
 );
 
 void IntAE_delete_at(
 	IntAE *ae,
-	int at
+	size_t at,
+	size_t nelt
 );
 
 void IntAE_shift(
 	const IntAE *ae,
+	size_t offset,
 	int shift
 );
 
@@ -215,19 +217,16 @@ void IntAE_sum_and_shift(
 	int shift
 );
 
-void IntAE_append_shifted_vals(
-	IntAE *ae,
-	const int *newvals,
-	int nnewval,
-	int shift
-);
-
 void IntAE_qsort(
 	const IntAE *ae,
+	size_t offset,
 	int desc
 );
 
-void IntAE_delete_adjdups(IntAE *ae);
+void IntAE_uniq(
+	IntAE *ae,
+	size_t offset
+);
 
 SEXP new_INTEGER_from_IntAE(const IntAE *ae);
 
@@ -238,25 +237,25 @@ IntAE *new_IntAE_from_CHARACTER(
 	int keyshift
 );
 
-int IntAEAE_get_nelt(const IntAEAE *aeae);
+size_t IntAEAE_get_nelt(const IntAEAE *aeae);
 
-int IntAEAE_set_nelt(
+size_t IntAEAE_set_nelt(
 	IntAEAE *aeae,
-	int nelt
+	size_t nelt
 );
 
 void IntAEAE_insert_at(
 	IntAEAE *aeae,
-	int at,
+	size_t at,
 	IntAE *ae
 );
 
 IntAEAE *new_IntAEAE(
-	int buflength,
-	int nelt
+	size_t buflength,
+	size_t nelt
 );
 
-void IntAEAE_eltwise_append(
+void IntAEAE_pappend(
 	const IntAEAE *aeae1,
 	const IntAEAE *aeae2
 );
@@ -285,48 +284,48 @@ SEXP IntAEAE_toEnvir(
 	int keyshift
 );
 
-int IntPairAE_get_nelt(const IntPairAE *ae);
+size_t IntPairAE_get_nelt(const IntPairAE *ae);
 
-int IntPairAE_set_nelt(
+size_t IntPairAE_set_nelt(
 	IntPairAE *ae,
-	int nelt
+	size_t nelt
 );
 
 void IntPairAE_insert_at(
 	IntPairAE *ae,
-	int at,
+	size_t at,
 	int a,
 	int b
 );
 
 IntPairAE *new_IntPairAE(
-	int buflength,
-	int nelt
+	size_t buflength,
+	size_t nelt
 );
 
-int IntPairAEAE_get_nelt(const IntPairAEAE *aeae);
+size_t IntPairAEAE_get_nelt(const IntPairAEAE *aeae);
 
-int IntPairAEAE_set_nelt(
+size_t IntPairAEAE_set_nelt(
 	IntPairAEAE *aeae,
-	int nelt
+	size_t nelt
 );
 
 void IntPairAEAE_insert_at(
 	IntPairAEAE *aeae,
-	int at,
+	size_t at,
 	IntPairAE *ae
 );
 
 IntPairAEAE *new_IntPairAEAE(
-	int buflength,
-	int nelt
+	size_t buflength,
+	size_t nelt
 );
 
-int LLongAE_get_nelt(const LLongAE *ae);
+size_t LLongAE_get_nelt(const LLongAE *ae);
 
-int LLongAE_set_nelt(
+size_t LLongAE_set_nelt(
 	LLongAE *ae,
-	int nelt
+	size_t nelt
 );
 
 void LLongAE_set_val(
@@ -336,30 +335,30 @@ void LLongAE_set_val(
 
 void LLongAE_insert_at(
 	LLongAE *ae,
-	int at,
+	size_t at,
 	long long val
 );
 
 LLongAE *new_LLongAE(
-	int buflength,
-	int nelt,
+	size_t buflength,
+	size_t nelt,
 	long long val
 );
 
-int CharAE_get_nelt(const CharAE *ae);
+size_t CharAE_get_nelt(const CharAE *ae);
 
-int CharAE_set_nelt(
+size_t CharAE_set_nelt(
 	CharAE *ae,
-	int nelt
+	size_t nelt
 );
 
 void CharAE_insert_at(
 	CharAE *ae,
-	int at,
+	size_t at,
 	char c
 );
 
-CharAE *new_CharAE(int buflength);
+CharAE *new_CharAE(size_t buflength);
 
 CharAE *new_CharAE_from_string(const char *string);
 
@@ -370,30 +369,30 @@ void append_string_to_CharAE(
 
 void CharAE_delete_at(
 	CharAE *ae,
-	int at,
-	int nelt
+	size_t at,
+	size_t nelt
 );
 
 SEXP new_RAW_from_CharAE(const CharAE *ae);
 
 SEXP new_LOGICAL_from_CharAE(const CharAE *ae);
 
-int CharAEAE_get_nelt(const CharAEAE *aeae);
+size_t CharAEAE_get_nelt(const CharAEAE *aeae);
 
-int CharAEAE_set_nelt(
+size_t CharAEAE_set_nelt(
 	CharAEAE *aeae,
-	int nelt
+	size_t nelt
 );
 
 void CharAEAE_insert_at(
 	CharAEAE *aeae,
-	int at,
+	size_t at,
 	CharAE *ae
 );
 
 CharAEAE *new_CharAEAE(
-	int buflength,
-	int nelt
+	size_t buflength,
+	size_t nelt
 );
 
 void append_string_to_CharAEAE(
