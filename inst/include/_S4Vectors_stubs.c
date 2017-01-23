@@ -338,7 +338,7 @@ DEFINE_CCALLABLE_STUB(CharAE *, new_CharAE_from_string,
 	(            string)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(append_string_to_CharAE,
+DEFINE_NOVALUE_CCALLABLE_STUB(CharAE_append_string,
 	(CharAE *ae, const char *string),
 	(        ae,             string)
 )
@@ -378,7 +378,7 @@ DEFINE_CCALLABLE_STUB(CharAEAE *, new_CharAEAE,
 	(       buflength,        nelt)
 )
 
-DEFINE_NOVALUE_CCALLABLE_STUB(append_string_to_CharAEAE,
+DEFINE_NOVALUE_CCALLABLE_STUB(CharAEAE_append_string,
 	(CharAEAE *aeae, const char *string),
 	(          aeae,             string)
 )

@@ -1103,7 +1103,7 @@ CharAE *_new_CharAE_from_string(const char *string)
 	return ae;
 }
 
-void _append_string_to_CharAE(CharAE *ae, const char *string)
+void _CharAE_append_string(CharAE *ae, const char *string)
 {
 	size_t nnewval, ae_nelt, new_nelt;
 	char *dest;
@@ -1309,7 +1309,7 @@ CharAEAE *_new_CharAEAE(size_t buflength, size_t nelt)
 	return aeae;
 }
 
-void _append_string_to_CharAEAE(CharAEAE *aeae, const char *string)
+void _CharAEAE_append_string(CharAEAE *aeae, const char *string)
 {
 	CharAE *ae;
 

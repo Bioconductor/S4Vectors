@@ -156,7 +156,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_CharAE_insert_at);
 	REGISTER_CCALLABLE(_new_CharAE);
 	REGISTER_CCALLABLE(_new_CharAE_from_string);
-	REGISTER_CCALLABLE(_append_string_to_CharAE);
+	REGISTER_CCALLABLE(_CharAE_append_string);
 	REGISTER_CCALLABLE(_CharAE_delete_at);
 	REGISTER_CCALLABLE(_new_RAW_from_CharAE);
 	REGISTER_CCALLABLE(_new_LOGICAL_from_CharAE);
@@ -164,7 +164,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_CharAEAE_set_nelt);
 	REGISTER_CCALLABLE(_CharAEAE_insert_at);
 	REGISTER_CCALLABLE(_new_CharAEAE);
-	REGISTER_CCALLABLE(_append_string_to_CharAEAE);
+	REGISTER_CCALLABLE(_CharAEAE_append_string);
 	REGISTER_CCALLABLE(_new_CHARACTER_from_CharAEAE);
 
 /* SEXP_utils.c */

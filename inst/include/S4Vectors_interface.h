@@ -362,7 +362,7 @@ CharAE *new_CharAE(size_t buflength);
 
 CharAE *new_CharAE_from_string(const char *string);
 
-void append_string_to_CharAE(
+void CharAE_append_string(
 	CharAE *ae,
 	const char *string
 );
@@ -395,7 +395,7 @@ CharAEAE *new_CharAEAE(
 	size_t nelt
 );
 
-void append_string_to_CharAEAE(
+void CharAEAE_append_string(
 	CharAEAE *aeae,
 	const char *string
 );
