@@ -19,7 +19,8 @@
 size_t _increase_buflength(size_t buflength)
 {
 	if (buflength >= MAX_BUFLENGTH)
-		error("_increase_buflength(): MAX_BUFLENGTH reached");
+		error("S4Vectors internal error in _increase_buflength(): "
+		      "MAX_BUFLENGTH reached");
 	if (buflength == 0)
 		return 128;
 	if (buflength <= MAX_BUFLENGTH_INC)
@@ -252,7 +253,7 @@ void _IntAE_sum_and_shift(const IntAE *ae1, const IntAE *ae2, int shift)
 	ae1_nelt = _IntAE_get_nelt(ae1);
 	ae2_nelt = _IntAE_get_nelt(ae2);
 	if (ae1_nelt != ae2_nelt)
-		error("S4Vectors internal error in _IntAE_sum(): "
+		error("S4Vectors internal error in _IntAE_sum_and_shift(): "
 		      "the 2 IntAE buffers to sum must have the same length");
 	elt1_p = ae1->elts;
 	elt2_p = ae2->elts;
