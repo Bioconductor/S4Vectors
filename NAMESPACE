@@ -16,6 +16,7 @@ import(BiocGenerics)
 
 exportClasses(
     characterORNULL, vectorORfactor,
+    Linteger,
     DataTable,
     NSBS,
     Annotated,
@@ -39,12 +40,20 @@ S3method(aggregate, Vector)
 
 S3method(anyDuplicated, NSBS)
 
+S3method(as.character, Linteger)
+
 S3method(as.data.frame, Vector)
 S3method(as.data.frame, DataTable)
 
+S3method(as.integer, Linteger)
+
 S3method(as.list, Vector)
 
+S3method(as.logical, Linteger)
+
 S3method(as.matrix, Vector)
+
+S3method(as.numeric, Linteger)
 
 S3method(as.vector, Rle)
 
@@ -96,10 +105,20 @@ export(
 
     anyDuplicated.NSBS,
 
+    as.character.Linteger,
+
     as.data.frame.Vector,
     as.data.frame.DataTable,
 
+    as.integer.Linteger,
+
     as.list.Vector,
+
+    as.logical.Linteger,
+
+    as.matrix.Vector,
+
+    as.numeric.Linteger,
 
     as.vector.Rle,
 
@@ -151,14 +170,15 @@ exportMethods(
     colnames, "colnames<-",
     dimnames, "dimnames<-",
     is.na, anyNA,
-    as.logical, as.integer, as.numeric, as.complex, as.character, as.raw,
-    as.factor,
+    as.logical, as.integer, as.numeric,
+    as.complex, as.character, as.raw, as.factor,
     as.list, as.data.frame,
     as.matrix, as.table,
     "[", "[<-",
     subset,
     c, append,
     "==", "!=", "<=", ">=", "<", ">",
+    "Ops",
     "!",
     match, duplicated, unique, anyDuplicated, "%in%",
     order, sort, is.unsorted, rank, xtfrm,
@@ -234,6 +254,9 @@ export(
     safeExplode,
     strsplitAsListOfIntegerVectors,
     svn.time,
+
+    ## Linteger-class.R:
+    Linteger, as.Linteger,
 
     ## Hits-class.R:
     queryHits, subjectHits,

@@ -19,9 +19,29 @@ int _safe_int_add(
 	int y
 );
 
+int _safe_int_subtract(
+	int x,
+	int y
+);
+
 int _safe_int_mult(
 	int x,
 	int y
+);
+
+long long int _safe_llint_add(
+	long long int x,
+	long long int y
+);
+
+long long int _safe_llint_subtract(
+	long long int x,
+	long long int y
+);
+
+long long int _safe_llint_mult(
+	long long int x,
+	long long int y
 );
 
 
@@ -703,6 +723,25 @@ SEXP svn_time();
 SEXP top_prenv(SEXP nm, SEXP env);
 
 SEXP top_prenv_dots(SEXP env);
+
+
+/* Linteger_class.c */
+
+SEXP new_Linteger_bytes_from_LOGICAL(SEXP x);
+
+SEXP new_Linteger_bytes_from_INTEGER(SEXP x);
+
+SEXP new_Linteger_bytes_from_NUMERIC(SEXP x);
+
+SEXP new_Linteger_bytes_from_CHARACTER(SEXP x);
+
+SEXP new_LOGICAL_from_Linteger_bytes(SEXP bytes);
+
+SEXP new_INTEGER_from_Linteger_bytes(SEXP bytes);
+
+SEXP new_NUMERIC_from_Linteger_bytes(SEXP bytes);
+
+SEXP new_CHARACTER_from_Linteger_bytes(SEXP bytes);
 
 
 /* Hits_class.c */

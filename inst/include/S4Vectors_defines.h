@@ -18,6 +18,7 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
+#define	NA_LINTEGER	LLONG_MIN
 
 /* Hash table -- modified from R_HOME/src/main/unique.c */
 struct htab {
@@ -112,10 +113,10 @@ typedef struct doubles_holder {
  * Hit selection modes.
  */
 
-#define ALL_HITS		1
-#define FIRST_HIT		2
-#define LAST_HIT		3
-#define ARBITRARY_HIT		4
-#define COUNT_HITS		5
+#define ALL_HITS	1
+#define FIRST_HIT	2
+#define LAST_HIT	3
+#define ARBITRARY_HIT	4
+#define COUNT_HITS	5
 
 #endif
