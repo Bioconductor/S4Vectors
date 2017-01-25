@@ -117,6 +117,9 @@ x <- as.Linteger(1:21)
 prod(x)  # result is out of Linteger range (+/-9.223e18)
 prod(as.numeric(x))
 
+x <- as.Linteger(1:75000)
+sum(x * x * x) == sum(x) * sum(x)
+
 ## Note that max(), min() and range() *always* return an Linteger vector
 ## when called on an Linteger vector, even when the vector is empty:
 max(Linteger())  # NA with no warning
@@ -136,6 +139,19 @@ is.atomic(Linteger(10))     # FALSE
 
 ## A long long int uses 8 bytes (i.e. 64 bits) in C:
 .Machine$sizeof.longlong
+
+## ---------------------------------------------------------------------
+## GOING FROM STRINGS TO INTEGERS
+## ---------------------------------------------------------------------
+
+## as.integer() behaves like as.integer(as.double()) on a character
+## vector. With the following consequence:
+s <- "-2.9999999999999999"
+as.integer(s)   # -3
+
+## as.Linteger() converts the string *directly* to Linteger, without
+## coercing to double first:
+as.Linteger(s)  # decimal part ignored
 
 ## ---------------------------------------------------------------------
 ## GOING FROM DOUBLE-PRECISION VALUES TO INTEGERS AND VICE-VERSA
