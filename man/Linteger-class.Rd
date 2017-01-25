@@ -34,6 +34,8 @@
 \alias{Ops,Linteger,numeric-method}
 \alias{Ops,numeric,Linteger-method}
 
+\alias{Summary,Linteger-method}
+
 \title{Linteger vectors}
 
 \description{
@@ -72,18 +74,20 @@ is.Linteger(x)
 
   Coercions from/to logical, integer, double, and character are supported.
 
-  Operations from the \code{\link{Arith}} and \code{\link{Compare}} groups
-  are supported.
+  Operations from the \code{\link{Arith}}, \code{\link{Compare}} and
+  \code{\link{Summary}} groups are supported.
 
   More operations coming soon...
 }
+
+\author{Hervé Pagès}
 
 \seealso{
   \itemize{
     \item \link[base]{integer} vectors in base R.
 
-    \item The \code{\link{Arith}} and \code{\link{Compare}} group generics
-          in the \pkg{methods} package.
+    \item The \code{\link{Arith}}, \code{\link{Compare}} and
+          \code{\link{Summary}} group generics in the \pkg{methods} package.
   }
 }
 
@@ -92,16 +96,36 @@ is.Linteger(x)
 ## SIMPLE EXAMPLES
 ## ---------------------------------------------------------------------
 
-## A long long int uses 8 bytes (i.e. 64 bits) in C:
-.Machine$sizeof.longlong
-
 Linteger()
 Linteger(10)
+
+as.Linteger(3e9)
+as.Linteger("3000000000")
 
 x <- as.Linteger(1:10 * 111111111)
 x * x
 5 * x   # result as vector of doubles (i.e. 'x' coerced to double)
 5L * x  # result as Linteger vector (i.e. 5L coerced to Linteger vector)
+max(x)
+min(x)
+range(x)
+sum(x)
+
+x <- as.Linteger(1:20)
+prod(x)
+x <- as.Linteger(1:21)
+prod(x)  # result is out of Linteger range (+/-9.223e18)
+prod(as.numeric(x))
+
+## Note that max(), min() and range() *always* return an Linteger vector
+## when called on an Linteger vector, even when the vector is empty:
+max(Linteger())  # NA with no warning
+min(Linteger())  # NA with no warning
+
+## This differs from how max(), min() and range() behave on an empty
+## integer vector:
+max(integer())  # -Inf with a warning
+min(integer())  #  Inf with a warning
 
 ## Linteger is an S4 class:
 class(Linteger(10))
@@ -110,23 +134,40 @@ storage.mode(Linteger(10))  # S4
 is.vector(Linteger(10))     # FALSE
 is.atomic(Linteger(10))     # FALSE
 
-as.Linteger(3e9)
-as.Linteger("3000000000")
+## A long long int uses 8 bytes (i.e. 64 bits) in C:
+.Machine$sizeof.longlong
+
+## ---------------------------------------------------------------------
+## GOING FROM DOUBLE-PRECISION VALUES TO INTEGERS AND VICE-VERSA
+## ---------------------------------------------------------------------
 
 ## Be aware that a double-precision value is not guaranteed to represent
 ## exactly an integer > 2^53. This can cause some surprises:
-as.Linteger(2^53)
-as.Linteger(2^53 + 1)  # same as 'as.Linteger(2^53)'
+2^53 == 2^53 + 1  # TRUE, yep!
+
+## And therefore:
+as.Linteger(2^53) == as.Linteger(2^53 + 1)  # also TRUE
 
 ## This can be even more disturbing when passing a big literal integer
 ## value because the R parser will turn it into a double-precision value
 ## before passing it to as.Linteger():
-as.Linteger(9007199254740992)  # as.Linteger(2^53)
-as.Linteger(9007199254740993)  # as.Linteger(2^53 + 1)
+x1 <- as.Linteger(9007199254740992)  # same as as.Linteger(2^53)
+x1
+x2 <- as.Linteger(9007199254740993)  # same as as.Linteger(2^53 + 1)
+x2
+x1 == x2  # still TRUE
 
-## No precision is lost when using a string literal instead:
-as.Linteger("9007199254740992")
-as.Linteger("9007199254740993")
+## However, no precision is lost if a string literal is used instead:
+x1 <- as.Linteger("9007199254740992")
+x1
+x2 <- as.Linteger("9007199254740993")
+x2
+x1 == x2  # FALSE
+x2 - x1
+
+d1 <- as.double(x1)
+d2 <- as.double(x2)  # warning!
+d1 == d2  # TRUE
 
 ## ---------------------------------------------------------------------
 ## SANITY CHECKS
@@ -166,6 +207,18 @@ stopifnot(identical(x < y, xx < yy))
 stopifnot(identical(y < x, yy < xx))
 stopifnot(identical(x > y, xx > yy))
 stopifnot(identical(y > x, yy > xx))
+
+## Operations from "Summary" group:
+stopifnot(identical(max(y), as.integer(max(yy))))
+stopifnot(identical(max(y, na.rm=TRUE), as.integer(max(yy, na.rm=TRUE))))
+stopifnot(identical(min(y), as.integer(min(yy))))
+stopifnot(identical(min(y, na.rm=TRUE), as.integer(min(yy, na.rm=TRUE))))
+stopifnot(identical(range(y), as.integer(range(yy))))
+stopifnot(identical(range(y, na.rm=TRUE), as.integer(range(yy, na.rm=TRUE))))
+stopifnot(identical(sum(y), as.integer(sum(yy))))
+stopifnot(identical(sum(y, na.rm=TRUE), as.integer(sum(yy, na.rm=TRUE))))
+stopifnot(identical(prod(y), as.double(prod(yy))))
+stopifnot(identical(prod(y, na.rm=TRUE), as.double(prod(yy, na.rm=TRUE))))
 }
 
 \keyword{methods}

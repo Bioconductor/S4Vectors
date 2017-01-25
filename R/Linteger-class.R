@@ -155,7 +155,7 @@ setMethod("is.na", "Linteger", function(x) is.na(as.logical(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "Ops" group generics
+### Operations from "Ops" group
 ###
 
 setMethod("Ops", c("Linteger", "Linteger"),
@@ -193,6 +193,24 @@ setMethod("Ops", c("numeric", "Linteger"),
             e2 <- suppressWarnings(as.double(e2))
         }
         callGeneric()
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Operations from "Summary" group
+###
+
+setMethod("Summary", "Linteger",
+    function(x, ..., na.rm=FALSE)
+    {
+        if (length(list(...)) != 0L)
+            stop(wmsg("\"", .Generic, "\" method for Linteger objects ",
+                      "takes only one object"))
+        if (!isTRUEorFALSE(na.rm))
+            stop("'na.rm' must be TRUE or FALSE")
+        .Call("Linteger_Summary", .Generic, x@bytes, na.rm=na.rm,
+              PACKAGE="S4Vectors")
     }
 )
 

@@ -178,7 +178,7 @@ exportMethods(
     subset,
     c, append,
     "==", "!=", "<=", ">=", "<", ">",
-    "Ops",
+    "Ops", "Summary",
     "!",
     match, duplicated, unique, anyDuplicated, "%in%",
     order, sort, is.unsorted, rank, xtfrm,

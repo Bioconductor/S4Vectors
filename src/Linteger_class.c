@@ -111,8 +111,8 @@ static void from_doubles_to_llints(const double *from, long long int *to,
 		    from_elt < (double) -LLONG_MAX)
 		{
 			if (first_time) {
-				warning("out-of-range values coerced to "
-					"NAs in coercion to Linteger");
+				warning("out-of-range values coerced to NAs "
+					"in coercion to Linteger");
 				first_time = 0;
 			}
 			*to = NA_LINTEGER;
@@ -123,15 +123,19 @@ static void from_doubles_to_llints(const double *from, long long int *to,
 	return;
 }
 
-static long long int scan_llint(const char *s)
+/* Return 1 if the string to parse 's' contains a number that is syntactically
+   correct AND cannot be represented by a long long int (overflow).
+   Otherwise return 0. */
+static int scan_llint(const char *s, long long int *out)
 {
 	char c, sign;
 	long long int val;
 
+	*out = NA_LINTEGER;
 	/* Skip leading spaces. */
 	while (isspace(c = *(s++))) {};
-	if (c == '\0')
-		return NA_LINTEGER;
+	if (c == '\0') 
+		return 0;  /* syntactically incorrect */
 	/* Scan unary +/- sign. */
 	if (c == '+' || c == '-') {
 		sign = c;
@@ -140,50 +144,65 @@ static long long int scan_llint(const char *s)
 		sign = '+';
 	}
 	if (!isdigit(c))
-		return NA_LINTEGER;
+		return 0;  /* syntactically incorrect */
 	/* Scan digits. */
+	_reset_ovflow_flag();
 	val = c - '0';
 	while (isdigit(c = *(s++))) {
-		val *= 10LL;
-		val += c - '0';
+		val = _safe_llint_mult(val, 10LL);
+		val = _safe_llint_add(val, (long long int) c - '0');
 	}
 	if (sign == '-')
 		val = -val;
 	if (c == '\0')
-		return val;
+		goto syntactically_correct;
 	/* Scan decimal part. */
 	if (c == '.') {
 		/* Decimal part is ignored. */
 		while (isdigit(c = *(s++))) {};
 		if (c == '\0')
-			return val;
+			goto syntactically_correct;
 	}
 	/* Skip trailing spaces. */
 	if (isspace(c))
 		while (isspace(c = *(s++))) {};
-	return c == '\0' ? val : NA_LINTEGER;
+	if (c != '\0')
+		return 0;  /* syntactically incorrect */
+	syntactically_correct:
+	*out = val;
+	return _get_ovflow_flag();
 }
 
 static void from_STRSXP_to_llints(SEXP from, long long int *to)
 {
 	R_xlen_t n, i;
-	int first_time;
+	int first_time1, first_time2;
 	SEXP from_elt;
 
 	n = XLENGTH(from);
-	first_time = 1;
+	first_time1 = first_time2 = 1;
 	for (i = 0; i < n; i++, to++) {
 		from_elt = STRING_ELT(from, i);
 		if (from_elt == NA_STRING) {
 			*to = NA_LINTEGER;
 			continue;
 		}
-		*to = scan_llint(CHAR(from_elt));
+		if (scan_llint(CHAR(from_elt), to)) {
+			/* syntactically correct number but overflow */
+			if (first_time1) {
+				warning("out-of-range values coerced to NAs "
+					"in coercion to Linteger");
+				first_time1 = 0;
+			}
+			continue;
+		}
 		if (*to != NA_LINTEGER)
 			continue;
-		if (first_time) {
-			warning("NAs introduced by coercion");
-			first_time = 0;
+		if (first_time2) {
+			/* syntactically incorrect number */
+			warning("syntactically incorrect numbers "
+				"coerced to NAs in coercion to Linteger");
+			first_time2 = 0;
 		}
 	}
 	return;
@@ -224,8 +243,8 @@ static void from_llints_to_ints(const long long int *from, int *to,
 		    from_elt < (long long int) -INT_MAX)
 		{
 			if (first_time) {
-				warning("out-of-range values coerced to "
-					"NAs in coercion to integer");
+				warning("out-of-range values coerced to NAs "
+					"in coercion to integer");
 				first_time = 0;
 			}
 			*to = NA_INTEGER;
@@ -253,8 +272,8 @@ static void from_llints_to_doubles(const long long int *from, double *to,
 		*to = (double) from_elt;
 		if (first_time && (long long int) *to != from_elt) {
 			warning("non reversible coercion to double "
-				"(integer values > 2^53 cannot be exactly "
-                                "represented by double values)");
+				"(integer values > 2^53 cannot be exactly\n"
+                                "  represented by double values)");
 			first_time = 0;
 		}
 	}
@@ -402,7 +421,7 @@ SEXP new_CHARACTER_from_Linteger_bytes(SEXP bytes)
 
 
 /****************************************************************************
- * "Ops" group generics
+ * Operations from "Ops" group
  */
 
 static void print_not_multiple_warning()
@@ -455,34 +474,34 @@ static double llint_pow_as_double(long long int x, long long int y)
 	return pow((double) x, (double) y);
 }
 
-typedef long long int (*Op1FunType)(long long int x, long long int y);
-typedef double (*Op2FunType)(long long int x, long long int y);
+typedef long long int (*Arith1FunType)(long long int x, long long int y);
+typedef double (*Arith2FunType)(long long int x, long long int y);
 
-static Op1FunType get_op1_fun(const char *op)
+static Arith1FunType get_arith1_fun(const char *generic)
 {
-	if (strcmp(op, "+") == 0)
+	if (strcmp(generic, "+") == 0)
 		return _safe_llint_add;
-	if (strcmp(op, "-") == 0)
+	if (strcmp(generic, "-") == 0)
 		return _safe_llint_subtract;
-	if (strcmp(op, "*") == 0)
+	if (strcmp(generic, "*") == 0)
 		return _safe_llint_mult;
-	if (strcmp(op, "%/%") == 0)
+	if (strcmp(generic, "%/%") == 0)
 		return llint_div;
-	if (strcmp(op, "%%") == 0)
+	if (strcmp(generic, "%%") == 0)
 		return llint_mod;
 	return NULL;
 }
 
-static Op2FunType get_op2_fun(const char *op)
+static Arith2FunType get_arith2_fun(const char *generic)
 {
-	if (strcmp(op, "/") == 0)
+	if (strcmp(generic, "/") == 0)
 		return llint_div_as_double;
-	if (strcmp(op, "^") == 0)
+	if (strcmp(generic, "^") == 0)
 		return llint_pow_as_double;
 	return NULL;
 }
 
-static void llints_op1(Op1FunType op_fun,
+static void llints_arith1(Arith1FunType arith_fun,
 		const long long int *x, R_xlen_t x_len,
 		const long long int *y, R_xlen_t y_len,
 		long long int *out, R_xlen_t out_len)
@@ -495,14 +514,14 @@ static void llints_op1(Op1FunType op_fun,
 			i = 0;
 		if (j >= y_len)
 			j = 0;
-		out[k] = op_fun(x[i], y[j]);
+		out[k] = arith_fun(x[i], y[j]);
 	}
 	if (_get_ovflow_flag())
 		warning("NAs produced by Linteger overflow");
 	return;
 }
 
-static void llints_op2(Op2FunType op_fun,
+static void llints_arith2(Arith2FunType arith_fun,
 		const long long int *x, R_xlen_t x_len,
 		const long long int *y, R_xlen_t y_len,
 		double *out, R_xlen_t out_len)
@@ -514,7 +533,7 @@ static void llints_op2(Op2FunType op_fun,
 			i = 0;
 		if (j >= y_len)
 			j = 0;
-		out[k] = op_fun(x[i], y[j]);
+		out[k] = arith_fun(x[i], y[j]);
 	}
 	return;
 }
@@ -527,24 +546,24 @@ static void llints_op2(Op2FunType op_fun,
 #define	LT_OP	5  /* less than */
 #define	GT_OP	6  /* greater than */
 
-static int get_op3(const char *op)
+static int get_compare_op(const char *generic)
 {
-	if (strcmp(op, "==") == 0)
+	if (strcmp(generic, "==") == 0)
 		return EQ_OP;
-	if (strcmp(op, "!=") == 0)
+	if (strcmp(generic, "!=") == 0)
 		return NEQ_OP;
-	if (strcmp(op, "<=") == 0)
+	if (strcmp(generic, "<=") == 0)
 		return LEQ_OP;
-	if (strcmp(op, ">=") == 0)
+	if (strcmp(generic, ">=") == 0)
 		return GEQ_OP;
-	if (strcmp(op, "<") == 0)
+	if (strcmp(generic, "<") == 0)
 		return LT_OP;
-	if (strcmp(op, ">") == 0)
+	if (strcmp(generic, ">") == 0)
 		return GT_OP;
 	return 0;
 }
 
-static void llints_op3(int op,
+static void llints_compare(int op,
 		const long long int *x, R_xlen_t x_len,
 		const long long int *y, R_xlen_t y_len,
 		int *out, R_xlen_t out_len)
@@ -592,10 +611,10 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1_bytes, SEXP e2_bytes)
 {
 	const long long int *x, *y;
 	R_xlen_t x_len, y_len, ans_len;
-	const char *op;
-	Op1FunType op1_fun;
-	Op2FunType op2_fun;
-	int op3;
+	const char *generic;
+	Arith1FunType arith1_fun;
+	Arith2FunType arith2_fun;
+	int compare_op;
 	SEXP ans;
 
 	x = (const long long int *) RAW(e1_bytes);
@@ -613,37 +632,149 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1_bytes, SEXP e2_bytes)
 		if (y_len % x_len != 0)
 			print_not_multiple_warning();
 	}
-	op = CHAR(STRING_ELT(Generic, 0));
+	generic = CHAR(STRING_ELT(Generic, 0));
 
 	/* Operations from "Arith" group */
-	op1_fun = get_op1_fun(op);
-	if (op1_fun != NULL) {
+	arith1_fun = get_arith1_fun(generic);
+	if (arith1_fun != NULL) {
 		PROTECT(ans = NEW_LINTEGER(ans_len));
-		llints_op1(op1_fun, x, x_len, y, y_len,
-				    LINTEGER(ans), ans_len);
+		llints_arith1(arith1_fun, x, x_len, y, y_len,
+					  LINTEGER(ans), ans_len);
 		UNPROTECT(1);
 		return ans;
 	}
-	op2_fun = get_op2_fun(op);
-	if (op2_fun != NULL) {
+	arith2_fun = get_arith2_fun(generic);
+	if (arith2_fun != NULL) {
 		PROTECT(ans = NEW_NUMERIC(ans_len));
-		llints_op2(op2_fun, x, x_len, y, y_len,
-				    REAL(ans), ans_len);
+		llints_arith2(arith2_fun, x, x_len, y, y_len,
+					  REAL(ans), ans_len);
 		UNPROTECT(1);
 		return ans;
 	}
 
 	/* Operations from "Compare" group */
-	op3 = get_op3(op);
-	if (op3 != 0) {
+	compare_op = get_compare_op(generic);
+	if (compare_op != 0) {
 		PROTECT(ans = NEW_LOGICAL(ans_len));
-		llints_op3(op3, x, x_len, y, y_len,
-				LOGICAL(ans), ans_len);
+		llints_compare(compare_op, x, x_len, y, y_len,
+					   LOGICAL(ans), ans_len);
 		UNPROTECT(1);
 		return ans;
 	}
 
-	error("\"%s\": operation not supported on Linteger objects", op);
+	error("\"%s\": operation not supported on Linteger objects", generic);
+	return R_NilValue;
+}
+
+
+/****************************************************************************
+ * Operations from "Summary" group
+ */
+
+#define	MAX_OP	1
+#define	MIN_OP	2
+#define	SUM_OP	3
+#define	PROD_OP	4
+
+static int get_summary_op(const char *generic)
+{
+	if (strcmp(generic, "max") == 0)
+		return MAX_OP;
+	if (strcmp(generic, "min") == 0)
+		return MIN_OP;
+	if (strcmp(generic, "sum") == 0)
+		return SUM_OP;
+	if (strcmp(generic, "prod") == 0)
+		return PROD_OP;
+	return 0;
+}
+
+static long long int llints_summary(int op,
+		const long long int *in, R_xlen_t in_len, int na_rm)
+{
+	R_xlen_t i;
+	long long int res, in_elt;
+
+	switch (op) {
+		case MAX_OP:
+		case MIN_OP:
+			res = NA_LINTEGER;
+			break;
+		case SUM_OP:
+			res = 0LL;
+			break;
+		case PROD_OP:
+			res = 1LL;
+			break;
+	}
+	for (i = 0; i < in_len; i++) {
+		in_elt = in[i];
+		if (in_elt == NA_LINTEGER) {
+			if (na_rm)
+				continue;
+			return NA_LINTEGER;
+		}
+		switch (op) {
+			case MAX_OP:
+				if (res == NA_LINTEGER || in_elt > res)
+					res = in_elt;
+				break;
+			case MIN_OP:
+				if (res == NA_LINTEGER || in_elt < res)
+					res = in_elt;
+				break;
+			case SUM_OP:
+				res = _safe_llint_add(res, in_elt);
+				if (res == NA_LINTEGER) {
+					warning("Linteger overflow - "
+						"use sum(as.numeric(.))");
+					return res;
+				}
+				break;
+			case PROD_OP:
+				res = _safe_llint_mult(res, in_elt);
+				if (res == NA_LINTEGER) {
+					warning("Linteger overflow - "
+						"use prod(as.numeric(.))");
+					return res;
+				}
+				break;
+		}
+	}
+	return res;
+}
+
+SEXP Linteger_Summary(SEXP Generic, SEXP x_bytes, SEXP na_rm)
+{
+	const long long int *in;
+	R_xlen_t in_len;
+	const char *generic;
+	int summary_op;
+	SEXP ans;
+
+	in = (const long long int *) RAW(x_bytes);
+	in_len = XLENGTH(x_bytes) / BYTES_PER_LINTEGER;
+	generic = CHAR(STRING_ELT(Generic, 0));
+
+	summary_op = get_summary_op(generic);
+	if (summary_op != 0) {
+		PROTECT(ans = NEW_LINTEGER(1));
+		LINTEGER(ans)[0] = llints_summary(summary_op, in, in_len,
+						  LOGICAL(na_rm)[0]);
+		UNPROTECT(1);
+		return ans;
+	}
+	if (strcmp(generic, "range") == 0) {
+		PROTECT(ans = NEW_LINTEGER(2));
+		LINTEGER(ans)[0] = llints_summary(MIN_OP, in, in_len,
+						  LOGICAL(na_rm)[0]);
+		LINTEGER(ans)[1] = llints_summary(MAX_OP, in, in_len,
+						  LOGICAL(na_rm)[0]);
+		UNPROTECT(1);
+		return ans;
+	}
+
+	error("\"%s\": operation not supported on Linteger objects", generic);
 	return R_NilValue;
 }
 
