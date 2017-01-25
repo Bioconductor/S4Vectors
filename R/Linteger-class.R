@@ -10,26 +10,20 @@
 ### We don't support names for now. We will when we need them.
 setClass("Linteger", representation(bytes="raw"))
 
+is.Linteger <- function(x) is(x, "Linteger")
+
 .BYTES_PER_LINTEGER <- .Machine$sizeof.longlong
 
 setMethod("length", "Linteger",
     function(x) length(x@bytes) %/% .BYTES_PER_LINTEGER
 )
 
-Linteger <- function(length=0L)
-{
-    if (!isSingleNumber(length) || length < 0L)
-        stop("invalid 'length' argument")
-    ans_bytes <- raw(length * .BYTES_PER_LINTEGER)
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coerce
 ###
 
-### Called from the .onLoad hook in zzz.R
+### Called from the .onLoad() hook in zzz.R
 from_logical_to_Linteger <- function(from)
 {
     ans_bytes <- .Call2("new_Linteger_bytes_from_LOGICAL", from,
@@ -98,6 +92,43 @@ setMethod("as.character", "Linteger", as.character.Linteger)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor
+###
+
+.MAX_VECTOR_LENGTH <- 2^52  # see R_XLEN_T_MAX in Rinternals.h
+
+### Return a single double value.
+.normarg_vector_length <- function(length=0L, max_length=.MAX_VECTOR_LENGTH)
+{
+    if (is.Linteger(length)) {
+        if (length(length) != 1L || is.na(length) || length < as.Linteger(0L))
+            stop("invalid 'length' argument")
+        if (length > as.Linteger(max_length))
+            stop("'length' is too big")
+        return(as.double(length))
+    }
+    if (!isSingleNumber(length) || length < 0L)
+        stop("invalid 'length' argument")
+    if (is.integer(length)) {
+        length <- as.double(length)
+    } else {
+        length <- trunc(length)
+    }
+    if (length > max_length)
+        stop("'length' is too big")
+    length
+}
+
+Linteger <- function(length=0L)
+{
+    max_length <- .MAX_VECTOR_LENGTH / .BYTES_PER_LINTEGER
+    length <- .normarg_vector_length(length, max_length=max_length)
+    ans_bytes <- raw(length * .BYTES_PER_LINTEGER)
+    new2("Linteger", bytes=ans_bytes, check=FALSE)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Display
 ###
 
@@ -117,10 +148,15 @@ setMethod("show", "Linteger", function(object) .show_Linteger(object))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### "Ops" group generics
+### is.na(), anyNA()
 ###
 
 setMethod("is.na", "Linteger", function(x) is.na(as.logical(x)))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### "Ops" group generics
+###
 
 setMethod("Ops", c("Linteger", "Linteger"),
     function(e1, e2)

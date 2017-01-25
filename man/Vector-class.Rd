@@ -282,7 +282,7 @@
 }
 
 \examples{
-  showClass("Vector")  # shows (some of) the known subclasses
+showClass("Vector")  # shows (some of) the known subclasses
 }
 
 \keyword{methods}

@@ -253,8 +253,8 @@ static void from_llints_to_doubles(const long long int *from, double *to,
 		*to = (double) from_elt;
 		if (first_time && (long long int) *to != from_elt) {
 			warning("non reversible coercion to double "
-				"(a double is not guaranteed to represent "
-				"exactly a long long int > 2^53)");
+				"(integer values > 2^53 cannot be exactly "
+                                "represented by double values)");
 			first_time = 0;
 		}
 	}
@@ -414,9 +414,14 @@ static void print_not_multiple_warning()
 
 static long long int llint_div(long long int x, long long int y)
 {
+	long long int z;
+
 	if (x == NA_LINTEGER || y == NA_LINTEGER || y == 0LL)
 		return NA_LINTEGER;
-	return x / y;
+	z = x / y;
+	if (x == 0LL || (x > 0LL) == (y > 0LL) || y * z == x)
+		return z;
+	return z - 1LL;
 }
 
 static long long int llint_mod(long long int x, long long int y)
@@ -428,7 +433,7 @@ static long long int llint_mod(long long int x, long long int y)
 	z = x % y;
 	/* The contortions below are meant to make sure that the result
 	   has the sign of 'y'. */
-	if (z == 0L || (z > 0LL) == (y > 0LL))
+	if (z == 0LL || (z > 0LL) == (y > 0LL))
 		return z;
 	/* z and y have opposite signs. */
 	return z + y;  /* same sign as 'y' */
@@ -514,6 +519,7 @@ static void llints_op2(Op2FunType op_fun,
 	return;
 }
 
+/* Operations from "Compare" group */
 #define	EQ_OP	1  /* equal to */
 #define	NEQ_OP	2  /* not equal to */
 #define	LEQ_OP	3  /* less than or equal to */
@@ -609,7 +615,7 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1_bytes, SEXP e2_bytes)
 	}
 	op = CHAR(STRING_ELT(Generic, 0));
 
-	/* "Arith" group */
+	/* Operations from "Arith" group */
 	op1_fun = get_op1_fun(op);
 	if (op1_fun != NULL) {
 		PROTECT(ans = NEW_LINTEGER(ans_len));
@@ -627,7 +633,7 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1_bytes, SEXP e2_bytes)
 		return ans;
 	}
 
-	/* "Compare" group */
+	/* Operations from "Compare" group */
 	op3 = get_op3(op);
 	if (op3 != 0) {
 		PROTECT(ans = NEW_LOGICAL(ans_len));

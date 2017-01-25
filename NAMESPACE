@@ -256,7 +256,7 @@ export(
     svn.time,
 
     ## Linteger-class.R:
-    Linteger, as.Linteger,
+    is.Linteger, as.Linteger, Linteger,
 
     ## Hits-class.R:
     queryHits, subjectHits,
