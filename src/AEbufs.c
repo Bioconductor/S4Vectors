@@ -7,13 +7,13 @@
 #include <limits.h>  /* for INT_MAX */
 
 
-#define MAX_BUFLENGTH_INC 33554432UL  // 2^25
+#define MAX_BUFLENGTH_INC 33554432ULL  // 2^25
 /* IMPORTANT: Keep MAX_BUFLENGTH <= R_XLEN_T_MAX (i.e. 2^52, see Rinternals.h)
    otherwise casting a buffer length (size_t) to R_xlen_t will not do the
    right thing (undefined behavior).
    For now we set MAX_BUFLENGTH to 4294967296 (i.e. 2^32) only. This is big
    enough to support buffers of the length of the human genome. */
-#define MAX_BUFLENGTH (128UL * MAX_BUFLENGTH_INC)
+#define MAX_BUFLENGTH (128ULL * MAX_BUFLENGTH_INC)
 
 /* Guaranteed to return a new buflength > 'buflength', or to raise an error. */
 size_t _increase_buflength(size_t buflength)
@@ -44,7 +44,7 @@ SEXP AEbufs_use_malloc(SEXP x)
 	return R_NilValue;
 }
 
-static void *alloc2(size_t nmemb, size_t size)
+static void *alloc2(size_t nmemb, size_t memb_size)
 {
 	void *ptr;
 
@@ -53,20 +53,20 @@ static void *alloc2(size_t nmemb, size_t size)
 		      "buffer is too big");
 	if (use_malloc) {
 		//printf("alloc2: nmemb=%d\n", nmemb);
-		size *= nmemb;
-		ptr = malloc(size);
+		memb_size *= nmemb;
+		ptr = malloc(memb_size);
 		if (ptr == NULL)
 			error("S4Vectors internal error in alloc2(): "
 			      "cannot allocate memory");
 	} else {
-		ptr = (void *) R_alloc(nmemb, (int) size);
+		ptr = (void *) R_alloc(nmemb, (int) memb_size);
 	}
 	return ptr;
 }
 
 /* 'new_nmemb' must be > 'old_nmemb'. */
 static void *realloc2(void *ptr, size_t old_nmemb, size_t new_nmemb,
-		      size_t size)
+		      size_t memb_size)
 {
 	void *new_ptr;
 
@@ -77,18 +77,18 @@ static void *realloc2(void *ptr, size_t old_nmemb, size_t new_nmemb,
 		error("S4Vectors internal error in realloc2(): "
 		      "'new_nmemb' must be > 'old_nmemb'");
 	if (old_nmemb == 0)
-		return alloc2(new_nmemb, size);
+		return alloc2(new_nmemb, memb_size);
 	if (use_malloc) {
 		//printf("realloc2: new_nmemb=%lu old_nmemb=%lu\n",
 		//       new_nmemb, old_nmemb);
-		size *= new_nmemb;
-		new_ptr = realloc(ptr, size);
+		memb_size *= new_nmemb;
+		new_ptr = realloc(ptr, memb_size);
 		if (new_ptr == NULL)
 			error("S4Vectors internal error in realloc2(): "
 			      "cannot reallocate memory");
 	} else {
-		new_ptr = (void *) R_alloc(new_nmemb, (int) size);
-		memcpy(new_ptr, ptr, old_nmemb * size);
+		new_ptr = (void *) R_alloc(new_nmemb, (int) memb_size);
+		memcpy(new_ptr, ptr, old_nmemb * memb_size);
 	}
 	return new_ptr;
 }
