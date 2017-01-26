@@ -68,6 +68,7 @@ S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
 
 S3method(head, DataTable)
+S3method(head, Linteger)
 S3method(head, Vector)
 
 S3method(levels, Rle)
@@ -90,11 +91,13 @@ S3method(t, Hits)
 S3method(t, HitsList)
 
 S3method(tail, DataTable)
+S3method(tail, Linteger)
 S3method(tail, Vector)
 
 S3method(unique, DataTable)
 S3method(unique, Vector)
 
+S3method(window, Linteger)
 S3method(window, Vector)
 
 ### We also export them thru the export() directive so that (a) they can be
@@ -131,6 +134,7 @@ export(
     duplicated.Vector,
 
     head.DataTable,
+    head.Linteger,
     head.Vector,
 
     levels.Rle,
@@ -148,11 +152,13 @@ export(
     summary.Rle,
 
     tail.DataTable,
+    tail.Linteger,
     tail.Vector,
 
     unique.DataTable,
     unique.Vector,
 
+    window.Linteger,
     window.Vector
 )
 

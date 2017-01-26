@@ -616,3 +616,53 @@ setMethod("getListElement", "list",
     }
 )
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### window(), head(), tail()
+###
+
+### S3/S4 combo for window.Linteger
+window_along_ROWS <- function(x, start=NA, end=NA, width=NA)
+{
+    i <- RangeNSBS(x, start=start, end=end, width=width)
+    extractROWS(x, i)
+}
+window.Linteger <- function(x, ...) window_along_ROWS(x, ...)
+setMethod("window", "Linteger", window.Linteger)
+
+### S3/S4 combo for head.Linteger
+head_along_ROWS <- function(x, n=6L)
+{
+    if (!isSingleNumber(n))
+        stop("'n' must be a single integer")
+    if (!is.integer(n))
+        n <- as.integer(n)
+    x_NROW <- NROW(x)
+    if (n >= 0L) {
+        n <- min(x_NROW, n)
+    } else {
+        n <- max(0L, x_NROW + n)
+    }
+    window(x, start=1L, width=n)
+}
+head.Linteger <- function(x, ...) head_along_ROWS(x, ...)
+setMethod("head", "Linteger", head.Linteger)
+
+### S3/S4 combo for tail.Linteger
+tail_along_ROWS <- function(x, n=6L)
+{
+    if (!isSingleNumber(n))
+        stop("'n' must be a single integer")
+    if (!is.integer(n))
+        n <- as.integer(n)
+    x_NROW <- NROW(x)
+    if (n >= 0L) {
+        n <- min(x_NROW, n)
+    } else {
+        n <- max(0L, x_NROW + n)
+    }
+    window(x, end=x_NROW, width=n)
+}
+tail.Linteger <- function(x, ...) tail_along_ROWS(x, ...)
+setMethod("tail", "Linteger", tail.Linteger)
+

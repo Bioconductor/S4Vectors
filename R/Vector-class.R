@@ -473,40 +473,12 @@ Vector_window <- function(x, start=NA, end=NA, width=NA)
 setMethod("window", "Vector", Vector_window)
 
 ### S3/S4 combo for head.Vector
-head.Vector <- function(x, n=6L, ...) head(x, n, ...)
-Vector_head <- function(x, n=6L)
-{
-    if (!isSingleNumber(n))
-        stop("'n' must be a single integer")
-    if (!is.integer(n))
-        n <- as.integer(n)
-    x_NROW <- NROW(x)
-    if (n >= 0L) {
-        n <- min(x_NROW, n)
-    } else {
-        n <- max(0L, x_NROW + n)
-    }
-    window(x, start=1L, width=n)
-}
-setMethod("head", "Vector", Vector_head)
+head.Vector <- function(x, ...) head(x, ...)
+setMethod("head", "Vector", head_along_ROWS)
 
 ## S3/S4 combo for tail.Vector
-tail.Vector <- function(x, n=6L, ...) tail(x, n, ...)
-Vector_tail <- function(x, n=6L)
-{
-    if (!isSingleNumber(n))
-        stop("'n' must be a single integer")
-    if (!is.integer(n))
-        n <- as.integer(n)
-    x_NROW <- NROW(x)
-    if (n >= 0L) {
-        n <- min(x_NROW, n)
-    } else {
-        n <- max(0L, x_NROW + n)
-    }
-    window(x, end=x_NROW, width=n)
-}
-setMethod("tail", "Vector", Vector_tail)
+tail.Vector <- function(x, ...) tail(x, ...)
+setMethod("tail", "Vector", tail_along_ROWS)
 
 ## NOT exported.
 revROWS <- function(x) extractROWS(x, rev(seq_len(NROW(x))))
