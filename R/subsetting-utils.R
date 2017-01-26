@@ -479,8 +479,8 @@ setMethod("extractROWS", c("vectorORfactor", "RangeNSBS"),
 ### with signature Linteger,RangesNSBS).
 extract_ranges_from_Linteger <- function(x, start, width)
 {
-    start <- (start - 1L) * .BYTES_PER_LINTEGER + 1L
-    width <- width * .BYTES_PER_LINTEGER
+    start <- (start - 1L) * BYTES_PER_LINTEGER + 1L
+    width <- width * BYTES_PER_LINTEGER
     x@bytes <- extract_ranges_from_vectorORfactor(x@bytes, start, width)
     x
 }
@@ -493,6 +493,34 @@ setMethod("extractROWS", c("Linteger", "RangeNSBS"),
         extract_ranges_from_Linteger(x, start, width)
     }
 )
+
+setMethod("extractROWS", c("Linteger", "NSBS"),
+    function(x, i)
+    {
+        start <- as.integer(i)
+        width <- rep.int(1L, length(start))
+        extract_ranges_from_Linteger(x, start, width)
+    }
+)
+
+setMethod("extractROWS", c("Linteger", "ANY"),
+    function (x, i)
+    {
+        i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE, as.NSBS=TRUE)
+        callGeneric()
+    }
+)
+
+subset_by_ROW <- function(x, i, j, ..., drop=TRUE)
+{
+    if (!missing(j) || length(list(...)) > 0L)
+        stop("invalid subsetting")
+    if (missing(i))
+        return(x)
+    extractROWS(x, i)
+}
+
+setMethod("[", "Linteger", subset_by_ROW)
 
 setMethod("replaceROWS", "ANY", .replaceROWSWithBracket)
 

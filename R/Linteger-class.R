@@ -12,10 +12,10 @@ setClass("Linteger", representation(bytes="raw"))
 
 is.Linteger <- function(x) is(x, "Linteger")
 
-.BYTES_PER_LINTEGER <- .Machine$sizeof.longlong
+BYTES_PER_LINTEGER <- .Machine$sizeof.longlong
 
 setMethod("length", "Linteger",
-    function(x) length(x@bytes) %/% .BYTES_PER_LINTEGER
+    function(x) length(x@bytes) %/% BYTES_PER_LINTEGER
 )
 
 ### Called from the .onLoad() hook in zzz.R
@@ -119,9 +119,9 @@ setMethod("as.character", "Linteger", as.character.Linteger)
 
 Linteger <- function(length=0L)
 {
-    max_length <- .MAX_VECTOR_LENGTH / .BYTES_PER_LINTEGER
+    max_length <- .MAX_VECTOR_LENGTH / BYTES_PER_LINTEGER
     length <- .normarg_vector_length(length, max_length=max_length)
-    ans_bytes <- raw(length * .BYTES_PER_LINTEGER)
+    ans_bytes <- raw(length * BYTES_PER_LINTEGER)
     new2("Linteger", bytes=ans_bytes, check=FALSE)
 }
 
