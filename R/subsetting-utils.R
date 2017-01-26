@@ -506,7 +506,10 @@ setMethod("extractROWS", c("Linteger", "NSBS"),
 setMethod("extractROWS", c("Linteger", "ANY"),
     function (x, i)
     {
-        i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE, as.NSBS=TRUE)
+        ## We don't support NAs in the subscript yet.
+        #i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE,
+        #                                           as.NSBS=TRUE)
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         callGeneric()
     }
 )
