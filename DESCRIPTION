@@ -21,6 +21,7 @@ Collate: S4-utils.R
 	show-utils.R
 	utils.R
 	normarg-utils.R
+	Linteger-class.R
 	isSorted.R
 	subsetting-utils.R
 	vector-utils.R
@@ -28,7 +29,6 @@ Collate: S4-utils.R
 	int-utils.R
 	str-utils.R
 	eval-utils.R
-	Linteger-class.R
 	DataTable-class.R
 	Annotated-class.R
 	Vector-class.R

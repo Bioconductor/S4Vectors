@@ -454,15 +454,28 @@ const char *_get_classname(SEXP x);
 SEXP anyMissing(SEXP x);
 
 
-/* vector_utils.c */
+/* Linteger_class.c */
 
-int _vector_memcmp(
-	SEXP x1,
-	int x1_offset,
-	SEXP x2,
-	int x2_offset,
-	int nelt
-);
+SEXP make_RAW_from_NA_LINTEGER();
+
+SEXP new_Linteger_from_LOGICAL(SEXP x);
+
+SEXP new_Linteger_from_INTEGER(SEXP x);
+
+SEXP new_Linteger_from_NUMERIC(SEXP x);
+
+SEXP new_Linteger_from_CHARACTER(SEXP x);
+
+SEXP new_LOGICAL_from_Linteger(SEXP x);
+
+SEXP new_INTEGER_from_Linteger(SEXP x);
+
+SEXP new_NUMERIC_from_Linteger(SEXP x);
+
+SEXP new_CHARACTER_from_Linteger(SEXP x);
+
+
+/* subsetting_utils.c */
 
 int _copy_vector_block(
 	SEXP dest,
@@ -492,6 +505,17 @@ SEXP vectorORfactor_extract_ranges(
 	SEXP x,
 	SEXP start,
 	SEXP width
+);
+
+
+/* vector_utils.c */
+
+int _vector_memcmp(
+	SEXP x1,
+	int x1_offset,
+	SEXP x2,
+	int x2_offset,
+	int nelt
 );
 
 SEXP sapply_NROW(SEXP x);
@@ -723,27 +747,6 @@ SEXP svn_time();
 SEXP top_prenv(SEXP nm, SEXP env);
 
 SEXP top_prenv_dots(SEXP env);
-
-
-/* Linteger_class.c */
-
-SEXP make_RAW_from_NA_LINTEGER();
-
-SEXP new_Linteger_from_LOGICAL(SEXP x);
-
-SEXP new_Linteger_from_INTEGER(SEXP x);
-
-SEXP new_Linteger_from_NUMERIC(SEXP x);
-
-SEXP new_Linteger_from_CHARACTER(SEXP x);
-
-SEXP new_LOGICAL_from_Linteger(SEXP x);
-
-SEXP new_INTEGER_from_Linteger(SEXP x);
-
-SEXP new_NUMERIC_from_Linteger(SEXP x);
-
-SEXP new_CHARACTER_from_Linteger(SEXP x);
 
 
 /* Hits_class.c */

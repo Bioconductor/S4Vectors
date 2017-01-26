@@ -398,13 +398,8 @@ DEFINE_CCALLABLE_STUB(const char *, get_classname,
 )
 
 /*
- * Stubs for callables defined in vector_utils.c
+ * Stubs for callables defined in subsetting_utils.c
  */
-
-DEFINE_CCALLABLE_STUB(int, vector_memcmp,
-	(SEXP x1, int x1_offset, SEXP x2, int x2_offset, int nelt),
-	(     x1,     x1_offset,      x2,     x2_offset,     nelt)
-)
 
 DEFINE_CCALLABLE_STUB(int, copy_vector_block,
 	(SEXP dest, int dest_offset, SEXP src, int src_offset, int block_width),
@@ -414,6 +409,15 @@ DEFINE_CCALLABLE_STUB(int, copy_vector_block,
 DEFINE_CCALLABLE_STUB(int, copy_vector_ranges,
 	(SEXP dest, int dest_offset, SEXP src, const int *start, const int *width, int nranges),
 	(     dest,     dest_offset,      src,            start,            width,     nranges)
+)
+
+/*
+ * Stubs for callables defined in vector_utils.c
+ */
+
+DEFINE_CCALLABLE_STUB(int, vector_memcmp,
+	(SEXP x1, int x1_offset, SEXP x2, int x2_offset, int nelt),
+	(     x1,     x1_offset,      x2,     x2_offset,     nelt)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, list_as_data_frame,

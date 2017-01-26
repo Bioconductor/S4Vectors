@@ -15,8 +15,10 @@ static const R_CallMethodDef callMethods[] = {
 /* anyMissing.c */
 	CALLMETHOD_DEF(anyMissing, 1),
 
-/* vector_utils.c */
+/* subsetting_utils.c */
 	CALLMETHOD_DEF(vectorORfactor_extract_ranges, 3),
+
+/* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),
 
 /* logical_utils.c */
@@ -181,10 +183,12 @@ void R_init_S4Vectors(DllInfo *info)
 /* SEXP_utils.c */
 	REGISTER_CCALLABLE(_get_classname);
 
-/* vector_utils.c */
-	REGISTER_CCALLABLE(_vector_memcmp);
+/* subsetting_utils.c */
 	REGISTER_CCALLABLE(_copy_vector_block);
 	REGISTER_CCALLABLE(_copy_vector_ranges);
+
+/* vector_utils.c */
+	REGISTER_CCALLABLE(_vector_memcmp);
 	REGISTER_CCALLABLE(_list_as_data_frame);
 
 /* int_utils.c */

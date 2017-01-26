@@ -458,12 +458,39 @@ setGeneric("replaceROWS", signature="x",
 
 setMethod("extractROWS", c("ANY", "ANY"), .extractROWSWithBracket)
 
+### NOT exported but used in IRanges package (by "extractROWS" method with
+### signature vectorORfactor,RangesNSBS).
+extract_ranges_from_vectorORfactor <- function(x, start, width)
+{
+    .Call2("vectorORfactor_extract_ranges", x, start, width,
+                                            PACKAGE="S4Vectors")
+}
+
 setMethod("extractROWS", c("vectorORfactor", "RangeNSBS"),
     function(x, i)
     {
         start <- i@subscript[[1L]]
         width <- i@subscript[[2L]] - start + 1L
         extract_ranges_from_vectorORfactor(x, start, width)
+    }
+)
+
+### NOT exported but will be used in IRanges package (by "extractROWS" method
+### with signature Linteger,RangesNSBS).
+extract_ranges_from_Linteger <- function(x, start, width)
+{
+    start <- (start - 1L) * .BYTES_PER_LINTEGER + 1L
+    width <- width * .BYTES_PER_LINTEGER
+    x@bytes <- extract_ranges_from_vectorORfactor(x@bytes, start, width)
+    x
+}
+
+setMethod("extractROWS", c("Linteger", "RangeNSBS"),
+    function(x, i)
+    {
+        start <- i@subscript[[1L]]
+        width <- i@subscript[[2L]] - start + 1L
+        extract_ranges_from_Linteger(x, start, width)
     }
 )
 

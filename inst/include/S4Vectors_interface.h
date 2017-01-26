@@ -409,16 +409,8 @@ SEXP new_CHARACTER_from_CharAEAE(const CharAEAE *aeae);
 const char *get_classname(SEXP x);
 
 /*
- * vector_utils.c
+ * subsetting_utils.c
  */
-
-int vector_memcmp(
-	SEXP x1,
-	int x1_offset,
-	SEXP x2,
-	int x2_offset,
-	int nelt
-);
 
 int copy_vector_block(
 	SEXP dest,
@@ -435,6 +427,18 @@ int copy_vector_ranges(
 	const int *start,
 	const int *width,
 	int nranges
+);
+
+/*
+ * vector_utils.c
+ */
+
+int vector_memcmp(
+	SEXP x1,
+	int x1_offset,
+	SEXP x2,
+	int x2_offset,
+	int nelt
 );
 
 SEXP list_as_data_frame(

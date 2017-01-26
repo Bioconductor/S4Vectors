@@ -240,6 +240,9 @@ export(
     recycleArg,
     fold,
 
+    ## Linteger-class.R:
+    is.Linteger, as.Linteger, Linteger,
+
     ## subsetting-utils.R:
     normalizeSingleBracketSubscript,
     normalizeDoubleBracketSubscript,
@@ -254,9 +257,6 @@ export(
     safeExplode,
     strsplitAsListOfIntegerVectors,
     svn.time,
-
-    ## Linteger-class.R:
-    is.Linteger, as.Linteger, Linteger,
 
     ## Hits-class.R:
     queryHits, subjectHits,
