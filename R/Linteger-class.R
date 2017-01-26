@@ -27,7 +27,7 @@ make_NA_Linteger_ <- function()
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coerce
+### Coercion
 ###
 
 .from_logical_to_Linteger <- function(from)
@@ -127,7 +127,7 @@ Linteger <- function(length=0L)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Display
+### Displaying
 ###
 
 .show_Linteger <- function(x)
@@ -143,6 +143,60 @@ Linteger <- function(length=0L)
 }
 
 setMethod("show", "Linteger", function(object) .show_Linteger(object))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining
+###
+
+combine_Linteger_objects <- function(objects)
+{
+    if (!is.list(objects))
+        stop("'objects' must be a list")
+    ## If one of the objects to combine is a character vector, then all the
+    ## objects are coerced to character and combined.
+    if (any(vapply(objects, is.character, logical(1), USE.NAMES=FALSE))) {
+        ans <- unlist(lapply(objects, as.character), use.names=FALSE)
+        return(ans)
+    }
+    ## If one of the objects to combine is a double vector, then all the
+    ## objects are coerced to double and combined.
+    if (any(vapply(objects, is.double, logical(1), USE.NAMES=FALSE))) {
+        ans <- unlist(lapply(objects, as.double), use.names=FALSE)
+        return(ans)
+    }
+    ## Combine "bytes" slots.
+    bytes_slots <- lapply(objects,
+        function(x) {
+            if (is.null(x))
+                return(NULL)
+            if (is.logical(x) || is.integer(x))
+                x <- as.Linteger(x)
+            if (is.Linteger(x))
+                return(x@bytes)
+            stop(wmsg("cannot combine Linteger objects ",
+                      "with objects of class ", class(x)))
+        }
+    )
+    ans_bytes <- unlist(bytes_slots, use.names=FALSE)
+    new2("Linteger", bytes=ans_bytes, check=FALSE)
+}
+
+setMethod("c", "Linteger",
+    function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop("\"c\" method for Linteger objects ",
+                 "does not support the 'recursive' argument")
+        if (missing(x)) {
+            objects <- list(...)
+            x <- objects[[1L]]
+        } else {
+            objects <- list(x, ...)
+        }
+        combine_Linteger_objects(objects)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

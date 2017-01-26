@@ -27,6 +27,8 @@
 
 \alias{show,Linteger-method}
 
+\alias{c,Linteger-method}
+
 \alias{NA_Linteger_}
 \alias{is.na,Linteger-method}
 

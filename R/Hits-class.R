@@ -422,7 +422,6 @@ combine_Hits_objects <- function(Class, objects,
     ## 'sapply_isNULL(objects)'.
     if (!all(vapply(objects, is, logical(1), Class, USE.NAMES=FALSE)))
         stop("the objects to combine must be ", Class, " objects (or NULLs)")
-    objects_names <- names(objects)
     names(objects) <- NULL  # so lapply(objects, ...) below returns an
                             # unnamed list
 
