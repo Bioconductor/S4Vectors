@@ -372,7 +372,7 @@ setMethod("rename", "Vector", .renameVector)
 ### "extractROWS" and "replaceROWS" method for his/her objects.
 ###
 
-setMethod("[", "Vector", subset_by_ROW)
+setMethod("[", "Vector", subset_along_ROWS)
 
 ### We provide a default "extractROWS" method for Vector objects that only
 ### subsets the individual parallel slots. That should be enough for most

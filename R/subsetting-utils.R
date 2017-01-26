@@ -514,7 +514,7 @@ setMethod("extractROWS", c("Linteger", "ANY"),
     }
 )
 
-subset_by_ROW <- function(x, i, j, ..., drop=TRUE)
+subset_along_ROWS <- function(x, i, j, ..., drop=TRUE)
 {
     if (!missing(j) || length(list(...)) > 0L)
         stop("invalid subsetting")
@@ -523,7 +523,7 @@ subset_by_ROW <- function(x, i, j, ..., drop=TRUE)
     extractROWS(x, i)
 }
 
-setMethod("[", "Linteger", subset_by_ROW)
+setMethod("[", "Linteger", subset_along_ROWS)
 
 setMethod("replaceROWS", "ANY", .replaceROWSWithBracket)
 
