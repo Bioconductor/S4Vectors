@@ -5,7 +5,7 @@
     ns <- asNamespace(pkgname)
 
     objname <- "NA_Linteger_"
-    NA_Linteger_ <- from_logical_to_Linteger(NA)
+    NA_Linteger_ <- make_NA_Linteger_()
     assign(objname, NA_Linteger_, envir=ns)
     namespaceExport(ns, objname)
 }

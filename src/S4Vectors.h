@@ -727,21 +727,23 @@ SEXP top_prenv_dots(SEXP env);
 
 /* Linteger_class.c */
 
-SEXP new_Linteger_bytes_from_LOGICAL(SEXP x);
+SEXP make_RAW_from_NA_LINTEGER();
 
-SEXP new_Linteger_bytes_from_INTEGER(SEXP x);
+SEXP new_Linteger_from_LOGICAL(SEXP x);
 
-SEXP new_Linteger_bytes_from_NUMERIC(SEXP x);
+SEXP new_Linteger_from_INTEGER(SEXP x);
 
-SEXP new_Linteger_bytes_from_CHARACTER(SEXP x);
+SEXP new_Linteger_from_NUMERIC(SEXP x);
 
-SEXP new_LOGICAL_from_Linteger_bytes(SEXP bytes);
+SEXP new_Linteger_from_CHARACTER(SEXP x);
 
-SEXP new_INTEGER_from_Linteger_bytes(SEXP bytes);
+SEXP new_LOGICAL_from_Linteger(SEXP x);
 
-SEXP new_NUMERIC_from_Linteger_bytes(SEXP bytes);
+SEXP new_INTEGER_from_Linteger(SEXP x);
 
-SEXP new_CHARACTER_from_Linteger_bytes(SEXP bytes);
+SEXP new_NUMERIC_from_Linteger(SEXP x);
+
+SEXP new_CHARACTER_from_Linteger(SEXP x);
 
 
 /* Hits_class.c */

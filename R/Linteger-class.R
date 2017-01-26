@@ -18,41 +18,39 @@ setMethod("length", "Linteger",
     function(x) length(x@bytes) %/% .BYTES_PER_LINTEGER
 )
 
+### Called from the .onLoad() hook in zzz.R
+make_NA_Linteger_ <- function()
+{
+    ans_bytes <- .Call2("make_RAW_from_NA_LINTEGER", PACKAGE="S4Vectors")
+    new2("Linteger", bytes=ans_bytes, check=FALSE)
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coerce
 ###
 
-### Called from the .onLoad() hook in zzz.R
-from_logical_to_Linteger <- function(from)
+.from_logical_to_Linteger <- function(from)
 {
-    ans_bytes <- .Call2("new_Linteger_bytes_from_LOGICAL", from,
-                        PACKAGE="S4Vectors")
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    .Call2("new_Linteger_from_LOGICAL", from, PACKAGE="S4Vectors")
 }
-setAs("logical", "Linteger", from_logical_to_Linteger)
+setAs("logical", "Linteger", .from_logical_to_Linteger)
 
 .from_integer_to_Linteger <- function(from)
 {
-    ans_bytes <- .Call2("new_Linteger_bytes_from_INTEGER", from,
-                        PACKAGE="S4Vectors")
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    .Call2("new_Linteger_from_INTEGER", from, PACKAGE="S4Vectors")
 }
 setAs("integer", "Linteger", .from_integer_to_Linteger)
 
 .from_numeric_to_Linteger <- function(from)
 {
-    ans_bytes <- .Call2("new_Linteger_bytes_from_NUMERIC", from,
-                        PACKAGE="S4Vectors")
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    .Call2("new_Linteger_from_NUMERIC", from, PACKAGE="S4Vectors")
 }
 setAs("numeric", "Linteger", .from_numeric_to_Linteger)
 
 .from_character_to_Linteger <- function(from)
 {
-    ans_bytes <- .Call2("new_Linteger_bytes_from_CHARACTER", from,
-                        PACKAGE="S4Vectors")
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    .Call2("new_Linteger_from_CHARACTER", from, PACKAGE="S4Vectors")
 }
 setAs("character", "Linteger", .from_character_to_Linteger)
 
@@ -61,7 +59,7 @@ as.Linteger <- function(x) as(x, "Linteger")
 ### S3/S4 combo for as.logical.Linteger
 .from_Linteger_to_logical <- function(x)
 {
-    .Call2("new_LOGICAL_from_Linteger_bytes", x@bytes, PACKAGE="S4Vectors")
+    .Call2("new_LOGICAL_from_Linteger", x, PACKAGE="S4Vectors")
 }
 as.logical.Linteger <- function(x, ...) .from_Linteger_to_logical(x, ...)
 setMethod("as.logical", "Linteger", as.logical.Linteger)
@@ -69,7 +67,7 @@ setMethod("as.logical", "Linteger", as.logical.Linteger)
 ### S3/S4 combo for as.integer.Linteger
 .from_Linteger_to_integer <- function(x)
 {
-    .Call2("new_INTEGER_from_Linteger_bytes", x@bytes, PACKAGE="S4Vectors")
+    .Call2("new_INTEGER_from_Linteger", x, PACKAGE="S4Vectors")
 }
 as.integer.Linteger <- function(x, ...) .from_Linteger_to_integer(x, ...)
 setMethod("as.integer", "Linteger", as.integer.Linteger)
@@ -77,7 +75,7 @@ setMethod("as.integer", "Linteger", as.integer.Linteger)
 ### S3/S4 combo for as.numeric.Linteger
 .from_Linteger_to_numeric <- function(x)
 {
-    .Call2("new_NUMERIC_from_Linteger_bytes", x@bytes, PACKAGE="S4Vectors")
+    .Call2("new_NUMERIC_from_Linteger", x, PACKAGE="S4Vectors")
 }
 as.numeric.Linteger <- function(x, ...) .from_Linteger_to_numeric(x, ...)
 setMethod("as.numeric", "Linteger", as.numeric.Linteger)
@@ -85,7 +83,7 @@ setMethod("as.numeric", "Linteger", as.numeric.Linteger)
 ### S3/S4 combo for as.character.Linteger
 .from_Linteger_to_character <- function(x)
 {
-    .Call2("new_CHARACTER_from_Linteger_bytes", x@bytes, PACKAGE="S4Vectors")
+    .Call2("new_CHARACTER_from_Linteger", x, PACKAGE="S4Vectors")
 }
 as.character.Linteger <- function(x, ...) .from_Linteger_to_character(x, ...)
 setMethod("as.character", "Linteger", as.character.Linteger)
@@ -161,8 +159,7 @@ setMethod("is.na", "Linteger", function(x) is.na(as.logical(x)))
 setMethod("Ops", c("Linteger", "Linteger"),
     function(e1, e2)
     {
-        .Call("Linteger_Ops", .Generic, e1@bytes, e2@bytes,
-              PACKAGE="S4Vectors")
+        .Call("Linteger_Ops", .Generic, e1, e2, PACKAGE="S4Vectors")
     }
 )
 
@@ -209,7 +206,7 @@ setMethod("Summary", "Linteger",
                       "takes only one object"))
         if (!isTRUEorFALSE(na.rm))
             stop("'na.rm' must be TRUE or FALSE")
-        .Call("Linteger_Summary", .Generic, x@bytes, na.rm=na.rm,
+        .Call("Linteger_Summary", .Generic, x, na.rm=na.rm,
               PACKAGE="S4Vectors")
     }
 )

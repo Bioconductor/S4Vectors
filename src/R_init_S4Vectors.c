@@ -64,14 +64,15 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(top_prenv_dots, 1),
 
 /* Linteger_class.c */
-	CALLMETHOD_DEF(new_Linteger_bytes_from_LOGICAL, 1),
-	CALLMETHOD_DEF(new_Linteger_bytes_from_INTEGER, 1),
-	CALLMETHOD_DEF(new_Linteger_bytes_from_NUMERIC, 1),
-	CALLMETHOD_DEF(new_Linteger_bytes_from_CHARACTER, 1),
-	CALLMETHOD_DEF(new_LOGICAL_from_Linteger_bytes, 1),
-	CALLMETHOD_DEF(new_INTEGER_from_Linteger_bytes, 1),
-	CALLMETHOD_DEF(new_NUMERIC_from_Linteger_bytes, 1),
-	CALLMETHOD_DEF(new_CHARACTER_from_Linteger_bytes, 1),
+	CALLMETHOD_DEF(make_RAW_from_NA_LINTEGER, 0),
+	CALLMETHOD_DEF(new_Linteger_from_LOGICAL, 1),
+	CALLMETHOD_DEF(new_Linteger_from_INTEGER, 1),
+	CALLMETHOD_DEF(new_Linteger_from_NUMERIC, 1),
+	CALLMETHOD_DEF(new_Linteger_from_CHARACTER, 1),
+	CALLMETHOD_DEF(new_LOGICAL_from_Linteger, 1),
+	CALLMETHOD_DEF(new_INTEGER_from_Linteger, 1),
+	CALLMETHOD_DEF(new_NUMERIC_from_Linteger, 1),
+	CALLMETHOD_DEF(new_CHARACTER_from_Linteger, 1),
 
 /* Hits_class.c */
 	CALLMETHOD_DEF(Hits_new, 6),
