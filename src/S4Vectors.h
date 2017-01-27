@@ -792,6 +792,8 @@ SEXP make_all_group_inner_hits(
 
 /* Rle_class.c */
 
+SEXP Rle_length(SEXP x);
+
 SEXP _construct_logical_Rle(
 	R_xlen_t nrun_in,
 	const int *values_in,

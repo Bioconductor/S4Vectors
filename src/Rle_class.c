@@ -17,54 +17,100 @@ static SEXP _new_Rle(SEXP values, SEXP lengths)
 
 
 /****************************************************************************
+ * length() getter
+ */
+
+static R_xlen_t check_and_sum_int_lengths(const int *lengths, R_xlen_t nrun)
+{
+	unsigned long long int sum;
+	R_xlen_t i;
+	int length;
+
+	sum = 0ULL;
+	for (i = 0; i < nrun; i++, lengths++) {
+		length = *lengths;
+		if (length == NA_INTEGER || length < 0)
+			error("some run lengths are NA or negative");
+		sum += length;
+		if (sum > R_XLEN_T_MAX)
+			error("Rle object is too long");
+	}
+	return (R_xlen_t) sum;
+}
+
+static R_xlen_t check_and_sum_llint_lengths(const long long int *lengths,
+	R_xlen_t nrun, long long int *max)
+{
+	unsigned long long int sum;
+	R_xlen_t i;
+	long long int length;
+
+	sum = 0ULL;
+	*max = -1;
+	for (i = 0; i < nrun; i++, lengths++) {
+		length = *lengths;
+		if (length == NA_LINTEGER || length < 0)
+			error("some run lengths are NA or negative");
+		sum += length;
+		if (sum > R_XLEN_T_MAX)
+			error("Rle object is too long");
+		if (length > *max)
+			*max = length;
+	}
+	return (R_xlen_t) sum;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP Rle_length(SEXP x)
+{
+	SEXP lengths, ans;
+	R_xlen_t nrun;
+	void *lengths_dataptr;
+	long long int sum, max;
+
+	lengths = GET_SLOT(x, install("lengths"));
+	if (IS_INTEGER(lengths)) {
+		nrun = XLENGTH(lengths);
+		lengths_dataptr = INTEGER(lengths);
+		sum = check_and_sum_int_lengths((const int *) lengths_dataptr,
+						nrun);
+	} else {
+		/* 'lengths' is an Linteger vector */
+		nrun = _get_Linteger_length(lengths);
+		lengths_dataptr = _get_Linteger_dataptr(lengths);
+		sum = check_and_sum_llint_lengths(
+				(const long long int *) lengths_dataptr,
+				nrun, &max);
+	}
+	PROTECT(ans = _alloc_Linteger("Linteger", 1));
+	_get_Linteger_dataptr(ans)[0] = sum;
+	UNPROTECT(1);
+	return ans;
+}
+
+
+/****************************************************************************
  * 1st set of low-level helpers used by "The C level Rle smart constructors".
  */
 
-static R_xlen_t sum_int_lengths(const int *lengths, R_xlen_t nrun)
+/*
+ * Check the run lengths and return 1 if they need to be stored in an array of
+ * long long ints.
+ */
+static int store_lengths_as_llints(const void *lengths_in,
+	R_xlen_t nrun_in, int lengths_in_is_L)
 {
-	unsigned long long int sum;
-	R_xlen_t i;
+	long long int max;
 
-	sum = 0ULL;
-	for (i = 0; i < nrun; i++, lengths++) {
-		if (*lengths == NA_INTEGER || *lengths < 0)
-			error("some run lengths are NAs or negative");
-		sum += *lengths;
-		if (sum > R_XLEN_T_MAX)
-			error("Rle object is too long");
+	if (lengths_in == NULL || nrun_in == 0)
+		return 0;
+	if (!lengths_in_is_L) {
+		check_and_sum_int_lengths((const int *) lengths_in, nrun_in);
+		return 0;
 	}
-	return (R_xlen_t) sum;
-}
-
-static R_xlen_t sum_llint_lengths(const long long int *lengths, R_xlen_t nrun)
-{
-	unsigned long long int sum;
-	R_xlen_t i;
-
-	sum = 0ULL;
-	for (i = 0; i < nrun; i++, lengths++) {
-		if (*lengths == NA_LINTEGER || *lengths < 0)
-			error("some run lengths are NAs or negative");
-		sum += *lengths;
-		if (sum > R_XLEN_T_MAX)
-			error("Rle object is too long");
-	}
-	return (R_xlen_t) sum;
-}
-
-static int lengths_out_storage(const void *lengths_in, R_xlen_t nrun_in,
-			       int lengths_in_is_L)
-{
-	R_xlen_t sum;
-
-	if (lengths_in == NULL)
-		sum = nrun_in;
-	else if (lengths_in_is_L)
-		sum = sum_llint_lengths((const long long int *) lengths_in,
-					nrun_in);
-	else
-		sum = sum_int_lengths((const int *) lengths_in, nrun_in);
-	return sum > INT_MAX;
+	check_and_sum_llint_lengths((const long long int *) lengths_in,
+				    nrun_in, &max);
+	return max > (long long int) INT_MAX;
 }
 
 static void *alloc_values_buf(R_xlen_t buflength, int size)
@@ -146,34 +192,34 @@ static R_xlen_t compute_int_runs(R_xlen_t nrun_in,
 {
 	const long long int *Lin;
 	const int *lin;
-	long long int *Lout, run_length;
+	long long int *Lout, length_in;
 	int *lout, val, val0 = 0;
 	R_xlen_t nrun_out, i;
 
 	set_Lin_lin(&Lin, &lin, lengths_in, lengths_in_is_L);
 	set_Lout_lout(&Lout, &lout, lengths_out, lengths_out_is_L);
 	nrun_out = 0;
-	for (i = 0, run_length = 1; i < nrun_in; i++, values_in++) {
+	for (i = 0, length_in = 1; i < nrun_in; i++, values_in++) {
 		if (lengths_in != NULL) {
-			run_length = lengths_in_is_L ? Lin[i] : lin[i];
-			if (run_length == 0)
+			length_in = lengths_in_is_L ? Lin[i] : lin[i];
+			if (length_in == 0)
 				continue;
 		}
 		val = *values_in;
 		if (nrun_out != 0 && val == val0) {
 			if (lengths_out != NULL) {
 				if (lengths_out_is_L)
-					Lout[nrun_out - 1] += run_length;
+					Lout[nrun_out - 1] += length_in;
 				else
-					lout[nrun_out - 1] += run_length;
+					lout[nrun_out - 1] += length_in;
 			}
 			continue;
 		}
 		if (lengths_out != NULL) {
 			if (lengths_out_is_L)
-				Lout[nrun_out] = run_length;
+				Lout[nrun_out] = length_in;
 			else
-				lout[nrun_out] = run_length;
+				lout[nrun_out] = length_in;
 			values_out[nrun_out] = val;
 		}
 		nrun_out++;
@@ -191,7 +237,7 @@ static R_xlen_t compute_double_runs(R_xlen_t nrun_in,
 {
 	const long long int *Lin;
 	const int *lin;
-	long long int *Lout, run_length;
+	long long int *Lout, length_in;
 	int *lout;
 	double val, val0;
 	R_xlen_t nrun_out, i;
@@ -199,27 +245,27 @@ static R_xlen_t compute_double_runs(R_xlen_t nrun_in,
 	set_Lin_lin(&Lin, &lin, lengths_in, lengths_in_is_L);
 	set_Lout_lout(&Lout, &lout, lengths_out, lengths_out_is_L);
 	nrun_out = 0;
-	for (i = 0, run_length = 1; i < nrun_in; i++, values_in++) {
+	for (i = 0, length_in = 1; i < nrun_in; i++, values_in++) {
 		if (lengths_in != NULL) {
-			run_length = lengths_in_is_L ? Lin[i] : lin[i];
-			if (run_length == 0)
+			length_in = lengths_in_is_L ? Lin[i] : lin[i];
+			if (length_in == 0)
 				continue;
 		}
 		val = *values_in;
 		if (nrun_out != 0 && SAME_DOUBLE_VALS(val, val0)) {
 			if (lengths_out != NULL) {
 				if (lengths_out_is_L)
-					Lout[nrun_out - 1] += run_length;
+					Lout[nrun_out - 1] += length_in;
 				else
-					lout[nrun_out - 1] += run_length;
+					lout[nrun_out - 1] += length_in;
 			}
 			continue;
 		}
 		if (lengths_out != NULL) {
 			if (lengths_out_is_L)
-				Lout[nrun_out] = run_length;
+				Lout[nrun_out] = length_in;
 			else
-				lout[nrun_out] = run_length;
+				lout[nrun_out] = length_in;
 			values_out[nrun_out] = val;
 		}
 		nrun_out++;
@@ -234,7 +280,7 @@ static R_xlen_t compute_Rcomplex_runs(R_xlen_t nrun_in,
 {
 	const long long int *Lin;
 	const int *lin;
-	long long int *Lout, run_length;
+	long long int *Lout, length_in;
 	int *lout;
 	Rcomplex val, val0 = {0.0, 0.0};
 	R_xlen_t nrun_out, i;
@@ -242,10 +288,10 @@ static R_xlen_t compute_Rcomplex_runs(R_xlen_t nrun_in,
 	set_Lin_lin(&Lin, &lin, lengths_in, lengths_in_is_L);
 	set_Lout_lout(&Lout, &lout, lengths_out, lengths_out_is_L);
 	nrun_out = 0;
-	for (i = 0, run_length = 1; i < nrun_in; i++, values_in++) {
+	for (i = 0, length_in = 1; i < nrun_in; i++, values_in++) {
 		if (lengths_in != NULL) {
-			run_length = lengths_in_is_L ? Lin[i] : lin[i];
-			if (run_length == 0)
+			length_in = lengths_in_is_L ? Lin[i] : lin[i];
+			if (length_in == 0)
 				continue;
 		}
 		val = *values_in;
@@ -254,17 +300,17 @@ static R_xlen_t compute_Rcomplex_runs(R_xlen_t nrun_in,
 		{
 			if (lengths_out != NULL) {
 				if (lengths_out_is_L)
-					Lout[nrun_out - 1] += run_length;
+					Lout[nrun_out - 1] += length_in;
 				else
-					lout[nrun_out - 1] += run_length;
+					lout[nrun_out - 1] += length_in;
 			}
 			continue;
 		}
 		if (lengths_out != NULL) {
 			if (lengths_out_is_L)
-				Lout[nrun_out] = run_length;
+				Lout[nrun_out] = length_in;
 			else
-				lout[nrun_out] = run_length;
+				lout[nrun_out] = length_in;
 			values_out[nrun_out] = val;
 		}
 		nrun_out++;
@@ -279,7 +325,7 @@ static R_xlen_t compute_CHARSXP_runs(
 {
 	const long long int *Lin;
 	const int *lin;
-	long long int *Lout, run_length;
+	long long int *Lout, length_in;
 	int *lout;
 	SEXP val, val0 = NULL;
 	R_xlen_t nrun_in, nrun_out, i;
@@ -288,27 +334,27 @@ static R_xlen_t compute_CHARSXP_runs(
 	set_Lout_lout(&Lout, &lout, lengths_out, lengths_out_is_L);
 	nrun_in = XLENGTH(values_in);
 	nrun_out = 0;
-	for (i = 0, run_length = 1; i < nrun_in; i++) {
+	for (i = 0, length_in = 1; i < nrun_in; i++) {
 		if (lengths_in != NULL) {
-			run_length = lengths_in_is_L ? Lin[i] : lin[i];
-			if (run_length == 0)
+			length_in = lengths_in_is_L ? Lin[i] : lin[i];
+			if (length_in == 0)
 				continue;
 		}
 		val = STRING_ELT(values_in, i);
 		if (nrun_out != 0 && val == val0) {
 			if (lengths_out != NULL) {
 				if (lengths_out_is_L)
-					Lout[nrun_out - 1] += run_length;
+					Lout[nrun_out - 1] += length_in;
 				else
-					lout[nrun_out - 1] += run_length;
+					lout[nrun_out - 1] += length_in;
 			}
 			continue;
 		}
 		if (lengths_out != NULL) {
 			if (lengths_out_is_L)
-				Lout[nrun_out] = run_length;
+				Lout[nrun_out] = length_in;
 			else
-				lout[nrun_out] = run_length;
+				lout[nrun_out] = length_in;
 			SET_STRING_ELT(values_out, nrun_out, val);
 		}
 		nrun_out++;
@@ -323,7 +369,7 @@ static R_xlen_t compute_Rbyte_runs(R_xlen_t nrun_in,
 {
 	const long long int *Lin;
 	const int *lin;
-	long long int *Lout, run_length;
+	long long int *Lout, length_in;
 	int *lout;
 	Rbyte val, val0 = 0;
 	R_xlen_t nrun_out, i;
@@ -331,27 +377,27 @@ static R_xlen_t compute_Rbyte_runs(R_xlen_t nrun_in,
 	set_Lin_lin(&Lin, &lin, lengths_in, lengths_in_is_L);
 	set_Lout_lout(&Lout, &lout, lengths_out, lengths_out_is_L);
 	nrun_out = 0;
-	for (i = 0, run_length = 1; i < nrun_in; i++, values_in++) {
+	for (i = 0, length_in = 1; i < nrun_in; i++, values_in++) {
 		if (lengths_in != NULL) {
-			run_length = lengths_in_is_L ? Lin[i] : lin[i];
-			if (run_length == 0)
+			length_in = lengths_in_is_L ? Lin[i] : lin[i];
+			if (length_in == 0)
 				continue;
 		}
 		val = *values_in;
 		if (nrun_out != 0 && val == val0) {
 			if (lengths_out != NULL) {
 				if (lengths_out_is_L)
-					Lout[nrun_out - 1] += run_length;
+					Lout[nrun_out - 1] += length_in;
 				else
-					lout[nrun_out - 1] += run_length;
+					lout[nrun_out - 1] += length_in;
 			}
 			continue;
 		}
 		if (lengths_out != NULL) {
 			if (lengths_out_is_L)
-				Lout[nrun_out] = run_length;
+				Lout[nrun_out] = length_in;
 			else
-				lout[nrun_out] = run_length;
+				lout[nrun_out] = length_in;
 			values_out[nrun_out] = val;
 		}
 		nrun_out++;
@@ -387,8 +433,8 @@ SEXP _construct_logical_Rle(R_xlen_t nrun_in,
 	SEXP ans_lengths, ans_values, ans;
 
 	/* 1st pass: find out 'lengths_out' storage base on length of Rle */
-	lengths_out_is_L = lengths_out_storage(lengths_in, nrun_in,
-					       lengths_in_is_L);
+	lengths_out_is_L = store_lengths_as_llints(lengths_in, nrun_in,
+						   lengths_in_is_L);
 	if (buflength > nrun_in)
 		buflength = nrun_in;
 	values_buf = (int *) alloc_values_buf(buflength, sizeof(int));
@@ -429,8 +475,8 @@ SEXP _construct_integer_Rle(R_xlen_t nrun_in,
 	SEXP ans_lengths, ans_values, ans;
 
 	/* 1st pass: find out 'lengths_out' storage base on length of Rle */
-	lengths_out_is_L = lengths_out_storage(lengths_in, nrun_in,
-					       lengths_in_is_L);
+	lengths_out_is_L = store_lengths_as_llints(lengths_in, nrun_in,
+						   lengths_in_is_L);
 	if (buflength > nrun_in)
 		buflength = nrun_in;
 	values_buf = (int *) alloc_values_buf(buflength, sizeof(int));
@@ -471,8 +517,8 @@ SEXP _construct_numeric_Rle(R_xlen_t nrun_in,
 	SEXP ans_lengths, ans_values, ans;
 
 	/* 1st pass: find out 'lengths_out' storage base on length of Rle */
-	lengths_out_is_L = lengths_out_storage(lengths_in, nrun_in,
-					       lengths_in_is_L);
+	lengths_out_is_L = store_lengths_as_llints(lengths_in, nrun_in,
+						   lengths_in_is_L);
 	if (buflength > nrun_in)
 		buflength = nrun_in;
 	values_buf = (double *) alloc_values_buf(buflength, sizeof(double));
@@ -513,8 +559,8 @@ SEXP _construct_complex_Rle(R_xlen_t nrun_in,
 	SEXP ans_lengths, ans_values, ans;
 
 	/* 1st pass: find out 'lengths_out' storage base on length of Rle */
-	lengths_out_is_L = lengths_out_storage(lengths_in, nrun_in,
-					       lengths_in_is_L);
+	lengths_out_is_L = store_lengths_as_llints(lengths_in, nrun_in,
+						   lengths_in_is_L);
 	if (buflength > nrun_in)
 		buflength = nrun_in;
 	values_buf = (Rcomplex *) alloc_values_buf(buflength, sizeof(Rcomplex));
@@ -556,8 +602,8 @@ SEXP _construct_character_Rle(SEXP values_in,
 
 	nrun_in = XLENGTH(values_in);
 	/* 1st pass: find out 'lengths_out' storage base on length of Rle */
-	lengths_out_is_L = lengths_out_storage(lengths_in, nrun_in,
-					       lengths_in_is_L);
+	lengths_out_is_L = store_lengths_as_llints(lengths_in, nrun_in,
+						   lengths_in_is_L);
 	if (buflength > nrun_in)
 		buflength = nrun_in;
 	values_buf = buflength == 0 ? NULL : PROTECT(NEW_CHARACTER(buflength));
@@ -596,8 +642,8 @@ SEXP _construct_raw_Rle(R_xlen_t nrun_in,
 	SEXP ans_lengths, ans_values, ans;
 
 	/* 1st pass: find out 'lengths_out' storage base on length of Rle */
-	lengths_out_is_L = lengths_out_storage(lengths_in, nrun_in,
-					       lengths_in_is_L);
+	lengths_out_is_L = store_lengths_as_llints(lengths_in, nrun_in,
+						   lengths_in_is_L);
 	if (buflength > nrun_in)
 		buflength = nrun_in;
 	values_buf = (Rbyte *) alloc_values_buf(buflength, sizeof(Rbyte));

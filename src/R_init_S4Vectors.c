@@ -82,6 +82,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(make_all_group_inner_hits, 2),
 
 /* Rle_class.c */
+	CALLMETHOD_DEF(Rle_length, 1),
 	CALLMETHOD_DEF(Rle_constructor, 3),
 	CALLMETHOD_DEF(Rle_start, 1),
 	CALLMETHOD_DEF(Rle_end, 1),

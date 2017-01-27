@@ -33,7 +33,9 @@ setGeneric("runLength", signature = "x",
            function(x) standardGeneric("runLength"))
 setMethod("runLength", "Rle", function(x) x@lengths)
  
-setMethod("length", "Rle", function(x) as.double(sum(runLength(x))))
+setMethod("length", "Rle",
+    function(x) as.double(.Call2("Rle_length", x, PACKAGE="S4Vectors"))
+)
 
 setGeneric("runValue", signature = "x",
            function(x) standardGeneric("runValue"))
