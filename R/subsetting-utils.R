@@ -681,6 +681,8 @@ rep.int_along_ROWS <- function(x, times)
     if (times_len == x_len) {
         i <- Rle(seq_len(x_len), times)
     } else if (times_len == 1L) {
+        if (is.Linteger(times))
+            times <- as.double(times)
         i <- IRanges::IRanges(rep.int(1L, times), rep.int(x_len, times))
     } else {
         stop("invalid 'times' value")

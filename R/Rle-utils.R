@@ -57,8 +57,7 @@ setMethod("Ops", signature(e1 = "Rle", e2 = "Rle"),
                   which2 <- findIntervalAndStartFromWidth(ends, runLength(e2))[["interval"]]
               }
               new_Rle(callGeneric(runValue(e1)[which1], runValue(e2)[which2]),
-                      diffWithInitialZero(ends),
-                      check=FALSE)
+                      diffWithInitialZero(ends))
           })
 
 setMethod("Ops", signature(e1 = "Rle", e2 = "vector"),
@@ -80,7 +79,7 @@ setMethod("Math", "Rle",
                          values <- cumsum(as.vector(y))
                          lengths <- rep.int(1L, length(values))
                          lengths[startZero - c(0L, cumsum(head(widthZero, -1) - 1L))] <- widthZero
-                         new_Rle(values, lengths, check=FALSE)
+                         new_Rle(values, lengths)
                      },
                      cumprod =
                      {
@@ -92,18 +91,16 @@ setMethod("Math", "Rle",
                          values <- cumprod(as.vector(y))
                          lengths <- rep.int(1L, length(values))
                          lengths[startOne - c(0L, cumsum(head(widthOne, -1) - 1L))] <- widthOne
-                         new_Rle(values, lengths, check=FALSE)
+                         new_Rle(values, lengths)
                      },
-                     new_Rle(callGeneric(runValue(x)),
-                             runLength(x), check=FALSE)))
+                     new_Rle(callGeneric(runValue(x)), runLength(x))))
 
 setMethod("Math2", "Rle",
           function(x, digits)
           {
               if (missing(digits))
                   digits <- ifelse(.Generic == "round", 0, 6)
-              new_Rle(callGeneric(runValue(x), digits = digits),
-                      runLength(x), check=FALSE)
+              new_Rle(callGeneric(runValue(x), digits = digits), runLength(x))
           })
 
 setMethod("Summary", "Rle",
@@ -134,7 +131,7 @@ setMethod("Summary", "Rle",
 
 setMethod("Complex", "Rle",
           function(z)
-              new_Rle(callGeneric(runValue(z)), runLength(z), check=FALSE))
+              new_Rle(callGeneric(runValue(z)), runLength(z)))
 
 ### S3/S4 combo for summary.Rle
 summary.Rle <- function(object, ..., digits) 
@@ -174,9 +171,7 @@ setMethod("summary", "Rle", summary.Rle)
 ### Other logical data methods
 ###
 
-setMethod("!", "Rle",
-          function(x)
-              new_Rle(!runValue(x), runLength(x), check=FALSE))
+setMethod("!", "Rle", function(x) new_Rle(!runValue(x), runLength(x)))
 
 setMethod("which", "Rle",
           function(x, arr.ind = FALSE) {
@@ -234,7 +229,7 @@ setMethod("diff", "Rle", .diff.Rle)
                              runValue(x)[runs]
                          }),
                  MoreArgs)),
-            diffWithInitialZero(ends), check=FALSE)
+            diffWithInitialZero(ends))
 }
 
 setMethod("pmax", "Rle", function(..., na.rm = FALSE)
@@ -515,7 +510,7 @@ setMethod("runq", "Rle",
 setMethod("nchar", "Rle",
     function(x, type="chars", allowNA=FALSE, keepNA=NA)
         new_Rle(nchar(runValue(x), type=type, allowNA=allowNA, keepNA=keepNA),
-                runLength(x), check=FALSE)
+                runLength(x))
 )
 
 setMethod("substr", "Rle",
@@ -643,7 +638,7 @@ setMethod("gsub", signature = c(pattern = "ANY", replacement = "ANY", x = "Rle")
           paste(runValue(e1)[which1], runValue(e2)[which2], sep = sep,
                 collapse = collapse)
     }
-    new_Rle(values, diffWithInitialZero(ends), check=FALSE)
+    new_Rle(values, diffWithInitialZero(ends))
 }
 
 setMethod("paste", "Rle",
@@ -693,7 +688,7 @@ setReplaceMethod("levels", "Rle",
                  function(x, value) {
                      levels(x@values) <- value
                      if (anyDuplicated(value))
-                         x <- new_Rle(runValue(x), runLength(x), check=FALSE)
+                         x <- new_Rle(runValue(x), runLength(x))
                      x
                  })
 

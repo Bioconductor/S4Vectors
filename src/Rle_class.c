@@ -700,8 +700,7 @@ SEXP _construct_Rle(SEXP values_in, const void *lengths_in,
  *   buflength: A single double.
  */
 
-SEXP Rle_constructor(SEXP values_in, SEXP lengths_in,
-		     SEXP check, SEXP buflength)
+SEXP Rle_constructor(SEXP values_in, SEXP lengths_in, SEXP buflength)
 {
 	R_xlen_t nrun_in, lengths_in_len, buflength0;
 	/* If lengths_in_is_L == 1 then 'lengths_in_dataptr' points to an
@@ -728,7 +727,7 @@ SEXP Rle_constructor(SEXP values_in, SEXP lengths_in,
 			error("the supplied 'lengths' must be an integer or "
 			      "Linteger vector or NULL");
 		}
-		if (LOGICAL(check)[0] && nrun_in != lengths_in_len)
+		if (nrun_in != lengths_in_len)
 			error("'length(values)' != 'length(lengths)'");
 	}
 	buflength0 = (R_xlen_t) REAL(buflength)[0];

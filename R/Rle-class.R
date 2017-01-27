@@ -52,7 +52,7 @@ setMethod("width", "Rle", function(x) runLength(x))
 ###
 
 ### Low-level constructor.
-new_Rle <- function(values=logical(0), lengths=NULL, check=TRUE)
+new_Rle <- function(values=logical(0), lengths=NULL)
 {
     stopifnot(is(values, "vectorORfactor"))
     if (!is.null(lengths)) {
@@ -63,9 +63,7 @@ new_Rle <- function(values=logical(0), lengths=NULL, check=TRUE)
         if (length(lengths) == 1L)
             lengths <- rep.int(lengths, length(values))
     }
-    if (!isTRUEorFALSE(check))
-        stop("'check' must be TRUE or FALSE")
-    .Call2("Rle_constructor", values, lengths, check, 0, PACKAGE="S4Vectors")
+    .Call2("Rle_constructor", values, lengths, 0, PACKAGE="S4Vectors")
 }
 
 setGeneric("Rle", signature="values",
@@ -627,7 +625,7 @@ setMethod("append", c("vector", "Rle"),
 
 setMethod("%in%", "Rle",
           function(x, table)
-              new_Rle(runValue(x) %in% table, runLength(x), check=FALSE))
+              new_Rle(runValue(x) %in% table, runLength(x)))
 
 setGeneric("findRun", signature = "vec",
            function(x, vec) standardGeneric("findRun"))
@@ -642,7 +640,7 @@ setMethod("findRun", signature = c(vec = "Rle"),
 
 setMethod("is.na", "Rle",
           function(x)
-              new_Rle(is.na(runValue(x)), runLength(x), check=FALSE))
+              new_Rle(is.na(runValue(x)), runLength(x)))
 
 setMethod("anyNA", "Rle",
           function(x)
@@ -709,7 +707,7 @@ setMethod("order", "Rle",
             x <- x[!is.na(x)]
     }
     ord <- base::order(runValue(x), na.last=na.last, decreasing=decreasing)
-    new_Rle(runValue(x)[ord], runLength(x)[ord], check=FALSE)
+    new_Rle(runValue(x)[ord], runLength(x)[ord])
 }
 setMethod("sort", "Rle", .sort.Rle)
 

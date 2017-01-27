@@ -849,7 +849,6 @@ SEXP _construct_Rle(
 SEXP Rle_constructor(
 	SEXP values_in,
 	SEXP lengths_in,
-	SEXP check,
 	SEXP buflength
 );
 
