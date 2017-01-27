@@ -7,8 +7,8 @@
 #include <ctype.h>  /* for isspace() and isdigit() */
 
 #define	BYTES_PER_LINTEGER	(sizeof(long long int) / sizeof(char))
-#define	NEW_LINTEGER(n)		alloc_Linteger("Linteger", (n))
-#define	LINTEGER(x)		get_Linteger_dataptr(x)
+#define	NEW_LINTEGER(n)		_alloc_Linteger("Linteger", (n))
+#define	LINTEGER(x)		_get_Linteger_dataptr(x)
 
 /* --- .Call ENTRY POINT --- */
 SEXP make_RAW_from_NA_LINTEGER()
@@ -34,12 +34,12 @@ static SEXP get_Linteger_bytes(SEXP x)
 	return GET_SLOT(x, bytes_symbol);
 }
 
-static R_xlen_t get_Linteger_length(SEXP x)
+R_xlen_t _get_Linteger_length(SEXP x)
 {
 	return XLENGTH(get_Linteger_bytes(x)) / BYTES_PER_LINTEGER;
 }
 
-static long long int *get_Linteger_dataptr(SEXP x)
+long long int *_get_Linteger_dataptr(SEXP x)
 {
 	return (long long int *) RAW(get_Linteger_bytes(x));
 }
@@ -72,7 +72,7 @@ static SEXP new_Linteger_from_bytes(const char *classname, SEXP bytes)
 }
 
 /* Allocation WITHOUT initialization. */
-static SEXP alloc_Linteger(const char *classname, R_xlen_t length)
+SEXP _alloc_Linteger(const char *classname, R_xlen_t length)
 {
 	SEXP bytes, ans;
 
@@ -378,7 +378,7 @@ SEXP new_LOGICAL_from_Linteger(SEXP x)
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = get_Linteger_length(x);
+	ans_len = _get_Linteger_length(x);
 	PROTECT(ans = NEW_LOGICAL(ans_len));
 	from_llints_to_bools(LINTEGER(x), LOGICAL(ans), ans_len);
 	UNPROTECT(1);
@@ -391,7 +391,7 @@ SEXP new_INTEGER_from_Linteger(SEXP x)
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = get_Linteger_length(x);
+	ans_len = _get_Linteger_length(x);
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	from_llints_to_ints(LINTEGER(x), INTEGER(ans), ans_len);
 	UNPROTECT(1);
@@ -404,7 +404,7 @@ SEXP new_NUMERIC_from_Linteger(SEXP x)
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = get_Linteger_length(x);
+	ans_len = _get_Linteger_length(x);
 	PROTECT(ans = NEW_NUMERIC(ans_len));
 	from_llints_to_doubles(LINTEGER(x), REAL(ans), ans_len);
 	UNPROTECT(1);
@@ -417,7 +417,7 @@ SEXP new_CHARACTER_from_Linteger(SEXP x)
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = get_Linteger_length(x);
+	ans_len = _get_Linteger_length(x);
 	PROTECT(ans = NEW_CHARACTER(ans_len));
 	from_llints_to_STRSXP(LINTEGER(x), ans);
 	UNPROTECT(1);
@@ -636,8 +636,8 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1, SEXP e2)
 	int compare_op;
 	SEXP ans;
 
-	e1_len = get_Linteger_length(e1);
-	e2_len = get_Linteger_length(e2);
+	e1_len = _get_Linteger_length(e1);
+	e2_len = _get_Linteger_length(e2);
 	ans_len = compute_ans_length(e1_len, e2_len);
 	e1_elts = LINTEGER(e1);
 	e2_elts = LINTEGER(e2);
@@ -761,7 +761,7 @@ SEXP Linteger_Summary(SEXP Generic, SEXP x, SEXP na_rm)
 	int summary_op;
 	SEXP ans;
 
-	x_len = get_Linteger_length(x);
+	x_len = _get_Linteger_length(x);
 	x_elts = LINTEGER(x);
 	generic = CHAR(STRING_ELT(Generic, 0));
 

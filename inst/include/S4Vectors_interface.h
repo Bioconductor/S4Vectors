@@ -409,6 +409,16 @@ SEXP new_CHARACTER_from_CharAEAE(const CharAEAE *aeae);
 const char *get_classname(SEXP x);
 
 /*
+ * Linteger_class.c
+ */
+
+R_xlen_t get_Linteger_length(SEXP x);
+
+long long int *get_Linteger_dataptr(SEXP x);
+
+SEXP alloc_Linteger(const char *classname, R_xlen_t length);
+
+/*
  * subsetting_utils.c
  */
 
@@ -494,50 +504,57 @@ int get_select_mode(SEXP select);
  */
 
 SEXP construct_logical_Rle(
-	const int *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const int *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP construct_integer_Rle(
-	const int *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const int *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP construct_numeric_Rle(
-	const double *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const double *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP construct_complex_Rle(
-	const Rcomplex *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const Rcomplex *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP construct_character_Rle(
-	SEXP values,
-	const int *lengths,
-	int buflength
+	SEXP values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP construct_raw_Rle(
-	const Rbyte *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const Rbyte *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP construct_Rle(
-	SEXP values,
-	const int *lengths,
-	int buflength
+	SEXP values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 /*

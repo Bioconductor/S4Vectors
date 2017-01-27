@@ -15,6 +15,17 @@ static const R_CallMethodDef callMethods[] = {
 /* anyMissing.c */
 	CALLMETHOD_DEF(anyMissing, 1),
 
+/* Linteger_class.c */
+	CALLMETHOD_DEF(make_RAW_from_NA_LINTEGER, 0),
+	CALLMETHOD_DEF(new_Linteger_from_LOGICAL, 1),
+	CALLMETHOD_DEF(new_Linteger_from_INTEGER, 1),
+	CALLMETHOD_DEF(new_Linteger_from_NUMERIC, 1),
+	CALLMETHOD_DEF(new_Linteger_from_CHARACTER, 1),
+	CALLMETHOD_DEF(new_LOGICAL_from_Linteger, 1),
+	CALLMETHOD_DEF(new_INTEGER_from_Linteger, 1),
+	CALLMETHOD_DEF(new_NUMERIC_from_Linteger, 1),
+	CALLMETHOD_DEF(new_CHARACTER_from_Linteger, 1),
+
 /* subsetting_utils.c */
 	CALLMETHOD_DEF(vectorORfactor_extract_ranges, 3),
 
@@ -64,17 +75,6 @@ static const R_CallMethodDef callMethods[] = {
 /* eval_utils.c */
 	CALLMETHOD_DEF(top_prenv, 2),
 	CALLMETHOD_DEF(top_prenv_dots, 1),
-
-/* Linteger_class.c */
-	CALLMETHOD_DEF(make_RAW_from_NA_LINTEGER, 0),
-	CALLMETHOD_DEF(new_Linteger_from_LOGICAL, 1),
-	CALLMETHOD_DEF(new_Linteger_from_INTEGER, 1),
-	CALLMETHOD_DEF(new_Linteger_from_NUMERIC, 1),
-	CALLMETHOD_DEF(new_Linteger_from_CHARACTER, 1),
-	CALLMETHOD_DEF(new_LOGICAL_from_Linteger, 1),
-	CALLMETHOD_DEF(new_INTEGER_from_Linteger, 1),
-	CALLMETHOD_DEF(new_NUMERIC_from_Linteger, 1),
-	CALLMETHOD_DEF(new_CHARACTER_from_Linteger, 1),
 
 /* Hits_class.c */
 	CALLMETHOD_DEF(Hits_new, 6),
@@ -182,6 +182,11 @@ void R_init_S4Vectors(DllInfo *info)
 
 /* SEXP_utils.c */
 	REGISTER_CCALLABLE(_get_classname);
+
+/* Linteger_class.c */
+	REGISTER_CCALLABLE(_get_Linteger_length);
+	REGISTER_CCALLABLE(_get_Linteger_dataptr);
+	REGISTER_CCALLABLE(_alloc_Linteger);
 
 /* subsetting_utils.c */
 	REGISTER_CCALLABLE(_copy_vector_block);

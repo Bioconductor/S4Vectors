@@ -16,7 +16,7 @@ import(BiocGenerics)
 
 exportClasses(
     characterORNULL, vectorORfactor,
-    Linteger,
+    Linteger, integer_OR_Linteger,
     DataTable,
     NSBS,
     Annotated,
@@ -182,6 +182,7 @@ exportMethods(
     as.matrix, as.table,
     "[", "[<-",
     subset,
+    rep.int,
     c, append,
     "==", "!=", "<=", ">=", "<", ">",
     "Ops", "Summary",

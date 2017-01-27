@@ -10,6 +10,8 @@
 ### We don't support names for now. We will when we need them.
 setClass("Linteger", representation(bytes="raw"))
 
+setClassUnion("integer_OR_Linteger", c("integer", "Linteger"))
+
 is.Linteger <- function(x) is(x, "Linteger")
 
 BYTES_PER_LINTEGER <- .Machine$sizeof.longlong

@@ -190,7 +190,7 @@ SEXP Rle_integer_runsum(SEXP x, SEXP k, SEXP na_rm)
 	}
 
 	UNPROTECT(2);
-	return _construct_integer_Rle(buf_values, ans_len, buf_lengths, 0);
+	return _construct_integer_Rle(ans_len, buf_values, buf_lengths, 0, 0);
 }
 
 SEXP Rle_real_runsum(SEXP x, SEXP k, SEXP na_rm)
@@ -361,7 +361,7 @@ SEXP Rle_real_runsum(SEXP x, SEXP k, SEXP na_rm)
 
 	if (narm)
 	    UNPROTECT(1);
-	return _construct_numeric_Rle(buf_values, ans_len, buf_lengths, 0);
+	return _construct_numeric_Rle(ans_len, buf_values, buf_lengths, 0, 0);
 }
 
 /*
@@ -517,7 +517,7 @@ SEXP Rle_integer_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
 		}
 	}
 	UNPROTECT(2);
-	return _construct_numeric_Rle(buf_values, ans_len, buf_lengths, 0);
+	return _construct_numeric_Rle(ans_len, buf_values, buf_lengths, 0, 0);
 }
 
 SEXP Rle_real_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
@@ -645,7 +645,7 @@ SEXP Rle_real_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
 
 	if (narm)
 		UNPROTECT(1);
-	return _construct_numeric_Rle(buf_values, ans_len, buf_lengths, 0);
+	return _construct_numeric_Rle(ans_len, buf_values, buf_lengths, 0, 0);
 }
 
 /*
@@ -788,7 +788,7 @@ SEXP Rle_integer_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 			}
 		}
 	}
-	return _construct_integer_Rle(buf_values, ans_len, buf_lengths, 0);
+	return _construct_integer_Rle(ans_len, buf_values, buf_lengths, 0, 0);
 }
 
 SEXP Rle_real_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
@@ -910,7 +910,7 @@ SEXP Rle_real_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 			}
 		}
 	}
-	return _construct_numeric_Rle(buf_values, ans_len, buf_lengths, 0);
+	return _construct_numeric_Rle(ans_len, buf_values, buf_lengths, 0, 0);
 }
 
 

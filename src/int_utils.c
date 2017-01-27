@@ -102,8 +102,8 @@ int _sum_non_neg_ints(const int *x, int x_len, const char *varname)
 		if (sum > (unsigned int) INT_MAX) {
 			if (varname == NULL)
 				return -2;
-			error("integer overflow while summing elements "
-			      "in '%s'", varname);
+			error("sum of %s produces an integer overflow",
+			      varname);
 		}
 	}
 	return sum;

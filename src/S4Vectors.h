@@ -456,6 +456,12 @@ SEXP anyMissing(SEXP x);
 
 /* Linteger_class.c */
 
+R_xlen_t _get_Linteger_length(SEXP x);
+
+long long int *_get_Linteger_dataptr(SEXP x);
+
+SEXP _alloc_Linteger(const char *classname, R_xlen_t length);
+
 SEXP make_RAW_from_NA_LINTEGER();
 
 SEXP new_Linteger_from_LOGICAL(SEXP x);
@@ -787,55 +793,62 @@ SEXP make_all_group_inner_hits(
 /* Rle_class.c */
 
 SEXP _construct_logical_Rle(
-	const int *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const int *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+        R_xlen_t buflength
 );
 
 SEXP _construct_integer_Rle(
-	const int *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const int *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+        R_xlen_t buflength
 );
 
 SEXP _construct_numeric_Rle(
-	const double *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const double *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+        R_xlen_t buflength
 );
 
 SEXP _construct_complex_Rle(
-	const Rcomplex *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const Rcomplex *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+        R_xlen_t buflength
 );
 
 SEXP _construct_character_Rle(
-	SEXP values,
-	const int *lengths,
-	int buflength
+	SEXP values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP _construct_raw_Rle(
-	const Rbyte *values,
-	int nvalues,
-	const int *lengths,
-	int buflength
+	R_xlen_t nrun_in,
+	const Rbyte *values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+        R_xlen_t buflength
 );
 
 SEXP _construct_Rle(
-	SEXP values,
-	const int *lengths,
-	int buflength
+	SEXP values_in,
+	const void *lengths_in,
+	int lengths_in_is_L,
+	R_xlen_t buflength
 );
 
 SEXP Rle_constructor(
-	SEXP values,
-	SEXP lengths,
+	SEXP values_in,
+	SEXP lengths_in,
 	SEXP check,
 	SEXP buflength
 );

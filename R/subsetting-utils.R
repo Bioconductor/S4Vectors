@@ -618,7 +618,7 @@ setMethod("getListElement", "list",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### window(), head(), tail()
+### window(), head(), tail(), rep.int()
 ###
 
 ### S3/S4 combo for window.Linteger
@@ -665,4 +665,22 @@ tail_along_ROWS <- function(x, n=6L)
 }
 tail.Linteger <- function(x, ...) tail_along_ROWS(x, ...)
 setMethod("tail", "Linteger", tail.Linteger)
+
+setMethod("rep.int", "Linteger",
+    function(x, times)
+    {
+        x_len <- length(x)
+        times_len <- length(times)
+        if (times_len == 1L && times == 1L)
+            return(x)
+        if (times_len == x_len) {
+            i <- Rle(seq_len(x_len), times)
+        } else if (times_len == 1L) {
+            i <- IRanges(rep.int(1L, times), rep.int(x_len, times))
+        } else {
+            stop("invalid 'times' value")
+        }
+        extractROWS(x, i)
+    }
+)
 

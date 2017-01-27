@@ -5,7 +5,7 @@
 
 setClass("Rle",
          representation(values = "vectorORfactor",
-                        lengths = "integer"),
+                        lengths = "integer_OR_Linteger"),
          prototype = prototype(values = logical()),
          contains = "Vector",
          validity = function(object)
@@ -33,7 +33,7 @@ setGeneric("runLength", signature = "x",
            function(x) standardGeneric("runLength"))
 setMethod("runLength", "Rle", function(x) x@lengths)
  
-setMethod("length", "Rle", function(x) sum(runLength(x)))
+setMethod("length", "Rle", function(x) as.double(sum(runLength(x))))
 
 setGeneric("runValue", signature = "x",
            function(x) standardGeneric("runValue"))
@@ -52,27 +52,32 @@ setMethod("width", "Rle", function(x) runLength(x))
 ###
 
 ### Low-level constructor.
-new_Rle <- function(values=logical(0), lengths=integer(0), check=TRUE)
+new_Rle <- function(values=logical(0), lengths=NULL, check=TRUE)
 {
     stopifnot(is(values, "vectorORfactor"))
-    stopifnot(is.numeric(lengths))
-    if (!is.integer(lengths))
-        lengths <- as.integer(lengths)
+    if (!is.null(lengths)) {
+        if (!(is.numeric(lengths) || is.Linteger(lengths)))
+            stop("'lengths' must be NULL or a numeric or Linteger vector")
+        if (is.double(lengths))
+            lengths <- as.Linteger(lengths)
+        if (length(lengths) == 1L)
+            lengths <- rep.int(lengths, length(values))
+    }
     if (!isTRUEorFALSE(check))
         stop("'check' must be TRUE or FALSE")
-    .Call2("Rle_constructor", values, lengths, check, 0L, PACKAGE="S4Vectors")
+    .Call2("Rle_constructor", values, lengths, check, 0, PACKAGE="S4Vectors")
 }
 
 setGeneric("Rle", signature="values",
-    function(values=logical(0), lengths=integer(0)) standardGeneric("Rle")
+    function(values=logical(0), lengths=NULL) standardGeneric("Rle")
 )
 
 setMethod("Rle", "ANY",
-    function(values=logical(0), lengths=integer(0)) new_Rle(values, lengths)
+    function(values=logical(0), lengths=NULL) new_Rle(values, lengths)
 )
 
 setMethod("Rle", "Rle",
-    function(values=logical(0), lengths=integer(0))
+    function(values=logical(0), lengths=NULL)
     {
         if (!missing(lengths))
             stop(wmsg("'lengths' cannot be supplied when calling Rle() ",
