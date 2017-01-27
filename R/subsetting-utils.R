@@ -666,21 +666,27 @@ tail_along_ROWS <- function(x, n=6L)
 tail.Linteger <- function(x, ...) tail_along_ROWS(x, ...)
 setMethod("tail", "Linteger", tail.Linteger)
 
-setMethod("rep.int", "Linteger",
-    function(x, times)
-    {
-        x_len <- length(x)
-        times_len <- length(times)
-        if (times_len == 1L && times == 1L)
+rep.int_along_ROWS <- function(x, times)
+{
+    x_len <- length(x)
+    if (!(is.numeric(times) || is.Linteger(times)))
+        stop("'times' must be a numeric or Linteger vector")
+    times_len <- length(times)
+    if (times_len == 1L) {
+        if (times == 1L)
             return(x)
-        if (times_len == x_len) {
-            i <- Rle(seq_len(x_len), times)
-        } else if (times_len == 1L) {
-            i <- IRanges(rep.int(1L, times), rep.int(x_len, times))
-        } else {
-            stop("invalid 'times' value")
-        }
-        extractROWS(x, i)
+        if (times == 0L)
+            return(extractROWS(x, integer(0)))
     }
-)
+    if (times_len == x_len) {
+        i <- Rle(seq_len(x_len), times)
+    } else if (times_len == 1L) {
+        i <- IRanges::IRanges(rep.int(1L, times), rep.int(x_len, times))
+    } else {
+        stop("invalid 'times' value")
+    }
+    extractROWS(x, i)
+}
+
+setMethod("rep.int", "Linteger", rep.int_along_ROWS)
 

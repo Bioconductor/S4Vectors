@@ -480,6 +480,8 @@ setMethod("head", "Vector", head_along_ROWS)
 tail.Vector <- function(x, ...) tail(x, ...)
 setMethod("tail", "Vector", tail_along_ROWS)
 
+setMethod("rep.int", "Vector", rep.int_along_ROWS)
+
 ## NOT exported.
 revROWS <- function(x) extractROWS(x, rev(seq_len(NROW(x))))
 
