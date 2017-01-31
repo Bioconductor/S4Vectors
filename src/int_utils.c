@@ -73,52 +73,6 @@ SEXP Integer_any_missing_or_outside(SEXP x, SEXP lower, SEXP upper)
 
 
 /****************************************************************************
- * Sum non-negative integers.
- */
-
-/*
- * Walk 'x' and sum its elements. Stop walking at the first occurence of one
- * of the 3 following conditions: (1) the element is NA, or (2) the element is
- * negative, or (3) the partial sum is > INT_MAX (integer overflow).
- * How the function handles those conditions depends on 'varname'. If it's NULL
- * then no error is raised and a negative code is returned (indicating the kind
- * of condition that occured). Otherwise an error is raised (when not NULL,
- * 'varname' must be a C string i.e. 0-terminated).
- * If none of the 3 above conditions happen, then 'sum(x)' is returned.
- */
-int _sum_non_neg_ints(const int *x, int x_len, const char *varname)
-{
-	int i;
-	unsigned int sum;
-
-	for (i = sum = 0; i < x_len; i++, x++) {
-		if (*x == NA_INTEGER || *x < 0) {
-			if (varname == NULL)
-				return -1;
-			error("'%s' contains NAs or negative values",
-			      varname);
-		}
-		sum += *x;
-		if (sum > (unsigned int) INT_MAX) {
-			if (varname == NULL)
-				return -2;
-			error("sum of %s produces an integer overflow",
-			      varname);
-		}
-	}
-	return sum;
-}
-
-/*
- * --- .Call ENTRY POINT ---
- */
-SEXP Integer_sum_non_neg_vals(SEXP x)
-{
-	return ScalarInteger(_sum_non_neg_ints(INTEGER(x), LENGTH(x), "x"));
-}
-
-
-/****************************************************************************
  * --- .Call ENTRY POINT ---
  * diff(c(0L, x))
  */

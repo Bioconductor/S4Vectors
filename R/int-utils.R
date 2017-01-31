@@ -21,11 +21,6 @@ anyMissingOrOutside <- function(x, lower = -.Machine$integer.max,
            PACKAGE="S4Vectors")
 }
 
-### Returns 'sum(x)', or an error if 'x' contains NAs or negative values or if
-### an integer overflow occurs while summing.
-sumNonNegInts <- function(x)
-    .Call2("Integer_sum_non_neg_vals", x, PACKAGE="S4Vectors")
-
 ### Equivalent to (but much faster than):
 ###
 ###   diff(c(0L, x))

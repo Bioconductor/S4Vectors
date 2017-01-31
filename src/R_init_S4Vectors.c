@@ -42,7 +42,6 @@ static const R_CallMethodDef callMethods[] = {
 
 /* int_utils.c */
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
-	CALLMETHOD_DEF(Integer_sum_non_neg_vals, 1),
 	CALLMETHOD_DEF(Integer_diff_with_0, 1),
 	CALLMETHOD_DEF(Integer_diff_with_last, 2),
 	CALLMETHOD_DEF(Integer_order, 3),
@@ -200,7 +199,6 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_list_as_data_frame);
 
 /* int_utils.c */
-	REGISTER_CCALLABLE(_sum_non_neg_ints);
 	REGISTER_CCALLABLE(_check_integer_pairs);
 	REGISTER_CCALLABLE(_find_interv_and_start_from_width);
 

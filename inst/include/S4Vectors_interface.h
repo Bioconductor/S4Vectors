@@ -462,12 +462,6 @@ SEXP list_as_data_frame(
  * int_utils.c
  */
 
-int sum_non_neg_ints(
-	const int *x,
-	int x_len,
-	const char *varname
-);
-
 int check_integer_pairs(
 	SEXP a,
 	SEXP b,
