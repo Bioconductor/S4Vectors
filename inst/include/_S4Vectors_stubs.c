@@ -482,38 +482,38 @@ DEFINE_CCALLABLE_STUB(int, get_select_mode,
  */
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_logical_Rle,
-	(R_xlen_t nrun_in, const int *values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(         nrun_in,            values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(R_xlen_t nrun_in, const int *values_in, const void *lengths_in, int lengths_in_is_L),
+	(         nrun_in,            values_in,             lengths_in,     lengths_in_is_L)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_integer_Rle,
-	(R_xlen_t nrun_in, const int *values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(         nrun_in,            values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(R_xlen_t nrun_in, const int *values_in, const void *lengths_in, int lengths_in_is_L),
+	(         nrun_in,            values_in,             lengths_in,     lengths_in_is_L)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_numeric_Rle,
-	(R_xlen_t nrun_in, const double *values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(         nrun_in,               values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(R_xlen_t nrun_in, const double *values_in, const void *lengths_in, int lengths_in_is_L),
+	(         nrun_in,               values_in,             lengths_in,     lengths_in_is_L)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_complex_Rle,
-	(R_xlen_t nrun_in, const Rcomplex *values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(         nrun_in,                 values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(R_xlen_t nrun_in, const Rcomplex *values_in, const void *lengths_in, int lengths_in_is_L),
+	(         nrun_in,                 values_in,             lengths_in,     lengths_in_is_L)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_character_Rle,
-	(SEXP values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(     values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(SEXP values_in, const void *lengths_in, int lengths_in_is_L),
+	(     values_in,             lengths_in,     lengths_in_is_L)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_raw_Rle,
-	(R_xlen_t nrun_in, const Rbyte *values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(         nrun_in,              values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(R_xlen_t nrun_in, const Rbyte *values_in, const void *lengths_in, int lengths_in_is_L),
+	(         nrun_in,              values_in,             lengths_in,     lengths_in_is_L)
 )
 
 DEFINE_CCALLABLE_STUB(SEXP, construct_Rle,
-	(SEXP values_in, const void *lengths_in, int lengths_in_is_L, R_xlen_t buflength),
-	(     values_in,             lengths_in,     lengths_in_is_L,          buflength)
+	(SEXP values_in, const void *lengths_in, int lengths_in_is_L),
+	(     values_in,             lengths_in,     lengths_in_is_L)
 )
 
 /*

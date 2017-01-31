@@ -65,7 +65,7 @@ new_Rle <- function(values=logical(0), lengths=NULL)
         if (length(lengths) == 1L)
             lengths <- rep.int(lengths, length(values))
     }
-    .Call2("Rle_constructor", values, lengths, 0, PACKAGE="S4Vectors")
+    .Call2("Rle_constructor", values, lengths, PACKAGE="S4Vectors")
 }
 
 setGeneric("Rle", signature="values",

@@ -798,60 +798,52 @@ SEXP _construct_logical_Rle(
 	R_xlen_t nrun_in,
 	const int *values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-        R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP _construct_integer_Rle(
 	R_xlen_t nrun_in,
 	const int *values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-        R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP _construct_numeric_Rle(
 	R_xlen_t nrun_in,
 	const double *values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-        R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP _construct_complex_Rle(
 	R_xlen_t nrun_in,
 	const Rcomplex *values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-        R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP _construct_character_Rle(
 	SEXP values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-	R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP _construct_raw_Rle(
 	R_xlen_t nrun_in,
 	const Rbyte *values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-        R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP _construct_Rle(
 	SEXP values_in,
 	const void *lengths_in,
-	int lengths_in_is_L,
-	R_xlen_t buflength
+	int lengths_in_is_L
 );
 
 SEXP Rle_constructor(
 	SEXP values_in,
-	SEXP lengths_in,
-	SEXP buflength
+	SEXP lengths_in
 );
 
 SEXP Rle_start(SEXP x);

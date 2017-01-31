@@ -83,7 +83,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* Rle_class.c */
 	CALLMETHOD_DEF(Rle_length, 1),
-	CALLMETHOD_DEF(Rle_constructor, 3),
+	CALLMETHOD_DEF(Rle_constructor, 2),
 	CALLMETHOD_DEF(Rle_start, 1),
 	CALLMETHOD_DEF(Rle_end, 1),
 	CALLMETHOD_DEF(ranges_to_runs_mapper, 4),
