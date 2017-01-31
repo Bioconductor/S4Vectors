@@ -412,6 +412,8 @@ const char *get_classname(SEXP x);
  * Linteger_class.c
  */
 
+int is_Linteger(SEXP x);
+
 R_xlen_t get_Linteger_length(SEXP x);
 
 long long int *get_Linteger_dataptr(SEXP x);

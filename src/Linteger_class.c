@@ -10,6 +10,12 @@
 #define	NEW_LINTEGER(n)		_alloc_Linteger("Linteger", (n))
 #define	LINTEGER(x)		_get_Linteger_dataptr(x)
 
+int _is_Linteger(SEXP x)
+{
+	return isObject(x) &&
+	       strcmp(CHAR(STRING_ELT(GET_CLASS(x), 0)), "Linteger") == 0;
+}
+
 /* --- .Call ENTRY POINT --- */
 SEXP make_RAW_from_NA_LINTEGER()
 {

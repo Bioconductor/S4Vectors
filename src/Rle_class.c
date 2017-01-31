@@ -17,12 +17,14 @@ static SEXP _new_Rle(SEXP values, SEXP lengths)
 
 
 /****************************************************************************
- * length() getter
+ * Rle_length()
  */
 
-static R_xlen_t sum_int_lengths(const int *lengths, R_xlen_t nrun)
+static long long int sum_int_lengths(const int *lengths,
+	R_xlen_t nrun)
 {
-	R_xlen_t sum, i;
+	long long int sum;
+	R_xlen_t i;
 
 	sum = 0;
 	for (i = 0; i < nrun; i++, lengths++)
@@ -30,9 +32,11 @@ static R_xlen_t sum_int_lengths(const int *lengths, R_xlen_t nrun)
 	return sum;
 }
 
-static R_xlen_t sum_llint_lengths(const long long int *lengths, R_xlen_t nrun)
+static long long int sum_llint_lengths(const long long int *lengths,
+	R_xlen_t nrun)
 {
-	R_xlen_t sum, i;
+	long long int sum;
+	R_xlen_t i;
 
 	sum = 0;
 	for (i = 0; i < nrun; i++, lengths++)
@@ -43,26 +47,122 @@ static R_xlen_t sum_llint_lengths(const long long int *lengths, R_xlen_t nrun)
 /* --- .Call ENTRY POINT --- */
 SEXP Rle_length(SEXP x)
 {
-	SEXP lengths, ans;
-	R_xlen_t nrun, sum;
-	void *lengths_dataptr;
+	SEXP x_lengths, ans;
+	R_xlen_t x_nrun;
+	void *x_lengths_dataptr;
+	long long int sum;
 
-	lengths = GET_SLOT(x, install("lengths"));
-	if (IS_INTEGER(lengths)) {
-		nrun = XLENGTH(lengths);
-		lengths_dataptr = INTEGER(lengths);
-		sum = sum_int_lengths((const int *) lengths_dataptr, nrun);
+	x_lengths = GET_SLOT(x, install("lengths"));
+	if (IS_INTEGER(x_lengths)) {
+		x_nrun = XLENGTH(x_lengths);
+		x_lengths_dataptr = INTEGER(x_lengths);
+		sum = sum_int_lengths(x_lengths_dataptr, x_nrun);
+	} else if (_is_Linteger(x_lengths)) {
+		x_nrun = _get_Linteger_length(x_lengths);
+		x_lengths_dataptr = _get_Linteger_dataptr(x_lengths);
+		sum = sum_llint_lengths(x_lengths_dataptr, x_nrun);
 	} else {
-		/* 'lengths' is an Linteger vector */
-		nrun = _get_Linteger_length(lengths);
-		lengths_dataptr = _get_Linteger_dataptr(lengths);
-		sum = sum_llint_lengths(
-			(const long long int *) lengths_dataptr, nrun);
+		error("S4Vectors internal error in Rle_length(): "
+		      "'runLengths(x)' is not an integer\n"
+		      "  or Linteger vector");
 	}
+	if (sum < 0)
+		error("S4Vectors internal error in Rle_length(): "
+		      "Rle vector has a negative length");
+	if (sum > R_XLEN_T_MAX)
+		error("S4Vectors internal error in Rle_length(): "
+		      "Rle vector is too long");
 	PROTECT(ans = _alloc_Linteger("Linteger", 1));
 	_get_Linteger_dataptr(ans)[0] = sum;
 	UNPROTECT(1);
 	return ans;
+}
+
+
+/****************************************************************************
+ * Rle_valid()
+ */
+
+static char validity_msg[200];
+
+static int check_int_lengths(const int *lengths, R_xlen_t nrun)
+{
+	R_xlen_t i;
+
+	for (i = 0; i < nrun; i++, lengths++) {
+		if (*lengths == NA_INTEGER) {
+			snprintf(validity_msg, sizeof(validity_msg),
+				 "some run lengths are NA");
+			return 1;
+		}
+		if (*lengths <= 0) {
+			snprintf(validity_msg, sizeof(validity_msg),
+				 "some run lengths are non-positive");
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static int check_llint_lengths(const long long int *lengths, R_xlen_t nrun)
+{
+	int no_big_lengths;
+	R_xlen_t i;
+
+	no_big_lengths = 1;
+	for (i = 0; i < nrun; i++, lengths++) {
+		if (*lengths == NA_LINTEGER) {
+			snprintf(validity_msg, sizeof(validity_msg),
+				 "some run lengths are NA");
+			return 1;
+		}
+		if (*lengths <= 0) {
+			snprintf(validity_msg, sizeof(validity_msg),
+				 "some run lengths are non-positive");
+			return 1;
+		}
+		if (*lengths > INT_MAX)
+			no_big_lengths = 0;
+	}
+	if (no_big_lengths) {
+		snprintf(validity_msg, sizeof(validity_msg),
+			 "the run lengths are stored in an Linteger vector\n"
+			 "  when they could be in an integer vector");
+		return 1;
+	}
+	return 0;
+}
+
+static int valid_run_lengths(SEXP lengths)
+{
+	R_xlen_t nrun;
+	void *lengths_dataptr;
+
+	if (IS_INTEGER(lengths)) {
+		nrun = XLENGTH(lengths);
+		lengths_dataptr = INTEGER(lengths);
+		return check_int_lengths(lengths_dataptr, nrun);
+	}
+	if (_is_Linteger(lengths)) {
+		nrun = _get_Linteger_length(lengths);
+		lengths_dataptr = _get_Linteger_dataptr(lengths);
+		return check_llint_lengths(lengths_dataptr, nrun);
+	}
+	snprintf(validity_msg, sizeof(validity_msg),
+		 "'runLengths(x)' must be an integer or Linteger vector");
+	return 1;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP Rle_valid(SEXP x)
+{
+	SEXP x_lengths;
+
+	/* Check 'lengths' slot. */
+	x_lengths = GET_SLOT(x, install("lengths"));
+	if (valid_run_lengths(x_lengths))
+		return mkString(validity_msg);
+	return R_NilValue;
 }
 
 
@@ -846,16 +946,13 @@ SEXP Rle_constructor(SEXP values_in, SEXP lengths_in)
 		if (IS_INTEGER(lengths_in)) {
 			lengths_in_len = XLENGTH(lengths_in);
 			lengths_in_dataptr = INTEGER(lengths_in);
-		} else if (isObject(lengths_in) &&
-			   strcmp(CHAR(STRING_ELT(GET_CLASS(lengths_in), 0)),
-				  "Linteger") == 0)
-		{
+		} else if (_is_Linteger(lengths_in)) {
 			lengths_in_is_L = 1;
 			lengths_in_len = _get_Linteger_length(lengths_in);
 			lengths_in_dataptr = _get_Linteger_dataptr(lengths_in);
 		} else {
 			error("the supplied 'lengths' must be an integer or "
-			      "Linteger vector or NULL");
+			      "Linteger vector, or a NULL");
 		}
 		if (nrun_in != lengths_in_len)
 			error("'length(values)' != 'length(lengths)'");

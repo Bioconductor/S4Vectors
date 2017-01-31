@@ -83,6 +83,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* Rle_class.c */
 	CALLMETHOD_DEF(Rle_length, 1),
+	CALLMETHOD_DEF(Rle_valid, 1),
 	CALLMETHOD_DEF(Rle_constructor, 2),
 	CALLMETHOD_DEF(Rle_start, 1),
 	CALLMETHOD_DEF(Rle_end, 1),
@@ -185,6 +186,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_get_classname);
 
 /* Linteger_class.c */
+	REGISTER_CCALLABLE(_is_Linteger);
 	REGISTER_CCALLABLE(_get_Linteger_length);
 	REGISTER_CCALLABLE(_get_Linteger_dataptr);
 	REGISTER_CCALLABLE(_alloc_Linteger);

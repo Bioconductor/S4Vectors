@@ -456,13 +456,15 @@ SEXP anyMissing(SEXP x);
 
 /* Linteger_class.c */
 
+int _is_Linteger(SEXP x);
+
+SEXP make_RAW_from_NA_LINTEGER();
+
 R_xlen_t _get_Linteger_length(SEXP x);
 
 long long int *_get_Linteger_dataptr(SEXP x);
 
 SEXP _alloc_Linteger(const char *classname, R_xlen_t length);
-
-SEXP make_RAW_from_NA_LINTEGER();
 
 SEXP new_Linteger_from_LOGICAL(SEXP x);
 
@@ -793,6 +795,8 @@ SEXP make_all_group_inner_hits(
 /* Rle_class.c */
 
 SEXP Rle_length(SEXP x);
+
+SEXP Rle_valid(SEXP x);
 
 SEXP _construct_logical_Rle(
 	R_xlen_t nrun_in,

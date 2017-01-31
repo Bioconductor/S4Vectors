@@ -3,40 +3,32 @@
 ### -------------------------------------------------------------------------
 ###
 
+
 setClass("Rle",
-         representation(values = "vectorORfactor",
-                        lengths = "integer_OR_Linteger"),
-         prototype = prototype(values = logical()),
-         contains = "Vector",
-         validity = function(object)
-         {
-             msg <- NULL
-             run_values <- runValue(object)
-             run_lengths <- runLength(object)
-             if (length(run_values) != length(run_lengths))
-                 msg <- c(msg, "run values and run lengths must have the same length")
-             if (!all(run_lengths > 0L))
-                 msg <- c(msg, "all run lengths must be positive")
-             ## TODO: Fix the following test.
-             #if (length(run_lengths) >= 2 && is.atomic(run_values)
-             #      && any(run_values[-1L] == run_values[-length(run_values)]))
-             #    msg <- c(msg, "consecutive runs must have different values")
-             if (is.null(msg)) TRUE else msg
-         })
+    contains="Vector",
+    representation(
+        lengths="integer_OR_Linteger",
+        values="vectorORfactor"
+    ),
+    prototype(
+        lengths=integer(0),
+        values=logical(0)
+    )
+)
 
  
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters
 ###
 
-setGeneric("runLength", signature = "x",
-           function(x) standardGeneric("runLength"))
-setMethod("runLength", "Rle", function(x) x@lengths)
- 
 setMethod("length", "Rle",
     function(x) as.double(.Call2("Rle_length", x, PACKAGE="S4Vectors"))
 )
 
+setGeneric("runLength", signature = "x",
+           function(x) standardGeneric("runLength"))
+setMethod("runLength", "Rle", function(x) x@lengths)
+ 
 setGeneric("runValue", signature = "x",
            function(x) standardGeneric("runValue"))
 setMethod("runValue", "Rle", function(x) x@values)
@@ -47,6 +39,25 @@ setMethod("nrun", "Rle", function(x) length(runLength(x)))
 setMethod("start", "Rle", function(x) .Call2("Rle_start", x, PACKAGE="S4Vectors"))
 setMethod("end", "Rle", function(x) .Call2("Rle_end", x, PACKAGE="S4Vectors"))
 setMethod("width", "Rle", function(x) runLength(x))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity
+###
+
+.valid_Rle <- function(x)
+{
+    msg <- NULL
+    msg <- c(msg, .Call2("Rle_valid", x, PACKAGE="S4Vectors"))
+    ## Too expensive so commented out for now. Maybe do this in C?
+    #run_values <- runValues(x)
+    #if (length(run_values) >= 2 && is.atomic(run_values) &&
+    #    any(run_values[-1L] == run_values[-length(run_values)]))
+    #    msg <- c(msg, "consecutive runs must have different values")
+    msg
+}
+
+setValidity2("Rle", .valid_Rle)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

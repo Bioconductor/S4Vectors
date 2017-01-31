@@ -401,6 +401,11 @@ DEFINE_CCALLABLE_STUB(const char *, get_classname,
  * Stubs for callables defined in Linteger_class.c
  */
 
+DEFINE_CCALLABLE_STUB(int, is_Linteger,
+	(SEXP x),
+	(     x)
+)
+
 DEFINE_CCALLABLE_STUB(R_xlen_t, get_Linteger_length,
 	(SEXP x),
 	(     x)
