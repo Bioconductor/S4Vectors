@@ -71,8 +71,13 @@ new_Rle <- function(values=logical(0), lengths=NULL)
     if (!is.null(lengths)) {
         if (!(is.numeric(lengths) || is.Linteger(lengths)))
             stop("'lengths' must be NULL or a numeric or Linteger vector")
-        if (is.double(lengths))
-            lengths <- as.Linteger(lengths)
+        if (anyNA(lengths))
+            stop("'lengths' cannot contain NAs")
+        if (is.double(lengths)) {
+            suppressWarnings(lengths <- as.Linteger(lengths))
+            if (anyNA(lengths))
+                stop("Rle vector is too long")
+        }
         if (length(lengths) == 1L)
             lengths <- rep.int(lengths, length(values))
     }
@@ -872,8 +877,8 @@ setMethod("show", "Rle",
               nr <- nrun(object)
               halfWidth <- getOption("width") %/% 2L
               cat(classNameForDisplay(runValue(object)),
-                  "-Rle of length ", lo, " with ", nr,
-                  ifelse(nr == 1, " run\n", " runs\n"), sep = "")
+                  "-Rle of length ", as.character(as.Linteger(lo)),
+                  " with ", nr, ifelse(nr == 1, " run\n", " runs\n"), sep = "")
               first <- max(1L, halfWidth)
               showMatrix <-
                 rbind(as.character(head(runLength(object), first)),

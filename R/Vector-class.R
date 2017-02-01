@@ -117,8 +117,8 @@ setMethod("anyNA", "Vector", function(x, recursive=FALSE) any(is.na(x)))
 .valid.Vector.length <- function(x)
 {
     x_len <- length(x)
-    if (!isSingleInteger(x_len) || x_len < 0L)
-        return("'length(x)' must be a single non-negative integer")
+    if (!isSingleNumber(x_len) || x_len < 0L)
+        return("'length(x)' must be a single non-negative number")
     if (!is.null(attributes(x_len)))
         return("'length(x)' must be a single integer with no attributes")
     NULL
