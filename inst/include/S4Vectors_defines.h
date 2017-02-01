@@ -20,6 +20,21 @@
 
 #define	NA_LINTEGER	LLONG_MIN
 
+/* Get or set i-th element from int or long long int array 'x'.
+   GET_INT_OR_LLINT() always returns a long long int.
+   SET_INT_OR_LLINT() can take a value 'v' that is int or long long int but
+   is not safe if 'is_llint' is 0 and 'v' is a long long int. */
+#define	GET_INT_OR_LLINT(x, is_llint, i)			\
+	((is_llint) ? ((const long long int *)(x))[i]		\
+		    : (long long int) ((const int *)(x))[i])
+#define	SET_INT_OR_LLINT(x, is_llint, i, v)			\
+{								\
+        if (is_llint)						\
+                ((long long int *)(x))[i] = (v);		\
+        else							\
+                ((int *)(x))[i] = (v);				\
+}
+
 /* Hash table -- modified from R_HOME/src/main/unique.c */
 struct htab {
 	int K, M;

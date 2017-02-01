@@ -20,18 +20,16 @@ else
     return (a*p + q/2)/q;
 }
 
-static R_xlen_t compute_nrun_out(SEXP lengths_in, int k)
+static R_xlen_t compute_nrun_out(int nrun_in,
+	const void *lengths_in, int lengths_in_is_L, int k)
 {
-	R_xlen_t nrun_in, nrun_out, i;
-	const int *curr_length;
+	R_xlen_t nrun_out, i;
+	long long int len_in;
 
-	nrun_in = XLENGTH(lengths_in);
 	nrun_out = 0;
-	for (i = 0, curr_length = INTEGER(lengths_in);
-	     i < nrun_in;
-	     i++, curr_length++)
-	{
-		nrun_out += k < *curr_length ? k : *curr_length;
+	for (i = 0; i < nrun_in; i++) {
+		len_in = GET_INT_OR_LLINT(lengths_in, lengths_in_is_L, i);
+		nrun_out += k < len_in ? k : len_in;
 	}
 	if (nrun_out < k)
 		error("S4Vectors internal error in compute_nrun_out(): "
@@ -41,23 +39,25 @@ static R_xlen_t compute_nrun_out(SEXP lengths_in, int k)
 }
 
 static void compute_runsum_integer_runs(R_xlen_t nrun_in,
-	const int *values_in, const int *lengths_in,
+	const int *values_in, const void *lengths_in, int lengths_in_is_L,
 	int k, int narm,
-	R_xlen_t nrun_out, int *values_out, int *lengths_out)
+	R_xlen_t nrun_out, int *values_out, void *lengths_out)
 {
-	R_xlen_t i, j, offset_in_run, i2;
-	int len_in, k2, times;
+	R_xlen_t i, j, i2;
+	long long int len_in, offset_in_run, k2, times;
 	int val_in, val_out, val2_in;
 
 	j = 0;
 	for (i = 0; i < nrun_in; i++) {
-		len_in = lengths_in[i];
+		len_in = GET_INT_OR_LLINT(lengths_in, lengths_in_is_L, i);
 		val_in = values_in[i];
 		if (narm && val_in == NA_INTEGER)
 			val_in = 0;
 		if (k <= len_in) {
 			values_out[j] = _safe_int_mult(k, val_in);
-			lengths_out[j] = offset_in_run = len_in - k + 1;
+			offset_in_run = len_in - k + 1;
+			SET_INT_OR_LLINT(lengths_out, lengths_in_is_L,
+					 j, offset_in_run);
 			if (++j == nrun_out)
 				return;
 			if (j % 500000 == 0)
@@ -66,12 +66,14 @@ static void compute_runsum_integer_runs(R_xlen_t nrun_in,
 			offset_in_run = 0;
 		}
 		while (offset_in_run < len_in) {
-			k2 = len_in - offset_in_run;
+			k2 = len_in - offset_in_run;  /* < k */
 			val_out = _safe_int_mult(k2, val_in);
 			i2 = i;
 			do {
 				i2++;
-				k2 += times = lengths_in[i2];
+				k2 += times = GET_INT_OR_LLINT(lengths_in,
+							       lengths_in_is_L,
+							       i2);
 				if (k2 > k)
 					times -= k2 - k;
 				val2_in = values_in[i2];
@@ -81,7 +83,7 @@ static void compute_runsum_integer_runs(R_xlen_t nrun_in,
 					      _safe_int_mult(times, val2_in));
 			} while (k2 < k);
 			values_out[j] = val_out;
-			lengths_out[j] = 1;
+			SET_INT_OR_LLINT(lengths_out, lengths_in_is_L, j, 1);
 			if (++j == nrun_out)
 				return;
 			if (j % 500000 == 0)
@@ -93,23 +95,25 @@ static void compute_runsum_integer_runs(R_xlen_t nrun_in,
 }
 
 static void compute_runsum_numeric_runs(R_xlen_t nrun_in,
-	const double *values_in, const int *lengths_in,
+	const double *values_in, const void *lengths_in, int lengths_in_is_L,
 	int k, int narm,
-	R_xlen_t nrun_out, double *values_out, int *lengths_out)
+	R_xlen_t nrun_out, double *values_out, void *lengths_out)
 {
-	R_xlen_t i, j, offset_in_run, i2;
-	int len_in, k2, times;
+	R_xlen_t i, j, i2;
+	long long int len_in, offset_in_run, k2, times;
 	double val_in, val_out, val2_in;
 
 	j = 0;
 	for (i = 0; i < nrun_in; i++) {
-		len_in = lengths_in[i];
+		len_in = GET_INT_OR_LLINT(lengths_in, lengths_in_is_L, i);
 		val_in = values_in[i];
 		if (narm && ISNAN(val_in))
 			val_in = 0.0;
 		if (k <= len_in) {
 			values_out[j] = k * val_in;
-			lengths_out[j] = offset_in_run = len_in - k + 1;
+			offset_in_run = len_in - k + 1;
+			SET_INT_OR_LLINT(lengths_out, lengths_in_is_L,
+					 j, offset_in_run);
 			if (++j == nrun_out)
 				return;
 			if (j % 500000 == 0)
@@ -118,12 +122,14 @@ static void compute_runsum_numeric_runs(R_xlen_t nrun_in,
 			offset_in_run = 0;
 		}
 		while (offset_in_run < len_in) {
-			k2 = len_in - offset_in_run;
+			k2 = len_in - offset_in_run;  /* < k */
 			val_out = k2 * val_in;
 			i2 = i;
 			do {
 				i2++;
-				k2 += times = lengths_in[i2];
+				k2 += times = GET_INT_OR_LLINT(lengths_in,
+							       lengths_in_is_L,
+							       i2);
 				if (k2 > k)
 					times -= k2 - k;
 				val2_in = values_in[i2];
@@ -132,7 +138,7 @@ static void compute_runsum_numeric_runs(R_xlen_t nrun_in,
 				val_out += times * val2_in;
 			} while (k2 < k);
 			values_out[j] = val_out;
-			lengths_out[j] = 1;
+			SET_INT_OR_LLINT(lengths_out, lengths_in_is_L, j, 1);
 			if (++j == nrun_out)
 				return;
 			if (j % 500000 == 0)
@@ -143,57 +149,17 @@ static void compute_runsum_numeric_runs(R_xlen_t nrun_in,
 	return;
 }
 
-static SEXP runsum_integer_Rle(SEXP x, int k, int narm)
-{
-	SEXP lengths_in, values_in;
-	R_xlen_t nrun_out;
-	int *lengths_out, *values_out;
-
-	lengths_in = GET_SLOT(x, install("lengths"));
-	nrun_out = compute_nrun_out(lengths_in, k);
-	values_out = (int *) R_alloc(nrun_out, sizeof(int));
-	lengths_out = (int *) R_alloc(nrun_out, sizeof(int));
-	values_in = GET_SLOT(x, install("values"));
-	_reset_ovflow_flag();
-	compute_runsum_integer_runs(XLENGTH(values_in),
-		INTEGER(values_in), INTEGER(lengths_in),
-		k, narm,
-		nrun_out, values_out, lengths_out);
-	if (_get_ovflow_flag())
-		warning("NAs produced by integer overflow. You can use:\n"
-			"      runValue(x) <- as.numeric(runValue(x))\n"
-			"      runsum(x, ...)\n"
-			"  to work around it.");
-	return _construct_integer_Rle(nrun_out, values_out, lengths_out, 0);
-}
-
-static SEXP runsum_numeric_Rle(SEXP x, int k, int narm)
-{
-	SEXP lengths_in, values_in;
-	R_xlen_t nrun_out;
-	int *lengths_out;
-	double *values_out;
-
-	lengths_in = GET_SLOT(x, install("lengths"));
-	nrun_out = compute_nrun_out(lengths_in, k);
-	values_out = (double *) R_alloc(nrun_out, sizeof(double));
-	lengths_out = (int *) R_alloc(nrun_out, sizeof(int));
-	values_in = GET_SLOT(x, install("values"));
-	compute_runsum_numeric_runs(XLENGTH(values_in),
-		REAL(values_in), INTEGER(lengths_in),
-		k, narm,
-		nrun_out, values_out, lengths_out);
-	return _construct_numeric_Rle(nrun_out, values_out, lengths_out, 0);
-}
-
 /*
  * --- .Call ENTRY POINT ---
  */
 
 SEXP Rle_runsum(SEXP x, SEXP k, SEXP na_rm)
 {
-	int k0, narm;
-	SEXP x_values;
+	int k0, narm, lengths_in_is_L;
+	SEXP x_lengths, x_values;
+	R_xlen_t nrun_in, nrun_out;
+	const void *lengths_in;
+	void *lengths_out, *values_out;
 
 	if (!IS_INTEGER(k) || LENGTH(k) != 1 ||
 	    (k0 = INTEGER(k)[0]) == NA_INTEGER || k0 <= 0)
@@ -201,11 +167,55 @@ SEXP Rle_runsum(SEXP x, SEXP k, SEXP na_rm)
 	if (!IS_LOGICAL(na_rm) || LENGTH(na_rm) != 1 ||
 	    (narm = LOGICAL(na_rm)[0]) == NA_LOGICAL)
 		error("'na_rm' must be TRUE or FALSE");
+
+	x_lengths = GET_SLOT(x, install("lengths"));
+
+	if (IS_INTEGER(x_lengths)) {
+		nrun_in = XLENGTH(x_lengths);
+		lengths_in = INTEGER(x_lengths);
+		lengths_in_is_L = 0;
+	} else {
+		nrun_in = _get_Linteger_length(x_lengths);
+		lengths_in = _get_Linteger_dataptr(x_lengths);
+		lengths_in_is_L = 1;
+	}
+	nrun_out = compute_nrun_out(nrun_in, lengths_in, lengths_in_is_L, k0);
+	if (lengths_in_is_L) {
+		lengths_out = (long long int *)
+				R_alloc(nrun_out, sizeof(long long int));
+	} else {
+		lengths_out = (int *) R_alloc(nrun_out, sizeof(int));
+	}
+
 	x_values = GET_SLOT(x, install("values"));
-	if (IS_INTEGER(x_values))
-		return runsum_integer_Rle(x, k0, narm);
-	if (IS_NUMERIC(x_values))
-		return runsum_numeric_Rle(x, k0, narm);
+
+	if (IS_INTEGER(x_values)) {
+		values_out = (int *) R_alloc(nrun_out, sizeof(int));
+		_reset_ovflow_flag();
+		compute_runsum_integer_runs(nrun_in,
+			INTEGER(x_values), lengths_in, lengths_in_is_L,
+			k0, narm,
+			nrun_out, values_out, lengths_out);
+		if (_get_ovflow_flag())
+			warning("NAs produced by integer overflow. "
+			  "You can use:\n"
+			  "      runValue(x) <- as.numeric(runValue(x))\n"
+			  "      runsum(x, ...)\n"
+			  "  to work around it.");
+		return _construct_integer_Rle(nrun_out, values_out,
+					      lengths_out, lengths_in_is_L);
+	}
+
+	if (IS_NUMERIC(x_values)) {
+		values_out = (double *) R_alloc(nrun_out, sizeof(double));
+		compute_runsum_numeric_runs(nrun_in,
+			REAL(x_values), lengths_in, lengths_in_is_L,
+			k0, narm,
+			nrun_out, values_out, lengths_out);
+		return _construct_numeric_Rle(nrun_out, values_out,
+					      lengths_out, lengths_in_is_L);
+	}
+
 	error("runsum only supported for integer- and numeric-Rle vectors");
 	return R_NilValue;
 }
