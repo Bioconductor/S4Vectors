@@ -502,14 +502,14 @@ int _copy_vector_ranges(
 	int nranges
 );
 
-SEXP _subset_vectorORfactor_by_ranges(
+SEXP _subset_vector_OR_factor_by_ranges(
 	SEXP x,
 	const int *start,
 	const int *width,
 	int nranges
 );
 
-SEXP vectorORfactor_extract_ranges(
+SEXP vector_OR_factor_extract_ranges(
 	SEXP x,
 	SEXP start,
 	SEXP width

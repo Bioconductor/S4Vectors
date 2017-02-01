@@ -91,10 +91,10 @@ int _copy_vector_ranges(SEXP dest, int dest_offset,
 
 
 /****************************************************************************
- * vectorORfactor_extract_ranges()
+ * vector_OR_factor_extract_ranges()
  */
 
-SEXP _subset_vectorORfactor_by_ranges(SEXP x,
+SEXP _subset_vector_OR_factor_by_ranges(SEXP x,
 		const int *start, const int *width, int nranges)
 {
 	int x_len, i, ans_len, start_i, width_i, end_i;
@@ -155,7 +155,7 @@ SEXP _subset_vectorORfactor_by_ranges(SEXP x,
  * Return an object of the same type as 'x' (names and levels are propagated).
  */
 
-SEXP vectorORfactor_extract_ranges(SEXP x, SEXP start, SEXP width)
+SEXP vector_OR_factor_extract_ranges(SEXP x, SEXP start, SEXP width)
 {
 	int nranges;
 	const int *start_p, *width_p;
@@ -163,6 +163,6 @@ SEXP vectorORfactor_extract_ranges(SEXP x, SEXP start, SEXP width)
 	nranges = _check_integer_pairs(start, width,
 				       &start_p, &width_p,
 				       "start", "width");
-	return _subset_vectorORfactor_by_ranges(x, start_p, width_p, nranges);
+	return _subset_vector_OR_factor_by_ranges(x, start_p, width_p, nranges);
 }
 

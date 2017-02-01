@@ -9,7 +9,7 @@ setClass("Pairs",
          contains="Vector",
          representation(first="ANY",
                         second="ANY",
-                        NAMES="characterORNULL"),
+                        NAMES="character_OR_NULL"),
          prototype(first=logical(0L),
                    second=logical(0L),
                    elementMetadata=DataFrame()))

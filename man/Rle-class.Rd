@@ -25,8 +25,6 @@
 
 \alias{as.vector,Rle-method}
 \alias{as.vector.Rle}
-\alias{as.vectorORfactor}
-\alias{as.vectorORfactor,Rle-method}
 \alias{as.factor,Rle-method}
 \alias{as.data.frame,Rle-method}
 \alias{as.list,Rle-method}
@@ -180,12 +178,6 @@
         \code{x}. The vector will be coerced to the requested \code{mode},
         unless \code{mode} is "any", in which case the most appropriate
         type is chosen.
-      }
-      \item{}{
-        \code{as.vectorORfactor(x)}: Creates an atomic vector or factor,
-        based on the type of values contained in \code{x}. This is the
-        most general way to decompress the Rle to a native R data
-        structure.
       }
       \item{}{
         \code{as.factor(x)}, \code{as(from, "factor")}: Creates a factor object

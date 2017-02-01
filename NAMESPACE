@@ -15,19 +15,19 @@ import(BiocGenerics)
 ###
 
 exportClasses(
-    characterORNULL, vectorORfactor,
+    character_OR_NULL, vector_OR_factor,
     Linteger, integer_OR_Linteger,
     DataTable,
     NSBS,
     Annotated,
-    DataTableORNULL, Vector,
+    DataTable_OR_NULL, Vector,
     Hits, SelfHits, SortedByQueryHits, SortedByQuerySelfHits,
     Rle,
     List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
     DataFrame,
-    expressionORfunction, FilterRules, FilterMatrix,
+    expression_OR_function, FilterRules, FilterMatrix,
     Pairs
 )
 

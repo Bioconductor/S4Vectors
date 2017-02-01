@@ -7,7 +7,7 @@
 setClass("Rle",
     contains="Vector",
     representation(
-        values="vectorORfactor",
+        values="vector_OR_factor",
         lengths="integer_OR_Linteger"
     ),
     prototype(
@@ -67,7 +67,7 @@ setValidity2("Rle", .valid_Rle)
 ### Low-level constructor.
 new_Rle <- function(values=logical(0), lengths=NULL)
 {
-    stopifnot(is(values, "vectorORfactor"))
+    stopifnot(is(values, "vector_OR_factor"))
     if (!is.null(lengths)) {
         if (!(is.numeric(lengths) || is.Linteger(lengths)))
             stop("'lengths' must be NULL or a numeric or Linteger vector")

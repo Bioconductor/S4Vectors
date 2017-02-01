@@ -4,7 +4,7 @@
 ###
 
 
-setClassUnion("characterORNULL", c("character", "NULL"))
+setClassUnion("character_OR_NULL", c("character", "NULL"))
 
 ### WARNING: The behavior of is.vector(), is( , "vector"), is.list(), and
 ### is( ,"list") makes no sense:
@@ -19,12 +19,12 @@ setClassUnion("characterORNULL", c("character", "NULL"))
 ### Building our software on top of such a mess won't give us anything good.
 ### For example, it's not too surprising that the union class we define below
 ### is broken:
-###   6. is(data.frame(), "vectorORfactor") is TRUE even though
+###   6. is(data.frame(), "vector_OR_factor") is TRUE even though
 ###      is(data.frame(), "vector") and is(data.frame(), "factor") are both
 ###      FALSE.
 ### Results above obtained with R-3.1.2 and R-3.2.0.
 ### TODO: Be brave and report this craziness to the R bug tracker.
-setClassUnion("vectorORfactor", c("vector", "factor"))
+setClassUnion("vector_OR_factor", c("vector", "factor"))
 
 
 ### We define the coercion method below as a workaround to the following

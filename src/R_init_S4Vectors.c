@@ -27,7 +27,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(new_CHARACTER_from_Linteger, 1),
 
 /* subsetting_utils.c */
-	CALLMETHOD_DEF(vectorORfactor_extract_ranges, 3),
+	CALLMETHOD_DEF(vector_OR_factor_extract_ranges, 3),
 
 /* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),

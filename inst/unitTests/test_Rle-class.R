@@ -106,7 +106,7 @@ test_extract_ranges_from_Rle <- function() {
 
     start <- seq_len(length(x) - 5L)
     width <- rep(c(6L, 2L, 7L), length.out=length(start))
-    target <- S4Vectors:::extract_ranges_from_vectorORfactor(
+    target <- S4Vectors:::extract_ranges_from_vector_OR_factor(
                                   S4Vectors:::decodeRle(x), start, width)
     for (method in 0:3) {
         current <- extract_ranges_from_Rle(x, start, width, method)
@@ -115,7 +115,7 @@ test_extract_ranges_from_Rle <- function() {
 
     start <- rev(start)
     width <- rev(width)
-    target <- S4Vectors:::extract_ranges_from_vectorORfactor(
+    target <- S4Vectors:::extract_ranges_from_vector_OR_factor(
                                   S4Vectors:::decodeRle(x), start, width)
     for (method in 0:3) {
         current <- extract_ranges_from_Rle(x, start, width, method)

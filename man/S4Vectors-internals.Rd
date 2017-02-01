@@ -1,12 +1,12 @@
 \name{S4Vectors internals}
 
 % Stuff from R/S4-utils.R:
-\alias{class:characterORNULL}
-\alias{characterORNULL-class}
-\alias{characterORNULL}
-\alias{class:vectorORfactor}
-\alias{vectorORfactor-class}
-\alias{vectorORfactor}
+\alias{class:character_OR_NULL}
+\alias{character_OR_NULL-class}
+\alias{character_OR_NULL}
+\alias{class:vector_OR_factor}
+\alias{vector_OR_factor-class}
+\alias{vector_OR_factor}
 \alias{coerce,ANY,vector-method}
 \alias{setValidity2}
 \alias{new2}

@@ -9,7 +9,7 @@
 ## need to store the number of rows (nrows).
 setClass("DataFrame",
          representation(
-                        rownames = "characterORNULL",
+                        rownames = "character_OR_NULL",
                         nrows = "integer"
                         ),
          prototype(rownames = NULL,
@@ -636,7 +636,7 @@ setAs("AsIs", "DataFrame",
 
 setAs("ANY", "AsIs", function(from) I(from))
 
-setAs("ANY", "DataTableORNULL", function(from) as(from, "DataFrame"))
+setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.

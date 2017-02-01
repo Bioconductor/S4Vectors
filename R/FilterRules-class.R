@@ -2,10 +2,10 @@
 ### FilterRules objects
 ### -------------------------------------------------------------------------
 
-setClassUnion("expressionORfunction", c("expression", "function"))
+setClassUnion("expression_OR_function", c("expression", "function"))
 
 setClass("FilterRules", representation(active = "logical"),
-         prototype(elementType = "expressionORfunction"),
+         prototype(elementType = "expression_OR_function"),
          contains = "SimpleList")
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

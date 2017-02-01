@@ -1,9 +1,9 @@
 \name{FilterRules-class}
 \docType{class}
 
-\alias{class:expressionORfunction}
-\alias{expressionORfunction-class}
-\alias{expressionORfunction}
+\alias{class:expression_OR_function}
+\alias{expression_OR_function-class}
+\alias{expression_OR_function}
 
 \alias{class:FilterRules}
 \alias{FilterRules-class}

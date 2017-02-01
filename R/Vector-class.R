@@ -7,13 +7,13 @@
 ###
 
 
-setClassUnion("DataTableORNULL", c("DataTable", "NULL"))
+setClassUnion("DataTable_OR_NULL", c("DataTable", "NULL"))
 
 setClass("Vector",
     contains="Annotated",
     representation(
         "VIRTUAL",
-        elementMetadata="DataTableORNULL"
+        elementMetadata="DataTable_OR_NULL"
     )
 )
 
@@ -173,7 +173,7 @@ setMethod("anyNA", "Vector", function(x, recursive=FALSE) any(is.na(x)))
 .valid.Vector.mcols <- function(x)
 {
     x_mcols <- mcols(x)
-    if (!is(x_mcols, "DataTableORNULL"))
+    if (!is(x_mcols, "DataTable_OR_NULL"))
         return("'mcols(x)' must be a DataTable object or NULL")
     if (is.null(x_mcols))
         return(NULL)

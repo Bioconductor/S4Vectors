@@ -1,9 +1,9 @@
 \name{Vector-class}
 \docType{class}
 
-\alias{class:DataTableORNULL}
-\alias{DataTableORNULL-class}
-\alias{DataTableORNULL}
+\alias{class:DataTable_OR_NULL}
+\alias{DataTable_OR_NULL-class}
+\alias{DataTable_OR_NULL}
 
 % Vector class, functions and methods:
 \alias{class:Vector}

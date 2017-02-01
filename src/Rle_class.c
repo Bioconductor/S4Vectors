@@ -1359,7 +1359,7 @@ static SEXP extract_Rle_range(SEXP x_values, const int *x_lengths,
 {
 	SEXP ans_values, ans_lengths, ans;
 
-	PROTECT(ans_values = _subset_vectorORfactor_by_ranges(x_values,
+	PROTECT(ans_values = _subset_vector_OR_factor_by_ranges(x_values,
 					&start_nrun, &spanned_nrun, 1));
 	PROTECT(ans_lengths = NEW_INTEGER(spanned_nrun));
 	if (spanned_nrun != 0) {
@@ -1408,7 +1408,7 @@ static SEXP subset_Rle_by_runs(SEXP x,
 		return extract_Rle_range(x_values, INTEGER(x_lengths),
 				start_nrun[0], spanned_nrun[0],
 				Ltrim[0], Rtrim[0]);
-	PROTECT(tmp_values = _subset_vectorORfactor_by_ranges(x_values,
+	PROTECT(tmp_values = _subset_vector_OR_factor_by_ranges(x_values,
 					start_nrun, spanned_nrun, nranges));
 	tmp_nrun = LENGTH(tmp_values);
 	tmp_lengths = (int *) R_alloc(sizeof(int), tmp_nrun);
@@ -1597,9 +1597,9 @@ SEXP Rle_window_aslist(SEXP x, SEXP runStart, SEXP runEnd,
 
 	PROTECT(ans = NEW_LIST(2));
 	PROTECT(ans_names = NEW_CHARACTER(2));
-	PROTECT(ans_values = vectorORfactor_extract_ranges(values,
+	PROTECT(ans_values = vector_OR_factor_extract_ranges(values,
 					runStart, runWidth));
-	PROTECT(ans_lengths = vectorORfactor_extract_ranges(lengths,
+	PROTECT(ans_lengths = vector_OR_factor_extract_ranges(lengths,
 					runStart, runWidth));
 
     if (INTEGER(runWidth)[0] > 0) {
