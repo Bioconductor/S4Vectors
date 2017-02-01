@@ -7,12 +7,12 @@
 setClass("Rle",
     contains="Vector",
     representation(
-        lengths="integer_OR_Linteger",
-        values="vectorORfactor"
+        values="vectorORfactor",
+        lengths="integer_OR_Linteger"
     ),
     prototype(
-        lengths=integer(0),
-        values=logical(0)
+        values=logical(0),
+        lengths=integer(0)
     )
 )
 
