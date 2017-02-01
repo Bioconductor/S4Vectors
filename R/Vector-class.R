@@ -109,6 +109,7 @@ setMethod("values", "Vector", function(x, ...) elementMetadata(x, ...))
 
 setMethod("anyNA", "Vector", function(x, recursive=FALSE) any(is.na(x)))
 
+setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.

@@ -83,6 +83,8 @@
 \alias{parallelVectorNames}
 \alias{parallelVectorNames,ANY-method}
 
+\alias{anyNA,Vector-method}
+\alias{is.na,Vector-method}
 
 \title{Vector objects}
 
