@@ -73,13 +73,6 @@
 \alias{expand.grid}
 \alias{expand.grid,Vector-method}
 
-\alias{classNameForDisplay}
-\alias{classNameForDisplay,ANY-method}
-\alias{classNameForDisplay,AsIs-method}
-\alias{showAsCell}
-\alias{showAsCell,ANY-method}
-\alias{showAsCell,AsIs-method}
-
 \alias{parallelVectorNames}
 \alias{parallelVectorNames,ANY-method}
 
