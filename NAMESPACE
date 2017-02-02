@@ -312,6 +312,9 @@ export(
 ###
 
 export(
+    ## show-utils.R:
+    classNameForDisplay, showAsCell,
+
     ## isSorted.R:
     isConstant, isSorted, isStrictlySorted,
 
@@ -336,7 +339,6 @@ export(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    classNameForDisplay, showAsCell,
 
     ## Vector-comparison.R:
     pcompare,
@@ -381,6 +383,7 @@ export(
 
 ### Exactly the same list as above.
 exportMethods(
+    classNameForDisplay, showAsCell,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
     normalizeSingleBracketReplacementValue,
@@ -394,7 +397,6 @@ exportMethods(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    classNameForDisplay, showAsCell,
     pcompare, 
     selfmatch,
     findMatches, countMatches,

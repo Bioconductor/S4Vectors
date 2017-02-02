@@ -26,6 +26,7 @@
 \alias{Linteger}
 
 \alias{show,Linteger-method}
+\alias{showAsCell,Linteger-method}
 
 \alias{c,Linteger-method}
 
@@ -94,6 +95,9 @@ is.Linteger(x)
 }
 
 \examples{
+## A long long int uses 8 bytes (i.e. 64 bits) in C:
+.Machine$sizeof.longlong
+
 ## ---------------------------------------------------------------------
 ## SIMPLE EXAMPLES
 ## ---------------------------------------------------------------------
@@ -131,16 +135,6 @@ min(Linteger())  # NA with no warning
 ## integer vector:
 max(integer())  # -Inf with a warning
 min(integer())  #  Inf with a warning
-
-## Linteger is an S4 class:
-class(Linteger(10))
-typeof(Linteger(10))        # S4
-storage.mode(Linteger(10))  # S4
-is.vector(Linteger(10))     # FALSE
-is.atomic(Linteger(10))     # FALSE
-
-## A long long int uses 8 bytes (i.e. 64 bits) in C:
-.Machine$sizeof.longlong
 
 ## ---------------------------------------------------------------------
 ## GOING FROM STRINGS TO INTEGERS
@@ -186,6 +180,24 @@ x2 - x1
 d1 <- as.double(x1)
 d2 <- as.double(x2)  # warning!
 d1 == d2  # TRUE
+
+## ---------------------------------------------------------------------
+## Linteger IS IMPLEMENTED AS AN S4 CLASS
+## ---------------------------------------------------------------------
+
+class(Linteger(10))
+typeof(Linteger(10))        # S4
+storage.mode(Linteger(10))  # S4
+is.vector(Linteger(10))     # FALSE
+is.atomic(Linteger(10))     # FALSE
+
+## This means that an Linteger vector cannot go in an ordinary data
+## frame:
+\dontrun{
+data.frame(id=as.Linteger(1:5))  # error!
+}
+## A DataFrame needs to be used instead:
+DataFrame(id=as.Linteger(1:5))
 
 ## ---------------------------------------------------------------------
 ## SANITY CHECKS

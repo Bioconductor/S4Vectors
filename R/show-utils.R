@@ -156,16 +156,10 @@ labeledLine <-
 }
 
 ### Exported!
-get_showHeadLines <- function()
-{
-    .get_showLines(5L, "showHeadLines")
-}
+get_showHeadLines <- function() .get_showLines(5L, "showHeadLines")
 
 ### Exported!
-get_showTailLines <- function()
-{
-    .get_showLines(5L, "showTailLines")
-}
+get_showTailLines <- function() .get_showLines(5L, "showTailLines")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -328,4 +322,86 @@ toNumSnippet <- function(x, max.width)
     ans_tail <- ans_tail[-length(ans_tail)]
     paste(paste(ans_head, collapse=" "), "...", paste(ans_tail, collapse=" "))
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### classNameForDisplay()
+###
+
+### Exported!
+setGeneric("classNameForDisplay",
+    function(x) standardGeneric("classNameForDisplay"))
+
+setMethod("classNameForDisplay", "ANY",
+   function(x)
+   {
+       ## Selecting the 1st element guarantees that we return a single string
+       ## (e.g. on an ordered factor, class(x) returns a character vector of
+       ## length 2).
+       class(x)[1L]
+   }
+)
+
+.drop_AsIs <- function(x)
+{
+    #x_class <- class(x)
+    #if (x_class[[1L]] == "AsIs")
+    #    class(x) <- x_class[-1L]
+
+    ## Simpler, and probably more robust, than the above.
+    class(x) <- setdiff(class(x), "AsIs")
+    x
+}
+
+setMethod("classNameForDisplay", "AsIs",
+    function(x) classNameForDisplay(.drop_AsIs(x))
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### showAsCell()
+###
+### All "showAsCell" methods should return a character vector.
+###
+
+### Exported!
+setGeneric("showAsCell",
+    function(object) standardGeneric("showAsCell")
+)
+
+setMethod("showAsCell", "ANY", function(object) {
+  if (NROW(object) == 0L)
+    return(character(0L))
+  if (length(dim(object)) > 2)
+    dim(object) <- c(nrow(object), prod(tail(dim(object), -1)))
+  if (NCOL(object) > 1) {
+    df <- as.data.frame(object[, head(seq_len(ncol(object)), 3), drop = FALSE])
+    attempt <- do.call(paste, c(df, sep=":"))
+    if (ncol(object) > 3L)
+      attempt <- paste0(attempt, ":...")
+    attempt
+  } else if (NCOL(object) == 0L) {
+    rep.int("", NROW(object))
+  } else if (is.list(object) || is(object, "List")) {
+    vapply(object, function(x) {
+      str <- paste(head(x, 3L), collapse = ",")
+      if (length(x) > 3L)
+        str <- paste0(str, ",...")
+      str
+    }, character(1L))
+  } else {
+    attempt <- try(as.vector(object), silent=TRUE)
+    if (is(attempt, "try-error"))
+      rep.int("########", length(object))
+    else attempt
+  }
+})
+
+setMethod("showAsCell", "AsIs",
+    function(object) showAsCell(.drop_AsIs(object))
+)
+
+### Mmmh... these methods don't return a character vector. Is that ok?
+setMethod("showAsCell", "Date", function(object) object)
+setMethod("showAsCell", "POSIXt", function(object) object)
 

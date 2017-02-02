@@ -146,6 +146,8 @@ Linteger <- function(length=0L)
 
 setMethod("show", "Linteger", function(object) .show_Linteger(object))
 
+setMethod("showAsCell", "Linteger", function(object) as.character(object))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining
