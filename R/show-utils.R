@@ -384,7 +384,7 @@ setMethod("showAsCell", "ANY", function(object) {
     rep.int("", NROW(object))
   } else if (is.list(object) || is(object, "List")) {
     vapply(object, function(x) {
-      str <- paste(head(x, 3L), collapse = ",")
+      str <- paste(head(unlist(x), 3L), collapse = ",")
       if (length(x) > 3L)
         str <- paste0(str, ",...")
       str
