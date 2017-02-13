@@ -205,6 +205,15 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
 ### Subsetting.
 ###
 
+setMethod("[[", "DataFrame", function(x, i, j, ...)
+{
+    if (!missing(j)) {
+        x[[j, ...]][[i]]
+    } else {
+        callNextMethod()
+    }
+})
+
 setReplaceMethod("[[", "DataFrame",
                  function(x, i, j,..., value)
                  {

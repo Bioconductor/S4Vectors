@@ -146,6 +146,7 @@ setMethod("setListElement", "SimpleList",
 ### Looping.
 ###
 
+### TODO: easily generalized to List
 setMethod("lapply", "SimpleList",
           function(X, FUN, ...)
               lapply(as.list(X), FUN = FUN, ...))
@@ -222,6 +223,7 @@ coerceToSimpleList <- function(from, element.type, ...) {
 ### unique()
 ###
 
+### TODO: easily generalized to List
 .unique.SimpleList <- function(x, incomparables=FALSE, ...) {
     as(lapply(x, unique, incomparables=incomparables, ...), class(x))
 }
