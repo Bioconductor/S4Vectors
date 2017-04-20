@@ -286,7 +286,7 @@ setMethod("[", "DataFrame",
             x <- initialize(x, listData=new_listData,
                                elementMetadata=new_mcols)
             if (anyDuplicated(names(x)))
-                names(x) <- make.names(names(x))
+                names(x) <- make.unique(names(x))
             if (list_style_subsetting)
                 return(x)
         }
