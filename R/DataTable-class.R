@@ -100,21 +100,32 @@ setMethod("complete.cases", "DataTable", function(...) {
 ### Transforming.
 ###
 
-transform.DataTable <- function(`_data`, ...) {
-  exprs <- as.list(substitute(list(...))[-1L])
-  if (any(names(exprs) == "")) {
-    stop("all arguments in '...' must be named")
-  }
-  ## elements in '...' can originate from different environments
-  env <- setNames(top_prenv_dots(...), names(exprs))
-  for (colName in names(exprs)) { # for loop allows inter-arg dependencies
-    `_data`[[colName]] <- safeEval(exprs[[colName]], `_data`, env[[colName]])
-  }
-  `_data`
+setGeneric("parallelVector<-",
+           function(x, name, value) standardGeneric("parallelVector<-"),
+           signature="x")
+
+setReplaceMethod("parallelVector", "DataTable", function(x, name, value) {
+    x[,name] <- value
+    x
+})
+
+transformParallelVectors <- function(`_data`, ...) {
+    exprs <- as.list(substitute(list(...))[-1L])
+    if (any(names(exprs) == "")) {
+        stop("all arguments in '...' must be named")
+    }
+    ## elements in '...' can originate from different environments
+    env <- setNames(top_prenv_dots(...), names(exprs))
+    for (colName in names(exprs)) { # for loop allows inter-arg dependencies
+        value <- safeEval(exprs[[colName]], `_data`, env[[colName]])
+        parallelVector(`_data`, colName) <- value
+    }
+    `_data`
 }
 
-setMethod("transform", "DataTable", transform.DataTable)
+transform.DataTable <- transformParallelVectors
 
+setMethod("transform", "DataTable", transform.DataTable)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.

@@ -30,6 +30,9 @@
 
 \alias{by,DataTable-method}
 
+\alias{transform.DataTable}
+\alias{transform,DataTable-method}
+
 \alias{duplicated,DataTable-method}
 \alias{duplicated.DataTable}
 \alias{unique,DataTable-method}
@@ -166,6 +169,17 @@
       Apply \code{FUN} to each group of \code{data}, a \code{DataTable},
       formed by the factor (or list of factors) \code{INDICES}. Exactly 
       the same contract as \code{\link{as.data.frame}}.
+    }
+  }
+}
+
+\section{Transforming}{
+  In the code snippets below, \code{x} is a DataTable object.
+
+  \describe{
+    \item{}{
+      \code{transform(`_data`, ...)}: adds or replaces columns based on
+      expressions in \code{\dots}. See \code{\link{transform}}.
     }
   }
 }

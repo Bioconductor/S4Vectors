@@ -263,13 +263,18 @@ setMethod("as.matrix", "Vector", function(x) {
               as.matrix(as.vector(x))
           })
 
+classNamespace <- function(x) {
+    pkg <- packageSlot(class(x))
+    pvnEnv <- .GlobalEnv
+    if (!is.null(pkg)) {
+        pvnEnv <- getNamespace(pkg)
+    }
+    pvnEnv
+}
+
 makeFixedColumnEnv <- function(x, parent, tform = identity) {
   env <- new.env(parent=parent)
-  pkg <- packageSlot(class(x))
-  pvnEnv <- .GlobalEnv
-  if (!is.null(pkg)) {
-      pvnEnv <- getNamespace(pkg)
-  }
+  pvnEnv <- classNamespace(x)
   lapply(c("names", parallelVectorNames(x)), function(nm) {
     accessor <- get(nm, pvnEnv, mode="function")
     makeActiveBinding(nm, function() {
@@ -567,6 +572,20 @@ setMethod("with", "Vector",
           {
             safeEval(substitute(expr), data, parent.frame(), ...)
           })
+
+setReplaceMethod("parallelVector", "Vector", function(x, name, value) {
+    if (name %in% parallelVectorNames(x)) {
+        setter <- get(paste0(name, "<-"), classNamespace(x), mode="function")
+        setter(x, value=value)
+    } else {
+        mcols(x)[[name]] <- value
+        x
+    }
+})
+
+transform.Vector <- transformParallelVectors
+
+setMethod("transform", "Vector", transform.Vector)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Utilities.
