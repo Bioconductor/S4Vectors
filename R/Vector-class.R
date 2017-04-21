@@ -573,7 +573,7 @@ setMethod("with", "Vector",
             safeEval(substitute(expr), data, parent.frame(), ...)
           })
 
-setReplaceMethod("parallelVector", "Vector", function(x, name, value) {
+setReplaceMethod("column", "Vector", function(x, name, value) {
     if (name %in% parallelVectorNames(x)) {
         setter <- get(paste0(name, "<-"), classNamespace(x), mode="function")
         setter(x, value=value)
@@ -583,7 +583,7 @@ setReplaceMethod("parallelVector", "Vector", function(x, name, value) {
     }
 })
 
-transform.Vector <- transformParallelVectors
+transform.Vector <- transformColumns
 
 setMethod("transform", "Vector", transform.Vector)
 

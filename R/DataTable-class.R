@@ -100,16 +100,16 @@ setMethod("complete.cases", "DataTable", function(...) {
 ### Transforming.
 ###
 
-setGeneric("parallelVector<-",
-           function(x, name, value) standardGeneric("parallelVector<-"),
+setGeneric("column<-",
+           function(x, name, value) standardGeneric("column<-"),
            signature="x")
 
-setReplaceMethod("parallelVector", "DataTable", function(x, name, value) {
+setReplaceMethod("column", "DataTable", function(x, name, value) {
     x[,name] <- value
     x
 })
 
-transformParallelVectors <- function(`_data`, ...) {
+transformColumns <- function(`_data`, ...) {
     exprs <- as.list(substitute(list(...))[-1L])
     if (any(names(exprs) == "")) {
         stop("all arguments in '...' must be named")
@@ -118,12 +118,12 @@ transformParallelVectors <- function(`_data`, ...) {
     env <- setNames(top_prenv_dots(...), names(exprs))
     for (colName in names(exprs)) { # for loop allows inter-arg dependencies
         value <- safeEval(exprs[[colName]], `_data`, env[[colName]])
-        parallelVector(`_data`, colName) <- value
+        column(`_data`, colName) <- value
     }
     `_data`
 }
 
-transform.DataTable <- transformParallelVectors
+transform.DataTable <- transformColumns
 
 setMethod("transform", "DataTable", transform.DataTable)
 
