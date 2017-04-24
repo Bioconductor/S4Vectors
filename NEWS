@@ -15,7 +15,7 @@ NEW FEATURES
 
     o Support x[[i,j]] on DataFrame objects.
 
-    o Add transform methods for DataTable and Vector objects.
+    o Add "transform" methods for DataTable and Vector objects.
 
 SIGNIFICANT USER-VISIBLE CHANGES
 
