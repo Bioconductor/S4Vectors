@@ -1,3 +1,46 @@
+CHANGES IN VERSION 0.14.0
+-------------------------
+
+NEW FEATURES
+
+    o Add Linteger vectors: similar to ordinary integer vectors (int values at
+      the C level) but store "large integers" i.e. long long int values at the
+      C level. These are 64-bit on Intel platforms vs 32-bit for int values.
+      See ?Linteger for more information. This is in preparation for supporting
+      long Vector derivatives (planned for BioC 3.6).
+
+    o Default "rank" method for Vector objects now supports the same ties
+      method as base::rank() (was only supporting ties methods "first" and
+      "min" until now).
+
+    o Support x[[i,j]] on DataFrame objects.
+
+    o Add transform methods for DataTable and Vector objects.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Rename union classes characterORNULL, vectorORfactor, DataTableORNULL,
+      and expressionORfunction -> character_OR_NULL, vector_OR_factor,
+      DataTable_OR_NULL, and expression_OR_function, respectively.
+
+    o Remove default "xtfrm" method for Vector objects. Not needed and
+      introduced infinite recursion when calling order(), sort() or rank() on
+      Vector objects that don't have specific order/sort/rank methods.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove compare() (was defunct in BioC 3.4).
+
+    o Remove elementLengths() (was defunct in BioC 3.4).
+
+BUG FIXES
+
+    o Make showAsCell() robust to nested lists.
+
+    o Fix bug where subsetting a List object 'x' by a list-like subscript was
+      not always propagating 'mcols(x)'.
+
+
 CHANGES IN VERSION 0.12.0
 -------------------------
 
