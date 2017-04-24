@@ -1,0 +1,79 @@
+IRanges before the split (version 1.23.5)
+-----------------------------------------
+
+R files: 73 files
+
+  Going to S4Vectors (29 files in total):
+  X S4-utils.R
+  X utils.R
+  X isConstant.R        (renamed isSorted.R)
+  X normarg-utils.R
+  X compact_bitvector.R (renamed logical-utils.R)
+  X int-utils.R
+  X str-utils.R
+  X vector-utils.R      (NEW!)
+  X eval-utils.R
+
+  X Annotated-class.R
+  X DataTable-API.R     (rename DataTable-class.R, put DataTable class def here)
+  X DataTable-stats.R   (merge with DataTable-class.R)
+
+  X subsetting-utils.R 
+  X Vector-class.R      (there are some leftovers in IRanges/R/Vector-class.R)
+  X Vector-comparison.R
+  X Hits-class.R        (there are some leftovers in IRanges/R/Hits-class.R)
+
+  X Rle-class.R         (too big! split in Rle-class.R + Rle-utils.R)
+  X runstat.R           (merge with Rle-utils.R)
+
+  X List-class.R        (split in List-class.R + List-utils.R)
+  X endoapply.R         (merge with List-utils.R)
+  X funprog-methods.R   (merge with List-utils.R)
+  X SimpleList-class.R
+
+  X DataFrame-class.R
+
+    List-comparison.R   (methods for CompressedList need to stay in IRanges)
+
+    DataFrame-utils.R
+    expand-methods.R    (merge with DataFrame-utils.R)
+
+  X FilterRules-class.R
+
+    classNameForDisplay-methods.R (no more, has been diluted in other files)
+    zzz.R
+
+C files:
+
+- 36 compilation units (.c files)
+
+  Going to S4Vectors (15 files in total):
+  X safe_arithm.c
+  X sort_utils.c
+  X hash_utils.c
+  X AEbufs.c
+  X SEXP_utils.c (split in SEXP_utils.c + vector_utils.c + eval_utils.c)
+  X anyMissing.c
+  X compact_bitvector.c (renamed logical_utils.c)
+  X int_utils.c
+  X str_utils.c
+  X Hits_class.c
+  X Rle_class.c
+  X Rle_utils.c
+  X Vector_class.c (renamed List_class.c)
+  X SimpleList_class.c
+  X DataFrame_class.c
+
+- 9 header files (.h files)
+
+  None goes to S4Vectors.
+
+
+Other TODO items that originated in the IRanges package
+-------------------------------------------------------
+
+o FilterRules:
+  - refactor, using ShortRead filter framework (becomes FilterList)
+  - support subsetting DataFrame/RangedData directly
+
+
