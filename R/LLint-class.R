@@ -1,30 +1,30 @@
 ### =========================================================================
-### Linteger objects
+### LLint objects
 ### -------------------------------------------------------------------------
 ###
-### The Linteger class is a container for storing a vector of "large integers"
+### The LLint class is a container for storing a vector of "large integers"
 ### (i.e. long long int in C). It supports NAs.
 ###
 
 
 ### We don't support names for now. We will when we need them.
-setClass("Linteger", representation(bytes="raw"))
+setClass("LLint", representation(bytes="raw"))
 
-setClassUnion("integer_OR_Linteger", c("integer", "Linteger"))
+setClassUnion("integer_OR_LLint", c("integer", "LLint"))
 
-is.Linteger <- function(x) is(x, "Linteger")
+is.LLint <- function(x) is(x, "LLint")
 
 BYTES_PER_LINTEGER <- .Machine$sizeof.longlong
 
-setMethod("length", "Linteger",
+setMethod("length", "LLint",
     function(x) length(x@bytes) %/% BYTES_PER_LINTEGER
 )
 
 ### Called from the .onLoad() hook in zzz.R
-make_NA_Linteger_ <- function()
+make_NA_LLint_ <- function()
 {
     ans_bytes <- .Call2("make_RAW_from_NA_LINTEGER", PACKAGE="S4Vectors")
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 
 
@@ -32,63 +32,63 @@ make_NA_Linteger_ <- function()
 ### Coercion
 ###
 
-.from_logical_to_Linteger <- function(from)
+.from_logical_to_LLint <- function(from)
 {
-    .Call2("new_Linteger_from_LOGICAL", from, PACKAGE="S4Vectors")
+    .Call2("new_LLint_from_LOGICAL", from, PACKAGE="S4Vectors")
 }
-setAs("logical", "Linteger", .from_logical_to_Linteger)
+setAs("logical", "LLint", .from_logical_to_LLint)
 
-.from_integer_to_Linteger <- function(from)
+.from_integer_to_LLint <- function(from)
 {
-    .Call2("new_Linteger_from_INTEGER", from, PACKAGE="S4Vectors")
+    .Call2("new_LLint_from_INTEGER", from, PACKAGE="S4Vectors")
 }
-setAs("integer", "Linteger", .from_integer_to_Linteger)
+setAs("integer", "LLint", .from_integer_to_LLint)
 
-.from_numeric_to_Linteger <- function(from)
+.from_numeric_to_LLint <- function(from)
 {
-    .Call2("new_Linteger_from_NUMERIC", from, PACKAGE="S4Vectors")
+    .Call2("new_LLint_from_NUMERIC", from, PACKAGE="S4Vectors")
 }
-setAs("numeric", "Linteger", .from_numeric_to_Linteger)
+setAs("numeric", "LLint", .from_numeric_to_LLint)
 
-.from_character_to_Linteger <- function(from)
+.from_character_to_LLint <- function(from)
 {
-    .Call2("new_Linteger_from_CHARACTER", from, PACKAGE="S4Vectors")
+    .Call2("new_LLint_from_CHARACTER", from, PACKAGE="S4Vectors")
 }
-setAs("character", "Linteger", .from_character_to_Linteger)
+setAs("character", "LLint", .from_character_to_LLint)
 
-as.Linteger <- function(x) as(x, "Linteger")
+as.LLint <- function(x) as(x, "LLint")
 
-### S3/S4 combo for as.logical.Linteger
-.from_Linteger_to_logical <- function(x)
+### S3/S4 combo for as.logical.LLint
+.from_LLint_to_logical <- function(x)
 {
-    .Call2("new_LOGICAL_from_Linteger", x, PACKAGE="S4Vectors")
+    .Call2("new_LOGICAL_from_LLint", x, PACKAGE="S4Vectors")
 }
-as.logical.Linteger <- function(x, ...) .from_Linteger_to_logical(x, ...)
-setMethod("as.logical", "Linteger", as.logical.Linteger)
+as.logical.LLint <- function(x, ...) .from_LLint_to_logical(x, ...)
+setMethod("as.logical", "LLint", as.logical.LLint)
 
-### S3/S4 combo for as.integer.Linteger
-.from_Linteger_to_integer <- function(x)
+### S3/S4 combo for as.integer.LLint
+.from_LLint_to_integer <- function(x)
 {
-    .Call2("new_INTEGER_from_Linteger", x, PACKAGE="S4Vectors")
+    .Call2("new_INTEGER_from_LLint", x, PACKAGE="S4Vectors")
 }
-as.integer.Linteger <- function(x, ...) .from_Linteger_to_integer(x, ...)
-setMethod("as.integer", "Linteger", as.integer.Linteger)
+as.integer.LLint <- function(x, ...) .from_LLint_to_integer(x, ...)
+setMethod("as.integer", "LLint", as.integer.LLint)
 
-### S3/S4 combo for as.numeric.Linteger
-.from_Linteger_to_numeric <- function(x)
+### S3/S4 combo for as.numeric.LLint
+.from_LLint_to_numeric <- function(x)
 {
-    .Call2("new_NUMERIC_from_Linteger", x, PACKAGE="S4Vectors")
+    .Call2("new_NUMERIC_from_LLint", x, PACKAGE="S4Vectors")
 }
-as.numeric.Linteger <- function(x, ...) .from_Linteger_to_numeric(x, ...)
-setMethod("as.numeric", "Linteger", as.numeric.Linteger)
+as.numeric.LLint <- function(x, ...) .from_LLint_to_numeric(x, ...)
+setMethod("as.numeric", "LLint", as.numeric.LLint)
 
-### S3/S4 combo for as.character.Linteger
-.from_Linteger_to_character <- function(x)
+### S3/S4 combo for as.character.LLint
+.from_LLint_to_character <- function(x)
 {
-    .Call2("new_CHARACTER_from_Linteger", x, PACKAGE="S4Vectors")
+    .Call2("new_CHARACTER_from_LLint", x, PACKAGE="S4Vectors")
 }
-as.character.Linteger <- function(x, ...) .from_Linteger_to_character(x, ...)
-setMethod("as.character", "Linteger", as.character.Linteger)
+as.character.LLint <- function(x, ...) .from_LLint_to_character(x, ...)
+setMethod("as.character", "LLint", as.character.LLint)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,10 +100,10 @@ setMethod("as.character", "Linteger", as.character.Linteger)
 ### Return a single double value.
 .normarg_vector_length <- function(length=0L, max_length=.MAX_VECTOR_LENGTH)
 {
-    if (is.Linteger(length)) {
-        if (length(length) != 1L || is.na(length) || length < as.Linteger(0L))
+    if (is.LLint(length)) {
+        if (length(length) != 1L || is.na(length) || length < as.LLint(0L))
             stop("invalid 'length' argument")
-        if (length > as.Linteger(max_length))
+        if (length > as.LLint(max_length))
             stop("'length' is too big")
         return(as.double(length))
     }
@@ -119,12 +119,12 @@ setMethod("as.character", "Linteger", as.character.Linteger)
     length
 }
 
-Linteger <- function(length=0L)
+LLint <- function(length=0L)
 {
     max_length <- .MAX_VECTOR_LENGTH / BYTES_PER_LINTEGER
     length <- .normarg_vector_length(length, max_length=max_length)
     ans_bytes <- raw(length * BYTES_PER_LINTEGER)
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 
 
@@ -132,7 +132,7 @@ Linteger <- function(length=0L)
 ### Displaying
 ###
 
-.show_Linteger <- function(x)
+.show_LLint <- function(x)
 {
     x_len <- length(x)
     if (x_len == 0L) {
@@ -144,16 +144,16 @@ Linteger <- function(length=0L)
     return()
 }
 
-setMethod("show", "Linteger", function(object) .show_Linteger(object))
+setMethod("show", "LLint", function(object) .show_LLint(object))
 
-setMethod("showAsCell", "Linteger", function(object) as.character(object))
+setMethod("showAsCell", "LLint", function(object) as.character(object))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining
 ###
 
-combine_Linteger_objects <- function(objects)
+combine_LLint_objects <- function(objects)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
@@ -175,22 +175,22 @@ combine_Linteger_objects <- function(objects)
             if (is.null(x))
                 return(NULL)
             if (is.logical(x) || is.integer(x))
-                x <- as.Linteger(x)
-            if (is.Linteger(x))
+                x <- as.LLint(x)
+            if (is.LLint(x))
                 return(x@bytes)
-            stop(wmsg("cannot combine Linteger objects ",
+            stop(wmsg("cannot combine LLint objects ",
                       "with objects of class ", class(x)))
         }
     )
     ans_bytes <- unlist(bytes_slots, use.names=FALSE)
-    new2("Linteger", bytes=ans_bytes, check=FALSE)
+    new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 
-setMethod("c", "Linteger",
+setMethod("c", "LLint",
     function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
         if (!identical(recursive, FALSE))
-            stop("\"c\" method for Linteger objects ",
+            stop("\"c\" method for LLint objects ",
                  "does not support the 'recursive' argument")
         if (missing(x)) {
             objects <- list(...)
@@ -198,7 +198,7 @@ setMethod("c", "Linteger",
         } else {
             objects <- list(x, ...)
         }
-        combine_Linteger_objects(objects)
+        combine_LLint_objects(objects)
     }
 )
 
@@ -207,29 +207,29 @@ setMethod("c", "Linteger",
 ### is.na(), anyNA()
 ###
 
-setMethod("is.na", "Linteger", function(x) is.na(as.logical(x)))
+setMethod("is.na", "LLint", function(x) is.na(as.logical(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Operations from "Ops" group
 ###
 
-setMethod("Ops", c("Linteger", "Linteger"),
+setMethod("Ops", c("LLint", "LLint"),
     function(e1, e2)
     {
-        .Call("Linteger_Ops", .Generic, e1, e2, PACKAGE="S4Vectors")
+        .Call("LLint_Ops", .Generic, e1, e2, PACKAGE="S4Vectors")
     }
 )
 
-### If one operand is Linteger and the other one is integer, then the latter
-### is coerced to Linteger.
-### If one operand is Linteger and the other one is double, then the former
+### If one operand is LLint and the other one is integer, then the latter
+### is coerced to LLint.
+### If one operand is LLint and the other one is double, then the former
 ### is coerced to double.
-setMethod("Ops", c("Linteger", "numeric"),
+setMethod("Ops", c("LLint", "numeric"),
     function(e1, e2)
     {
         if (is.integer(e2)) {
-            e2 <- as.Linteger(e2)
+            e2 <- as.LLint(e2)
         } else {
             ## Suppress "non reversible coercion to double" warning.
             e1 <- suppressWarnings(as.double(e1))
@@ -238,11 +238,11 @@ setMethod("Ops", c("Linteger", "numeric"),
     }
 )
 
-setMethod("Ops", c("numeric", "Linteger"),
+setMethod("Ops", c("numeric", "LLint"),
     function(e1, e2)
     {
         if (is.integer(e1)) {
-            e1 <- as.Linteger(e1)
+            e1 <- as.LLint(e1)
         } else {
             ## Suppress "non reversible coercion to double" warning.
             e2 <- suppressWarnings(as.double(e2))
@@ -256,16 +256,15 @@ setMethod("Ops", c("numeric", "Linteger"),
 ### Operations from "Summary" group
 ###
 
-setMethod("Summary", "Linteger",
+setMethod("Summary", "LLint",
     function(x, ..., na.rm=FALSE)
     {
         if (length(list(...)) != 0L)
-            stop(wmsg("\"", .Generic, "\" method for Linteger objects ",
+            stop(wmsg("\"", .Generic, "\" method for LLint objects ",
                       "takes only one object"))
         if (!isTRUEorFALSE(na.rm))
             stop("'na.rm' must be TRUE or FALSE")
-        .Call("Linteger_Summary", .Generic, x, na.rm=na.rm,
-              PACKAGE="S4Vectors")
+        .Call("LLint_Summary", .Generic, x, na.rm=na.rm, PACKAGE="S4Vectors")
     }
 )
 

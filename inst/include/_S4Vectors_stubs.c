@@ -398,25 +398,25 @@ DEFINE_CCALLABLE_STUB(const char *, get_classname,
 )
 
 /*
- * Stubs for callables defined in Linteger_class.c
+ * Stubs for callables defined in LLint_class.c
  */
 
-DEFINE_CCALLABLE_STUB(int, is_Linteger,
+DEFINE_CCALLABLE_STUB(int, is_LLint,
 	(SEXP x),
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(R_xlen_t, get_Linteger_length,
+DEFINE_CCALLABLE_STUB(R_xlen_t, get_LLint_length,
 	(SEXP x),
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(long long int *, get_Linteger_dataptr,
+DEFINE_CCALLABLE_STUB(long long int *, get_LLint_dataptr,
 	(SEXP x),
 	(     x)
 )
 
-DEFINE_CCALLABLE_STUB(SEXP, alloc_Linteger,
+DEFINE_CCALLABLE_STUB(SEXP, alloc_LLint,
 	(const char *classname, R_xlen_t length),
 	(            classname,          length)
 )

@@ -8,7 +8,7 @@ setClass("Rle",
     contains="Vector",
     representation(
         values="vector_OR_factor",
-        lengths="integer_OR_Linteger"
+        lengths="integer_OR_LLint"
     ),
     prototype(
         values=logical(0),
@@ -69,12 +69,12 @@ new_Rle <- function(values=logical(0), lengths=NULL)
 {
     stopifnot(is(values, "vector_OR_factor"))
     if (!is.null(lengths)) {
-        if (!(is.numeric(lengths) || is.Linteger(lengths)))
-            stop("'lengths' must be NULL or a numeric or Linteger vector")
+        if (!(is.numeric(lengths) || is.LLint(lengths)))
+            stop("'lengths' must be NULL or a numeric or LLint vector")
         if (anyNA(lengths))
             stop("'lengths' cannot contain NAs")
         if (is.double(lengths)) {
-            suppressWarnings(lengths <- as.Linteger(lengths))
+            suppressWarnings(lengths <- as.LLint(lengths))
             if (anyNA(lengths))
                 stop("Rle vector is too long")
         }
@@ -877,7 +877,7 @@ setMethod("show", "Rle",
               nr <- nrun(object)
               halfWidth <- getOption("width") %/% 2L
               cat(classNameForDisplay(runValue(object)),
-                  "-Rle of length ", as.character(as.Linteger(lo)),
+                  "-Rle of length ", as.character(as.LLint(lo)),
                   " with ", nr, ifelse(nr == 1, " run\n", " runs\n"), sep = "")
               first <- max(1L, halfWidth)
               showMatrix <-

@@ -476,8 +476,8 @@ setMethod("extractROWS", c("vector_OR_factor", "RangeNSBS"),
 )
 
 ### NOT exported but will be used in IRanges package (by "extractROWS" method
-### with signature Linteger,RangesNSBS).
-extract_ranges_from_Linteger <- function(x, start, width)
+### with signature LLint,RangesNSBS).
+extract_ranges_from_LLint <- function(x, start, width)
 {
     start <- (start - 1L) * BYTES_PER_LINTEGER + 1L
     width <- width * BYTES_PER_LINTEGER
@@ -485,25 +485,25 @@ extract_ranges_from_Linteger <- function(x, start, width)
     x
 }
 
-setMethod("extractROWS", c("Linteger", "RangeNSBS"),
+setMethod("extractROWS", c("LLint", "RangeNSBS"),
     function(x, i)
     {
         start <- i@subscript[[1L]]
         width <- i@subscript[[2L]] - start + 1L
-        extract_ranges_from_Linteger(x, start, width)
+        extract_ranges_from_LLint(x, start, width)
     }
 )
 
-setMethod("extractROWS", c("Linteger", "NSBS"),
+setMethod("extractROWS", c("LLint", "NSBS"),
     function(x, i)
     {
         start <- as.integer(i)
         width <- rep.int(1L, length(start))
-        extract_ranges_from_Linteger(x, start, width)
+        extract_ranges_from_LLint(x, start, width)
     }
 )
 
-setMethod("extractROWS", c("Linteger", "ANY"),
+setMethod("extractROWS", c("LLint", "ANY"),
     function (x, i)
     {
         ## We don't support NAs in the subscript yet.
@@ -523,7 +523,7 @@ subset_along_ROWS <- function(x, i, j, ..., drop=TRUE)
     extractROWS(x, i)
 }
 
-setMethod("[", "Linteger", subset_along_ROWS)
+setMethod("[", "LLint", subset_along_ROWS)
 
 setMethod("replaceROWS", "ANY", .replaceROWSWithBracket)
 
@@ -621,16 +621,16 @@ setMethod("getListElement", "list",
 ### window(), head(), tail(), rep.int()
 ###
 
-### S3/S4 combo for window.Linteger
+### S3/S4 combo for window.LLint
 window_along_ROWS <- function(x, start=NA, end=NA, width=NA)
 {
     i <- RangeNSBS(x, start=start, end=end, width=width)
     extractROWS(x, i)
 }
-window.Linteger <- function(x, ...) window_along_ROWS(x, ...)
-setMethod("window", "Linteger", window.Linteger)
+window.LLint <- function(x, ...) window_along_ROWS(x, ...)
+setMethod("window", "LLint", window.LLint)
 
-### S3/S4 combo for head.Linteger
+### S3/S4 combo for head.LLint
 head_along_ROWS <- function(x, n=6L)
 {
     if (!isSingleNumber(n))
@@ -645,10 +645,10 @@ head_along_ROWS <- function(x, n=6L)
     }
     window(x, start=1L, width=n)
 }
-head.Linteger <- function(x, ...) head_along_ROWS(x, ...)
-setMethod("head", "Linteger", head.Linteger)
+head.LLint <- function(x, ...) head_along_ROWS(x, ...)
+setMethod("head", "LLint", head.LLint)
 
-### S3/S4 combo for tail.Linteger
+### S3/S4 combo for tail.LLint
 tail_along_ROWS <- function(x, n=6L)
 {
     if (!isSingleNumber(n))
@@ -663,14 +663,14 @@ tail_along_ROWS <- function(x, n=6L)
     }
     window(x, end=x_NROW, width=n)
 }
-tail.Linteger <- function(x, ...) tail_along_ROWS(x, ...)
-setMethod("tail", "Linteger", tail.Linteger)
+tail.LLint <- function(x, ...) tail_along_ROWS(x, ...)
+setMethod("tail", "LLint", tail.LLint)
 
 rep.int_along_ROWS <- function(x, times)
 {
     x_len <- length(x)
-    if (!(is.numeric(times) || is.Linteger(times)))
-        stop("'times' must be a numeric or Linteger vector")
+    if (!(is.numeric(times) || is.LLint(times)))
+        stop("'times' must be a numeric or LLint vector")
     times_len <- length(times)
     if (times_len == 1L) {
         if (times == 1L)
@@ -681,7 +681,7 @@ rep.int_along_ROWS <- function(x, times)
     if (times_len == x_len) {
         i <- Rle(seq_len(x_len), times)
     } else if (times_len == 1L) {
-        if (is.Linteger(times))
+        if (is.LLint(times))
             times <- as.double(times)
         i <- IRanges::IRanges(rep.int(1L, times), rep.int(x_len, times))
     } else {
@@ -690,5 +690,5 @@ rep.int_along_ROWS <- function(x, times)
     extractROWS(x, i)
 }
 
-setMethod("rep.int", "Linteger", rep.int_along_ROWS)
+setMethod("rep.int", "LLint", rep.int_along_ROWS)
 

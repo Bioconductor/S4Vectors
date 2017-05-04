@@ -1,5 +1,5 @@
 /****************************************************************************
- *                Low-level manipulation of Linteger objects                *
+ *                Low-level manipulation of LLint objects                *
  *                            Author: H. Pag\`es                            *
  ****************************************************************************/
 #include "S4Vectors.h"
@@ -7,13 +7,13 @@
 #include <ctype.h>  /* for isspace() and isdigit() */
 
 #define	BYTES_PER_LINTEGER	(sizeof(long long int) / sizeof(char))
-#define	NEW_LINTEGER(n)		_alloc_Linteger("Linteger", (n))
-#define	LINTEGER(x)		_get_Linteger_dataptr(x)
+#define	NEW_LINTEGER(n)		_alloc_LLint("LLint", (n))
+#define	LINTEGER(x)		_get_LLint_dataptr(x)
 
-int _is_Linteger(SEXP x)
+int _is_LLint(SEXP x)
 {
 	return isObject(x) &&
-	       strcmp(CHAR(STRING_ELT(GET_CLASS(x), 0)), "Linteger") == 0;
+	       strcmp(CHAR(STRING_ELT(GET_CLASS(x), 0)), "LLint") == 0;
 }
 
 /* --- .Call ENTRY POINT --- */
@@ -34,23 +34,23 @@ SEXP make_RAW_from_NA_LINTEGER()
 
 static SEXP bytes_symbol = NULL;
 
-static SEXP get_Linteger_bytes(SEXP x)
+static SEXP get_LLint_bytes(SEXP x)
 {
 	INIT_STATIC_SYMBOL(bytes)
 	return GET_SLOT(x, bytes_symbol);
 }
 
-R_xlen_t _get_Linteger_length(SEXP x)
+R_xlen_t _get_LLint_length(SEXP x)
 {
-	return XLENGTH(get_Linteger_bytes(x)) / BYTES_PER_LINTEGER;
+	return XLENGTH(get_LLint_bytes(x)) / BYTES_PER_LINTEGER;
 }
 
-long long int *_get_Linteger_dataptr(SEXP x)
+long long int *_get_LLint_dataptr(SEXP x)
 {
-	return (long long int *) RAW(get_Linteger_bytes(x));
+	return (long long int *) RAW(get_LLint_bytes(x));
 }
 
-static void set_Linteger_bytes(SEXP x, SEXP value)
+static void set_LLint_bytes(SEXP x, SEXP value)
 {
 	INIT_STATIC_SYMBOL(bytes)
 	SET_SLOT(x, bytes_symbol, value);
@@ -66,24 +66,24 @@ static void set_Linteger_bytes(SEXP x, SEXP value)
  * Thus they cannot be made .Call entry points!
  */
 
-static SEXP new_Linteger_from_bytes(const char *classname, SEXP bytes)
+static SEXP new_LLint_from_bytes(const char *classname, SEXP bytes)
 {
 	SEXP classdef, ans;
 
 	PROTECT(classdef = MAKE_CLASS(classname));
 	PROTECT(ans = NEW_OBJECT(classdef));
-	set_Linteger_bytes(ans, bytes);
+	set_LLint_bytes(ans, bytes);
 	UNPROTECT(2);
 	return ans;
 }
 
 /* Allocation WITHOUT initialization. */
-SEXP _alloc_Linteger(const char *classname, R_xlen_t length)
+SEXP _alloc_LLint(const char *classname, R_xlen_t length)
 {
 	SEXP bytes, ans;
 
 	PROTECT(bytes = NEW_RAW(length * BYTES_PER_LINTEGER));
-	PROTECT(ans = new_Linteger_from_bytes(classname, bytes));
+	PROTECT(ans = new_LLint_from_bytes(classname, bytes));
 	UNPROTECT(2);
 	return ans;
 }
@@ -129,7 +129,7 @@ static void from_doubles_to_llints(const double *from, long long int *to,
 		{
 			if (first_time) {
 				warning("out-of-range values coerced to NAs "
-					"in coercion to Linteger");
+					"in coercion to LLint");
 				first_time = 0;
 			}
 			*to = NA_LINTEGER;
@@ -208,7 +208,7 @@ static void from_STRSXP_to_llints(SEXP from, long long int *to)
 			/* syntactically correct number but overflow */
 			if (first_time1) {
 				warning("out-of-range values coerced to NAs "
-					"in coercion to Linteger");
+					"in coercion to LLint");
 				first_time1 = 0;
 			}
 			continue;
@@ -218,7 +218,7 @@ static void from_STRSXP_to_llints(SEXP from, long long int *to)
 		if (first_time2) {
 			/* syntactically incorrect number */
 			warning("syntactically incorrect numbers "
-				"coerced to NAs in coercion to Linteger");
+				"coerced to NAs in coercion to LLint");
 			first_time2 = 0;
 		}
 	}
@@ -330,7 +330,7 @@ static void from_llints_to_STRSXP(const long long int *from, SEXP to)
  * Coercion.
  */
 
-static SEXP new_Linteger_from_ints(const int *x, R_xlen_t x_len)
+static SEXP new_LLint_from_ints(const int *x, R_xlen_t x_len)
 {
 	SEXP ans;
 
@@ -341,19 +341,19 @@ static SEXP new_Linteger_from_ints(const int *x, R_xlen_t x_len)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_Linteger_from_LOGICAL(SEXP x)
+SEXP new_LLint_from_LOGICAL(SEXP x)
 {
-	return new_Linteger_from_ints(LOGICAL(x), XLENGTH(x));
+	return new_LLint_from_ints(LOGICAL(x), XLENGTH(x));
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_Linteger_from_INTEGER(SEXP x)
+SEXP new_LLint_from_INTEGER(SEXP x)
 {
-	return new_Linteger_from_ints(INTEGER(x), XLENGTH(x));
+	return new_LLint_from_ints(INTEGER(x), XLENGTH(x));
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_Linteger_from_NUMERIC(SEXP x)
+SEXP new_LLint_from_NUMERIC(SEXP x)
 {
 	R_xlen_t x_len;
 	SEXP ans;
@@ -366,7 +366,7 @@ SEXP new_Linteger_from_NUMERIC(SEXP x)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_Linteger_from_CHARACTER(SEXP x)
+SEXP new_LLint_from_CHARACTER(SEXP x)
 {
 	R_xlen_t x_len;
 	SEXP ans;
@@ -379,12 +379,12 @@ SEXP new_Linteger_from_CHARACTER(SEXP x)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_LOGICAL_from_Linteger(SEXP x)
+SEXP new_LOGICAL_from_LLint(SEXP x)
 {
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = _get_Linteger_length(x);
+	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_LOGICAL(ans_len));
 	from_llints_to_bools(LINTEGER(x), LOGICAL(ans), ans_len);
 	UNPROTECT(1);
@@ -392,12 +392,12 @@ SEXP new_LOGICAL_from_Linteger(SEXP x)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_INTEGER_from_Linteger(SEXP x)
+SEXP new_INTEGER_from_LLint(SEXP x)
 {
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = _get_Linteger_length(x);
+	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	from_llints_to_ints(LINTEGER(x), INTEGER(ans), ans_len);
 	UNPROTECT(1);
@@ -405,12 +405,12 @@ SEXP new_INTEGER_from_Linteger(SEXP x)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_NUMERIC_from_Linteger(SEXP x)
+SEXP new_NUMERIC_from_LLint(SEXP x)
 {
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = _get_Linteger_length(x);
+	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_NUMERIC(ans_len));
 	from_llints_to_doubles(LINTEGER(x), REAL(ans), ans_len);
 	UNPROTECT(1);
@@ -418,12 +418,12 @@ SEXP new_NUMERIC_from_Linteger(SEXP x)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP new_CHARACTER_from_Linteger(SEXP x)
+SEXP new_CHARACTER_from_LLint(SEXP x)
 {
 	R_xlen_t ans_len;
 	SEXP ans;
 
-	ans_len = _get_Linteger_length(x);
+	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_CHARACTER(ans_len));
 	from_llints_to_STRSXP(LINTEGER(x), ans);
 	UNPROTECT(1);
@@ -542,7 +542,7 @@ static void llints_arith1(Arith1FunType arith_fun,
 		out[k] = arith_fun(x[i], y[j]);
 	}
 	if (_get_ovflow_flag())
-		warning("NAs produced by Linteger overflow");
+		warning("NAs produced by LLint overflow");
 	return;
 }
 
@@ -632,7 +632,7 @@ static void llints_compare(int op,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP Linteger_Ops(SEXP Generic, SEXP e1, SEXP e2)
+SEXP LLint_Ops(SEXP Generic, SEXP e1, SEXP e2)
 {
 	R_xlen_t e1_len, e2_len, ans_len;
 	const long long int *e1_elts, *e2_elts;
@@ -642,8 +642,8 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1, SEXP e2)
 	int compare_op;
 	SEXP ans;
 
-	e1_len = _get_Linteger_length(e1);
-	e2_len = _get_Linteger_length(e2);
+	e1_len = _get_LLint_length(e1);
+	e2_len = _get_LLint_length(e2);
 	ans_len = compute_ans_length(e1_len, e2_len);
 	e1_elts = LINTEGER(e1);
 	e2_elts = LINTEGER(e2);
@@ -677,7 +677,7 @@ SEXP Linteger_Ops(SEXP Generic, SEXP e1, SEXP e2)
 		return ans;
 	}
 
-	error("\"%s\": operation not supported on Linteger objects", generic);
+	error("\"%s\": operation not supported on LLint objects", generic);
 	return R_NilValue;
 }
 
@@ -741,7 +741,7 @@ static long long int llints_summary(int op,
 			case SUM_OP:
 				res = _safe_llint_add(res, in_elt);
 				if (res == NA_LINTEGER) {
-					warning("Linteger overflow - "
+					warning("LLint overflow - "
 						"use sum(as.numeric(.))");
 					return res;
 				}
@@ -749,7 +749,7 @@ static long long int llints_summary(int op,
 			case PROD_OP:
 				res = _safe_llint_mult(res, in_elt);
 				if (res == NA_LINTEGER) {
-					warning("Linteger overflow - "
+					warning("LLint overflow - "
 						"use prod(as.numeric(.))");
 					return res;
 				}
@@ -759,7 +759,7 @@ static long long int llints_summary(int op,
 	return res;
 }
 
-SEXP Linteger_Summary(SEXP Generic, SEXP x, SEXP na_rm)
+SEXP LLint_Summary(SEXP Generic, SEXP x, SEXP na_rm)
 {
 	R_xlen_t x_len;
 	const long long int *x_elts;
@@ -767,7 +767,7 @@ SEXP Linteger_Summary(SEXP Generic, SEXP x, SEXP na_rm)
 	int summary_op;
 	SEXP ans;
 
-	x_len = _get_Linteger_length(x);
+	x_len = _get_LLint_length(x);
 	x_elts = LINTEGER(x);
 	generic = CHAR(STRING_ELT(Generic, 0));
 
@@ -789,7 +789,7 @@ SEXP Linteger_Summary(SEXP Generic, SEXP x, SEXP na_rm)
 		return ans;
 	}
 
-	error("\"%s\": operation not supported on Linteger objects", generic);
+	error("\"%s\": operation not supported on LLint objects", generic);
 	return R_NilValue;
 }
 

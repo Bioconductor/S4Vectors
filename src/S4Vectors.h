@@ -454,33 +454,33 @@ const char *_get_classname(SEXP x);
 SEXP anyMissing(SEXP x);
 
 
-/* Linteger_class.c */
+/* LLint_class.c */
 
-int _is_Linteger(SEXP x);
+int _is_LLint(SEXP x);
 
 SEXP make_RAW_from_NA_LINTEGER();
 
-R_xlen_t _get_Linteger_length(SEXP x);
+R_xlen_t _get_LLint_length(SEXP x);
 
-long long int *_get_Linteger_dataptr(SEXP x);
+long long int *_get_LLint_dataptr(SEXP x);
 
-SEXP _alloc_Linteger(const char *classname, R_xlen_t length);
+SEXP _alloc_LLint(const char *classname, R_xlen_t length);
 
-SEXP new_Linteger_from_LOGICAL(SEXP x);
+SEXP new_LLint_from_LOGICAL(SEXP x);
 
-SEXP new_Linteger_from_INTEGER(SEXP x);
+SEXP new_LLint_from_INTEGER(SEXP x);
 
-SEXP new_Linteger_from_NUMERIC(SEXP x);
+SEXP new_LLint_from_NUMERIC(SEXP x);
 
-SEXP new_Linteger_from_CHARACTER(SEXP x);
+SEXP new_LLint_from_CHARACTER(SEXP x);
 
-SEXP new_LOGICAL_from_Linteger(SEXP x);
+SEXP new_LOGICAL_from_LLint(SEXP x);
 
-SEXP new_INTEGER_from_Linteger(SEXP x);
+SEXP new_INTEGER_from_LLint(SEXP x);
 
-SEXP new_NUMERIC_from_Linteger(SEXP x);
+SEXP new_NUMERIC_from_LLint(SEXP x);
 
-SEXP new_CHARACTER_from_Linteger(SEXP x);
+SEXP new_CHARACTER_from_LLint(SEXP x);
 
 
 /* subsetting_utils.c */

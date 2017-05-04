@@ -409,16 +409,16 @@ SEXP new_CHARACTER_from_CharAEAE(const CharAEAE *aeae);
 const char *get_classname(SEXP x);
 
 /*
- * Linteger_class.c
+ * LLint_class.c
  */
 
-int is_Linteger(SEXP x);
+int is_LLint(SEXP x);
 
-R_xlen_t get_Linteger_length(SEXP x);
+R_xlen_t get_LLint_length(SEXP x);
 
-long long int *get_Linteger_dataptr(SEXP x);
+long long int *get_LLint_dataptr(SEXP x);
 
-SEXP alloc_Linteger(const char *classname, R_xlen_t length);
+SEXP alloc_LLint(const char *classname, R_xlen_t length);
 
 /*
  * subsetting_utils.c

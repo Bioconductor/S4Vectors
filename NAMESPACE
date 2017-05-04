@@ -16,7 +16,7 @@ import(BiocGenerics)
 
 exportClasses(
     character_OR_NULL, vector_OR_factor,
-    Linteger, integer_OR_Linteger,
+    LLint, integer_OR_LLint,
     DataTable,
     NSBS,
     Annotated,
@@ -40,20 +40,20 @@ S3method(aggregate, Vector)
 
 S3method(anyDuplicated, NSBS)
 
-S3method(as.character, Linteger)
+S3method(as.character, LLint)
 
 S3method(as.data.frame, Vector)
 S3method(as.data.frame, DataTable)
 
-S3method(as.integer, Linteger)
+S3method(as.integer, LLint)
 
 S3method(as.list, Vector)
 
-S3method(as.logical, Linteger)
+S3method(as.logical, LLint)
 
 S3method(as.matrix, Vector)
 
-S3method(as.numeric, Linteger)
+S3method(as.numeric, LLint)
 
 S3method(as.vector, Rle)
 
@@ -68,7 +68,7 @@ S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
 
 S3method(head, DataTable)
-S3method(head, Linteger)
+S3method(head, LLint)
 S3method(head, Vector)
 
 S3method(levels, Rle)
@@ -91,13 +91,13 @@ S3method(t, Hits)
 S3method(t, HitsList)
 
 S3method(tail, DataTable)
-S3method(tail, Linteger)
+S3method(tail, LLint)
 S3method(tail, Vector)
 
 S3method(unique, DataTable)
 S3method(unique, Vector)
 
-S3method(window, Linteger)
+S3method(window, LLint)
 S3method(window, Vector)
 
 ### We also export them thru the export() directive so that (a) they can be
@@ -108,20 +108,20 @@ export(
 
     anyDuplicated.NSBS,
 
-    as.character.Linteger,
+    as.character.LLint,
 
     as.data.frame.Vector,
     as.data.frame.DataTable,
 
-    as.integer.Linteger,
+    as.integer.LLint,
 
     as.list.Vector,
 
-    as.logical.Linteger,
+    as.logical.LLint,
 
     as.matrix.Vector,
 
-    as.numeric.Linteger,
+    as.numeric.LLint,
 
     as.vector.Rle,
 
@@ -134,7 +134,7 @@ export(
     duplicated.Vector,
 
     head.DataTable,
-    head.Linteger,
+    head.LLint,
     head.Vector,
 
     levels.Rle,
@@ -152,13 +152,13 @@ export(
     summary.Rle,
 
     tail.DataTable,
-    tail.Linteger,
+    tail.LLint,
     tail.Vector,
 
     unique.DataTable,
     unique.Vector,
 
-    window.Linteger,
+    window.LLint,
     window.Vector
 )
 
@@ -247,8 +247,8 @@ export(
     recycleArg,
     fold,
 
-    ## Linteger-class.R:
-    is.Linteger, as.Linteger, Linteger,
+    ## LLint-class.R:
+    is.LLint, as.LLint, LLint,
 
     ## subsetting-utils.R:
     normalizeSingleBracketSubscript,

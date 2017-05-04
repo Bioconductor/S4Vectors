@@ -175,8 +175,8 @@ SEXP Rle_runsum(SEXP x, SEXP k, SEXP na_rm)
 		lengths_in = INTEGER(x_lengths);
 		lengths_in_is_L = 0;
 	} else {
-		nrun_in = _get_Linteger_length(x_lengths);
-		lengths_in = _get_Linteger_dataptr(x_lengths);
+		nrun_in = _get_LLint_length(x_lengths);
+		lengths_in = _get_LLint_dataptr(x_lengths);
 		lengths_in_is_L = 1;
 	}
 	nrun_out = compute_nrun_out(nrun_in, lengths_in, lengths_in_is_L, k0);
