@@ -47,6 +47,11 @@ long long int _safe_llint_mult(
 
 /* sort_utils.c */
 
+SEXP test_sort_ushort_array(
+	SEXP x,
+	SEXP desc
+);
+
 void _sort_int_array(
 	int *x,
 	size_t nelt,

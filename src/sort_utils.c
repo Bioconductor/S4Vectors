@@ -305,6 +305,11 @@ static int sorted_ushort_buf(const unsigned short int *ushort_buf, int buf_len,
 /****************************************************************************
  * Mini radix: A simple radix-based sort of a single array of *distinct*
  * unsigned short ints
+ *
+ * WARNING: The values to sort are assumed to be distinct. This is not
+ * checked! Behavior is undefined if they are not.
+ *
+ * Uses 8-bit bucket indices.
  */
 
 #define	MINIRX_NBUCKET		(1 << CHAR_BIT)
@@ -511,7 +516,7 @@ static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 	int bucket_used_buf_is_sorted, i;
 	unsigned char min_uidx, max_uidx;
 
-	/* Should we sort 'bucket_used_buf'? */
+	/* Figure out if we need to sort 'bucket_used_buf'. */
 	bucket_used_buf_is_sorted =
 		sorted_uchar_buf(bucket_used_buf, nbucket, desc);
 
@@ -635,6 +640,8 @@ static void minirx_sort(unsigned short int *base, int base_len,
 }
 
 /* Sort an array of *distinct* unsigned short ints.
+   The values in 'x' are assumed to be distinct. This is not checked! Behavior
+   is undefined if they are not.
    Between 10x (for small 'nelt') and 25x (for big 'nelt') faster than using
    qsort(). */
 static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
@@ -646,9 +653,30 @@ static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
 	return;
 }
 
+/* --- .Call ENTRY POINT --- */
+SEXP test_sort_ushort_array(SEXP x, SEXP desc)
+{
+	int x_len, i;
+	unsigned short int *us;
+	SEXP ans;
+
+	x_len = LENGTH(x);
+	us = (unsigned short int *) R_alloc(x_len, sizeof(unsigned short int));
+	for (i = 0; i < x_len; i++)
+		us[i] = (unsigned short int) INTEGER(x)[i];
+	sort_ushort_array(us, x_len, LOGICAL(desc)[0]);
+	PROTECT(ans = NEW_INTEGER(x_len));
+	for (i = 0; i < x_len; i++)
+		INTEGER(ans)[i] = (int) us[i];
+	UNPROTECT(1);
+	return ans;
+}
+
 
 /****************************************************************************
  * RADIX SORT of arrays of integers
+ *
+ * Uses 16-bit bucket indices.
  *
  * The current implementation assumes that sizeof(int) is 4 and
  * sizeof(unsigned short int) is 2.
@@ -781,7 +809,7 @@ static int sort_base_by_bucket(int *base, int base_len,
 	int bucket_used_buf_is_sorted, i;
 	unsigned short int min_uidx, max_uidx;
 
-	/* Should we sort 'bucket_used_buf'? */
+	/* Figure out if we need to sort 'bucket_used_buf'. */
 	bucket_used_buf_is_sorted =
 		sorted_ushort_buf(bucket_used_buf, nbucket, desc);
 
