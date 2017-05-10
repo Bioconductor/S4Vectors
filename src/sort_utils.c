@@ -320,8 +320,7 @@ static void minirx_sort_lsb(unsigned short int *base, int base_len,
 {
 	static unsigned char bucket2base[MINIRX_NBUCKET];
 
-	int i;
-	unsigned char uidx, min_uidx, max_uidx;
+	int i, uidx, min_uidx, max_uidx;
 	unsigned short int *out_p;
 
 	if (base_len == 1) {
@@ -402,8 +401,7 @@ static int minirx_compute_bucket_counts(
 		int *bucket_counts_buf,
 		unsigned char *bucket_used_buf)
 {
-	int nbucket, i;
-	unsigned char uidx;
+	int nbucket, i, uidx;
 
 	memset(bucket_counts_buf, 0, sizeof(int) * MINIRX_NBUCKET);
 	nbucket = 0;
@@ -421,8 +419,7 @@ static int minirx_compute_bucket_counts(
 static int sorted_uchar_buf(const unsigned char *uchar_buf, int buf_len,
 			    int desc)
 {
-	unsigned char prev_uidx, uidx;
-	int i;
+	int i, prev_uidx, uidx;
 
 	prev_uidx = uchar_buf[0];
 	if (desc) {
@@ -449,8 +446,7 @@ static void minirx_compute_bucket_offsets_fast(
 		const int *bucket_counts_buf,
 		int *bucket_offsets_buf)
 {
-	int offset, i;
-	unsigned char uidx;
+	int offset, i, uidx;
 
 	offset = 0;
 	for (i = 0; i < nbucket; i++) {
@@ -463,10 +459,9 @@ static void minirx_compute_bucket_offsets_fast(
 
 static void compute_min_max_uchar_buf(
 		const unsigned char *uchar_buf, int buf_len,
-		unsigned char *min_uidx, unsigned char *max_uidx)
+		int *min_uidx, int *max_uidx)
 {
-	unsigned char min, max, uidx;
-	int i;
+	int i, min, max, uidx;
 
 	min = UCHAR_MAX;  /* 0xff */
 	max = 0x00;
@@ -483,12 +478,11 @@ static void compute_min_max_uchar_buf(
 }
 
 static void minirx_compute_bucket_offsets(int desc,
-		unsigned char min_uidx, unsigned char max_uidx,
+		int min_uidx, int max_uidx,
 		const int *bucket_counts_buf,
 		int *bucket_offsets_buf)
 {
-	int offset;
-	unsigned char uidx;
+	int offset, uidx;
 
 	offset = 0;
 	if (desc) {
@@ -513,8 +507,7 @@ static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 		int *bucket_offsets_buf,
 		unsigned char *bucket_used_buf, int nbucket, int desc)
 {
-	int bucket_used_buf_is_sorted, i;
-	unsigned char min_uidx, max_uidx;
+	int bucket_used_buf_is_sorted, min_uidx, max_uidx, i;
 
 	/* Figure out if we need to sort 'bucket_used_buf'. */
 	bucket_used_buf_is_sorted =
@@ -566,7 +559,7 @@ static int minirx_sort_base_by_bucket(unsigned short int *base, int base_len,
 }
 
 static void minirx_sort(unsigned short int *base, int base_len,
-			unsigned short int *out, int swapped)
+			unsigned short int *out)
 {
 	static int bucket_counts_buf[MINIRX_NBUCKET],
 		   bucket_offsets_buf[MINIRX_NBUCKET];
@@ -575,19 +568,12 @@ static void minirx_sort(unsigned short int *base, int base_len,
 	static int base_uidx_buf_is_sorted, bucket_used_buf_is_sorted;
 	static unsigned short int *tmp;
 
-	int nbucket, i, offset;
-	unsigned char uidx;
+	int nbucket, swapped, i, uidx, offset;
 
 	/* --- HANDLE THE EASY SITUATIONS --- */
 
-	if (base_len == 0)
+	if (base_len <= 1)
 		return;
-
-	if (base_len == 1) {
-		if (swapped)
-			*out = *base;
-		return;
-	}
 
 	/* --- COMPUTE BUCKET INDICES, BUCKET COUNTS, AND LIST OF
 	       USED BUCKETS --- */
@@ -603,6 +589,7 @@ static void minirx_sort(unsigned short int *base, int base_len,
 
 	if (base_uidx_buf_is_sorted) {
 		bucket_used_buf_is_sorted = 1;
+		swapped = 0;
 	} else {
 		bucket_used_buf_is_sorted = minirx_sort_base_by_bucket(
 						base, base_len, out,
@@ -614,7 +601,7 @@ static void minirx_sort(unsigned short int *base, int base_len,
 		tmp = out;
 		out = base;
 		base = tmp;
-		swapped = !swapped;
+		swapped = 1;
 	}
 
 	/* --- ORDER EACH BUCKET --- */
@@ -649,7 +636,7 @@ static void sort_ushort_array(unsigned short int *x, int nelt, int desc)
 	static unsigned short int out[MINIRX_BASE_MAXLENGTH];
 
 	minirx_desc = desc;
-	minirx_sort(x, nelt, out, 0);
+	minirx_sort(x, nelt, out);
 	return;
 }
 
