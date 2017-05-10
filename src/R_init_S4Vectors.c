@@ -8,6 +8,9 @@
 
 static const R_CallMethodDef callMethods[] = {
 
+/* sort_utils.c */
+	CALLMETHOD_DEF(test_sort_ushort_array, 2),
+
 /* AEbufs.c */
 	CALLMETHOD_DEF(AEbufs_use_malloc, 1),
 	CALLMETHOD_DEF(AEbufs_free, 0),
