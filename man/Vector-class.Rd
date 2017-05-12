@@ -38,6 +38,8 @@
 \alias{as.complex,Vector-method}
 \alias{as.character,Vector-method}
 \alias{as.raw,Vector-method}
+\alias{as.matrix,Vector-method}
+\alias{as.matrix.Vector}
 \alias{coerce,Vector,vector-method}
 \alias{coerce,Vector,logical-method}
 \alias{coerce,Vector,integer-method}

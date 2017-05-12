@@ -71,7 +71,6 @@
 \alias{match,Rle,ANY-method}
 \alias{show,Rle-method}
 \alias{showAsCell,Rle-method}
-\alias{order,Rle-method}
 \alias{sort,Rle-method}
 \alias{table,Rle-method}
 \alias{tabulate,Rle-method}

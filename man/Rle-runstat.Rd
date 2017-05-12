@@ -42,7 +42,7 @@ runq(x, k, i, endrule = c("drop", "constant"), ...)
 }
 
 \arguments{
-  \item{x}{
+  \item{x,y}{
     The data object.
   }
   \item{k}{
@@ -67,6 +67,10 @@ runq(x, k, i, endrule = c("drop", "constant"), ...)
   }
   \item{i}{
     An integer in [0, k] indicating which order statistic to calculate.
+  }
+  \item{algorithm,print.level}{
+    See \code{?stats::\link[stats]{runmed}} for a description of
+    these arguments.
   }
   \item{\dots}{Additional arguments passed to methods. Specifically,
     \code{na.rm}. When \code{na.rm = TRUE}, the \code{NA} and \code{NaN}

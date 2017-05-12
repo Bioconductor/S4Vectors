@@ -123,6 +123,10 @@ pc(...)
   \item{expr}{
     Expression to evaluate.
   }
+  \item{deparse.level}{
+    See \code{?base::\link[base]{rbind}} for a description of
+    this argument.
+  }
 }
 
 \details{
