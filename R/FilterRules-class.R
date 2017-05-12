@@ -325,8 +325,11 @@ setMethod("show", "FilterClosure", function(object) {
 })
 
 ### ------------------------------------------------------------------------- 
-### FilterMatrix: coordinates results from multiple filters 
+### FilterResults: coordinates results from multiple filters 
 ###
+
+setClass("FilterResults",
+         representation(filterRules = "FilterRules"))
 
 .valid.FilterMatrix <- function(object)
 {
@@ -338,13 +341,13 @@ setMethod("show", "FilterClosure", function(object) {
       "length(filterRules) must equal ncol(object)") 
 }
 
-setClass("FilterMatrix", representation(filterRules = "FilterRules"),
-         contains = "matrix",
+setClass("FilterMatrix", 
+         contains = c("matrix", "FilterResults"),
          validity = .valid.FilterMatrix)
 
 setGeneric("filterRules", function(x, ...) standardGeneric("filterRules"))
 
-setMethod("filterRules", "FilterMatrix", function(x) {
+setMethod("filterRules", "FilterResults", function(x) {
   setNames(x@filterRules, colnames(x))
 })
 
@@ -397,7 +400,7 @@ setMethod("show", "FilterMatrix", function(object) {
   print(mat, quote = FALSE, right = TRUE)
 })
 
-setMethod("summary", "FilterMatrix",
+setMethod("summary", "FilterResults",
           function(object, discarded = FALSE, percent = FALSE)
           {
             if (!isTRUEorFALSE(discarded))
