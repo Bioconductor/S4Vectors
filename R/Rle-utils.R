@@ -340,7 +340,8 @@ setMethod("sd", signature = c(x = "Rle"),
 ### S3/S4 combo for median.Rle
 ### FIXME: code duplication needed for S3 / S4 dispatch
 ### drop NA's here, so dropRle==TRUE allows x[FALSE][NA] in median.default
-median.Rle <- function(x, na.rm = FALSE)
+### FIXME: Remove these methods in R 3.5
+median.Rle <- function(x, na.rm = FALSE, ...)
 {
     if (na.rm)
         x <- x[!is.na(x)]
@@ -360,6 +361,7 @@ setMethod("median", "Rle",
     callNextMethod(x=x, na.rm=FALSE)
 })
 
+### FIXME: Remove this in R 3.5
 quantile.Rle <- 
     function(x, probs = seq(0, 1, 0.25), na.rm = FALSE, names = TRUE,
              type = 7, ...)
@@ -372,6 +374,7 @@ quantile.Rle <-
     NextMethod("quantile", na.rm=FALSE)
 }
 
+### FIXME: Remove this in R 3.5
 setMethod("mad", "Rle",
           function(x, center = median(x), constant = 1.4826, na.rm = FALSE,
                    low = FALSE, high = FALSE)
@@ -389,6 +392,7 @@ setMethod("IQR", "Rle",
           function(x, na.rm = FALSE)
               diff(quantile(x, c(0.25, 0.75), na.rm = na.rm, names = FALSE)))
 
+### FIXME: Remove this in R 3.5
 setMethod("smoothEnds", "Rle", function(y, k = 3)
           {
               oldOption <- getOption("dropRle")
