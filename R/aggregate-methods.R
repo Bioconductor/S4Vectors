@@ -228,7 +228,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
     stats <- DataFrame(mapply(safeEval, exprs, envs, SIMPLIFY=FALSE))
 
     if (endomorphism && !is(x, "DataFrame")) {
-        ans <- x[end(PartitioningByEnd(by))]
+        ans <- x[end(IRanges::PartitioningByEnd(by))]
         mcols(by) <- NULL
         mcols(ans) <- DataFrame(grouping = by, stats)
     } else {
