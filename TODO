@@ -8,7 +8,7 @@ R files: 73 files
   X utils.R
   X isConstant.R        (renamed isSorted.R)
   X normarg-utils.R
-  X compact_bitvector.R (renamed logical-utils.R)
+  X compact_bitvector.R (deleted)
   X int-utils.R
   X str-utils.R
   X vector-utils.R      (NEW!)
@@ -54,7 +54,7 @@ C files:
   X AEbufs.c
   X SEXP_utils.c (split in SEXP_utils.c + vector_utils.c + eval_utils.c)
   X anyMissing.c
-  X compact_bitvector.c (renamed logical_utils.c)
+  X compact_bitvector.c (deleted)
   X int_utils.c
   X str_utils.c
   X Hits_class.c

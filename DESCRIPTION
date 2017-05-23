@@ -24,7 +24,6 @@ Collate: S4-utils.R
 	isSorted.R
 	subsetting-utils.R
 	vector-utils.R
-	logical-utils.R
 	int-utils.R
 	str-utils.R
 	eval-utils.R

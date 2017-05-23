@@ -539,19 +539,6 @@ SEXP _list_as_data_frame(
 );
 
 
-/* logical_utils.c */
-
-SEXP logical_as_compact_bitvector(SEXP x);
-
-SEXP compact_bitvector_as_logical(SEXP x, SEXP length_out);
-
-SEXP subset_compact_bitvector(SEXP x, SEXP subscript);
-
-SEXP compact_bitvector_bit_count(SEXP x);
-
-SEXP compact_bitvector_last_bit(SEXP x);
-
-
 /* int_utils.c */
 
 SEXP Integer_any_missing_or_outside(SEXP x, SEXP lower, SEXP upper);
