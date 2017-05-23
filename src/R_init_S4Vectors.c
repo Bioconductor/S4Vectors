@@ -41,7 +41,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(subset_compact_bitvector, 2),
 	CALLMETHOD_DEF(compact_bitvector_bit_count, 1),
 	CALLMETHOD_DEF(compact_bitvector_last_bit, 1),
-	CALLMETHOD_DEF(compact_bitvector_set_op, 3),
 
 /* int_utils.c */
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),

@@ -551,8 +551,6 @@ SEXP compact_bitvector_bit_count(SEXP x);
 
 SEXP compact_bitvector_last_bit(SEXP x);
 
-SEXP compact_bitvector_set_op(SEXP query, SEXP ref, SEXP align);
-
 
 /* int_utils.c */
 
