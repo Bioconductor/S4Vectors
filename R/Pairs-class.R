@@ -89,16 +89,16 @@ Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
 
 setMethod("match", c("Pairs", "Pairs"),
           function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) {
-              hits <- intersect(findMatches(first(x), first(table),
-                                            incomparables=incomparables, ...),
-                                findMatches(second(x), second(table),
-                                            incomparables=incomparables, ...))
-              ans <- selectHits(hits, "first")
-              if (!identical(nomatch, NA_integer_)) {
-                  ans[is.na(ans)] <- nomatch
-              }
-              ans
-          })
+    if (!is.null(incomparables))
+        stop("'incomparables' must be NULL")
+    hits <- intersect(findMatches(first(x), first(table), ...),
+                      findMatches(second(x), second(table), ...))
+    ans <- selectHits(hits, "first")
+    if (!identical(nomatch, NA_integer_)) {
+        ans[is.na(ans)] <- nomatch
+    }
+    ans
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coerce
