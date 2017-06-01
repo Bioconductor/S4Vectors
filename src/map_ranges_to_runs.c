@@ -339,13 +339,13 @@ const char *ranges_mapper(const int *run_lengths, int nrun,
 		if (nranges == 1) {
 			method = 1;
 		} else {
-			/* If nranges > nrun then use algo based on binary
-			   search (method 2), otherwise use algo based on
-			   radix sort (method 3). This cutoff is totally
+			/* If nranges > 0.25 * nrun then use algo based on
+			   binary search (method 2), otherwise use algo based
+			   on radix sort (method 3). This cutoff is totally
 			   empirical (based on timings obtained in June 2017
 			   on a Dell LATITUDE E6440 laptop with 4Gb of RAM
 			   and running 64-bit Ubuntu 14.04.5 LTS). */
-			method = nranges > nrun ? 2 : 3;
+			method = nranges > 0.25 * nrun ? 2 : 3;
 		}
 	}
 	switch (method) {
