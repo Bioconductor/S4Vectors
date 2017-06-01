@@ -1,8 +1,5 @@
 #include "S4Vectors.h"
 
-#include <stdlib.h>  /* for malloc, free */
-
-
 static SEXP _new_Rle(SEXP values, SEXP lengths)
 {
 	SEXP classdef, ans;
@@ -1002,372 +999,28 @@ SEXP Rle_end(SEXP x)
 
 
 /****************************************************************************
- * ranges_to_runs_mapper()
- */
-
-static char errmsg_buf[200];
-
-static const char *range2runs_mapper1(const int *run_lengths, int nrun,
-		int range_start, int range_end,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
-{
-	int offset, i, j;
-
-	if (range_start == NA_INTEGER || range_start < 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'start' must be >= 1");
-		return errmsg_buf;
-	}
-	if (range_end == NA_INTEGER || range_end < range_start - 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be >= 'start' - 1");
-		return errmsg_buf;
-	}
-	offset = 0;
-	if (range_end >= range_start) {
-		for (i = 0; i < nrun; i++) {
-			offset += run_lengths[i];
-			if (offset >= range_start)
-				break;
-		}
-		if (i < nrun)
-			*Ltrim = range_start - offset + run_lengths[i] - 1;
-		if (offset >= range_end) {
-			j = i;
-		} else {
-			for (j = i + 1; j < nrun; j++) {
-				offset += run_lengths[j];
-				if (offset >= range_end)
-					break;
-			}
-		}
-		*Rtrim = offset - range_end;
-		*spanned_nrun = j - i + 1;
-	} else {
-		/* Zero-width range. */
-		*spanned_nrun = 0;
-		j = -1;
-		while (offset < range_end) {
-			j++;
-			if (j >= nrun)
-				break;
-			offset += run_lengths[j];
-		}
-		if (offset == range_end)
-			i = j + 1;
-		else
-			i = j;
-	}
-	if (range_end > offset) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be <= 'length(x)'");
-		return errmsg_buf;
-	}
-	*offset_nrun = i;
-	return NULL;
-}
-
-static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
-{
-	int n1, n2, n, bp;
-
-	if (nbreakpoints == 0)
-		return nbreakpoints;
-
-	/* Check last element. */
-	n2 = nbreakpoints - 1;
-	bp = breakpoints[n2];
-	if (x > bp)
-		return nbreakpoints;
-	if (x == bp)
-		return n2;
-
-	/* Check first element. */
-	n1 = 0;
-	bp = breakpoints[n1];
-	if (x <= bp)
-		return n1;
-
-	/* Binary search.
-	   Seems that using >> 1 instead of / 2 is faster, even when compiling
-	   with 'gcc -O2' (one would hope that the optimizer is able to do that
-	   kind of optimization). */
-	while ((n = (n1 + n2) >> 1) != n1) {
-		bp = breakpoints[n];
-		if (x == bp)
-			return n;
-		if (x > bp)
-			n1 = n;
-		else
-			n2 = n;
-	}
-	return n2;
-}
-
-/*
- * Like range2runs_mapper1() but takes 'run_breakpoints' (obtained with
- * 'cumsum(run_lengths)') instead of 'run_lengths' as input and uses a binary
- * search.
- */
-static const char *range2runs_mapper2(const int *run_breakpoints, int nrun,
-		int range_start, int range_end,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
-{
-	int x_len, end_run;
-
-	if (range_start == NA_INTEGER || range_start < 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'start' must be >= 1");
-		return errmsg_buf;
-	}
-	x_len = nrun == 0 ? 0 : run_breakpoints[nrun - 1];
-	if (range_end == NA_INTEGER || range_end > x_len) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be <= 'length(x)'");
-		return errmsg_buf;
-	}
-	if (range_end < range_start - 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be >= 'start' - 1");
-		return errmsg_buf;
-	}
-	*offset_nrun = int_bsearch(range_start, run_breakpoints, nrun);
-	if (range_end >= range_start) {
-		end_run = int_bsearch(range_end, run_breakpoints, nrun);
-		*spanned_nrun = end_run - *offset_nrun + 1;
-		*Ltrim = range_start - 1;
-		if (*offset_nrun >= 1)
-			*Ltrim -= run_breakpoints[*offset_nrun - 1];
-		*Rtrim = run_breakpoints[end_run] - range_end;
-	} else {
-		/* Zero-width range. */
-		*spanned_nrun = 0;
-	}
-	return NULL;
-}
-
-/* Method 1: Naive algo (inefficient if more than 1 range). */
-static const char *ranges2runs_mapper1(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
-{
-	int i, start_i, end_i;
-	const char *errmsg;
-
-	errmsg = NULL;
-	for (i = 0; i < nranges; i++) {
-		start_i = start[i];
-		end_i = start_i - 1 + width[i];
-		errmsg = range2runs_mapper1(run_lengths, nrun,
-					start_i, end_i,
-					offset_nrun + i, spanned_nrun + i,
-					Ltrim + i, Rtrim + i);
-		if (errmsg != NULL)
-			break;
-	}
-	return errmsg;
-}
-
-/* Method 2: Binary search. */
-static const char *ranges2runs_mapper2(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
-{
-	int *run_breakpoints, breakpoint, i, start_i, end_i;
-	const char *errmsg;
-
-	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
-	if (run_breakpoints == NULL) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "ranges2runs_mapper2: memory allocation failed");
-		return errmsg_buf;
-	}
-	breakpoint = 0;
-	for (i = 0; i < nrun; i++) {
-		breakpoint += run_lengths[i];
-		run_breakpoints[i] = breakpoint;
-	}
-	errmsg = NULL;
-	for (i = 0; i < nranges; i++) {
-		start_i = start[i];
-		end_i = start_i - 1 + width[i];
-		errmsg = range2runs_mapper2(run_breakpoints, nrun,
-					start_i, end_i,
-					offset_nrun + i, spanned_nrun + i,
-					Ltrim + i, Rtrim + i);
-		if (errmsg != NULL)
-			break;
-	}
-	free(run_breakpoints);
-	return errmsg; 
-}
-
-/* Method 3: Sort the starts and ends of the ranges. */
-static const char *ranges2runs_mapper3(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim)
-{
-	int SEbuf_len, *SEbuf, *SEorder,
-	    *SEbuf2, SE, breakpoint, i, j, k, SE_run;
-
-	SEbuf_len = 2 * nranges;
-	SEbuf = (int *) malloc(sizeof(int) * SEbuf_len);
-	SEorder = (int *) malloc(sizeof(int) * SEbuf_len);
-	if (SEbuf == NULL || SEorder == NULL) {
-		if (SEbuf != NULL)
-			free(SEbuf);
-		if (SEorder != NULL)
-			free(SEorder);
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "ranges2runs_mapper3: memory allocation failed");
-		return errmsg_buf;
-	}
-	memcpy(SEbuf, start, sizeof(int) * nranges);
-	SEbuf2 = SEbuf + nranges;
-	for (i = 0; i < nranges; i++)
-		SEbuf2[i] = start[i] - 1 + width[i];
-	_get_order_of_int_array(SEbuf, SEbuf_len, 0, SEorder, 0);
-	breakpoint = j = 0;
-	for (k = 0; k < SEbuf_len; k++) {
-		i = SEorder[k];
-		SE = SEbuf[i];
-		while (breakpoint < SE && j < nrun)
-			breakpoint += run_lengths[j++];
-		if (i < nranges) {
-			/* SE is a start. */
-			if (SE < 1) {
-				free(SEbuf);
-				free(SEorder);
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "'start' must be >= 1");
-				return errmsg_buf;
-			}
-			Ltrim[i] = - breakpoint;
-			if (SE > breakpoint) {
-				SE_run = j;
-			} else {
-				SE_run = j - 1;
-				Ltrim[i] += run_lengths[SE_run];
-			}
-			offset_nrun[i] = SE_run;
-		} else {
-			/* SE is an end. */
-			if (SE > breakpoint) {
-				free(SEbuf);
-				free(SEorder);
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "'end' must be <= 'length(x)'");
-				return errmsg_buf;
-			}
-			i -= nranges;
-			Rtrim[i] = breakpoint;
-			SE_run = j - 1;
-			spanned_nrun[i] = SE_run;
-		}
-	}
-	for (i = 0; i < nranges; i++) {
-		if (width[i] != 0) {
-			spanned_nrun[i] -= offset_nrun[i] - 1;
-			Ltrim[i] += start[i] - 1;
-			Rtrim[i] -= SEbuf2[i];
-		} else {
-			/* Zero-width range. */
-			spanned_nrun[i] = 0;
-		}
-	}
-	free(SEbuf);
-	free(SEorder);
-	return NULL; 
-}
-
-/* If 'method' is not >= 0 and <= 3, then the function does nothing (no-op). */
-static const char *ranges2runs_mapper(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim,
-		int method)
-{
-	const char *(*fun)(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *offset_nrun, int *spanned_nrun, int *Ltrim, int *Rtrim);
-
-	if (method == 0) {
-		if (nranges == 1) {
-			method = 1;
-		} else {
-			/* If nranges > 0.05 * nrun then use algo based on
-			   binary search (method 2), otherwise use algo based
-			   on qsort (method 3). The 5% cutoff is empirical
-			   (based on timings obtained in January 2016 on a
-			   Dell LATITUDE E6440 laptop running 64-bit Ubuntu
-			   14.04.3 LTS). */
-			method = nranges > 0.05 * nrun ? 2 : 3;
-		}
-	}
-	switch (method) {
-		case 1: fun = ranges2runs_mapper1; break;
-		case 2: fun = ranges2runs_mapper2; break;
-		case 3: fun = ranges2runs_mapper3; break;
-		default: return NULL;  /* do nothing */
-	}
-	return fun(run_lengths, nrun,
-		   start, width, nranges,
-		   offset_nrun, spanned_nrun, Ltrim, Rtrim);
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP ranges_to_runs_mapper(SEXP run_lengths, SEXP start, SEXP width,
-		SEXP method)
-{
-	SEXP offset_nrun, spanned_nrun, Ltrim, Rtrim, ans;
-	int nrun, nranges;
-	const int *start_p, *width_p;
-	const char *errmsg;
-
-	nrun = LENGTH(run_lengths);
-	nranges = _check_integer_pairs(start, width,
-				       &start_p, &width_p,
-				       "start", "width");
-	PROTECT(offset_nrun = NEW_INTEGER(nranges));
-	PROTECT(spanned_nrun = NEW_INTEGER(nranges));
-	PROTECT(Ltrim = NEW_INTEGER(nranges));
-	PROTECT(Rtrim = NEW_INTEGER(nranges));
-	errmsg = ranges2runs_mapper(INTEGER(run_lengths), nrun,
-				start_p, width_p, nranges,
-				INTEGER(offset_nrun), INTEGER(spanned_nrun),
-				INTEGER(Ltrim), INTEGER(Rtrim),
-				INTEGER(method)[0]);
-	if (errmsg != NULL) {
-		UNPROTECT(4);
-		error(errmsg);
-	}
-	PROTECT(ans = NEW_LIST(4));
-	SET_VECTOR_ELT(ans, 0, offset_nrun);
-	SET_VECTOR_ELT(ans, 1, spanned_nrun);
-	SET_VECTOR_ELT(ans, 2, Ltrim);
-	SET_VECTOR_ELT(ans, 3, Rtrim);
-	UNPROTECT(5);
-	return ans;
-}
-
-
-/****************************************************************************
  * Rle_extract_range() and Rle_extract_ranges()
  */
 
-static SEXP extract_Rle_range(SEXP x_values, const int *x_lengths,
-		int start_nrun, int spanned_nrun, int Ltrim, int Rtrim)
+static SEXP extract_Rle_mapped_range(SEXP x_values, const int *x_lengths,
+		int mapped_range_start,
+		int mapped_range_span,
+		int mapped_range_Ltrim,
+		int mapped_range_Rtrim)
 {
 	SEXP ans_values, ans_lengths, ans;
 
 	PROTECT(ans_values = _subset_vector_OR_factor_by_ranges(x_values,
-					&start_nrun, &spanned_nrun, 1));
-	PROTECT(ans_lengths = NEW_INTEGER(spanned_nrun));
-	if (spanned_nrun != 0) {
+						&mapped_range_start,
+						&mapped_range_span, 1));
+	PROTECT(ans_lengths = NEW_INTEGER(mapped_range_span));
+	if (mapped_range_span != 0) {
 		memcpy(INTEGER(ans_lengths),
-		       x_lengths + start_nrun - 1,
-		       sizeof(int) * spanned_nrun);
-		INTEGER(ans_lengths)[0] -= Ltrim;
-		INTEGER(ans_lengths)[spanned_nrun - 1] -= Rtrim;
+		       x_lengths + mapped_range_start - 1,
+		       sizeof(int) * mapped_range_span);
+		INTEGER(ans_lengths)[0] -= mapped_range_Ltrim;
+		INTEGER(ans_lengths)[mapped_range_span - 1] -=
+						mapped_range_Rtrim;
 	}
 	PROTECT(ans = _new_Rle(ans_values, ans_lengths));
 	UNPROTECT(3);
@@ -1375,16 +1028,26 @@ static SEXP extract_Rle_range(SEXP x_values, const int *x_lengths,
 }
 
 /*
- * Extract 'nranges' Rle's from 'x'. Each Rle to extract is specified by
- * 'start_nrun[i]', 'spanned_nrun[i]', 'Ltrim[i]', and 'Rtrim[i]'.
+ * Extract 'nranges' Rle's from 'x'. The i-th Rle to extract corresponds to
+ * the i-th "mapped range", which is defined by 4 int values:
+ *   1. mapped_range_start[i]: The first run in 'x' spanned by the mapped
+ *                             range (specified as 1-based index).
+ *   2. mapped_range_span[i]:  The nb of runs in 'x' spanned by the mapped
+ *                             range.
+ *   3. mapped_range_Ltrim[i]: The nb of unspanned positions in the first
+ *                             spanned run.
+ *   4. mapped_range_Rtrim[i]: The nb of unspanned positions in the last
+ *                             spanned run.
  * If 'as_list' is TRUE, then the extracted Rle's are returned in a list of
  * length 'nranges'. Otherwise, the single Rle obtained by concatenating them
  * all together is returned.
  */
-static SEXP subset_Rle_by_runs(SEXP x,
-		const int *start_nrun, const int *spanned_nrun,
-		const int *Ltrim, const int *Rtrim, int nranges,
-		int as_list)
+static SEXP subset_Rle_by_mapped_ranges(SEXP x,
+		const int *mapped_range_start,
+		const int *mapped_range_span,
+		const int *mapped_range_Ltrim,
+		const int *mapped_range_Rtrim,
+		int nranges, int as_list)
 {
 	SEXP x_values, x_lengths, tmp_values, ans, ans_elt;
 	int tmp_nrun, *tmp_lengths, i, n;
@@ -1394,10 +1057,12 @@ static SEXP subset_Rle_by_runs(SEXP x,
 	if (as_list == 1) {
 		PROTECT(ans = NEW_LIST(nranges));
 		for (i = 0; i < nranges; i++) {
-			PROTECT(ans_elt = extract_Rle_range(x_values,
+			PROTECT(ans_elt = extract_Rle_mapped_range(x_values,
 						INTEGER(x_lengths),
-						start_nrun[i], spanned_nrun[i],
-						Ltrim[i], Rtrim[i]));
+						mapped_range_start[i],
+						mapped_range_span[i],
+						mapped_range_Ltrim[i],
+						mapped_range_Rtrim[i]));
 			SET_VECTOR_ELT(ans, i, ans_elt);
 			UNPROTECT(1);
 		}
@@ -1405,23 +1070,27 @@ static SEXP subset_Rle_by_runs(SEXP x,
 		return ans;
 	}
 	if (nranges == 1)
-		return extract_Rle_range(x_values, INTEGER(x_lengths),
-				start_nrun[0], spanned_nrun[0],
-				Ltrim[0], Rtrim[0]);
+		return extract_Rle_mapped_range(x_values, INTEGER(x_lengths),
+				mapped_range_start[0],
+				mapped_range_span[0],
+				mapped_range_Ltrim[0],
+				mapped_range_Rtrim[0]);
 	PROTECT(tmp_values = _subset_vector_OR_factor_by_ranges(x_values,
-					start_nrun, spanned_nrun, nranges));
+					mapped_range_start,
+					mapped_range_span,
+					nranges));
 	tmp_nrun = LENGTH(tmp_values);
 	tmp_lengths = (int *) R_alloc(sizeof(int), tmp_nrun);
 	for (i = tmp_nrun = 0; i < nranges; i++) {
-		n = spanned_nrun[i];
+		n = mapped_range_span[i];
 		if (n == 0)
 			continue;
 		memcpy(tmp_lengths + tmp_nrun,
-		       INTEGER(x_lengths) + start_nrun[i] - 1,
+		       INTEGER(x_lengths) + mapped_range_start[i] - 1,
 		       sizeof(int) * n);
-		tmp_lengths[tmp_nrun] -= Ltrim[i];
+		tmp_lengths[tmp_nrun] -= mapped_range_Ltrim[i];
 		tmp_nrun += n;
-		tmp_lengths[tmp_nrun - 1] -= Rtrim[i];
+		tmp_lengths[tmp_nrun - 1] -= mapped_range_Rtrim[i];
 	}
 	PROTECT(ans = _construct_Rle(tmp_values, tmp_lengths, 0));
 	UNPROTECT(2);
@@ -1431,7 +1100,9 @@ static SEXP subset_Rle_by_runs(SEXP x,
 /* --- .Call ENTRY POINT --- */
 SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 {
-	int nranges, x_nrun, offset_nrun, spanned_nrun, Ltrim, Rtrim;
+	int nranges, x_nrun,
+	    mapped_range_offset, mapped_range_span,
+	    mapped_range_Ltrim, mapped_range_Rtrim;
 	const int *range_start_p, *range_end_p;
 	SEXP x_values, x_lengths;
 	const char *errmsg;
@@ -1444,14 +1115,20 @@ SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 	x_values = GET_SLOT(x, install("values"));
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
-	errmsg = range2runs_mapper1(INTEGER(x_lengths), x_nrun,
+	errmsg = simple_range_mapper(INTEGER(x_lengths), x_nrun,
 				range_start_p[0], range_end_p[0],
-				&offset_nrun, &spanned_nrun, &Ltrim, &Rtrim);
+				&mapped_range_offset,
+				&mapped_range_span,
+				&mapped_range_Ltrim,
+				&mapped_range_Rtrim);
 	if (errmsg != NULL)
 		error(errmsg);
-	offset_nrun++;  /* add 1 to get the start */
-	return extract_Rle_range(x_values, INTEGER(x_lengths),
-				 offset_nrun, spanned_nrun, Ltrim, Rtrim);
+	mapped_range_offset++;  /* add 1 to get the start */
+	return extract_Rle_mapped_range(x_values, INTEGER(x_lengths),
+				mapped_range_offset,
+				mapped_range_span,
+				mapped_range_Ltrim,
+				mapped_range_Rtrim);
 }
 
 SEXP _subset_Rle_by_ranges(SEXP x,
@@ -1459,25 +1136,34 @@ SEXP _subset_Rle_by_ranges(SEXP x,
 		int method, int as_list)
 {
 	SEXP x_lengths;
-	int x_nrun, *offset_nrun, *spanned_nrun, *Ltrim, *Rtrim, i;
+	int x_nrun,
+	    *mapped_range_offset, *mapped_range_span,
+	    *mapped_range_Ltrim, *mapped_range_Rtrim, i;
 	const char *errmsg;
 
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
-	offset_nrun = (int *) R_alloc(sizeof(int), nranges);
-	spanned_nrun = (int *) R_alloc(sizeof(int), nranges);
-	Ltrim = (int *) R_alloc(sizeof(int), nranges);
-	Rtrim = (int *) R_alloc(sizeof(int), nranges);
-	errmsg = ranges2runs_mapper(INTEGER(x_lengths), x_nrun,
-				start, width, nranges,
-				offset_nrun, spanned_nrun, Ltrim, Rtrim,
-				method);
+	mapped_range_offset = (int *) R_alloc(sizeof(int), nranges);
+	mapped_range_span = (int *) R_alloc(sizeof(int), nranges);
+	mapped_range_Ltrim = (int *) R_alloc(sizeof(int), nranges);
+	mapped_range_Rtrim = (int *) R_alloc(sizeof(int), nranges);
+	errmsg = ranges_mapper(INTEGER(x_lengths), x_nrun,
+			start, width, nranges,
+			mapped_range_offset,
+			mapped_range_span,
+			mapped_range_Ltrim,
+			mapped_range_Rtrim,
+			method);
 	if (errmsg != NULL)
 		error(errmsg);
 	for (i = 0; i < nranges; i++)
-		offset_nrun[i]++;  /* add 1 to get the start */
-	return subset_Rle_by_runs(x, offset_nrun, spanned_nrun,
-				     Ltrim, Rtrim, nranges, as_list);
+		mapped_range_offset[i]++;  /* add 1 to get the start */
+	return subset_Rle_by_mapped_ranges(x,
+			mapped_range_offset,
+			mapped_range_span,
+			mapped_range_Ltrim,
+			mapped_range_Rtrim,
+			nranges, as_list);
 }
 
 /* --- .Call ENTRY POINT --- */

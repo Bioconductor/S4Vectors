@@ -738,6 +738,39 @@ SEXP top_prenv(SEXP nm, SEXP env);
 
 SEXP top_prenv_dots(SEXP env);
 
+/* map_ranges_to_runs.c */
+
+const char *simple_range_mapper(
+	const int *run_lengths,
+	int nrun,
+	int range_start,
+	int range_end,
+	int *mapped_range_offset,
+	int *mapped_range_span,
+	int *mapped_range_Ltrim,
+	int *mapped_range_Rtrim
+);
+
+const char *ranges_mapper(
+	const int *run_lengths,
+	int nrun,
+	const int *start,
+	const int *width,
+	int nranges,
+	int *mapped_range_offset,
+	int *mapped_range_span,
+	int *mapped_range_Ltrim,
+	int *mapped_range_Rtrim,
+	int method
+);
+
+SEXP map_ranges(
+	SEXP run_lengths,
+	SEXP start,
+	SEXP width,
+	SEXP method
+);
+
 
 /* Hits_class.c */
 
@@ -835,13 +868,6 @@ SEXP Rle_constructor(
 SEXP Rle_start(SEXP x);
 
 SEXP Rle_end(SEXP x);
-
-SEXP ranges_to_runs_mapper(
-	SEXP run_lengths,
-	SEXP start,
-	SEXP width,
-	SEXP method
-);
 
 SEXP Rle_extract_range(
 	SEXP x,

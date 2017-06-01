@@ -203,14 +203,6 @@ extract_range_from_Rle <- function(x, start, end)
     method
 }
 
-### Used in GenomicRanges.
-map_ranges_to_runs <- function(run_lens, start, width, method=0L)
-{
-    method <- .normarg_method(method)
-    .Call2("ranges_to_runs_mapper", run_lens, start, width, method,
-                                    PACKAGE="S4Vectors")
-}
-
 ### NOT exported but used in IRanges package (by "extractROWS" method with
 ### signature Rle,RangesNSBS).
 extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
