@@ -260,7 +260,12 @@ static const char *ranges_mapper3(const int *run_lengths, int nrun,
 	SEbuf2 = SEbuf + nranges;
 	for (i = 0; i < nranges; i++)
 		SEbuf2[i] = start[i] - 1 + width[i];
-	_get_order_of_int_array(SEbuf, SEbuf_len, 0, SEorder, 0);
+
+	/* Use radix sort to find order of values in SEbuf. */
+	for (i = 0; i < SEbuf_len; i++)
+		SEorder[i] = i;
+	_sort_ints(SEorder, SEbuf_len, SEbuf, 0, 1, NULL, NULL);
+
 	breakpoint = j = 0;
 	for (k = 0; k < SEbuf_len; k++) {
 		i = SEorder[k];
@@ -334,13 +339,13 @@ const char *ranges_mapper(const int *run_lengths, int nrun,
 		if (nranges == 1) {
 			method = 1;
 		} else {
-			/* If nranges > 0.05 * nrun then use algo based on
-			   binary search (method 2), otherwise use algo based
-			   on qsort (method 3). The 5% cutoff is empirical
-			   (based on timings obtained in January 2016 on a
-			   Dell LATITUDE E6440 laptop running 64-bit Ubuntu
-			   14.04.3 LTS). */
-			method = nranges > 0.05 * nrun ? 2 : 3;
+			/* If nranges > nrun then use algo based on binary
+			   search (method 2), otherwise use algo based on
+			   radix sort (method 3). This cutoff is totally
+			   empirical (based on timings obtained in June 2017
+			   on a Dell LATITUDE E6440 laptop with 4Gb of RAM
+			   and running 64-bit Ubuntu 14.04.5 LTS). */
+			method = nranges > nrun ? 2 : 3;
 		}
 	}
 	switch (method) {
