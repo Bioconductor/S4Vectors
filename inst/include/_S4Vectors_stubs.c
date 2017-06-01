@@ -430,6 +430,11 @@ DEFINE_CCALLABLE_STUB(int, copy_vector_block,
 	(     dest,     dest_offset,      src,     src_offset,     block_width)
 )
 
+DEFINE_CCALLABLE_STUB(int, copy_vector_positions,
+	(SEXP dest, int dest_offset, SEXP src, const int *pos, int npos),
+	(     dest,     dest_offset,      src,            pos,     npos)
+)
+
 DEFINE_CCALLABLE_STUB(int, copy_vector_ranges,
 	(SEXP dest, int dest_offset, SEXP src, const int *start, const int *width, int nranges),
 	(     dest,     dest_offset,      src,            start,            width,     nranges)

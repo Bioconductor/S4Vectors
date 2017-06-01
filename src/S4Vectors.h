@@ -498,6 +498,14 @@ int _copy_vector_block(
 	int block_width
 );
 
+int _copy_vector_positions(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	const int *pos,
+	int npos
+);
+
 int _copy_vector_ranges(
 	SEXP dest,
 	int dest_offset,
@@ -507,11 +515,22 @@ int _copy_vector_ranges(
 	int nranges
 );
 
+SEXP _subset_vector_OR_factor_by_positions(
+	SEXP x,
+	const int *pos,
+	int npos
+);
+
 SEXP _subset_vector_OR_factor_by_ranges(
 	SEXP x,
 	const int *start,
 	const int *width,
 	int nranges
+);
+
+SEXP vector_OR_factor_extract_positions(
+	SEXP x,
+	SEXP pos
 );
 
 SEXP vector_OR_factor_extract_ranges(
@@ -740,7 +759,7 @@ SEXP top_prenv_dots(SEXP env);
 
 /* map_ranges_to_runs.c */
 
-const char *simple_range_mapper(
+const char *_simple_range_mapper(
 	const int *run_lengths,
 	int nrun,
 	int range_start,
@@ -751,7 +770,7 @@ const char *simple_range_mapper(
 	int *mapped_range_Rtrim
 );
 
-const char *ranges_mapper(
+const char *_ranges_mapper(
 	const int *run_lengths,
 	int nrun,
 	const int *start,
@@ -761,6 +780,15 @@ const char *ranges_mapper(
 	int *mapped_range_span,
 	int *mapped_range_Ltrim,
 	int *mapped_range_Rtrim,
+	int method
+);
+
+const char *_pos_mapper(
+	const int *run_lengths,
+	int nrun,
+	const int *pos,
+	int npos,
+	int *mapped_pos,
 	int method
 );
 
@@ -869,12 +897,6 @@ SEXP Rle_start(SEXP x);
 
 SEXP Rle_end(SEXP x);
 
-SEXP Rle_extract_range(
-	SEXP x,
-	SEXP start,
-	SEXP end
-);
-
 SEXP _subset_Rle_by_ranges(
 	SEXP x,
 	const int *start,
@@ -884,12 +906,31 @@ SEXP _subset_Rle_by_ranges(
 	int as_list
 );
 
+SEXP _subset_Rle_by_positions(
+	SEXP x,
+	const int *pos,
+	int npos,
+	int method
+);
+
+SEXP Rle_extract_range(
+	SEXP x,
+	SEXP start,
+	SEXP end
+);
+
 SEXP Rle_extract_ranges(
 	SEXP x,
 	SEXP start,
 	SEXP width,
 	SEXP method,
 	SEXP as_list
+);
+
+SEXP Rle_extract_positions(
+	SEXP x,
+	SEXP pos,
+	SEXP method
 );
 
 SEXP Rle_getStartEndRunAndOffset(

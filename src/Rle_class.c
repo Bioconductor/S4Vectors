@@ -999,7 +999,7 @@ SEXP Rle_end(SEXP x)
 
 
 /****************************************************************************
- * Rle_extract_range() and Rle_extract_ranges()
+ * Rle_extract_range(), Rle_extract_ranges(), and Rle_extract_positions()
  */
 
 static SEXP extract_Rle_mapped_range(SEXP x_values, const int *x_lengths,
@@ -1097,6 +1097,71 @@ static SEXP subset_Rle_by_mapped_ranges(SEXP x,
 	return ans;
 }
 
+static SEXP subset_Rle_by_mapped_pos(SEXP x, const int *mapped_pos, int npos)
+{
+	SEXP x_values, tmp_values, ans;
+
+	x_values = GET_SLOT(x, install("values"));
+	PROTECT(tmp_values = _subset_vector_OR_factor_by_positions(x_values,
+					mapped_pos, npos));
+	PROTECT(ans = _construct_Rle(tmp_values, NULL, 0));
+	UNPROTECT(2);
+	return ans;
+}
+
+SEXP _subset_Rle_by_ranges(SEXP x,
+		const int *start, const int *width, int nranges,
+		int method, int as_list)
+{
+	SEXP x_lengths;
+	int x_nrun,
+	    *mapped_range_start, *mapped_range_span,
+	    *mapped_range_Ltrim, *mapped_range_Rtrim, i;
+	const char *errmsg;
+
+	x_lengths = GET_SLOT(x, install("lengths"));
+	x_nrun = LENGTH(x_lengths);
+	mapped_range_start = (int *) R_alloc(sizeof(int), nranges);
+	mapped_range_span = (int *) R_alloc(sizeof(int), nranges);
+	mapped_range_Ltrim = (int *) R_alloc(sizeof(int), nranges);
+	mapped_range_Rtrim = (int *) R_alloc(sizeof(int), nranges);
+	errmsg = _ranges_mapper(INTEGER(x_lengths), x_nrun,
+			start, width, nranges,
+			mapped_range_start,  /* will be filled with offsets */
+			mapped_range_span,
+			mapped_range_Ltrim,
+			mapped_range_Rtrim,
+			method);
+	if (errmsg != NULL)
+		error(errmsg);
+	for (i = 0; i < nranges; i++)
+		mapped_range_start[i]++;  /* add 1 to get the starts */
+	return subset_Rle_by_mapped_ranges(x,
+			mapped_range_start,
+			mapped_range_span,
+			mapped_range_Ltrim,
+			mapped_range_Rtrim,
+			nranges, as_list);
+}
+
+SEXP _subset_Rle_by_positions(SEXP x, const int *pos, int npos, int method)
+{
+	SEXP x_lengths;
+	int x_nrun, *mapped_pos;
+	const char *errmsg;
+
+	x_lengths = GET_SLOT(x, install("lengths"));
+	x_nrun = LENGTH(x_lengths);
+	mapped_pos = (int *) R_alloc(sizeof(int), npos);
+	errmsg = _pos_mapper(INTEGER(x_lengths), x_nrun,
+			pos, npos,
+			mapped_pos,
+			method);
+	if (errmsg != NULL)
+		error(errmsg);
+	return subset_Rle_by_mapped_pos(x, mapped_pos, npos);
+}
+
 /* --- .Call ENTRY POINT --- */
 SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 {
@@ -1115,7 +1180,7 @@ SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 	x_values = GET_SLOT(x, install("values"));
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
-	errmsg = simple_range_mapper(INTEGER(x_lengths), x_nrun,
+	errmsg = _simple_range_mapper(INTEGER(x_lengths), x_nrun,
 				range_start_p[0], range_end_p[0],
 				&mapped_range_offset,
 				&mapped_range_span,
@@ -1131,41 +1196,6 @@ SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 				mapped_range_Rtrim);
 }
 
-SEXP _subset_Rle_by_ranges(SEXP x,
-		const int *start, const int *width, int nranges,
-		int method, int as_list)
-{
-	SEXP x_lengths;
-	int x_nrun,
-	    *mapped_range_offset, *mapped_range_span,
-	    *mapped_range_Ltrim, *mapped_range_Rtrim, i;
-	const char *errmsg;
-
-	x_lengths = GET_SLOT(x, install("lengths"));
-	x_nrun = LENGTH(x_lengths);
-	mapped_range_offset = (int *) R_alloc(sizeof(int), nranges);
-	mapped_range_span = (int *) R_alloc(sizeof(int), nranges);
-	mapped_range_Ltrim = (int *) R_alloc(sizeof(int), nranges);
-	mapped_range_Rtrim = (int *) R_alloc(sizeof(int), nranges);
-	errmsg = ranges_mapper(INTEGER(x_lengths), x_nrun,
-			start, width, nranges,
-			mapped_range_offset,
-			mapped_range_span,
-			mapped_range_Ltrim,
-			mapped_range_Rtrim,
-			method);
-	if (errmsg != NULL)
-		error(errmsg);
-	for (i = 0; i < nranges; i++)
-		mapped_range_offset[i]++;  /* add 1 to get the start */
-	return subset_Rle_by_mapped_ranges(x,
-			mapped_range_offset,
-			mapped_range_span,
-			mapped_range_Ltrim,
-			mapped_range_Rtrim,
-			nranges, as_list);
-}
-
 /* --- .Call ENTRY POINT --- */
 SEXP Rle_extract_ranges(SEXP x, SEXP start, SEXP width,
 			SEXP method, SEXP as_list)
@@ -1178,6 +1208,16 @@ SEXP Rle_extract_ranges(SEXP x, SEXP start, SEXP width,
 				       "start", "width");
 	return _subset_Rle_by_ranges(x, start_p, width_p, nranges,
 				     INTEGER(method)[0], LOGICAL(as_list)[0]);
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP Rle_extract_positions(SEXP x, SEXP pos, SEXP method)
+{
+	int npos;
+
+	npos = LENGTH(pos);
+	return _subset_Rle_by_positions(x, INTEGER(pos), npos,
+					INTEGER(method)[0]);
 }
 
 

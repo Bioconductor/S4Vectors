@@ -30,6 +30,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(new_CHARACTER_from_LLint, 1),
 
 /* subsetting_utils.c */
+	CALLMETHOD_DEF(vector_OR_factor_extract_positions, 2),
 	CALLMETHOD_DEF(vector_OR_factor_extract_ranges, 3),
 
 /* vector_utils.c */
@@ -87,6 +88,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Rle_end, 1),
 	CALLMETHOD_DEF(Rle_extract_range, 3),
 	CALLMETHOD_DEF(Rle_extract_ranges, 5),
+	CALLMETHOD_DEF(Rle_extract_positions, 3),
 	CALLMETHOD_DEF(Rle_getStartEndRunAndOffset, 3),
 	CALLMETHOD_DEF(Rle_window_aslist, 5),
 
@@ -190,6 +192,7 @@ void R_init_S4Vectors(DllInfo *info)
 
 /* subsetting_utils.c */
 	REGISTER_CCALLABLE(_copy_vector_block);
+	REGISTER_CCALLABLE(_copy_vector_positions);
 	REGISTER_CCALLABLE(_copy_vector_ranges);
 
 /* vector_utils.c */

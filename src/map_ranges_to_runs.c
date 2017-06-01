@@ -12,10 +12,10 @@ static char errmsg_buf[200];
 
 
 /****************************************************************************
- * 2 low-level mappers that handle a single range only
+ * 3 low-level helper for mapping a single range (or single pos) only
  */
 
-const char *simple_range_mapper(const int *run_lengths, int nrun,
+const char *_simple_range_mapper(const int *run_lengths, int nrun,
 		int range_start, int range_end,
 		int *mapped_range_offset,
 		int *mapped_range_span,
@@ -117,7 +117,7 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 }
 
 /*
- * Like simple_range_mapper() but takes 'run_breakpoints' (obtained with
+ * Like _simple_range_mapper() but takes 'run_breakpoints' (obtained with
  * 'cumsum(run_lengths)') instead of 'run_lengths' as input and uses a binary
  * search.
  */
@@ -162,9 +162,29 @@ static const char *bsearch_range_mapper(const int *run_breakpoints, int nrun,
 	return NULL;
 }
 
+static const char *bsearch_pos_mapper(const int *run_breakpoints, int nrun,
+		int pos, int *mapped_pos)
+{
+	int x_len;
+
+	x_len = nrun == 0 ? 0 : run_breakpoints[nrun - 1];
+	if (pos == NA_INTEGER) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "subscript contains NAs");
+		return errmsg_buf;
+	}
+	if (pos < 1 || pos > x_len) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "subscript contains out-of-bounds indices");
+		return errmsg_buf;
+	}
+	*mapped_pos = int_bsearch(pos, run_breakpoints, nrun) + 1;
+	return NULL;
+}
+
 
 /****************************************************************************
- * map_ranges()
+ * _ranges_mapper() and _pos_mapper()
  */
 
 /* Method 1: Naive algo (inefficient if more than 1 range). */
@@ -182,7 +202,7 @@ static const char *ranges_mapper1(const int *run_lengths, int nrun,
 	for (i = 0; i < nranges; i++) {
 		start_i = start[i];
 		end_i = start_i - 1 + width[i];
-		errmsg = simple_range_mapper(run_lengths, nrun,
+		errmsg = _simple_range_mapper(run_lengths, nrun,
 				start_i, end_i,
 				mapped_range_offset + i,
 				mapped_range_span + i,
@@ -226,6 +246,35 @@ static const char *ranges_mapper2(const int *run_lengths, int nrun,
 				mapped_range_span + i,
 				mapped_range_Ltrim + i,
 				mapped_range_Rtrim + i);
+		if (errmsg != NULL)
+			break;
+	}
+	free(run_breakpoints);
+	return errmsg; 
+}
+
+static const char *pos_mapper2(const int *run_lengths, int nrun,
+		const int *pos, int npos, int *mapped_pos)
+{
+	int *run_breakpoints, breakpoint, i, pos_i;
+	const char *errmsg;
+
+	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
+	if (run_breakpoints == NULL) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "pos_mapper2: memory allocation failed");
+		return errmsg_buf;
+	}
+	breakpoint = 0;
+	for (i = 0; i < nrun; i++) {
+		breakpoint += run_lengths[i];
+		run_breakpoints[i] = breakpoint;
+	}
+	errmsg = NULL;
+	for (i = 0; i < npos; i++) {
+		pos_i = pos[i];
+		errmsg = bsearch_pos_mapper(run_breakpoints, nrun,
+				pos_i, mapped_pos + i);
 		if (errmsg != NULL)
 			break;
 	}
@@ -320,7 +369,7 @@ static const char *ranges_mapper3(const int *run_lengths, int nrun,
 }
 
 /* If 'method' is not >= 0 and <= 3, then the function does nothing (no-op). */
-const char *ranges_mapper(const int *run_lengths, int nrun,
+const char *_ranges_mapper(const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *mapped_range_offset,
 		int *mapped_range_span,
@@ -362,7 +411,18 @@ const char *ranges_mapper(const int *run_lengths, int nrun,
 		   mapped_range_Rtrim);
 }
 
-/* --- .Call ENTRY POINT ---
+const char *_pos_mapper(const int *run_lengths, int nrun,
+		const int *pos, int npos, int *mapped_pos,
+		int method)
+{
+	return pos_mapper2(run_lengths, nrun, pos, npos, mapped_pos);
+}
+
+
+/****************************************************************************
+ * map_ranges()
+ * 
+ * --- .Call ENTRY POINT ---
  * Return an *unnamed* list of 4 integer vectors. Each integer vector is
  * parallel to the input ranges (i.e. parallel to 'start' and 'width').
  * The i-th element of each integer vector forms a quadruplet of integers
@@ -413,7 +473,7 @@ SEXP map_ranges(SEXP run_lengths, SEXP start, SEXP width, SEXP method)
 	PROTECT(mapped_range_span = NEW_INTEGER(nranges));
 	PROTECT(mapped_range_Ltrim = NEW_INTEGER(nranges));
 	PROTECT(mapped_range_Rtrim = NEW_INTEGER(nranges));
-	errmsg = ranges_mapper(INTEGER(run_lengths), nrun,
+	errmsg = _ranges_mapper(INTEGER(run_lengths), nrun,
 			start_p, width_p, nranges,
 			INTEGER(mapped_range_offset),
 			INTEGER(mapped_range_span),

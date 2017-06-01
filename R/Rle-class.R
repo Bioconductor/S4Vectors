@@ -188,12 +188,6 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Note that they drop the metadata columns!
 ###
 
-extract_range_from_Rle <- function(x, start, end)
-{
-    ans <- .Call2("Rle_extract_range", x, start, end, PACKAGE="S4Vectors")
-    as(ans, class(x))  # so the function is an endomorphism
-}
-
 .normarg_method <- function(method)
 {
     if (!(isSingleNumber(method) && method >= 0 && method <= 3))
@@ -201,6 +195,22 @@ extract_range_from_Rle <- function(x, start, end)
     if (!is.integer(method))
         method <- as.integer(method)
     method
+}
+
+### TODO: Support NAs in 'i'.
+extract_positions_from_Rle <- function(x, i, method=0L)
+{
+    if (!is.integer(i))
+        stop("'i' must be an integer vector")
+    method <- .normarg_method(method)
+    ans <- .Call2("Rle_extract_positions", x, i, method, PACKAGE="S4Vectors")
+    as(ans, class(x))  # so the function is an endomorphism
+}
+
+extract_range_from_Rle <- function(x, start, end)
+{
+    ans <- .Call2("Rle_extract_range", x, start, end, PACKAGE="S4Vectors")
+    as(ans, class(x))  # so the function is an endomorphism
 }
 
 ### NOT exported but used in IRanges package (by "extractROWS" method with
@@ -220,20 +230,6 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
     if (x_class == "Rle")
         return(ans)
     lapply(ans, as, x_class)
-}
-
-### TODO: extract_positions_from_Rle() should call its own .Call entry point.
-### This entry point would be a simpler version of .Call entry point
-### "Rle_extract_ranges" that takes 1 integer vector instead of 2 and supports
-### NAs.
-extract_positions_from_Rle <- function(x, i)
-{
-    if (!is.integer(i))
-        stop("'i' must be an integer vector")
-    ## NAs not supported for now but will be soon (see TODO above).
-    if (anyNA(i))
-        stop("numeric subscript cannot contain NAs yet when subsetting an Rle")
-    extract_ranges_from_Rle(x, i, rep.int(1L, length(i)))
 }
 
 
