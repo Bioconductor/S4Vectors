@@ -1153,7 +1153,7 @@ SEXP _subset_Rle_by_positions(SEXP x, const int *pos, int npos, int method)
 	x_lengths = GET_SLOT(x, install("lengths"));
 	x_nrun = LENGTH(x_lengths);
 	mapped_pos = (int *) R_alloc(sizeof(int), npos);
-	errmsg = _pos_mapper(INTEGER(x_lengths), x_nrun,
+	errmsg = _positions_mapper(INTEGER(x_lengths), x_nrun,
 			pos, npos,
 			mapped_pos,
 			method);

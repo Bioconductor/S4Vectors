@@ -757,6 +757,7 @@ SEXP top_prenv(SEXP nm, SEXP env);
 
 SEXP top_prenv_dots(SEXP env);
 
+
 /* map_ranges_to_runs.c */
 
 const char *_simple_range_mapper(
@@ -768,6 +769,13 @@ const char *_simple_range_mapper(
 	int *mapped_range_span,
 	int *mapped_range_Ltrim,
 	int *mapped_range_Rtrim
+);
+
+const char *_simple_position_mapper(
+	const int *run_lengths,
+	int nrun,
+	int pos,
+	int *mapped_pos
 );
 
 const char *_ranges_mapper(
@@ -783,7 +791,7 @@ const char *_ranges_mapper(
 	int method
 );
 
-const char *_pos_mapper(
+const char *_positions_mapper(
 	const int *run_lengths,
 	int nrun,
 	const int *pos,
@@ -796,6 +804,12 @@ SEXP map_ranges(
 	SEXP run_lengths,
 	SEXP start,
 	SEXP width,
+	SEXP method
+);
+
+SEXP map_positions(
+	SEXP run_lengths,
+	SEXP pos,
 	SEXP method
 );
 

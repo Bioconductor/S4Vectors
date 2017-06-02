@@ -72,8 +72,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(top_prenv_dots, 1),
 
 /* map_ranges_to_runs.c */
-
 	CALLMETHOD_DEF(map_ranges, 4),
+	CALLMETHOD_DEF(map_positions, 3),
 
 /* Hits_class.c */
 	CALLMETHOD_DEF(Hits_new, 6),

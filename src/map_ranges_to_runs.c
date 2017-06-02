@@ -6,38 +6,86 @@
 #include "S4Vectors.h"
 
 #include <stdlib.h>  /* for malloc, free */
-
+#include <limits.h>  /* for INT_MAX */
 
 static char errmsg_buf[200];
 
+/* Mapping ranges or positions to a set of run is used in the context
+   of subsetting some Vector derivative (like Rle and GPos objects), so
+   we try to display error messages that makes sense in that context. */
+
+static char *VECTOR_TOO_LONG_errmsg()
+{
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "subsetting a Vector derivative of length "
+		 "2^31 or more is not suppported yet");
+	return errmsg_buf;
+}
+
+static char *NA_INDICES_errmsg()
+{
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "subscript contains NAs");
+	return errmsg_buf;
+}
+
+static char *OUTOFBOUND_INDICES_errmsg()
+{
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "subscript contains out-of-bounds indices");
+	return errmsg_buf;
+}
+
+static char *INVALID_RANGES_errmsg()
+{
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "subscript contains invalid ranges "
+		 "(in a valid range 'start'/'end'/'width'\n"
+		 "  cannot be NA and 'width' must be >= 0)");
+	return errmsg_buf;
+}
+
+static char *OUTOFBOUND_RANGES_errmsg()
+{
+	snprintf(errmsg_buf, sizeof(errmsg_buf),
+		 "subscript contains out-of-bounds ranges");
+	return errmsg_buf;
+}
+
 
 /****************************************************************************
- * 3 low-level helper for mapping a single range (or single pos) only
+ * 1st mapping method
+ *
+ * Use a naive algo (inefficient if more than 1 range to map).
+ * Advantage: simple, memory efficient (unlike the other methods, it doesn't
+ * require allocating any temporary vector), and can be used as a reference
+ * to validate the other slightly more complex methods.
  */
 
-const char *_simple_range_mapper(const int *run_lengths, int nrun,
+/* Low-level mapper that takes as input a single range only */
+const char *_simple_range_mapper(
+		const int *run_lengths, int nrun,
 		int range_start, int range_end,
 		int *mapped_range_offset,
 		int *mapped_range_span,
 		int *mapped_range_Ltrim,
 		int *mapped_range_Rtrim)
 {
-	int offset, i, j;
+	unsigned int offset;
+	int i, j;
 
-	if (range_start == NA_INTEGER || range_start < 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'start' must be >= 1");
-		return errmsg_buf;
-	}
-	if (range_end == NA_INTEGER || range_end < range_start - 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be >= 'start' - 1");
-		return errmsg_buf;
-	}
+	if (range_start == NA_INTEGER
+	 || range_end == NA_INTEGER
+	 || range_end < range_start - 1)
+		return INVALID_RANGES_errmsg();
+	if (range_start < 1)
+		return OUTOFBOUND_RANGES_errmsg();
 	offset = 0;
 	if (range_end >= range_start) {
 		for (i = 0; i < nrun; i++) {
 			offset += run_lengths[i];
+			if (offset > INT_MAX)
+				return VECTOR_TOO_LONG_errmsg();
 			if (offset >= range_start)
 				break;
 		}
@@ -49,6 +97,8 @@ const char *_simple_range_mapper(const int *run_lengths, int nrun,
 		} else {
 			for (j = i + 1; j < nrun; j++) {
 				offset += run_lengths[j];
+				if (offset > INT_MAX)
+					return VECTOR_TOO_LONG_errmsg();
 				if (offset >= range_end)
 					break;
 			}
@@ -64,21 +114,101 @@ const char *_simple_range_mapper(const int *run_lengths, int nrun,
 			if (j >= nrun)
 				break;
 			offset += run_lengths[j];
+			if (offset > INT_MAX)
+				return VECTOR_TOO_LONG_errmsg();
 		}
 		if (offset == range_end)
 			i = j + 1;
 		else
 			i = j;
 	}
-	if (range_end > offset) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be <= 'length(x)'");
-		return errmsg_buf;
-	}
+	if (range_end > offset)
+		return OUTOFBOUND_RANGES_errmsg();
 	*mapped_range_offset = i;
 	return NULL;
 }
 
+/* Low-level mapper that takes as input a single position only */
+const char *_simple_position_mapper(
+		const int *run_lengths, int nrun,
+		int pos, int *mapped_pos)
+{
+	unsigned int offset;
+	int i;
+
+	if (pos == NA_INTEGER)
+		return NA_INDICES_errmsg();
+	if (pos < 1)
+		return OUTOFBOUND_INDICES_errmsg();
+	offset = 0;
+	for (i = 0; i < nrun; i++) {
+		offset += run_lengths[i];
+		if (offset > INT_MAX)
+			return VECTOR_TOO_LONG_errmsg();
+		if (offset >= pos)
+			break;
+	}
+	if (pos > offset)
+		return OUTOFBOUND_INDICES_errmsg();
+	*mapped_pos = i + 1;
+	return NULL;
+}
+
+static const char *ranges_mapper1(
+		const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *mapped_range_offset,
+		int *mapped_range_span,
+		int *mapped_range_Ltrim,
+		int *mapped_range_Rtrim)
+{
+	int i, start_i, end_i;
+	const char *errmsg;
+
+	errmsg = NULL;
+	for (i = 0; i < nranges; i++) {
+		start_i = start[i];
+		end_i = start_i - 1 + width[i];
+		errmsg = _simple_range_mapper(
+				run_lengths, nrun,
+				start_i, end_i,
+				mapped_range_offset + i,
+				mapped_range_span + i,
+				mapped_range_Ltrim + i,
+				mapped_range_Rtrim + i);
+		if (errmsg != NULL)
+			break;
+	}
+	return errmsg;
+}
+
+static const char *positions_mapper1(
+		const int *run_lengths, int nrun,
+		const int *pos, int npos, int *mapped_pos)
+{
+	int i;
+	const char *errmsg;
+
+	errmsg = NULL;
+	for (i = 0; i < npos; i++) {
+		errmsg = _simple_position_mapper(
+				run_lengths, nrun,
+				pos[i], mapped_pos + i);
+		if (errmsg != NULL)
+			break;
+	}
+	return errmsg;
+}
+
+
+/****************************************************************************
+ * 2nd mapping method
+ *
+ * Use a binary search to map the ranges to the ending positions of the runs
+ * (called "run breakpoints").
+ */
+
+/* Binary search. */
 static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 {
 	int n1, n2, n, bp;
@@ -116,12 +246,9 @@ static int int_bsearch(int x, const int *breakpoints, int nbreakpoints)
 	return n2;
 }
 
-/*
- * Like _simple_range_mapper() but takes 'run_breakpoints' (obtained with
- * 'cumsum(run_lengths)') instead of 'run_lengths' as input and uses a binary
- * search.
- */
-static const char *bsearch_range_mapper(const int *run_breakpoints, int nrun,
+/* Low-level mapper that takes as input a single range only */
+static const char *bsearch_range_mapper(
+		const int *run_breakpoints, int nrun,
 		int range_start, int range_end,
 		int *mapped_range_offset,
 		int *mapped_range_span,
@@ -130,22 +257,13 @@ static const char *bsearch_range_mapper(const int *run_breakpoints, int nrun,
 {
 	int x_len, end_run;
 
-	if (range_start == NA_INTEGER || range_start < 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'start' must be >= 1");
-		return errmsg_buf;
-	}
+	if (range_start == NA_INTEGER
+	 || range_end == NA_INTEGER
+	 || range_end < range_start - 1)
+		return INVALID_RANGES_errmsg();
 	x_len = nrun == 0 ? 0 : run_breakpoints[nrun - 1];
-	if (range_end == NA_INTEGER || range_end > x_len) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be <= 'length(x)'");
-		return errmsg_buf;
-	}
-	if (range_end < range_start - 1) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "'end' must be >= 'start' - 1");
-		return errmsg_buf;
-	}
+	if (range_start < 1 || range_end > x_len)
+		return OUTOFBOUND_RANGES_errmsg();
 	*mapped_range_offset = int_bsearch(range_start, run_breakpoints, nrun);
 	if (range_end >= range_start) {
 		end_run = int_bsearch(range_end, run_breakpoints, nrun);
@@ -162,80 +280,61 @@ static const char *bsearch_range_mapper(const int *run_breakpoints, int nrun,
 	return NULL;
 }
 
-static const char *bsearch_pos_mapper(const int *run_breakpoints, int nrun,
+/* Low-level mapper that takes as input a single position only */
+static const char *bsearch_position_mapper(
+		const int *run_breakpoints, int nrun,
 		int pos, int *mapped_pos)
 {
 	int x_len;
 
 	x_len = nrun == 0 ? 0 : run_breakpoints[nrun - 1];
-	if (pos == NA_INTEGER) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "subscript contains NAs");
-		return errmsg_buf;
-	}
-	if (pos < 1 || pos > x_len) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "subscript contains out-of-bounds indices");
-		return errmsg_buf;
-	}
+	if (pos == NA_INTEGER)
+		return NA_INDICES_errmsg();
+	if (pos < 1 || pos > x_len)
+		return OUTOFBOUND_INDICES_errmsg();
 	*mapped_pos = int_bsearch(pos, run_breakpoints, nrun) + 1;
 	return NULL;
 }
 
-
-/****************************************************************************
- * _ranges_mapper() and _pos_mapper()
- */
-
-/* Method 1: Naive algo (inefficient if more than 1 range). */
-static const char *ranges_mapper1(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *mapped_range_offset,
-		int *mapped_range_span,
-		int *mapped_range_Ltrim,
-		int *mapped_range_Rtrim)
+static int *alloc_and_compute_run_breakpoints(const int *run_lengths, int nrun)
 {
-	int i, start_i, end_i;
-	const char *errmsg;
-
-	errmsg = NULL;
-	for (i = 0; i < nranges; i++) {
-		start_i = start[i];
-		end_i = start_i - 1 + width[i];
-		errmsg = _simple_range_mapper(run_lengths, nrun,
-				start_i, end_i,
-				mapped_range_offset + i,
-				mapped_range_span + i,
-				mapped_range_Ltrim + i,
-				mapped_range_Rtrim + i);
-		if (errmsg != NULL)
-			break;
-	}
-	return errmsg;
-}
-
-/* Method 2: Binary search. */
-static const char *ranges_mapper2(const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *mapped_range_offset,
-		int *mapped_range_span,
-		int *mapped_range_Ltrim,
-		int *mapped_range_Rtrim)
-{
-	int *run_breakpoints, breakpoint, i, start_i, end_i;
-	const char *errmsg;
+	int *run_breakpoints;
+	unsigned int breakpoint;
+	int i;
 
 	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
 	if (run_breakpoints == NULL) {
 		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "ranges_mapper2: memory allocation failed");
-		return errmsg_buf;
+			 "failed to allocate temporary vector of breakpoints");
+		return NULL;
 	}
 	breakpoint = 0;
 	for (i = 0; i < nrun; i++) {
 		breakpoint += run_lengths[i];
+		if (breakpoint > INT_MAX) {
+			free(run_breakpoints);
+			VECTOR_TOO_LONG_errmsg();
+			return NULL;
+		}
 		run_breakpoints[i] = breakpoint;
 	}
+	return run_breakpoints;
+}
+
+static const char *ranges_mapper2(
+		const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *mapped_range_offset,
+		int *mapped_range_span,
+		int *mapped_range_Ltrim,
+		int *mapped_range_Rtrim)
+{
+	int *run_breakpoints, i, start_i, end_i;
+	const char *errmsg;
+
+	run_breakpoints = alloc_and_compute_run_breakpoints(run_lengths, nrun);
+	if (run_breakpoints == NULL)
+		return errmsg_buf;
 	errmsg = NULL;
 	for (i = 0; i < nranges; i++) {
 		start_i = start[i];
@@ -253,28 +352,20 @@ static const char *ranges_mapper2(const int *run_lengths, int nrun,
 	return errmsg; 
 }
 
-static const char *pos_mapper2(const int *run_lengths, int nrun,
+static const char *positions_mapper2(
+		const int *run_lengths, int nrun,
 		const int *pos, int npos, int *mapped_pos)
 {
-	int *run_breakpoints, breakpoint, i, pos_i;
+	int *run_breakpoints, i;
 	const char *errmsg;
 
-	run_breakpoints = (int *) malloc(sizeof(int) * nrun);
-	if (run_breakpoints == NULL) {
-		snprintf(errmsg_buf, sizeof(errmsg_buf),
-			 "pos_mapper2: memory allocation failed");
+	run_breakpoints = alloc_and_compute_run_breakpoints(run_lengths, nrun);
+	if (run_breakpoints == NULL)
 		return errmsg_buf;
-	}
-	breakpoint = 0;
-	for (i = 0; i < nrun; i++) {
-		breakpoint += run_lengths[i];
-		run_breakpoints[i] = breakpoint;
-	}
 	errmsg = NULL;
 	for (i = 0; i < npos; i++) {
-		pos_i = pos[i];
-		errmsg = bsearch_pos_mapper(run_breakpoints, nrun,
-				pos_i, mapped_pos + i);
+		errmsg = bsearch_position_mapper(run_breakpoints, nrun,
+				pos[i], mapped_pos + i);
 		if (errmsg != NULL)
 			break;
 	}
@@ -282,16 +373,25 @@ static const char *pos_mapper2(const int *run_lengths, int nrun,
 	return errmsg; 
 }
 
-/* Method 3: Sort the starts and ends of the ranges. */
-static const char *ranges_mapper3(const int *run_lengths, int nrun,
+
+/****************************************************************************
+ * 3rd mapping method
+ *
+ * Use a radix sort to sort the ranges or positions to map.
+ */
+
+/* Sort the starting and ending positions of the ranges in ascending order
+   before mapping them to the runs. */
+static const char *ranges_mapper3(
+		const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *mapped_range_offset,
 		int *mapped_range_span,
 		int *mapped_range_Ltrim,
 		int *mapped_range_Rtrim)
 {
-	int SEbuf_len, *SEbuf, *SEorder,
-	    *SEbuf2, SE, breakpoint, i, j, k, SE_run;
+	int SEbuf_len, *SEbuf, *SEorder, *SEbuf2, SE, i, j, k, SE_run;
+	unsigned int breakpoint;
 
 	SEbuf_len = 2 * nranges;
 	SEbuf = (int *) malloc(sizeof(int) * SEbuf_len);
@@ -310,7 +410,7 @@ static const char *ranges_mapper3(const int *run_lengths, int nrun,
 	for (i = 0; i < nranges; i++)
 		SEbuf2[i] = start[i] - 1 + width[i];
 
-	/* Use radix sort to find order of values in SEbuf. */
+	/* Use radix sort to find order of values in 'SEbuf'. */
 	for (i = 0; i < SEbuf_len; i++)
 		SEorder[i] = i;
 	_sort_ints(SEorder, SEbuf_len, SEbuf, 0, 1, NULL, NULL);
@@ -319,16 +419,20 @@ static const char *ranges_mapper3(const int *run_lengths, int nrun,
 	for (k = 0; k < SEbuf_len; k++) {
 		i = SEorder[k];
 		SE = SEbuf[i];
-		while (breakpoint < SE && j < nrun)
+		while (breakpoint < SE && j < nrun) {
 			breakpoint += run_lengths[j++];
+			if (breakpoint > INT_MAX) {
+				free(SEbuf);
+				free(SEorder);
+				return VECTOR_TOO_LONG_errmsg();
+			}
+		}
 		if (i < nranges) {
 			/* SE is a start. */
 			if (SE < 1) {
 				free(SEbuf);
 				free(SEorder);
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "'start' must be >= 1");
-				return errmsg_buf;
+				return OUTOFBOUND_RANGES_errmsg();
 			}
 			mapped_range_Ltrim[i] = - breakpoint;
 			if (SE > breakpoint) {
@@ -343,9 +447,7 @@ static const char *ranges_mapper3(const int *run_lengths, int nrun,
 			if (SE > breakpoint) {
 				free(SEbuf);
 				free(SEorder);
-				snprintf(errmsg_buf, sizeof(errmsg_buf),
-					 "'end' must be <= 'length(x)'");
-				return errmsg_buf;
+				return OUTOFBOUND_RANGES_errmsg();
 			}
 			i -= nranges;
 			mapped_range_Rtrim[i] = breakpoint;
@@ -368,8 +470,75 @@ static const char *ranges_mapper3(const int *run_lengths, int nrun,
 	return NULL; 
 }
 
-/* If 'method' is not >= 0 and <= 3, then the function does nothing (no-op). */
-const char *_ranges_mapper(const int *run_lengths, int nrun,
+/* Sort the positions in ascending order before mapping them to the runs. */
+static const char *positions_mapper3(
+		const int *run_lengths, int nrun,
+		const int *pos, int npos, int *mapped_pos)
+{
+	int *POSorder, POS, i, j, k, POS_run;
+	unsigned int breakpoint;
+
+	POSorder = (int *) malloc(sizeof(int) * npos);
+	if (POSorder == NULL) {
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "positions_mapper3: memory allocation failed");
+		return errmsg_buf;
+	}
+
+	/* Use radix sort to find order of values in 'pos'. */
+	for (i = 0; i < npos; i++)
+		POSorder[i] = i;
+	_sort_ints(POSorder, npos, pos, 0, 1, NULL, NULL);
+
+	breakpoint = j = 0;
+	for (k = 0; k < npos; k++) {
+		i = POSorder[k];
+		POS = pos[i];
+		while (breakpoint < POS && j < nrun) {
+			breakpoint += run_lengths[j++];
+			if (breakpoint > INT_MAX) {
+				free(POSorder);
+				return VECTOR_TOO_LONG_errmsg();
+			}
+		}
+		if (POS == NA_INTEGER) {
+			free(POSorder);
+			return NA_INDICES_errmsg();
+		}
+		if (POS < 1 || POS > breakpoint) {
+			free(POSorder);
+			return OUTOFBOUND_INDICES_errmsg();
+		}
+		if (POS > breakpoint) {
+			POS_run = j + 1;
+		} else {
+			POS_run = j;
+		}
+		mapped_pos[i] = POS_run;
+	}
+	free(POSorder);
+	return NULL; 
+}
+
+
+/****************************************************************************
+ * _ranges_mapper() and _positions_mapper()
+ *
+ * If 'method' is 0, then the "best" method is automatically choosen.
+ * If 'method' is not >= 0 and <= 3, then these functions do nothing (no-op).
+ */
+
+static int choose_best_method(int nranges, int nrun, double cutoff)
+{
+	if (nranges == 0)
+		return -1;  /* will do nothing */
+	if (nranges == 1)
+		return 1;
+	return nranges <= cutoff * nrun ? 3 : 2;
+}
+
+const char *_ranges_mapper(
+		const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *mapped_range_offset,
 		int *mapped_range_span,
@@ -377,7 +546,8 @@ const char *_ranges_mapper(const int *run_lengths, int nrun,
 		int *mapped_range_Rtrim,
 		int method)
 {
-	const char *(*fun)(const int *run_lengths, int nrun,
+	const char *(*fun)(
+		const int *run_lengths, int nrun,
 		const int *start, const int *width, int nranges,
 		int *mapped_range_offset,
 		int *mapped_range_span,
@@ -385,17 +555,13 @@ const char *_ranges_mapper(const int *run_lengths, int nrun,
 		int *mapped_range_Rtrim);
 
 	if (method == 0) {
-		if (nranges == 1) {
-			method = 1;
-		} else {
-			/* If nranges > 0.25 * nrun then use algo based on
-			   binary search (method 2), otherwise use algo based
-			   on radix sort (method 3). This cutoff is totally
-			   empirical (based on timings obtained in June 2017
-			   on a Dell LATITUDE E6440 laptop with 4Gb of RAM
-			   and running 64-bit Ubuntu 14.04.5 LTS). */
-			method = nranges > 0.25 * nrun ? 2 : 3;
-		}
+		/* If nranges <= 0.25 * nrun then use algo based on radix
+		   sort (method 3), otherwise use algo based on binary
+		   search (method 2). This cutoff is totally empirical and
+		   is based on some very shallow testing and timings obtained
+		   in June 2017 on my laptop (Dell LATITUDE E6440 with 4Gb of
+		   RAM and running 64-bit Ubuntu 14.04.5 LTS). */
+		method = choose_best_method(nranges, nrun, 0.25);
 	}
 	switch (method) {
 		case 1: fun = ranges_mapper1; break;
@@ -411,18 +577,43 @@ const char *_ranges_mapper(const int *run_lengths, int nrun,
 		   mapped_range_Rtrim);
 }
 
-const char *_pos_mapper(const int *run_lengths, int nrun,
+const char *_positions_mapper(
+		const int *run_lengths, int nrun,
 		const int *pos, int npos, int *mapped_pos,
 		int method)
 {
-	return pos_mapper2(run_lengths, nrun, pos, npos, mapped_pos);
+	const char *(*fun)(
+		const int *run_lengths, int nrun,
+		const int *pos, int npos, int *mapped_pos);
+
+	if (method == 0) {
+		/* If npos <= 0.75 * nrun then use algo based on radix
+		   sort (method 3), otherwise use algo based on binary
+		   search (method 2). This cutoff is totally empirical and
+		   is based on some very shallow testing and timings obtained
+		   in June 2017 on my laptop (Dell LATITUDE E6440 with 4Gb of
+		   RAM and running 64-bit Ubuntu 14.04.5 LTS). */
+		method = choose_best_method(npos, nrun, 0.75);
+	}
+	switch (method) {
+		case 1: fun = positions_mapper1; break;
+		case 2: fun = positions_mapper2; break;
+		case 3: fun = positions_mapper3; break;
+		default: return NULL;  /* do nothing */
+	}
+	return fun(run_lengths, nrun, pos, npos, mapped_pos);
 }
 
 
 /****************************************************************************
- * map_ranges()
- * 
- * --- .Call ENTRY POINT ---
+ * map_ranges() and map_positions()
+ *
+ * Both functions assume that 'run_lengths' is an integer vector of positive
+ * values with no NAs. For efficiency reasons this is trusted and the
+ * functions don't check it.
+ */
+
+/* --- .Call ENTRY POINT ---
  * Return an *unnamed* list of 4 integer vectors. Each integer vector is
  * parallel to the input ranges (i.e. parallel to 'start' and 'width').
  * The i-th element of each integer vector forms a quadruplet of integers
@@ -491,5 +682,27 @@ SEXP map_ranges(SEXP run_lengths, SEXP start, SEXP width, SEXP method)
 	SET_VECTOR_ELT(ans, 3, mapped_range_Rtrim);
 	UNPROTECT(5);
 	return ans;
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP map_positions(SEXP run_lengths, SEXP pos, SEXP method)
+{
+	SEXP mapped_pos;
+	int nrun, npos;
+	const char *errmsg;
+
+	nrun = LENGTH(run_lengths);
+	npos = LENGTH(pos);
+	PROTECT(mapped_pos = NEW_INTEGER(npos));
+	errmsg = _positions_mapper(INTEGER(run_lengths), nrun,
+			INTEGER(pos), npos,
+			INTEGER(mapped_pos),
+			INTEGER(method)[0]);
+	if (errmsg != NULL) {
+		UNPROTECT(1);
+		error(errmsg);
+	}
+	UNPROTECT(1);
+	return mapped_pos;
 }
 

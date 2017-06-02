@@ -188,23 +188,19 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Note that they drop the metadata columns!
 ###
 
-.normarg_method <- function(method)
+### TODO: Support NAs in 'pos'.
+extract_positions_from_Rle <- function(x, pos, method=0L, decoded=FALSE)
 {
-    if (!(isSingleNumber(method) && method >= 0 && method <= 3))
-        stop("'method' must be a single integer between 0 and 3")
-    if (!is.integer(method))
-        method <- as.integer(method)
-    method
-}
-
-### TODO: Support NAs in 'i'.
-extract_positions_from_Rle <- function(x, i, method=0L)
-{
-    if (!is.integer(i))
-        stop("'i' must be an integer vector")
-    method <- .normarg_method(method)
-    ans <- .Call2("Rle_extract_positions", x, i, method, PACKAGE="S4Vectors")
-    as(ans, class(x))  # so the function is an endomorphism
+    if (!is.integer(pos))
+        stop("'pos' must be an integer vector")
+    if (!isTRUEorFALSE(decoded))
+        stop("'decoded' must be TRUE or FALSE")
+    #ans <- .Call2("Rle_extract_positions", x, pos, method, PACKAGE="S4Vectors")
+    mapped_pos <- map_positions_to_runs(runLength(x), pos, method=method)
+    ans <- runValue(x)[mapped_pos]
+    if (decoded)
+        return(ans)
+    as(Rle(ans), class(x))  # so the function is an endomorphism
 }
 
 extract_range_from_Rle <- function(x, start, end)
@@ -217,7 +213,7 @@ extract_range_from_Rle <- function(x, start, end)
 ### signature Rle,RangesNSBS).
 extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
 {
-    method <- .normarg_method(method)
+    method <- normarg_method(method)
     if (!isTRUEorFALSE(as.list))
         stop("'as.list' must be TRUE or FALSE")
     ans <- .Call2("Rle_extract_ranges", x, start, width, method, as.list,
