@@ -188,34 +188,32 @@ getStartEndRunAndOffset <- function(x, start, end) {
 ### Note that they drop the metadata columns!
 ###
 
+### TODO: Support NAs in 'pos'.
+extract_positions_from_Rle <- function(x, pos, method=0L, decoded=FALSE)
+{
+    if (!is.integer(pos))
+        stop("'pos' must be an integer vector")
+    if (!isTRUEorFALSE(decoded))
+        stop("'decoded' must be TRUE or FALSE")
+    #ans <- .Call2("Rle_extract_positions", x, pos, method, PACKAGE="S4Vectors")
+    mapped_pos <- map_positions_to_runs(runLength(x), pos, method=method)
+    ans <- runValue(x)[mapped_pos]
+    if (decoded)
+        return(ans)
+    as(Rle(ans), class(x))  # so the function is an endomorphism
+}
+
 extract_range_from_Rle <- function(x, start, end)
 {
     ans <- .Call2("Rle_extract_range", x, start, end, PACKAGE="S4Vectors")
     as(ans, class(x))  # so the function is an endomorphism
 }
 
-.normarg_method <- function(method)
-{
-    if (!(isSingleNumber(method) && method >= 0 && method <= 3))
-        stop("'method' must be a single integer between 0 and 3")
-    if (!is.integer(method))
-        method <- as.integer(method)
-    method
-}
-
-### Used in GenomicRanges.
-map_ranges_to_runs <- function(run_lens, start, width, method=0L)
-{
-    method <- .normarg_method(method)
-    .Call2("ranges_to_runs_mapper", run_lens, start, width, method,
-                                    PACKAGE="S4Vectors")
-}
-
 ### NOT exported but used in IRanges package (by "extractROWS" method with
 ### signature Rle,RangesNSBS).
 extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
 {
-    method <- .normarg_method(method)
+    method <- normarg_method(method)
     if (!isTRUEorFALSE(as.list))
         stop("'as.list' must be TRUE or FALSE")
     ans <- .Call2("Rle_extract_ranges", x, start, width, method, as.list,
@@ -228,20 +226,6 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
     if (x_class == "Rle")
         return(ans)
     lapply(ans, as, x_class)
-}
-
-### TODO: extract_positions_from_Rle() should call its own .Call entry point.
-### This entry point would be a simpler version of .Call entry point
-### "Rle_extract_ranges" that takes 1 integer vector instead of 2 and supports
-### NAs.
-extract_positions_from_Rle <- function(x, i)
-{
-    if (!is.integer(i))
-        stop("'i' must be an integer vector")
-    ## NAs not supported for now but will be soon (see TODO above).
-    if (anyNA(i))
-        stop("numeric subscript cannot contain NAs yet when subsetting an Rle")
-    extract_ranges_from_Rle(x, i, rep.int(1L, length(i)))
 }
 
 

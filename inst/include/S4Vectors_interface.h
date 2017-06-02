@@ -432,6 +432,14 @@ int copy_vector_block(
 	int block_width
 );
 
+int copy_vector_positions(
+	SEXP dest,
+	int dest_offset,
+	SEXP src,
+	const int *pos,
+	int npos
+);
+
 int copy_vector_ranges(
 	SEXP dest,
 	int dest_offset,
