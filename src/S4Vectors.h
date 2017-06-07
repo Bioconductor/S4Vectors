@@ -558,6 +558,14 @@ SEXP _list_as_data_frame(
 );
 
 
+/* logical_utils.c */
+
+SEXP logical_sum(
+	SEXP x,
+	SEXP na_rm
+);
+
+
 /* integer_utils.c */
 
 SEXP Integer_any_missing_or_outside(SEXP x, SEXP lower, SEXP upper);

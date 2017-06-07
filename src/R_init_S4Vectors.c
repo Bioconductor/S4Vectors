@@ -36,6 +36,9 @@ static const R_CallMethodDef callMethods[] = {
 /* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),
 
+/* logical_utils.c */
+	CALLMETHOD_DEF(logical_sum, 2),
+
 /* integer_utils.c */
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
 	CALLMETHOD_DEF(Integer_diff_with_0, 1),
