@@ -254,13 +254,13 @@ export(
     normalizeSingleBracketSubscript,
     normalizeDoubleBracketSubscript,
 
-    ## int-utils.R:
+    ## integer-utils.R:
     orderIntegerPairs,
     matchIntegerPairs, selfmatchIntegerPairs, duplicatedIntegerPairs,
     orderIntegerQuads,
     matchIntegerQuads, selfmatchIntegerQuads, duplicatedIntegerQuads,
 
-    ## str-utils.R:
+    ## character-utils.R:
     safeExplode,
     strsplitAsListOfIntegerVectors,
     svn.time,
@@ -324,7 +324,7 @@ export(
     extractROWS, replaceROWS,
     getListElement, setListElement,
 
-    ## str-utils.R:
+    ## character-utils.R:
     unstrsplit,
 
     ## DataTable-class.R:

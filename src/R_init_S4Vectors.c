@@ -36,7 +36,7 @@ static const R_CallMethodDef callMethods[] = {
 /* vector_utils.c */
 	CALLMETHOD_DEF(sapply_NROW, 1),
 
-/* int_utils.c */
+/* integer_utils.c */
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
 	CALLMETHOD_DEF(Integer_diff_with_0, 1),
 	CALLMETHOD_DEF(Integer_diff_with_last, 2),
@@ -61,7 +61,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Integer_fancy_mseq, 3),
 	CALLMETHOD_DEF(findIntervalAndStartFromWidth, 2),
 
-/* str_utils.c */
+/* character_utils.c */
 	CALLMETHOD_DEF(unstrsplit_list, 2),
 	CALLMETHOD_DEF(safe_strexplode, 1),
 	CALLMETHOD_DEF(strsplit_as_list_of_ints, 2),
@@ -199,7 +199,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_vector_memcmp);
 	REGISTER_CCALLABLE(_list_as_data_frame);
 
-/* int_utils.c */
+/* integer_utils.c */
 	REGISTER_CCALLABLE(_check_integer_pairs);
 	REGISTER_CCALLABLE(_find_interv_and_start_from_width);
 

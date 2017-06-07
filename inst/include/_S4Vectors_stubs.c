@@ -455,7 +455,7 @@ DEFINE_CCALLABLE_STUB(SEXP, list_as_data_frame,
 )
 
 /*
- * Stubs for callables defined in int_utils.c
+ * Stubs for callables defined in integer_utils.c
  */
 
 DEFINE_CCALLABLE_STUB(int, check_integer_pairs,

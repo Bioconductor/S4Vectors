@@ -467,7 +467,7 @@ SEXP list_as_data_frame(
 );
 
 /*
- * int_utils.c
+ * integer_utils.c
  */
 
 int check_integer_pairs(

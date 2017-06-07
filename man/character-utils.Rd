@@ -1,4 +1,4 @@
-\name{str-utils}
+\name{character-utils}
 
 \alias{unstrsplit}
 \alias{unstrsplit,list-method}
