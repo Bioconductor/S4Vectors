@@ -565,6 +565,11 @@ SEXP logical_sum(
 	SEXP na_rm
 );
 
+SEXP logical2_sum(
+	SEXP x,
+	SEXP na_rm
+);
+
 
 /* integer_utils.c */
 

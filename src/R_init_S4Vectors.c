@@ -38,6 +38,7 @@ static const R_CallMethodDef callMethods[] = {
 
 /* logical_utils.c */
 	CALLMETHOD_DEF(logical_sum, 2),
+	CALLMETHOD_DEF(logical2_sum, 2),
 
 /* integer_utils.c */
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
