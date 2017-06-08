@@ -3,10 +3,16 @@
 // R_XLEN_T_MAX is 2^52
 // LLONG_MAX    is 2^63-1
 
+static SEXP sum_as_SEXP(R_xlen_t sum)
+{
+	return sum <= INT_MAX ? ScalarInteger((int) sum) :
+				ScalarReal((double) sum);
+}
+
 /*
   Unlike base::sum() which can overflow (and return NA_integer_) on a long
   logical vector, logical_sum() never overflows. It returns a double if the
-  result cannot be represented as an int. Note that this is what length() does.
+  result cannot be represented as an int (which is what length() does).
   Note that logical_sum() is slightly faster than base::sum():
 
             length(x)  base::sum()  logical_sum()  speedup
@@ -39,7 +45,6 @@ SEXP logical_sum(SEXP x, SEXP na_rm)
 	R_xlen_t x_len, sum, i;
 	const int *x_dataptr;
 	int na_rm0, x_elt;
-	SEXP ans;
 
 	x_len = XLENGTH(x);
 	x_dataptr = LOGICAL(x);
@@ -58,11 +63,7 @@ SEXP logical_sum(SEXP x, SEXP na_rm)
 		if (x_elt)
 			sum++;
 	}
-	if (sum <= INT_MAX)
-		ans = ScalarInteger((int) sum);
-	else
-		ans = ScalarReal((double) sum);
-	return ans;
+	return sum_as_SEXP(sum);
 }
 
 /*
@@ -75,8 +76,8 @@ SEXP logical_sum(SEXP x, SEXP na_rm)
   where R currently spends a significant amount of time allocating memory (e.g.
   12Gb) to store the temporary logical vector.
 
-  Note that walking on a char array is significantly faster than base::sum() on
-  Linux but not on Mac where it's more than 3x slower:
+  Unfortunately walking on a char array is significantly faster than
+  base::sum() on Linux but not on Mac where it's more than 3x slower:
 
             length(x)  base::sum()  logical2_sum()  speedup
             ---------  -----------  --------------  -------
@@ -88,8 +89,8 @@ SEXP logical_sum(SEXP x, SEXP na_rm)
                1e8         93 ms           64 ms       45%
                1e9        0.92 s          0.63 s       46%
     veracruz1:
-               1e8        121 ms          398 ms       disaster!
-               1e9        1.27 s          4.05 s       disaster!
+               1e8        121 ms          398 ms    not so good!
+               1e9        1.27 s          4.05 s    not so good!
 
   To compare base::sum() vs logical_sum() vs logical2_sum():
 
@@ -124,7 +125,6 @@ SEXP logical2_sum(SEXP x, SEXP na_rm)
 	const char *x_dataptr;
 	int na_rm0;
 	char x_elt;
-	SEXP ans;
 
 	x_len = XLENGTH(x);
 	x_dataptr = LOGICAL2(x);
@@ -140,10 +140,6 @@ SEXP logical2_sum(SEXP x, SEXP na_rm)
 		if (x_elt)
 			sum++;
 	}
-	if (sum <= INT_MAX)
-		ans = ScalarInteger((int) sum);
-	else
-		ans = ScalarReal((double) sum);
-	return ans;
+	return sum_as_SEXP(sum);
 }
 
