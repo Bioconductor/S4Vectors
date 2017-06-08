@@ -108,7 +108,7 @@ static int check_llint_lengths(const long long int *lengths, R_xlen_t nrun)
 
 	no_big_lengths = 1;
 	for (i = 0; i < nrun; i++, lengths++) {
-		if (*lengths == NA_LINTEGER) {
+		if (*lengths == NA_LLINT) {
 			snprintf(validity_msg, sizeof(validity_msg),
 				 "some run lengths are NA");
 			return 1;
@@ -170,7 +170,7 @@ SEXP Rle_valid(SEXP x)
 #define	CHECK_RUN_LENGTH_IN(len_in, lengths_in_is_L)			   \
 {									   \
 	if (lengths_in_is_L) {						   \
-		if ((len_in) == NA_LINTEGER)				   \
+		if ((len_in) == NA_LLINT)				   \
 			error("some run lengths are NA");		   \
 		if ((len_in) > R_XLEN_T_MAX)				   \
 			error("Rle vector is too long");		   \

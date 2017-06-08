@@ -6,9 +6,9 @@
 
 #include <ctype.h>  /* for isspace() and isdigit() */
 
-#define	BYTES_PER_LINTEGER	(sizeof(long long int) / sizeof(char))
-#define	NEW_LINTEGER(n)		_alloc_LLint("LLint", (n))
-#define	LINTEGER(x)		_get_LLint_dataptr(x)
+#define	BYTES_PER_LLINT	(sizeof(long long int) / sizeof(char))
+#define	NEW_LLINT(n)	_alloc_LLint("LLint", (n))
+#define	LLINT(x)	_get_LLint_dataptr(x)
 
 int _is_LLint(SEXP x)
 {
@@ -17,12 +17,12 @@ int _is_LLint(SEXP x)
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP make_RAW_from_NA_LINTEGER()
+SEXP make_RAW_from_NA_LLINT()
 {
 	SEXP ans;
 
-	PROTECT(ans = NEW_RAW(BYTES_PER_LINTEGER));
-	*((long long int *) RAW(ans)) = NA_LINTEGER;
+	PROTECT(ans = NEW_RAW(BYTES_PER_LLINT));
+	*((long long int *) RAW(ans)) = NA_LLINT;
 	UNPROTECT(1);
 	return ans;
 }
@@ -42,7 +42,7 @@ static SEXP get_LLint_bytes(SEXP x)
 
 R_xlen_t _get_LLint_length(SEXP x)
 {
-	return XLENGTH(get_LLint_bytes(x)) / BYTES_PER_LINTEGER;
+	return XLENGTH(get_LLint_bytes(x)) / BYTES_PER_LLINT;
 }
 
 long long int *_get_LLint_dataptr(SEXP x)
@@ -82,7 +82,7 @@ SEXP _alloc_LLint(const char *classname, R_xlen_t length)
 {
 	SEXP bytes, ans;
 
-	PROTECT(bytes = NEW_RAW(length * BYTES_PER_LINTEGER));
+	PROTECT(bytes = NEW_RAW(length * BYTES_PER_LLINT));
 	PROTECT(ans = new_LLint_from_bytes(classname, bytes));
 	UNPROTECT(2);
 	return ans;
@@ -102,7 +102,7 @@ static void from_ints_to_llints(const int *from, long long int *to,
 	for (i = 0; i < n; i++, from++, to++) {
 		from_elt = *from;
 		if (from_elt == NA_INTEGER) {
-			*to = NA_LINTEGER;
+			*to = NA_LLINT;
 			continue;
 		}
 		*to = (long long int) from_elt;
@@ -121,7 +121,7 @@ static void from_doubles_to_llints(const double *from, long long int *to,
 	for (i = 0; i < n; i++, from++, to++) {
 		from_elt = *from;
 		if (from_elt == NA_REAL) {
-			*to = NA_LINTEGER;
+			*to = NA_LLINT;
 			continue;
 		}
 		if (from_elt > (double) LLONG_MAX ||
@@ -132,7 +132,7 @@ static void from_doubles_to_llints(const double *from, long long int *to,
 					"in coercion to LLint");
 				first_time = 0;
 			}
-			*to = NA_LINTEGER;
+			*to = NA_LLINT;
 			continue;
 		}
 		*to = (long long int) from_elt;
@@ -148,7 +148,7 @@ static int scan_llint(const char *s, long long int *out)
 	char c, sign;
 	long long int val;
 
-	*out = NA_LINTEGER;
+	*out = NA_LLINT;
 	/* Skip leading spaces. */
 	while (isspace(c = *(s++))) {};
 	if (c == '\0') 
@@ -201,7 +201,7 @@ static void from_STRSXP_to_llints(SEXP from, long long int *to)
 	for (i = 0; i < n; i++, to++) {
 		from_elt = STRING_ELT(from, i);
 		if (from_elt == NA_STRING) {
-			*to = NA_LINTEGER;
+			*to = NA_LLINT;
 			continue;
 		}
 		if (scan_llint(CHAR(from_elt), to)) {
@@ -213,7 +213,7 @@ static void from_STRSXP_to_llints(SEXP from, long long int *to)
 			}
 			continue;
 		}
-		if (*to != NA_LINTEGER)
+		if (*to != NA_LLINT)
 			continue;
 		if (first_time2) {
 			/* syntactically incorrect number */
@@ -233,7 +233,7 @@ static void from_llints_to_bools(const long long int *from, int *to,
 
 	for (i = 0; i < n; i++, from++, to++) {
 		from_elt = *from;
-		if (from_elt == NA_LINTEGER) {
+		if (from_elt == NA_LLINT) {
 			*to = NA_LOGICAL;
 			continue;
 		}
@@ -252,7 +252,7 @@ static void from_llints_to_ints(const long long int *from, int *to,
 	first_time = 1;
 	for (i = 0; i < n; i++, from++, to++) {
 		from_elt = *from;
-		if (from_elt == NA_LINTEGER) {
+		if (from_elt == NA_LLINT) {
 			*to = NA_INTEGER;
 			continue;
 		}
@@ -282,7 +282,7 @@ static void from_llints_to_doubles(const long long int *from, double *to,
 	first_time = 1;
 	for (i = 0; i < n; i++, from++, to++) {
 		from_elt = *from;
-		if (from_elt == NA_LINTEGER) {
+		if (from_elt == NA_LLINT) {
 			*to = NA_REAL;
 			continue;
 		}
@@ -308,7 +308,7 @@ static void from_llints_to_STRSXP(const long long int *from, SEXP to)
 	n = XLENGTH(to);
 	for (i = 0; i < n; i++, from++) {
 		from_elt = *from;
-		if (from_elt == NA_LINTEGER) {
+		if (from_elt == NA_LLINT) {
 			SET_STRING_ELT(to, i, NA_STRING);
 			continue;
 		}
@@ -334,8 +334,8 @@ static SEXP new_LLint_from_ints(const int *x, R_xlen_t x_len)
 {
 	SEXP ans;
 
-	PROTECT(ans = NEW_LINTEGER(x_len));
-	from_ints_to_llints(x, LINTEGER(ans), x_len);
+	PROTECT(ans = NEW_LLINT(x_len));
+	from_ints_to_llints(x, LLINT(ans), x_len);
 	UNPROTECT(1);
 	return ans;
 }
@@ -359,8 +359,8 @@ SEXP new_LLint_from_NUMERIC(SEXP x)
 	SEXP ans;
 
 	x_len = XLENGTH(x);
-	PROTECT(ans = NEW_LINTEGER(x_len));
-	from_doubles_to_llints(REAL(x), LINTEGER(ans), x_len);
+	PROTECT(ans = NEW_LLINT(x_len));
+	from_doubles_to_llints(REAL(x), LLINT(ans), x_len);
 	UNPROTECT(1);
 	return ans;
 }
@@ -372,8 +372,8 @@ SEXP new_LLint_from_CHARACTER(SEXP x)
 	SEXP ans;
 
 	x_len = XLENGTH(x);
-	PROTECT(ans = NEW_LINTEGER(x_len));
-	from_STRSXP_to_llints(x, LINTEGER(ans));
+	PROTECT(ans = NEW_LLINT(x_len));
+	from_STRSXP_to_llints(x, LLINT(ans));
 	UNPROTECT(1);
 	return ans;
 }
@@ -386,7 +386,7 @@ SEXP new_LOGICAL_from_LLint(SEXP x)
 
 	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_LOGICAL(ans_len));
-	from_llints_to_bools(LINTEGER(x), LOGICAL(ans), ans_len);
+	from_llints_to_bools(LLINT(x), LOGICAL(ans), ans_len);
 	UNPROTECT(1);
 	return ans;
 }
@@ -399,7 +399,7 @@ SEXP new_INTEGER_from_LLint(SEXP x)
 
 	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_INTEGER(ans_len));
-	from_llints_to_ints(LINTEGER(x), INTEGER(ans), ans_len);
+	from_llints_to_ints(LLINT(x), INTEGER(ans), ans_len);
 	UNPROTECT(1);
 	return ans;
 }
@@ -412,7 +412,7 @@ SEXP new_NUMERIC_from_LLint(SEXP x)
 
 	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_NUMERIC(ans_len));
-	from_llints_to_doubles(LINTEGER(x), REAL(ans), ans_len);
+	from_llints_to_doubles(LLINT(x), REAL(ans), ans_len);
 	UNPROTECT(1);
 	return ans;
 }
@@ -425,7 +425,7 @@ SEXP new_CHARACTER_from_LLint(SEXP x)
 
 	ans_len = _get_LLint_length(x);
 	PROTECT(ans = NEW_CHARACTER(ans_len));
-	from_llints_to_STRSXP(LINTEGER(x), ans);
+	from_llints_to_STRSXP(LLINT(x), ans);
 	UNPROTECT(1);
 	return ans;
 }
@@ -460,8 +460,8 @@ static long long int llint_div(long long int x, long long int y)
 {
 	long long int z;
 
-	if (x == NA_LINTEGER || y == NA_LINTEGER || y == 0LL)
-		return NA_LINTEGER;
+	if (x == NA_LLINT || y == NA_LLINT || y == 0LL)
+		return NA_LLINT;
 	z = x / y;
 	if (x == 0LL || (x > 0LL) == (y > 0LL) || y * z == x)
 		return z;
@@ -472,8 +472,8 @@ static long long int llint_mod(long long int x, long long int y)
 {
 	long long int z;
 
-	if (x == NA_LINTEGER || y == NA_LINTEGER || y == 0LL)
-		return NA_LINTEGER;
+	if (x == NA_LLINT || y == NA_LLINT || y == 0LL)
+		return NA_LLINT;
 	z = x % y;
 	/* The contortions below are meant to make sure that the result
 	   has the sign of 'y'. */
@@ -485,7 +485,7 @@ static long long int llint_mod(long long int x, long long int y)
 
 static double llint_div_as_double(long long int x, long long int y)
 {
-	if (x == NA_LINTEGER || y == NA_LINTEGER)
+	if (x == NA_LLINT || y == NA_LLINT)
 		return NA_REAL;
 	return (double) x / (double) y;
 }
@@ -494,7 +494,7 @@ static double llint_pow_as_double(long long int x, long long int y)
 {
 	if (x == 1LL || y == 0LL)
 		return 1.0;
-	if (x == NA_LINTEGER || y == NA_LINTEGER)
+	if (x == NA_LLINT || y == NA_LLINT)
 		return NA_REAL;
 	return pow((double) x, (double) y);
 }
@@ -603,7 +603,7 @@ static void llints_compare(int op,
 			j = 0;
 		x_elt = x[i];
 		y_elt = y[j];
-		if (x_elt == NA_LINTEGER || y_elt == NA_LINTEGER) {
+		if (x_elt == NA_LLINT || y_elt == NA_LLINT) {
 			out[k] = NA_LOGICAL;
 			continue;
 		}
@@ -645,16 +645,16 @@ SEXP LLint_Ops(SEXP Generic, SEXP e1, SEXP e2)
 	e1_len = _get_LLint_length(e1);
 	e2_len = _get_LLint_length(e2);
 	ans_len = compute_ans_length(e1_len, e2_len);
-	e1_elts = LINTEGER(e1);
-	e2_elts = LINTEGER(e2);
+	e1_elts = LLINT(e1);
+	e2_elts = LLINT(e2);
 	generic = CHAR(STRING_ELT(Generic, 0));
 
 	/* Operations from "Arith" group */
 	arith1_fun = get_arith1_fun(generic);
 	if (arith1_fun != NULL) {
-		PROTECT(ans = NEW_LINTEGER(ans_len));
+		PROTECT(ans = NEW_LLINT(ans_len));
 		llints_arith1(arith1_fun, e1_elts, e1_len, e2_elts, e2_len,
-					  LINTEGER(ans), ans_len);
+					  LLINT(ans), ans_len);
 		UNPROTECT(1);
 		return ans;
 	}
@@ -713,7 +713,7 @@ static long long int llints_summary(int op,
 	switch (op) {
 		case MAX_OP:
 		case MIN_OP:
-			res = NA_LINTEGER;
+			res = NA_LLINT;
 			break;
 		case SUM_OP:
 			res = 0LL;
@@ -724,23 +724,23 @@ static long long int llints_summary(int op,
 	}
 	for (i = 0; i < in_len; i++) {
 		in_elt = in[i];
-		if (in_elt == NA_LINTEGER) {
+		if (in_elt == NA_LLINT) {
 			if (na_rm)
 				continue;
-			return NA_LINTEGER;
+			return NA_LLINT;
 		}
 		switch (op) {
 			case MAX_OP:
-				if (res == NA_LINTEGER || in_elt > res)
+				if (res == NA_LLINT || in_elt > res)
 					res = in_elt;
 				break;
 			case MIN_OP:
-				if (res == NA_LINTEGER || in_elt < res)
+				if (res == NA_LLINT || in_elt < res)
 					res = in_elt;
 				break;
 			case SUM_OP:
 				res = _safe_llint_add(res, in_elt);
-				if (res == NA_LINTEGER) {
+				if (res == NA_LLINT) {
 					warning("LLint overflow - "
 						"use sum(as.numeric(.))");
 					return res;
@@ -748,7 +748,7 @@ static long long int llints_summary(int op,
 				break;
 			case PROD_OP:
 				res = _safe_llint_mult(res, in_elt);
-				if (res == NA_LINTEGER) {
+				if (res == NA_LLINT) {
 					warning("LLint overflow - "
 						"use prod(as.numeric(.))");
 					return res;
@@ -768,23 +768,23 @@ SEXP LLint_Summary(SEXP Generic, SEXP x, SEXP na_rm)
 	SEXP ans;
 
 	x_len = _get_LLint_length(x);
-	x_elts = LINTEGER(x);
+	x_elts = LLINT(x);
 	generic = CHAR(STRING_ELT(Generic, 0));
 
 	summary_op = get_summary_op(generic);
 	if (summary_op != 0) {
-		PROTECT(ans = NEW_LINTEGER(1));
-		LINTEGER(ans)[0] = llints_summary(summary_op, x_elts, x_len,
-						  LOGICAL(na_rm)[0]);
+		PROTECT(ans = NEW_LLINT(1));
+		LLINT(ans)[0] = llints_summary(summary_op, x_elts, x_len,
+					       LOGICAL(na_rm)[0]);
 		UNPROTECT(1);
 		return ans;
 	}
 	if (strcmp(generic, "range") == 0) {
-		PROTECT(ans = NEW_LINTEGER(2));
-		LINTEGER(ans)[0] = llints_summary(MIN_OP, x_elts, x_len,
-						  LOGICAL(na_rm)[0]);
-		LINTEGER(ans)[1] = llints_summary(MAX_OP, x_elts, x_len,
-						  LOGICAL(na_rm)[0]);
+		PROTECT(ans = NEW_LLINT(2));
+		LLINT(ans)[0] = llints_summary(MIN_OP, x_elts, x_len,
+					       LOGICAL(na_rm)[0]);
+		LLINT(ans)[1] = llints_summary(MAX_OP, x_elts, x_len,
+					       LOGICAL(na_rm)[0]);
 		UNPROTECT(1);
 		return ans;
 	}

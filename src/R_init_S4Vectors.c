@@ -19,7 +19,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(anyMissing, 1),
 
 /* LLint_class.c */
-	CALLMETHOD_DEF(make_RAW_from_NA_LINTEGER, 0),
+	CALLMETHOD_DEF(make_RAW_from_NA_LLINT, 0),
 	CALLMETHOD_DEF(new_LLint_from_LOGICAL, 1),
 	CALLMETHOD_DEF(new_LLint_from_INTEGER, 1),
 	CALLMETHOD_DEF(new_LLint_from_NUMERIC, 1),

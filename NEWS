@@ -3,10 +3,10 @@ CHANGES IN VERSION 0.14.0
 
 NEW FEATURES
 
-    o Add Linteger vectors: similar to ordinary integer vectors (int values at
+    o Add LLint vectors: similar to ordinary integer vectors (int values at
       the C level) but store "large integers" i.e. long long int values at the
       C level. These are 64-bit on Intel platforms vs 32-bit for int values.
-      See ?Linteger for more information. This is in preparation for supporting
+      See ?LLint for more information. This is in preparation for supporting
       long Vector derivatives (planned for BioC 3.6).
 
     o Default "rank" method for Vector objects now supports the same ties

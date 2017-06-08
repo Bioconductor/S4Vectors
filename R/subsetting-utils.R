@@ -479,8 +479,8 @@ setMethod("extractROWS", c("vector_OR_factor", "RangeNSBS"),
 ### with signature LLint,RangesNSBS).
 extract_ranges_from_LLint <- function(x, start, width)
 {
-    start <- (start - 1L) * BYTES_PER_LINTEGER + 1L
-    width <- width * BYTES_PER_LINTEGER
+    start <- (start - 1L) * BYTES_PER_LLINT + 1L
+    width <- width * BYTES_PER_LLINT
     x@bytes <- extract_ranges_from_vector_OR_factor(x@bytes, start, width)
     x
 }

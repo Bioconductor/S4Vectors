@@ -14,16 +14,16 @@ setClassUnion("integer_OR_LLint", c("integer", "LLint"))
 
 is.LLint <- function(x) is(x, "LLint")
 
-BYTES_PER_LINTEGER <- .Machine$sizeof.longlong
+BYTES_PER_LLINT <- .Machine$sizeof.longlong
 
 setMethod("length", "LLint",
-    function(x) length(x@bytes) %/% BYTES_PER_LINTEGER
+    function(x) length(x@bytes) %/% BYTES_PER_LLINT
 )
 
 ### Called from the .onLoad() hook in zzz.R
 make_NA_LLint_ <- function()
 {
-    ans_bytes <- .Call2("make_RAW_from_NA_LINTEGER", PACKAGE="S4Vectors")
+    ans_bytes <- .Call2("make_RAW_from_NA_LLINT", PACKAGE="S4Vectors")
     new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 
@@ -121,9 +121,9 @@ setMethod("as.character", "LLint", as.character.LLint)
 
 LLint <- function(length=0L)
 {
-    max_length <- .MAX_VECTOR_LENGTH / BYTES_PER_LINTEGER
+    max_length <- .MAX_VECTOR_LENGTH / BYTES_PER_LLINT
     length <- .normarg_vector_length(length, max_length=max_length)
-    ans_bytes <- raw(length * BYTES_PER_LINTEGER)
+    ans_bytes <- raw(length * BYTES_PER_LLINT)
     new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 

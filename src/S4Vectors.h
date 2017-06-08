@@ -463,7 +463,7 @@ SEXP anyMissing(SEXP x);
 
 int _is_LLint(SEXP x);
 
-SEXP make_RAW_from_NA_LINTEGER();
+SEXP make_RAW_from_NA_LLINT();
 
 R_xlen_t _get_LLint_length(SEXP x);
 

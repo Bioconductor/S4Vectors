@@ -95,56 +95,56 @@ int _safe_int_mult(int x, int y)
 
 long long int _safe_llint_add(long long int x, long long int y)
 {
-	if (x == NA_LINTEGER || y == NA_LINTEGER)
-		return NA_LINTEGER;
+	if (x == NA_LLINT || y == NA_LLINT)
+		return NA_LLINT;
 	if ((y > 0LL && x > LLONG_MAX - y) ||
 	    (y < 0LL && x < LLONG_MIN - y))
 	{
 		ovflow_flag = 1;
-		return NA_LINTEGER;
+		return NA_LLINT;
 	}
 	return x + y;
 }
 
 long long int _safe_llint_subtract(long long int x, long long int y)
 {
-	if (x == NA_LINTEGER || y == NA_LINTEGER)
-		return NA_LINTEGER;
+	if (x == NA_LLINT || y == NA_LLINT)
+		return NA_LLINT;
 	if ((y < 0LL && x > LLONG_MAX + y) ||
 	    (y > 0LL && x < LLONG_MIN + y))
 	{
 		ovflow_flag = 1;
-		return NA_LINTEGER;
+		return NA_LLINT;
 	}
 	return x - y;
 }
 
 long long int _safe_llint_mult(long long int x, long long int y)
 {
-	if (x == NA_LINTEGER || y == NA_LINTEGER)
-		return NA_LINTEGER;
+	if (x == NA_LLINT || y == NA_LLINT)
+		return NA_LLINT;
 	if (x > 0LL) { /* x is positive */
 		if (y > 0LL) { /* x and y are positive */
 			if (x > (LLONG_MAX / y)) {
 				ovflow_flag = 1;
-				return NA_LINTEGER;
+				return NA_LLINT;
 			}
 		} else { /* x is positive, y is non-positive */
 			if (y < (LLONG_MIN / x)) {
 				ovflow_flag = 1;
-				return NA_LINTEGER;
+				return NA_LLINT;
 			}
 		}
 	} else { /* x is non-positive */
 		if (y > 0LL) { /* x is non-positive, y is positive */
 			if (x < (LLONG_MIN / y)) {
 				ovflow_flag = 1;
-				return NA_LINTEGER;
+				return NA_LLINT;
 			}
 	  	} else { /* x and y are non-positive */
 			if ((x != 0LL) && (y < (LLONG_MAX / x))) {
 				ovflow_flag = 1;
-				return NA_LINTEGER;
+				return NA_LLINT;
 			}
 		}
 	}

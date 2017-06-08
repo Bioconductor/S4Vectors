@@ -18,7 +18,7 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-#define	NA_LINTEGER	LLONG_MIN
+#define	NA_LLINT	LLONG_MIN
 
 /* Get or set i-th element from int or long long int array 'x'.
    GET_INT_OR_LLINT() always returns a long long int.
