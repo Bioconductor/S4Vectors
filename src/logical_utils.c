@@ -5,6 +5,10 @@
 
 static SEXP sum_as_SEXP(R_xlen_t sum)
 {
+	/* If 'sum' is <= INT_MAX, we return it as an integer vector of length
+	   1. Otherwise, as a double vector of length 1. Since it's guaranteed
+	   to be <= R_XLEN_T_MAX, then it can always be exactly represented as
+	   a double. */
 	return sum <= INT_MAX ? ScalarInteger((int) sum) :
 				ScalarReal((double) sum);
 }
