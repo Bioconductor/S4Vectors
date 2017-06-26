@@ -131,7 +131,7 @@ setMethod("show", "List",
 ### unlist()
 ###
 
-### 'outer_names' and 'inner_names' can be either NULL or character vectors.
+### 'inner_names' and 'outer_names' can be either NULL or character vectors.
 ### If both are character vectors, then they must have the same length.
 .make_unlisted_names <- function(inner_names, outer_names)
 {
