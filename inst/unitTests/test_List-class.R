@@ -39,22 +39,26 @@ test_List_unlist <- function() {
 
     names(x0)[2] <- names(x)[2] <- NA
     target <- unlist(x0)
-    names(target)[2:4] <- NA  # base::unlist() behaviour not what we want!
+    names(target)[2:4] <- ""  # base::unlist() behaviour not what we want!
     current <- unlist(x)
     checkIdentical(target, current)
 
     names(x0[[2]])[] <- names(x[[2]])[] <- NA
     target <- unlist(x0)
+    names(target)[2:4] <- NA  # base::unlist() behaviour not what we want!
     current <- unlist(x)
     checkIdentical(target, current)
 
     names(x0[[2]]) <- names(x[[2]]) <- "b"
     target <- unlist(x0)
+    names(target)[2:4] <- c("b", NA, NA)  # base::unlist() behaviour not what
+                                          # we want!
     current <- unlist(x)
     checkIdentical(target, current)
 
     names(x0[[2]])[] <- names(x[[2]])[] <- "a"
     target <- unlist(x0)
+    names(target)[2:4] <- "a"  # base::unlist() behaviour not what we want!
     current <- unlist(x)
     checkIdentical(target, current)
 

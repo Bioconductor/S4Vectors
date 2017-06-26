@@ -131,58 +131,83 @@ setMethod("show", "List",
 ### unlist()
 ###
 
-### NOT exported. Assume 'names1' is not NULL.
-make_unlist_result_names <- function(names1, names2)
+### 'outer_names' and 'inner_names' can be either NULL or character vectors.
+### If both are character vectors, then they must have the same length.
+.make_unlisted_names <- function(inner_names, outer_names)
 {
-    if (is.null(names2))
-        return(names1)
-    idx2 <- names2 != "" | is.na(names2)
-    idx1 <- names1 != "" | is.na(names1)
-    idx <- idx1 & idx2
-    if (any(idx))
-        names1[idx] <- paste(names1[idx], names2[idx], sep = ".")
-    idx <- !idx1 & idx2
-    if (any(idx))
-        names1[idx] <- names2[idx]
-    names1
+    if (is.null(outer_names))
+        return(inner_names)
+    if (is.null(inner_names))
+        return(outer_names)
+    ## Replace missing outer names with inner names.
+    no_outer <- is.na(outer_names) | outer_names == ""
+    if (any(no_outer)) {
+        idx <- which(no_outer)
+        outer_names[idx] <- inner_names[idx]
+    }
+    ## Paste *outer* and *inner* names together when both are present.
+    no_inner <- is.na(inner_names) | inner_names == ""
+    both <- !(no_outer | no_inner)
+    if (any(both)) {
+        idx <- which(both)
+        outer_names[idx] <- paste(outer_names[idx], inner_names[idx], sep=".")
+    }
+    outer_names
 }
 
+### 'unlisted_x' is assumed to have the *inner* names of 'x' on it.
+set_unlisted_names <- function(unlisted_x, x)
+{
+    x_names <- names(x)
+    if (is.null(x_names))
+        return(unlisted_x)
+    inner_names <- ROWNAMES(unlisted_x)
+    outer_names <- rep.int(x_names, elementNROWS(x))
+    unlisted_names <- .make_unlisted_names(inner_names, outer_names)
+    if (length(dim(unlisted_x)) < 2L) {
+        res <- try(names(unlisted_x) <- unlisted_names, silent=TRUE)
+        what <- "names"
+    } else {
+        res <- try(rownames(unlisted_x) <- unlisted_names, silent=TRUE)
+        what <- "rownames"
+    }
+    if (is(res, "try-error"))
+        warning("failed to set ", what, " on the ",
+                "unlisted ", class(x), " object")
+    unlisted_x
+}
+
+### If 'use.names' is FALSE or 'x' has no *outer* names, then we propagate
+### the *inner* names on the unlisted object. Note that this deviates from
+### base::unlist() which doesn't propagate any names (outer or inner) when
+### 'use.names' is FALSE.
+### Otherwise (i.e. if 'use.names' is TRUE and 'x' has *outer* names), the
+### names we propagate are obtained by pasting the *outer* and *inner* names
+### together. Note that, unlike base::unlist(), we never mangle the *outer*
+### names when they have no corresponding *inner* names (a terrible feature
+### of base::unlist()).
 setMethod("unlist", "List",
     function(x, recursive=TRUE, use.names=TRUE)
     {
         if (!isTRUEorFALSE(use.names))
             stop("'use.names' must be TRUE or FALSE")
-        if (length(x) == 0L)
-            return(NULL)
-        x_names <- names(x)
-        if (!is.null(x_names))
-            names(x) <- NULL
-        xx <- as.list(x)
-        if (length(dim(xx[[1L]])) < 2L) {
-            ans <- do.call(c, xx)
-            ans_names0 <- names(ans)
-            if (use.names) {
-                if (!is.null(x_names)) {
-                    ans_names <- rep.int(x_names, elementNROWS(x))
-                    ans_names <- make_unlist_result_names(ans_names, ans_names0)
-                    try_result <- try(names(ans) <- ans_names, silent=TRUE)
-                    if (inherits(try_result, "try-error"))
-                        warning("failed to set names on the result ",
-                                "of unlisting a ", class(x), " object")
-                }
-            } else {
-                ## This is consistent with base::unlist but is not consistent
-                ## with unlist,CompressedList. See comments and FIXME note in
-                ## the unlist,CompressedList code for more details.
-                if (!is.null(ans_names0))
-                    names(ans) <- NULL
-            }
-        } else {
-            ans <- do.call(rbind, xx)
-            if (!use.names)
-                rownames(ans) <- NULL
+        if (length(x) == 0L) {
+            elt_type <- elementType(x)
+            if (isVirtualClass(elt_type))
+                return(NULL)
+            return(new(elt_type))
         }
-        ans
+        xx <- unname(as.list(x))
+        if (length(dim(xx[[1L]])) < 2L) {
+            ## This propagates the *inner* names of 'x'.
+            unlisted_x <- do.call(c, xx)
+        } else {
+            ## This propagates the *inner* names of 'x'.
+            unlisted_x <- do.call(rbind, xx)
+        }
+        if (use.names)
+            unlisted_x <- set_unlisted_names(unlisted_x, x)
+        unlisted_x
     }
 )
 
