@@ -652,8 +652,9 @@ setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
 ###
 
 cbind.DataFrame <- function(..., deparse.level = 1) {
-  ans <- DataFrame(...)
-  mcols(ans) <- rbind_mcols(...)
+  dfs <- lapply(list(...), as, "DataFrame", strict=FALSE)
+  ans <- DataFrame(dfs)
+  mcols(ans) <- do.call(rbind_mcols, dfs)
   ans
 }
 
