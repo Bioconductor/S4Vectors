@@ -476,6 +476,7 @@ setMethod("extractROWS", c("vector_OR_factor", "RangeNSBS"),
 )
 
 setMethod("extractROWS", c("array", "RangeNSBS"), .extractROWSWithBracket)
+setMethod("extractROWS", c("array", "RangesNSBS"), .extractROWSWithBracket)
 
 ### NOT exported but will be used in IRanges package (by "extractROWS" method
 ### with signature LLint,RangesNSBS).
