@@ -169,7 +169,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
           } else if (is.list(listData[[i]]) && length(names(listData[[i]])))
             varnames[[i]] <- names(element)
       }
-      if (is.null(row.names))
+      if (missing(row.names))
         row.names <- rownames(element)
     }
     nr <- max(nrows)
