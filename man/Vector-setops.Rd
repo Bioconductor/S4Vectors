@@ -2,9 +2,13 @@
 
 \alias{Vector-setops}
 
+\alias{union.Vector}
 \alias{union,Vector,Vector-method}
+\alias{intersect.Vector}
 \alias{intersect,Vector,Vector-method}
+\alias{setdiff.Vector}
 \alias{setdiff,Vector,Vector-method}
+\alias{setequal.Vector}
 \alias{setequal,Vector,Vector-method}
 
 \title{Set operations on vector-like objects}
