@@ -3,7 +3,7 @@
 ### -------------------------------------------------------------------------
 ###
 ### The methods below are endomorphisms with respect to their first argument
-### 'x'. They propagates the names and metadata columns.
+### 'x'. They propagate the names and metadata columns.
 ###
 
 
