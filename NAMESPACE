@@ -71,6 +71,8 @@ S3method(head, DataTable)
 S3method(head, LLint)
 S3method(head, Vector)
 
+S3method(intersect, Vector)
+
 S3method(levels, Rle)
 
 S3method(mean, Rle)
@@ -83,6 +85,10 @@ S3method(rbind, DataFrame)
 
 S3method(rev, Rle)
 
+S3method(setdiff, Vector)
+
+S3method(setequal, Vector)
+
 S3method(sort, Vector)
 
 S3method(summary, Rle)
@@ -93,6 +99,8 @@ S3method(t, HitsList)
 S3method(tail, DataTable)
 S3method(tail, LLint)
 S3method(tail, Vector)
+
+S3method(union, Vector)
 
 S3method(unique, DataTable)
 S3method(unique, Vector)
@@ -137,6 +145,8 @@ export(
     head.LLint,
     head.Vector,
 
+    intersect.Vector,
+
     levels.Rle,
 
     mean.Rle,
@@ -147,6 +157,10 @@ export(
 
     rev.Rle,
 
+    setdiff.Vector,
+
+    setequal.Vector,
+
     sort.Vector,
 
     summary.Rle,
@@ -154,6 +168,8 @@ export(
     tail.DataTable,
     tail.LLint,
     tail.Vector,
+
+    union.Vector,
 
     unique.DataTable,
     unique.Vector,
