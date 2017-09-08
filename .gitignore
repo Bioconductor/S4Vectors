@@ -1,1 +1,3 @@
-/R/.Rhistory
+.Rhistory
+*.o
+*.so
