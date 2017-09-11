@@ -624,7 +624,7 @@ setAs("Vector", "DataFrame", .VectorAsDataFrame)
 ## is this a bug or a feature?
 setAs("list", "DataFrame",
       function(from) {
-        do.call(DataFrame, c(from, check.names = FALSE))
+        do.call(DataFrame, c(from, check.names = is.null(names(from))))
       })
 
 setAs("NULL", "DataFrame", function(from) as(list(), "DataFrame"))
