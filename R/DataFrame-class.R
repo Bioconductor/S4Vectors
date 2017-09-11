@@ -160,14 +160,14 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
       ncols[i] <- ncol(element)
       varlist[[i]] <- as.list(element, use.names = FALSE)
       if (!is(listData[[i]], "AsIs")) {
-        if (((length(dim(listData[[i]])) > 1) || (ncol(element) > 1)))
+        if (((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
+             is.list(listData[[i]])))
           {
             if (emptynames[i])
               varnames[[i]] <- colnames(element)
             else
               varnames[[i]] <- paste(varnames[[i]], colnames(element), sep = ".")
-          } else if (is.list(listData[[i]]) && length(names(listData[[i]])))
-            varnames[[i]] <- names(element)
+          }
       }
       if (missing(row.names))
         row.names <- rownames(element)
