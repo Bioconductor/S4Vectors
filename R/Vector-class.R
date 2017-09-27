@@ -507,7 +507,7 @@ ensureMcols <- function(x) {
 
 rbind_mcols <- function(x, ...)
 {
-    args <- list(x, ...)
+    args <- c(if (!missing(x)) list(x), list(...))
     mcols_list <- lapply(args, mcols)
     if (length(mcols_list) == 1L)
         return(mcols_list[[1L]])
