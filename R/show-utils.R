@@ -369,20 +369,33 @@ setGeneric("showAsCell",
     function(object) standardGeneric("showAsCell")
 )
 
-setMethod("showAsCell", "ANY", function(object) {
+### Must work on any array-like object (i.e. on any object with 2 dimensions
+### or more) e.g. ordinary array or matrix, Matrix, data.frame, DataFrame,
+### data.table, etc...
+.showAsCell_array <- function(object)
+{
+    if (length(dim(object)) > 2L)
+        dim(object) <- c(nrow(object), prod(tail(dim(object), -1L)))
+    object_ncol <- ncol(object)
+    if (object_ncol == 0L)
+        return(rep.int("", nrow(object)))
+    object <- lapply(head(seq_len(object_ncol), 3L),
+                     function(i) object[ , i, drop=TRUE])
+    ans <- do.call(paste, c(object, list(sep=":")))
+    if (object_ncol > 3L)
+        ans <- paste0(ans, ":...")
+    ans
+}
+
+.default_showAsCell <- function(object)
+{
+  ## Some objects like SplitDataFrameList are not array-like but have
+  ## a "dim" method that return a matrix!
+  if (length(dim(object)) >= 2L && !is.matrix(dim(object)))
+    return(.showAsCell_array(object))
   if (NROW(object) == 0L)
     return(character(0L))
-  if (length(dim(object)) > 2)
-    dim(object) <- c(nrow(object), prod(tail(dim(object), -1)))
-  if (NCOL(object) > 1) {
-    df <- as.data.frame(object[, head(seq_len(ncol(object)), 3), drop = FALSE])
-    attempt <- do.call(paste, c(df, sep=":"))
-    if (ncol(object) > 3L)
-      attempt <- paste0(attempt, ":...")
-    attempt
-  } else if (NCOL(object) == 0L) {
-    rep.int("", NROW(object))
-  } else if (is.list(object) || is(object, "List")) {
+  if (is.list(object) || is(object, "List")) {
     vapply(object, function(x) {
       str <- paste(head(unlist(x), 3L), collapse = ",")
       if (length(x) > 3L)
@@ -395,7 +408,9 @@ setMethod("showAsCell", "ANY", function(object) {
       rep.int("########", length(object))
     else attempt
   }
-})
+}
+
+setMethod("showAsCell", "ANY", .default_showAsCell)
 
 setMethod("showAsCell", "AsIs",
     function(object) showAsCell(.drop_AsIs(object))
