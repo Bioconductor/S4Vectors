@@ -202,7 +202,8 @@ setMethod("is.na", "List",
 ###
 
 setMethod("order", "List",
-    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
+    function(..., na.last=TRUE, decreasing=FALSE,
+                  method=c("auto", "shell", "radix"))
     {
         args <- list(...)
         if (length(args) != 1L)

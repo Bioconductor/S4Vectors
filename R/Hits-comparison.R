@@ -79,7 +79,8 @@ setMethod("match", c("Hits", "Hits"),
 ### 'na.last' is pointless (Hits objects don't contain NAs) so is ignored.
 ### 'method' is also ignored at the moment.
 setMethod("order", "Hits",
-    function(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
+    function(..., na.last=TRUE, decreasing=FALSE,
+                  method=c("auto", "shell", "radix"))
     {
         if (!isTRUEorFALSE(decreasing))
             stop("'decreasing' must be TRUE or FALSE")
