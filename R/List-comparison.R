@@ -43,7 +43,8 @@ setMethod("pcompareRecursively", "list", function(x) TRUE)
         return(OP1_Vector_method(x, ...))
     }
     compress_ans <- !is(x, "SimpleList")
-    ANS_CONSTRUCTOR(lapply(x, OP1, ...), compress=compress_ans)
+    ANS_CONSTRUCTOR(lapply(x, function(x_elt) OP1(x_elt, ...)),
+                    compress=compress_ans)
 }
 
 ### Apply a binary operator.
