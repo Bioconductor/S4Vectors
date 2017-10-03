@@ -118,7 +118,7 @@ countMatches(x, table, ...)
 ## sort()
 ## ------
 
-\S4method{sort}{Vector}(x, decreasing=FALSE, na.last = NA, by)
+\S4method{sort}{Vector}(x, decreasing=FALSE, na.last=NA, by)
 
 ## table()
 ## -------

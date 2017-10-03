@@ -28,7 +28,7 @@
 \S4method{match}{Hits,Hits}(x, table, nomatch=NA_integer_, incomparables=NULL,
       method=c("auto", "quick", "hash"))
 
-\S4method{order}{Hits}(..., na.last=TRUE, decreasing=FALSE, method=c("shell", "radix"))
+\S4method{order}{Hits}(..., na.last=TRUE, decreasing=FALSE, method=c("auto", "shell", "radix"))
 }
 
 \arguments{
