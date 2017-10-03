@@ -43,8 +43,16 @@ setMethod("pcompareRecursively", "list", function(x) TRUE)
         return(OP1_Vector_method(x, ...))
     }
     compress_ans <- !is(x, "SimpleList")
-    ANS_CONSTRUCTOR(lapply(x, function(x_elt) OP1(x_elt, ...)),
-                    compress=compress_ans)
+    ## Note that we should just be able to do
+    ##   y <- lapply(x, OP1, ...)
+    ## instead of the extremely obfuscated form below (which, in a bug-free
+    ## world, should be equivalent to the simple form above).
+    ## However, because of a regression in R 3.4.2, using the simple form
+    ## above doesn't seem to work properly if OP1 is a generic function with
+    ## dispatch on ... (e.g. order()). The form below seems to work though,
+    ## so we use it as a temporary workaround.
+    y <- lapply(x, function(xi) do.call(OP1, list(xi, ...)))
+    ANS_CONSTRUCTOR(y, compress=compress_ans)
 }
 
 ### Apply a binary operator.
