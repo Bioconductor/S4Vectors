@@ -133,6 +133,8 @@ export(
 
     as.vector.Rle,
 
+    cbind.DataFrame,
+
     diff.Rle,
 
     droplevels.Rle,
@@ -155,6 +157,8 @@ export(
 
     quantile.Rle,
 
+    rbind.DataFrame,
+
     rev.Rle,
 
     setdiff.Vector,
@@ -164,6 +168,9 @@ export(
     sort.Vector,
 
     summary.Rle,
+
+    t.Hits,
+    t.HitsList,
 
     tail.DataTable,
     tail.LLint,
