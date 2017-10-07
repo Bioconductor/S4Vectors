@@ -69,6 +69,7 @@ setMethod("revElements", "List",
 
 setGeneric("mendoapply", signature = "...",
            function(FUN, ..., MoreArgs = NULL) standardGeneric("mendoapply"))
+BiocGenerics:::apply_hotfix73465(getGeneric("mendoapply"))
 
 setMethod("mendoapply", "list", function(FUN, ..., MoreArgs = NULL)
           mapply(FUN = FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = FALSE))
