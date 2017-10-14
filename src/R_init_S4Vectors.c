@@ -135,6 +135,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_IntAE_get_nelt);
 	REGISTER_CCALLABLE(_IntAE_set_nelt);
 	REGISTER_CCALLABLE(_IntAE_set_val);
+	REGISTER_CCALLABLE(_IntAE_extend);
 	REGISTER_CCALLABLE(_IntAE_insert_at);
 	REGISTER_CCALLABLE(_new_IntAE);
 	REGISTER_CCALLABLE(_IntAE_append);
@@ -148,6 +149,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_new_IntAE_from_CHARACTER);
 	REGISTER_CCALLABLE(_IntAEAE_get_nelt);
 	REGISTER_CCALLABLE(_IntAEAE_set_nelt);
+	REGISTER_CCALLABLE(_IntAEAE_extend);
 	REGISTER_CCALLABLE(_IntAEAE_insert_at);
 	REGISTER_CCALLABLE(_new_IntAEAE);
 	REGISTER_CCALLABLE(_IntAEAE_pappend);
@@ -158,19 +160,23 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_IntAEAE_toEnvir);
 	REGISTER_CCALLABLE(_IntPairAE_get_nelt);
 	REGISTER_CCALLABLE(_IntPairAE_set_nelt);
+	REGISTER_CCALLABLE(_IntPairAE_extend);
 	REGISTER_CCALLABLE(_IntPairAE_insert_at);
 	REGISTER_CCALLABLE(_new_IntPairAE);
 	REGISTER_CCALLABLE(_IntPairAEAE_get_nelt);
 	REGISTER_CCALLABLE(_IntPairAEAE_set_nelt);
+	REGISTER_CCALLABLE(_IntPairAEAE_extend);
 	REGISTER_CCALLABLE(_IntPairAEAE_insert_at);
 	REGISTER_CCALLABLE(_new_IntPairAEAE);
 	REGISTER_CCALLABLE(_LLongAE_get_nelt);
 	REGISTER_CCALLABLE(_LLongAE_set_nelt);
 	REGISTER_CCALLABLE(_LLongAE_set_val);
+	REGISTER_CCALLABLE(_LLongAE_extend);
 	REGISTER_CCALLABLE(_LLongAE_insert_at);
 	REGISTER_CCALLABLE(_new_LLongAE);
 	REGISTER_CCALLABLE(_CharAE_get_nelt);
 	REGISTER_CCALLABLE(_CharAE_set_nelt);
+	REGISTER_CCALLABLE(_CharAE_extend);
 	REGISTER_CCALLABLE(_CharAE_insert_at);
 	REGISTER_CCALLABLE(_new_CharAE);
 	REGISTER_CCALLABLE(_new_CharAE_from_string);
@@ -180,6 +186,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_new_LOGICAL_from_CharAE);
 	REGISTER_CCALLABLE(_CharAEAE_get_nelt);
 	REGISTER_CCALLABLE(_CharAEAE_set_nelt);
+	REGISTER_CCALLABLE(_CharAEAE_extend);
 	REGISTER_CCALLABLE(_CharAEAE_insert_at);
 	REGISTER_CCALLABLE(_new_CharAEAE);
 	REGISTER_CCALLABLE(_CharAEAE_append_string);

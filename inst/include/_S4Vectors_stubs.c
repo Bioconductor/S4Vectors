@@ -143,6 +143,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_set_val,
 	(             ae,     val)
 )
 
+DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_extend,
+	(IntAE *ae, size_t new_buflength),
+	(       ae,        new_buflength)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAE_insert_at,
 	(IntAE *ae, size_t at, int val),
 	(       ae,        at,     val)
@@ -208,6 +213,11 @@ DEFINE_CCALLABLE_STUB(size_t, IntAEAE_set_nelt,
 	(         aeae,        nelt)
 )
 
+DEFINE_NOVALUE_CCALLABLE_STUB(IntAEAE_extend,
+	(IntAEAE *aeae, size_t new_buflength),
+	(         aeae,        new_buflength)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(IntAEAE_insert_at,
 	(IntAEAE *aeae, size_t at, IntAE *ae),
 	(         aeae,        at,        ae)
@@ -258,6 +268,11 @@ DEFINE_CCALLABLE_STUB(size_t, IntPairAE_set_nelt,
 	(           ae,     nelt)
 )
 
+DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAE_extend,
+	(IntPairAE *ae, size_t new_buflength),
+	(           ae,        new_buflength)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAE_insert_at,
 	(IntPairAE *ae, size_t at, int a, int b),
 	(           ae,        at,     a,     b)
@@ -276,6 +291,11 @@ DEFINE_CCALLABLE_STUB(size_t, IntPairAEAE_get_nelt,
 DEFINE_CCALLABLE_STUB(size_t, IntPairAEAE_set_nelt,
 	(IntPairAEAE *aeae, size_t nelt),
 	(             aeae,        nelt)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAEAE_extend,
+	(IntPairAEAE *aeae, size_t new_buflength),
+	(             aeae,        new_buflength)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(IntPairAEAE_insert_at,
@@ -303,6 +323,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(LLongAE_set_val,
 	(               ae,           val)
 )
 
+DEFINE_NOVALUE_CCALLABLE_STUB(LLongAE_extend,
+	(LLongAE *ae, size_t new_buflength),
+	(         ae,        new_buflength)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(LLongAE_insert_at,
 	(LLongAE *ae, size_t at, long long val),
 	(         ae,     at,           val)
@@ -321,6 +346,11 @@ DEFINE_CCALLABLE_STUB(size_t, CharAE_get_nelt,
 DEFINE_CCALLABLE_STUB(size_t, CharAE_set_nelt,
 	(CharAE *ae, size_t nelt),
 	(        ae,        nelt)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(CharAE_extend,
+	(CharAE *ae, size_t new_buflength),
+	(        ae,        new_buflength)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(CharAE_insert_at,
@@ -366,6 +396,11 @@ DEFINE_CCALLABLE_STUB(size_t, CharAEAE_get_nelt,
 DEFINE_CCALLABLE_STUB(size_t, CharAEAE_set_nelt,
 	(CharAEAE *aeae, size_t nelt),
 	(          aeae,        nelt)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(CharAEAE_extend,
+	(CharAEAE *aeae, size_t new_buflength),
+	(          aeae,        new_buflength)
 )
 
 DEFINE_NOVALUE_CCALLABLE_STUB(CharAEAE_insert_at,

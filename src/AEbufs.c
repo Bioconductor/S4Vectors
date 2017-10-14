@@ -142,7 +142,7 @@ void _IntAE_set_val(const IntAE *ae, int val)
 	return;
 }
 
-static void IntAE_extend(IntAE *ae, size_t new_buflength)
+void _IntAE_extend(IntAE *ae, size_t new_buflength)
 {
 	ae->elts = (int *) realloc2(ae->elts, ae->_buflength,
 				    new_buflength, sizeof(int));
@@ -154,7 +154,7 @@ static int IntAE_extend_if_full(IntAE *ae)
 {
 	if (_IntAE_get_nelt(ae) < ae->_buflength)
 		return 0;
-	IntAE_extend(ae, _increase_buflength(ae->_buflength));
+	_IntAE_extend(ae, _increase_buflength(ae->_buflength));
 	return 1;
 }
 
@@ -185,7 +185,7 @@ IntAE *_new_IntAE(size_t buflength, size_t nelt, int val)
 
 	ae = new_empty_IntAE();
 	if (buflength != 0) {
-		IntAE_extend(ae, buflength);
+		_IntAE_extend(ae, buflength);
 		_IntAE_set_nelt(ae, nelt);
 		_IntAE_set_val(ae, val);
 	}
@@ -200,7 +200,7 @@ void _IntAE_append(IntAE *ae, const int *newvals, size_t nnewval)
 	ae_nelt = _IntAE_get_nelt(ae);
 	new_nelt = ae_nelt + nnewval;
 	if (new_nelt > ae->_buflength)
-		IntAE_extend(ae, new_nelt);
+		_IntAE_extend(ae, new_nelt);
 	dest = ae->elts + ae_nelt;
 	memcpy(dest, newvals, nnewval * sizeof(int));
 	_IntAE_set_nelt(ae, new_nelt);
@@ -420,7 +420,7 @@ static IntAEAE *new_empty_IntAEAE()
 	return aeae;
 }
 
-static void IntAEAE_extend(IntAEAE *aeae, size_t new_buflength)
+void _IntAEAE_extend(IntAEAE *aeae, size_t new_buflength)
 {
 	size_t old_buflength, i;
 
@@ -437,7 +437,7 @@ static int IntAEAE_extend_if_full(IntAEAE *aeae)
 {
 	if (_IntAEAE_get_nelt(aeae) < aeae->_buflength)
 		return 0;
-	IntAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
+	_IntAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
 	return 1;
 }
 
@@ -472,7 +472,7 @@ IntAEAE *_new_IntAEAE(size_t buflength, size_t nelt)
 
 	aeae = new_empty_IntAEAE();
 	if (buflength != 0) {
-		IntAEAE_extend(aeae, buflength);
+		_IntAEAE_extend(aeae, buflength);
 		for (i = 0; i < nelt; i++) {
 			ae = new_empty_IntAE();
 			_IntAEAE_insert_at(aeae, i, ae);
@@ -694,10 +694,10 @@ static IntPairAE *new_empty_IntPairAE()
 	return ae;
 }
 
-static void IntPairAE_extend(IntPairAE *ae, size_t new_buflength)
+void _IntPairAE_extend(IntPairAE *ae, size_t new_buflength)
 {
-	IntAE_extend(ae->a, new_buflength);
-	IntAE_extend(ae->b, new_buflength);
+	_IntAE_extend(ae->a, new_buflength);
+	_IntAE_extend(ae->b, new_buflength);
 	return;
 }
 
@@ -714,7 +714,7 @@ IntPairAE *_new_IntPairAE(size_t buflength, size_t nelt)
 
 	ae = new_empty_IntPairAE();
 	if (buflength != 0) {
-		IntPairAE_extend(ae, buflength);
+		_IntPairAE_extend(ae, buflength);
 		/* Elements are NOT initialized. */
 		_IntPairAE_set_nelt(ae, nelt);
 	}
@@ -796,7 +796,7 @@ static IntPairAEAE *new_empty_IntPairAEAE()
 	return aeae;
 }
 
-static void IntPairAEAE_extend(IntPairAEAE *aeae, size_t new_buflength)
+void _IntPairAEAE_extend(IntPairAEAE *aeae, size_t new_buflength)
 {
 	size_t old_buflength, i;
 
@@ -814,7 +814,7 @@ static int IntPairAEAE_extend_if_full(IntPairAEAE *aeae)
 {
 	if (_IntPairAEAE_get_nelt(aeae) < aeae->_buflength)
 		return 0;
-	IntPairAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
+	_IntPairAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
 	return 1;
 }
 
@@ -850,7 +850,7 @@ IntPairAEAE *_new_IntPairAEAE(size_t buflength, size_t nelt)
 
 	aeae = new_empty_IntPairAEAE();
 	if (buflength != 0) {
-		IntPairAEAE_extend(aeae, buflength);
+		_IntPairAEAE_extend(aeae, buflength);
 		for (i = 0; i < nelt; i++) {
 			ae = new_empty_IntPairAE();
 			_IntPairAEAE_insert_at(aeae, i, ae);
@@ -938,7 +938,7 @@ void _LLongAE_set_val(const LLongAE *ae, long long val)
 	return;
 }
 
-static void LLongAE_extend(LLongAE *ae, size_t new_buflength)
+void _LLongAE_extend(LLongAE *ae, size_t new_buflength)
 {
 	ae->elts = (long long *) realloc2(ae->elts, ae->_buflength,
 					  new_buflength, sizeof(long long));
@@ -950,7 +950,7 @@ static int LLongAE_extend_if_full(LLongAE *ae)
 {
 	if (_LLongAE_get_nelt(ae) < ae->_buflength)
 		return 0;
-	LLongAE_extend(ae, _increase_buflength(ae->_buflength));
+	_LLongAE_extend(ae, _increase_buflength(ae->_buflength));
 	return 1;
 }
 
@@ -981,7 +981,7 @@ LLongAE *_new_LLongAE(size_t buflength, size_t nelt, long long val)
 
 	ae = new_empty_LLongAE();
 	if (buflength != 0) {
-		LLongAE_extend(ae, buflength);
+		_LLongAE_extend(ae, buflength);
 		_LLongAE_set_nelt(ae, nelt);
 		_LLongAE_set_val(ae, val);
 	}
@@ -1046,7 +1046,7 @@ static CharAE *new_empty_CharAE()
 	return ae;
 }
 
-static void CharAE_extend(CharAE *ae, size_t new_buflength)
+void _CharAE_extend(CharAE *ae, size_t new_buflength)
 {
 	ae->elts = (char *) realloc2(ae->elts, ae->_buflength,
 				     new_buflength, sizeof(char));
@@ -1058,7 +1058,7 @@ static int CharAE_extend_if_full(CharAE *ae)
 {
 	if (_CharAE_get_nelt(ae) < ae->_buflength)
 		return 0;
-	CharAE_extend(ae, _increase_buflength(ae->_buflength));
+	_CharAE_extend(ae, _increase_buflength(ae->_buflength));
 	return 1;
 }
 
@@ -1089,7 +1089,7 @@ CharAE *_new_CharAE(size_t buflength)
 
 	ae = new_empty_CharAE();
 	if (buflength != 0)
-		CharAE_extend(ae, buflength);
+		_CharAE_extend(ae, buflength);
 	return ae;
 }
 
@@ -1112,7 +1112,7 @@ void _CharAE_append_string(CharAE *ae, const char *string)
 	ae_nelt = _CharAE_get_nelt(ae);
 	new_nelt = ae_nelt + nnewval;
 	if (new_nelt > ae->_buflength)
-		CharAE_extend(ae, new_nelt);
+		_CharAE_extend(ae, new_nelt);
 	dest = ae->elts + ae_nelt;
 	memcpy(dest, string, sizeof(char) * nnewval);
 	_CharAE_set_nelt(ae, new_nelt);
@@ -1248,7 +1248,7 @@ static CharAEAE *new_empty_CharAEAE()
 	return aeae;
 }
 
-static void CharAEAE_extend(CharAEAE *aeae, size_t new_buflength)
+void _CharAEAE_extend(CharAEAE *aeae, size_t new_buflength)
 {
 	size_t old_buflength, i;
 
@@ -1265,7 +1265,7 @@ static int CharAEAE_extend_if_full(CharAEAE *aeae)
 {
 	if (_CharAEAE_get_nelt(aeae) < aeae->_buflength)
 		return 0;
-	CharAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
+	_CharAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
 	return 1;
 }
 
@@ -1300,7 +1300,7 @@ CharAEAE *_new_CharAEAE(size_t buflength, size_t nelt)
 
 	aeae = new_empty_CharAEAE();
 	if (buflength != 0) {
-		CharAEAE_extend(aeae, buflength);
+		_CharAEAE_extend(aeae, buflength);
 		for (i = 0; i < nelt; i++) {
 			ae = new_empty_CharAE();
 			_CharAEAE_insert_at(aeae, i, ae);

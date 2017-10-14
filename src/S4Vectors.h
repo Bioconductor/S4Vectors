@@ -225,6 +225,11 @@ void _IntAE_set_val(
 	int val
 );
 
+void _IntAE_extend(
+	IntAE *ae,
+	size_t new_buflength
+);
+
 void _IntAE_insert_at(
 	IntAE *ae,
 	size_t at,
@@ -288,6 +293,11 @@ size_t _IntAEAE_set_nelt(
 	size_t nelt
 );
 
+void _IntAEAE_extend(
+	IntAEAE *aeae,
+	size_t new_buflength
+);
+
 void _IntAEAE_insert_at(
 	IntAEAE *aeae,
 	size_t at,
@@ -335,6 +345,11 @@ size_t _IntPairAE_set_nelt(
 	size_t nelt
 );
 
+void _IntPairAE_extend(
+	IntPairAE *ae,
+	size_t new_buflength
+);
+
 void _IntPairAE_insert_at(
 	IntPairAE *ae,
 	size_t at,
@@ -352,6 +367,11 @@ size_t _IntPairAEAE_get_nelt(const IntPairAEAE *aeae);
 size_t _IntPairAEAE_set_nelt(
 	IntPairAEAE *aeae,
 	size_t nelt
+);
+
+void _IntPairAEAE_extend(
+	IntPairAEAE *aeae,
+	size_t new_buflength
 );
 
 void _IntPairAEAE_insert_at(
@@ -377,6 +397,11 @@ void _LLongAE_set_val(
 	long long val
 );
 
+void _LLongAE_extend(
+	LLongAE *ae,
+	size_t new_buflength
+);
+
 void _LLongAE_insert_at(
 	LLongAE *ae,
 	size_t at,
@@ -394,6 +419,11 @@ size_t _CharAE_get_nelt(const CharAE *ae);
 size_t _CharAE_set_nelt(
 	CharAE *ae,
 	size_t nelt
+);
+
+void _CharAE_extend(
+	CharAE *ae,
+	size_t new_buflength
 );
 
 void _CharAE_insert_at(
@@ -426,6 +456,11 @@ size_t _CharAEAE_get_nelt(const CharAEAE *aeae);
 size_t _CharAEAE_set_nelt(
 	CharAEAE *aeae,
 	size_t nelt
+);
+
+void _CharAEAE_extend(
+	CharAEAE *aeae,
+	size_t new_buflength
 );
 
 void _CharAEAE_insert_at(
