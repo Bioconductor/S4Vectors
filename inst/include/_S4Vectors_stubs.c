@@ -378,6 +378,11 @@ DEFINE_NOVALUE_CCALLABLE_STUB(CharAE_delete_at,
 	(        ae,        at,        nelt)
 )
 
+DEFINE_CCALLABLE_STUB(SEXP, new_CHARSXP_from_CharAE,
+	(const CharAE *ae),
+	(              ae)
+)
+
 DEFINE_CCALLABLE_STUB(SEXP, new_RAW_from_CharAE,
 	(const CharAE *ae),
 	(              ae)

@@ -403,6 +403,8 @@ void CharAE_delete_at(
 	size_t nelt
 );
 
+SEXP new_CHARSXP_from_CharAE(const CharAE *ae);
+
 SEXP new_RAW_from_CharAE(const CharAE *ae);
 
 SEXP new_LOGICAL_from_CharAE(const CharAE *ae);

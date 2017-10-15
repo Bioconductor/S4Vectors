@@ -1141,6 +1141,18 @@ void _CharAE_delete_at(CharAE *ae, size_t at, size_t nelt)
 	return;
 }
 
+SEXP _new_CHARSXP_from_CharAE(const CharAE *ae)
+{
+	size_t ae_nelt;
+
+	ae_nelt = _CharAE_get_nelt(ae);
+	if (ae_nelt > INT_MAX)
+		error("S4Vectors internal error in "
+		      "_new_CHARSXP_from_CharAE: character "
+		      "buffer is too long for mkCharLen()");
+	return mkCharLen(ae->elts, (int) ae_nelt);
+}
+
 SEXP _new_RAW_from_CharAE(const CharAE *ae)
 {
 	size_t ae_nelt;
@@ -1320,7 +1332,7 @@ void _CharAEAE_append_string(CharAEAE *aeae, const char *string)
 
 SEXP _new_CHARACTER_from_CharAEAE(const CharAEAE *aeae)
 {
-	size_t aeae_nelt, i, ae_nelt;
+	size_t aeae_nelt, i;
 	SEXP ans, ans_elt;
 	CharAE *ae;
 
@@ -1329,12 +1341,7 @@ SEXP _new_CHARACTER_from_CharAEAE(const CharAEAE *aeae)
 	PROTECT(ans = NEW_CHARACTER((R_xlen_t) aeae_nelt));
 	for (i = 0; i < aeae_nelt; i++) {
 		ae = aeae->elts[i];
-		ae_nelt = _CharAE_get_nelt(ae);
-		if (ae_nelt > INT_MAX)
-			error("S4Vectors internal error in "
-			      "_new_CHARACTER_from_CharAEAE: character "
-			      "buffer is too long for mkCharLen()");
-		PROTECT(ans_elt = mkCharLen(ae->elts, (int) ae_nelt));
+		PROTECT(ans_elt = _new_CHARSXP_from_CharAE(ae));
 		SET_STRING_ELT(ans, i, ans_elt);
 		UNPROTECT(1);
 	}

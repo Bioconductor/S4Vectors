@@ -182,6 +182,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_new_CharAE_from_string);
 	REGISTER_CCALLABLE(_CharAE_append_string);
 	REGISTER_CCALLABLE(_CharAE_delete_at);
+	REGISTER_CCALLABLE(_new_CHARSXP_from_CharAE);
 	REGISTER_CCALLABLE(_new_RAW_from_CharAE);
 	REGISTER_CCALLABLE(_new_LOGICAL_from_CharAE);
 	REGISTER_CCALLABLE(_CharAEAE_get_nelt);
