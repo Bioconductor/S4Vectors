@@ -91,7 +91,7 @@ SEXP unstrsplit_list(SEXP x, SEXP sep)
 	SEXP ans, sep0, x_elt, ans_elt, ans_names;
 	int x_len, sep0_len, i;
 
-	if (!IS_LIST(x))
+	if (!isVectorList(x))
 		error("'x' must be a list");
 	if (!(IS_CHARACTER(sep) && LENGTH(sep) == 1))
 		error("'sep' must be a single string");

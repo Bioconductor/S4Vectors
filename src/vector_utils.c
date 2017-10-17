@@ -106,7 +106,7 @@ SEXP _list_as_data_frame(SEXP x, int nrow)
 	SEXP rownames, class;
 	int i;
 
-	if (!IS_LIST(x) || GET_NAMES(x) == R_NilValue)
+	if (!isVectorList(x) || GET_NAMES(x) == R_NilValue)
 		error("S4Vectors internal error in _list_as_data_frame(): "
 		      "'x' must be a named list");
 
