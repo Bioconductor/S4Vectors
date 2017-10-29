@@ -1,3 +1,53 @@
+CHANGES IN VERSION 0.16.0
+-------------------------
+
+NEW FEATURES
+
+    o Introduce FilterResults as generic parent of FilterMatrix.
+
+
+    o Optimized subsetting of an Rle object by an integer vector. Speed up
+      is about 3x or more for big objects with respect to BioC 3.5.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o coerce,list,DataFrame generates "valid" names when list has none.
+      This ends up introducing an inconsistency between DataFrame and
+      data.frame but it is arguably a good one. We shouldn't rely on
+      DataFrame() to generate variable names from scratch anyway.
+
+BUG FIXES
+
+    o Fix showAsCell() on data-frame-like and array-like objects with a single
+      column, and on SplitDataFrameList objects.
+
+    o Calling DataFrame() with explict 'row.names=NULL' should block rownames
+      inference.
+
+    o cbind.DataFrame() ensures every argument is a DataFrame, not just first.
+
+    o rbind_mcols() now is robust to missing 'x'.
+
+    o Fix extractROWS() for arrays when subscript is a RangeNSBS.
+
+    o Temporary workaround to make the "union" method for Hits objects work
+      even in the presence of another "union" generic in the cache (which is
+      the case e.g. if the user loads the lubridate package).
+
+    o A couple of (long-time due) tweaks and fixes to "unlist" method for
+      List objects so that it behaves consistently with "unlist" method for
+      CompressedList objects.
+
+    o Modify Mini radix C code to accomodate a bug in Apple LLVM version 6.1.0
+      optimizer.
+      [commit 241150d2b043e8fcf6721005422891baff018586]
+
+    o Fix match,Pairs,Pairs()
+      [commit a08c12bf4c31b7304d25122c411d882ec52b360c]
+
+    o Various other minor fixes.
+
+
 CHANGES IN VERSION 0.14.0
 -------------------------
 
