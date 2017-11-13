@@ -565,7 +565,14 @@ setReplaceMethod("[[", "List",
                  function(x, i, j, ..., value)
                  {
                    if (!missing(j) || length(list(...)) > 0)
-                     stop("invalid replacement")
+                       stop("invalid replacement")
+                   i <- normargSubset2_iOnly(x, i, j, ...,
+                                             .conditionPrefix="[[<-,List-method: ")
+                   if (is.null(value)) {
+                       if (i <= length(x)) # if name did not exist, could be +1
+                           x <- x[-i]
+                       return(x)
+                   }
                    origLen <- length(x)
                    x <- setListElement(x, i, value)
                    if (origLen < length(x))
