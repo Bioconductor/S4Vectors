@@ -566,24 +566,12 @@ setReplaceMethod("[[", "List",
                  {
                    if (!missing(j) || length(list(...)) > 0)
                        stop("invalid replacement")
-                   nameValue <- if (is.character(i)) i else ""
-                   i <- normargSubset2_iOnly(x, i, j, ...,
-                                             .conditionPrefix="[[<-,List-method: ")
                    if (is.null(value)) {
-                       if (i <= length(x)) # if name did not exist, could be +1
-                           x <- x[-i]
+                       x <- removeListElement(x, i)
                        return(x)
                    }
                    origLen <- length(x)
                    x <- setListElement(x, i, value)
-                   if ((i == origLen + 1L) &&
-                       (!is.null(names(x)) || nchar(nameValue) > 0)) {
-                       nms <- names(x)
-                       if (is.null(nms))
-                           nms <- rep.int("", length(x))
-                       nms[i] <- nameValue
-                       names(x) <- nms
-                   }
                    if (origLen < length(x))
                      x <- rbindRowOfNAsToMetadatacols(x)
                    x
@@ -595,6 +583,13 @@ setReplaceMethod("$", "List",
                    x
                  })
 
+setMethod("removeListElement", "List", function(x, i) {
+    i <- normargSubset2_iOnly(x, i,
+                              .conditionPrefix="removeListElement,List-method: ")
+    if (i <= length(x)) # if name did not exist, could be +1
+        x <- x[-i]
+    x
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Simple helper functions for some common subsetting operations.

@@ -598,7 +598,7 @@ normalizeDoubleBracketSubscript <- function(i, x, exact=TRUE,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### 2 internal generics to ease implementation of [[ and [[<- subsetting for
+### 3 internal generics to ease implementation of [[ and [[<- subsetting for
 ### new List subclasses.
 ###
 
@@ -619,6 +619,9 @@ setMethod("getListElement", "list",
     }
 )
 
+setGeneric("removeListElement", signature="x",
+           function(x, i) standardGeneric("removeListElement")
+           )
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### window(), head(), tail(), rep.int()
