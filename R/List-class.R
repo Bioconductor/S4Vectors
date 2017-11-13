@@ -566,6 +566,7 @@ setReplaceMethod("[[", "List",
                  {
                    if (!missing(j) || length(list(...)) > 0)
                        stop("invalid replacement")
+                   nameValue <- if (is.character(i)) i else ""
                    i <- normargSubset2_iOnly(x, i, j, ...,
                                              .conditionPrefix="[[<-,List-method: ")
                    if (is.null(value)) {
@@ -575,6 +576,14 @@ setReplaceMethod("[[", "List",
                    }
                    origLen <- length(x)
                    x <- setListElement(x, i, value)
+                   if ((i == origLen + 1L) &&
+                       (!is.null(names(x)) || nchar(nameValue) > 0)) {
+                       nms <- names(x)
+                       if (is.null(nms))
+                           nms <- rep.int("", length(x))
+                       nms[i] <- nameValue
+                       names(x) <- nms
+                   }
                    if (origLen < length(x))
                      x <- rbindRowOfNAsToMetadatacols(x)
                    x
