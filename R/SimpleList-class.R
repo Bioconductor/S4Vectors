@@ -118,6 +118,9 @@ setMethod("getListElement", "SimpleList",
 setMethod("setListElement", "SimpleList",
     function(x, i, value)
     {
+        if (is.null(value)) {
+            return(removeListElement(x, i))
+        }
         x@listData[[i]] <- value
         x
     }

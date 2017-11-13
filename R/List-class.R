@@ -566,10 +566,6 @@ setReplaceMethod("[[", "List",
                  {
                    if (!missing(j) || length(list(...)) > 0)
                        stop("invalid replacement")
-                   if (is.null(value)) {
-                       x <- removeListElement(x, i)
-                       return(x)
-                   }
                    origLen <- length(x)
                    x <- setListElement(x, i, value)
                    if (origLen < length(x))
