@@ -580,8 +580,7 @@ setReplaceMethod("$", "List",
                  })
 
 setMethod("removeListElement", "List", function(x, i) {
-    i <- normargSubset2_iOnly(x, i,
-                              .conditionPrefix="removeListElement,List-method: ")
+    i <- normalizeDoubleBracketSubscript(i, x, allow.append=TRUE)
     if (i <= length(x)) # if name did not exist, could be +1
         x <- x[-i]
     x

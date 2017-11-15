@@ -370,30 +370,6 @@ normargRunK <- function(k, n, endrule)
     as.integer(k)
 }
 
-### NOT exported.
-normargSubset2_iOnly <-
-    function(x, i, j, ..., .conditionPrefix=character())
-{
-    if (!missing(j) || length(list(...)) > 0)
-        warning(.conditionPrefix, "arguments beyond 'i' ignored")
-    if (missing(i))
-        stop(.conditionPrefix, "subscript 'i' is missing")
-    if (!is.character(i) && !is.numeric(i))
-        stop(.conditionPrefix, "invalid subscript 'i' type")
-    if (length(i) < 1L)
-        stop(.conditionPrefix, "attempt to select less than one element")
-    if (length(i) > 1L)
-        stop(.conditionPrefix, "attempt to select more than one element")
-    if (is.numeric(i) && (i < 1L || i > length(x)+1))
-        stop(.conditionPrefix, "subscript 'i' out of bounds")
-    if (is.character(i)) {
-        i <- match(i, names(x))
-        if (is.na(i))
-            i <- length(x) + 1L
-    }
-    i
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Miscellaneous.
