@@ -42,6 +42,8 @@
 
 \alias{getListElement}
 \alias{setListElement}
+\alias{getListElement,list}
+\alias{setListElement,list}
 
 
 \title{Subsetting utilities}

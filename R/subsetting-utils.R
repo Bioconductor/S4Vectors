@@ -4,6 +4,19 @@
 ###
 
 
+.match_name <- function(i, x_names, exact=TRUE)
+{
+    if (exact) {
+        match(i, x_names, incomparables=c(NA_character_, ""))
+    } else {
+        ## When 'i' has length 1, it doesn't matter whether we use
+        ## 'duplicates.ok=FALSE' (the default) or 'duplicates.ok=TRUE' but
+        ## the latter seems to be just a little bit faster.
+        pmatch(i, x_names, duplicates.ok=TRUE)
+    }
+}
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Formal representation of a Normalized Single Bracket Subscript, i.e. a
 ### subscript that holds positive integer values that can be used for single
@@ -144,8 +157,8 @@ setMethod("NSBS", "NULL",
     }
 )
 
-.NSBS.numeric <- function(i, x, exact=TRUE, strict.upper.bound=TRUE,
-                                allow.NAs=FALSE)
+.NSBS.numeric <- function(i, x, exact=TRUE,
+                          strict.upper.bound=TRUE, allow.NAs=FALSE)
 {
     x_NROW <- NROW(x)
     if (!is.integer(i))
@@ -194,8 +207,8 @@ setMethod("NSBS", "logical",
     }
 )
 
-.NSBS.characterORfactor <- function(i, x, exact=TRUE, strict.upper.bound=TRUE,
-                                          allow.NAs=FALSE)
+.NSBS.character_OR_factor <- function(i, x, exact=TRUE,
+                                      strict.upper.bound=TRUE, allow.NAs=FALSE)
 {
     x_NROW <- NROW(x)
     x_ROWNAMES <- ROWNAMES(x)
@@ -207,11 +220,7 @@ setMethod("NSBS", "logical",
         i <- x_NROW + seq_along(i)
         return(NativeNSBS(i, x_NROW, FALSE, FALSE))
     }
-    if (exact) {
-        i <- match(i, x_ROWNAMES, incomparables=c(NA_character_, ""))
-    } else {
-        i <- pmatch(i, x_ROWNAMES, duplicates.ok=TRUE)
-    }
+    i <- .match_name(i, x_ROWNAMES, exact=exact)
     if (!strict.upper.bound) {
         na_idx <- which(is.na(i))
         i[na_idx] <- x_NROW + seq_along(na_idx)
@@ -223,9 +232,9 @@ setMethod("NSBS", "logical",
     NativeNSBS(i, x_NROW, strict.upper.bound, has_NAs)
 }
 
-setMethod("NSBS", "character", .NSBS.characterORfactor)
+setMethod("NSBS", "character", .NSBS.character_OR_factor)
 
-setMethod("NSBS", "factor", .NSBS.characterORfactor)
+setMethod("NSBS", "factor", .NSBS.character_OR_factor)
 
 setMethod("NSBS", "array",
     function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
@@ -350,8 +359,8 @@ setMethod("show", "RangeNSBS",
 ### normalizeSingleBracketSubscript()
 ###
 
-normalizeSingleBracketSubscript <- function(i, x,
-                                            exact=TRUE, allow.append=FALSE,
+normalizeSingleBracketSubscript <- function(i, x, exact=TRUE,
+                                            allow.append=FALSE,
                                             allow.NAs=FALSE,
                                             as.NSBS=FALSE)
 {
@@ -534,65 +543,90 @@ setMethod("replaceROWS", "ANY", .replaceROWSWithBracket)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
 ###
-### Supported types for 'i': single NA, or numeric or character vector of
-### length 1, or numeric- or character-Rle of length 1.
-### Always returns a single integer. When called with 'error.if.nomatch=FALSE',
-### returns an NA_integer_ if no match is found. Otherwise (the default),
-### raises an error if no match is found so the returned integer is guaranteed
-### to be a non-NA positive integer referring to a valid position in 'x'.
+### The supplied subscript 'i' must represent (1) a single non-NA number,
+### or (2) a single non-NA string, or (3) a single NA (only if 'allow.NA'
+### is TRUE). It must be represented as an ordinary atomic vector or Rle
+### object of length 1. More precisely:
+###  (1) A single non-NA number must be represented as an integer or numeric
+###      vector of length 1, or as an integer- or numeric-Rle object of
+###      length 1. It must be >= 1 and <= length(x), except if 'allow.append'
+###      is TRUE, in which case it must be >= 1 and <= length(x) + 1.
+###      If these conditions are satisfied, the subscript is returned as a
+###      single integer. Otherwise an error is raised.
+###  (2) A single non-NA string must be represented as a character vector or
+###      factor of length 1, or as a character- or factor-Rle object of
+###      length 1. It must match a name on 'x', except if 'allow.nomatch' is
+###      TRUE, in which case it doesn't have to match a name on 'x'.
+###      If these conditions are satisfied, the position of the match or NA
+###      is returned. Otherwise an error is raised.
+###  (3) A single NA must be represented as an atomic vector (of any type)
+###      or Rle object of length 1. It is returned as a single logical NA.
+### Return a single integer that is >= 1 and <= length(x).
 ###
 
 normalizeDoubleBracketSubscript <- function(i, x, exact=TRUE,
-                                            error.if.nomatch=TRUE)
+                                            allow.append=FALSE,
+                                            allow.NA=FALSE,
+                                            allow.nomatch=FALSE)
 {
-    if (!isTRUEorFALSE(exact))
-        stop("'exact' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(error.if.nomatch))
-        stop("'error.if.nomatch' must be TRUE or FALSE")
     if (missing(i))
         stop("subscript is missing")
+    if (!isTRUEorFALSE(exact))
+        stop("'exact' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(allow.append))
+        stop("'allow.append' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(allow.NA))
+        stop("'allow.NA' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(allow.nomatch))
+        stop("'allow.nomatch' must be TRUE or FALSE")
     subscript_type <- class(i)
     if (is(i, "Rle")) {
         i <- decodeRle(i)
         subscript_type <- paste0(class(i), "-", subscript_type)
     }
+    if (is.factor(i))
+        i <- as.character(i)
     if (is.vector(i) && length(i) == 1L && is.na(i)) {
-        if (error.if.nomatch)
-            stop("subsetting by NA returns no match")
-        return(NA_integer_)
+        if (!allow.NA)
+            stop("NA is not a valid [[ subscript")
+        return(NA)
     }
-    if (!is.numeric(i) && !is.character(i))
+    if (!(is.numeric(i) || is.character(i)))
         stop("invalid [[ subscript type: ", subscript_type)
     if (length(i) < 1L)
         stop("attempt to extract less than one element")
     if (length(i) > 1L)
         stop("attempt to extract more than one element")
+    x_len <- length(x)
     if (is.numeric(i)) {
         if (!is.integer(i))
             i <- as.integer(i)
-        if (i < 1L || length(x) < i)
-            stop("subscript is out of bounds")
+        if (i < 1L)
+            stop("[[ subscript must be >= 1")
+        if (allow.append) {
+            if (i > x_len + 1L)
+                stop("[[ subscript must be <= length(x) + 1")
+        } else {
+            if (i > x_len)
+                stop("subscript is out of bounds")
+        }
         return(i)
     }
-    ## 'i' is a character string
+    ## 'i' is a single non-NA string.
     x_names <- names(x)
     if (is.null(x_names)) {
-        if (error.if.nomatch)
+        if (!allow.nomatch)
             stop("attempt to extract by name when elements have no names")
-        return(NA_integer_)
+        return(NA)
     }
     #if (i == "")
     #    stop("invalid subscript \"\"")
-    if (exact) {
-        ans <- match(i, x_names, incomparables=c(NA_character_, ""))
-    } else {
-        ## Because 'i' has length 1, it doesn't matter whether we use
-        ## 'duplicates.ok=FALSE' (the default) or 'duplicates.ok=TRUE' but
-        ## the latter seems to be just a little bit faster.
-        ans <- pmatch(i, x_names, duplicates.ok=TRUE)
+    ans <- .match_name(i, x_names, exact=exact)
+    if (is.na(ans)) {
+        if (!allow.nomatch)
+            stop("subscript \"", i, "\" matches no name")
+        return(NA)
     }
-    if (is.na(ans) && error.if.nomatch)
-        stop("subscript \"", i, "\" matches no name")
     ans
 }
 
@@ -613,9 +647,31 @@ setGeneric("setListElement", signature="x",
 setMethod("getListElement", "list",
     function(x, i, exact=TRUE)
     {
-        i <- normalizeDoubleBracketSubscript(i, x, exact=exact,
-                                             error.if.nomatch=FALSE)
-        x[[i]]
+        i2 <- normalizeDoubleBracketSubscript(i, x, exact=exact,
+                                              allow.NA=TRUE,
+                                              allow.nomatch=TRUE)
+        if (is.na(i2))
+            return(NULL)
+        x[[i2]]
+    }
+)
+
+setMethod("setListElement", "list",
+    function(x, i, value)
+    {
+        i2 <- normalizeDoubleBracketSubscript(i, x,
+                                              allow.append=TRUE,
+                                              allow.nomatch=TRUE)
+        if (is.na(i2) || i2 > length(x)) {
+            if (is.null(value))
+                return(x)  # no-op
+            ## Append 'value' to 'x'.
+            value <- list(value)
+            if (is.na(i2))
+                names(value) <- as.character(i)
+            return(c(x, value))
+        }
+        `[[<-`(x, i2, value)
     }
 )
 
