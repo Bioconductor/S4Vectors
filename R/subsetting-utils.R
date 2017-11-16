@@ -705,11 +705,17 @@ setMethod("getListElement", "list",
 .replace_list_element <- function(x, i, value)
 {
     value <- .wrap_in_length_one_list_like_object(value, NULL, x)
+    ## `[<-` propagates the metadata columns from 'value' to 'x' but here
+    ## we don't want that.
+    if (is(x, "Vector"))
+        x_mcols <- mcols(x)
     x[i] <- value
+    if (is(x, "Vector"))
+        mcols(x) <- x_mcols
     x
 }
 
-### Work on any list-like object for which `[`, `[<-`, and c() work.
+### Work on any list-like object for which `[<-`, c(), and `[` work.
 ### Also, if 'value' is not NULL, 'list(value)' must be coercible to a
 ### length-one list-like object of the same class as 'x'.
 setListElement_default <- function(x, i, value)
