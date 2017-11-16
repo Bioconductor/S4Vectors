@@ -64,7 +64,7 @@ SimpleList <- function(...)
     ## create later with new(). For example if we were using is.list() instead
     ## of extends(), the test would pass on matrix(list()) but new() then would
     ## fail with the following message:
-    ## Error in validObject(.Object) : 
+    ## Error in validObject(.Object) :
     ##   invalid class “SimpleList” object: invalid object for slot "listData"
     ##   in class "SimpleList": got class "matrix", should be or extend class
     ##   "list"
@@ -115,17 +115,6 @@ setMethod("getListElement", "SimpleList",
         getListElement(x@listData, i, exact=exact)
 )
 
-setMethod("setListElement", "SimpleList",
-    function(x, i, value)
-    {
-        if (is.null(value)) {
-            return(removeListElement(x, i))
-        }
-        x@listData[[i]] <- value
-        x
-    }
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
@@ -135,15 +124,14 @@ setMethod("setListElement", "SimpleList",
 ## c() is a primitive, so 'x' can be missing; dispatch is by position,
 ## although sometimes this does not work so well, so it's best to keep
 ## names off the parameters whenever feasible.
-
-#setMethod("c", "SimpleList",
-#          function(x, ..., recursive = FALSE) {
-#              slot(x, "listData") <-
-#                do.call(c, lapply(unname(list(x, ...)), as.list))
-#              if (!is.null(mcols(x)))
-#                mcols(x) <- rbind.mcols(x, ...)
-#              x
-#          })
+setMethod("c", "SimpleList",
+          function(x, ..., recursive = FALSE) {
+              slot(x, "listData") <-
+                do.call(c, lapply(unname(list(x, ...)), as.list))
+              if (!is.null(mcols(x)))
+                mcols(x) <- rbind_mcols(x, ...)
+              x
+          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Looping.

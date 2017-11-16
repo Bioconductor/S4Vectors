@@ -562,16 +562,13 @@ setMethod("[[", "List",
 setMethod("$", "List", function(x, name) x[[name, exact=FALSE]])
 
 setReplaceMethod("[[", "List",
-                 function(x, i, j, ..., value)
-                 {
-                   if (!missing(j) || length(list(...)) > 0)
-                       stop("invalid replacement")
-                   origLen <- length(x)
-                   x <- setListElement(x, i, value)
-                   if (origLen < length(x))
-                     x <- rbindRowOfNAsToMetadatacols(x)
-                   x
-                 })
+    function(x, i, j, ..., value)
+    {
+        if (!missing(j) || length(list(...)) > 0)
+            stop("invalid replacement")
+        setListElement(x, i, value)
+    }
+)
 
 setReplaceMethod("$", "List",
                  function(x, name, value) {
@@ -579,12 +576,8 @@ setReplaceMethod("$", "List",
                    x
                  })
 
-setMethod("removeListElement", "List", function(x, i) {
-    i <- normalizeDoubleBracketSubscript(i, x, allow.append=TRUE)
-    if (i <= length(x)) # if name did not exist, could be +1
-        x <- x[-i]
-    x
-})
+setMethod("setListElement", "List", setListElement_default)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Simple helper functions for some common subsetting operations.

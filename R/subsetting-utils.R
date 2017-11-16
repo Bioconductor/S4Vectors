@@ -25,7 +25,7 @@
 ### NSBS and its subclasses are for internal use only.
 ###
 
-setClass("NSBS", 
+setClass("NSBS",
     representation(
         "VIRTUAL",
         ## 'subscript' is an object that holds integer values >= 1 and
@@ -399,12 +399,12 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
     {
         if (is(value, class(x)))
             return(value)
-        lv <- length(value)
+        value_len <- length(value)
         value <- try(as(value, class(x)), silent=TRUE)
         if (inherits(value, "try-error"))
             stop("'value' must be a ", class(x), " object (or coercible ",
                  "to a ", class(x), " object)")
-        if (length(value) != lv)
+        if (length(value) != value_len)
             stop("coercing replacement value to ", class(x), "\n",
                  "  changed its length!\n",
                  "  Please do the explicit coercion ",
@@ -632,7 +632,7 @@ normalizeDoubleBracketSubscript <- function(i, x, exact=TRUE,
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### 3 internal generics to ease implementation of [[ and [[<- subsetting for
+### 2 internal generics to ease implementation of [[ and [[<- subsetting for
 ### new List subclasses.
 ###
 
@@ -644,6 +644,9 @@ setGeneric("setListElement", signature="x",
     function(x, i, value) standardGeneric("setListElement")
 )
 
+### Note that although is(x, "list") is FALSE on a data.frame (a non-sense
+### that some people will find a way to justify), dispatch will call this
+### method if 'x' is a data.frame.
 setMethod("getListElement", "list",
     function(x, i, exact=TRUE)
     {
@@ -656,28 +659,78 @@ setMethod("getListElement", "list",
     }
 )
 
-setMethod("setListElement", "list",
-    function(x, i, value)
-    {
-        i2 <- normalizeDoubleBracketSubscript(i, x,
-                                              allow.append=TRUE,
-                                              allow.nomatch=TRUE)
-        if (is.na(i2) || i2 > length(x)) {
-            if (is.null(value))
-                return(x)  # no-op
-            ## Append 'value' to 'x'.
-            value <- list(value)
-            if (is.na(i2))
-                names(value) <- as.character(i)
-            return(c(x, value))
-        }
-        `[[<-`(x, i2, value)
+### Based on `[`. This should automatically take care of removing the
+### corresponding row in 'mcols(x)' if 'x' is a Vector derivative.
+.remove_list_element <- function(x, i)
+{
+    stopifnot(isSingleNumberOrNA(i))
+    if (is.na(i) || i < 1L || i > length(x))
+        return(x)  # no-op
+    ## `[<-.data.frame` does some terrible mangling of the colnames
+    ## if they contain duplicates so we can't use it here.
+    if (is.data.frame(x)) {
+        x[[i]] <- NULL
+        return(x)
     }
-)
+    x[-i]
+}
 
-setGeneric("removeListElement", signature="x",
-           function(x, i) standardGeneric("removeListElement")
-           )
+.wrap_in_length_one_list_like_object <- function(value, name, x)
+{
+    stopifnot(is.list(x) || is(x, "List"))
+    stopifnot(is.null(name) || isSingleString(name))
+    if (is(x, "List")) {
+        tmp <- try(as(value, elementType(x)), silent=TRUE)
+        if (!inherits(tmp, "try-error"))
+            value <- tmp
+    }
+    value <- setNames(list(value), name)
+    value <- try(as2(value, class(x)), silent=TRUE)
+    if (inherits(value, "try-error"))
+        stop(wmsg("failed to coerce 'list(value)' to a ", class(x),
+                  " object of length 1"))
+    value
+}
+
+### Based on 'c()'. This should automatically take care of adjusting the
+### metadata columns (by rbind'ing a row of NAs to 'mcols(x)') if 'x' is
+### a Vector derivative.
+.append_list_element <- function(x, value, name=NULL)
+{
+    value <- .wrap_in_length_one_list_like_object(value, name, x)
+    as2(c(x, value), class(x))
+}
+
+### Based on `[<-`.
+.replace_list_element <- function(x, i, value)
+{
+    value <- .wrap_in_length_one_list_like_object(value, NULL, x)
+    x[i] <- value
+    x
+}
+
+### Work on any list-like object for which `[`, `[<-`, and c() work.
+### Also, if 'value' is not NULL, 'list(value)' must be coercible to a
+### length-one list-like object of the same class as 'x'.
+setListElement_default <- function(x, i, value)
+{
+    i2 <- normalizeDoubleBracketSubscript(i, x,
+                                          allow.append=TRUE,
+                                          allow.nomatch=TRUE)
+    if (is.null(value))
+        return(.remove_list_element(x, i2))
+    if (is.na(i2) || i2 > length(x)) {
+        name <- if (is.na(i2)) as.character(i) else NULL
+        return(.append_list_element(x, value, name))
+    }
+    .replace_list_element(x, i2, value)
+}
+
+### Note that although is(x, "list") is FALSE on a data.frame (a non-sense
+### that some people will find a way to justify), dispatch will call this
+### method if 'x' is a data.frame.
+setMethod("setListElement", "list", setListElement_default)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### window(), head(), tail(), rep.int()

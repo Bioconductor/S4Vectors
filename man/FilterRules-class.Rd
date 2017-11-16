@@ -14,6 +14,9 @@
 \alias{active<-}
 \alias{active<-,FilterRules-method}
 
+% coercion
+\alias{coerce,ANY,FilterRules-method}
+
 % subsetting
 \alias{[,FilterRules-method}
 \alias{[[<-,FilterRules-method}

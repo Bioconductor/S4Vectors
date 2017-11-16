@@ -66,6 +66,11 @@ setClassUnion("vector_OR_factor", c("vector", "factor"))
 ###   the "mode" argument makes things complicated.
 setAs("ANY", "vector", function(from) as.vector(from))
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion utilities
+###
+
 coercerToClass <- function(class) {
   if (extends(class, "vector"))
     .as <- get(paste0("as.", class))
@@ -77,6 +82,35 @@ coercerToClass <- function(class) {
     }
     to
   }
+}
+
+### A version of as() that tries to do a better job at coercing to an S3 class.
+### TODO: Should probably use coercerToClass() internally (but coercerToClass()
+### would first need to be improved).
+as2 <- function(object, Class)
+{
+    if (Class == "data.frame") {
+        ans <- as.data.frame(object, check.names=FALSE, stringsAsFactors=FALSE)
+    } else {
+        S3coerceFUN <- try(match.fun(paste0("as.", Class)), silent=TRUE)
+        if (!inherits(S3coerceFUN, "try-error")) {
+            ans <- S3coerceFUN(object)
+        } else {
+            ans <- as(object, Class)
+        }
+    }
+    if (length(ans) != length(object))
+        stop(wmsg("coercion of ", class(object), " object to ", Class,
+                  " didn't preserve its length"))
+    ## Try to restore the names if they were lost (e.g. by as.integer()) or
+    ## altered (e.g. by as.data.frame(), which will alter names equal to the
+    ## empty string even if called with 'check.names=FALSE').
+    if (!identical(names(ans), names(object))) {
+        tmp <- try(`names<-`(ans, value=names(object)) , silent=TRUE)
+        if (!inherits(tmp, "try-error"))
+            ans <- tmp
+    }
+    ans
 }
 
 

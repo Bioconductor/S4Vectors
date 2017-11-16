@@ -103,6 +103,12 @@ FilterRules <- function(exprs = list(), ..., active = TRUE) {
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion.
+###
+
+setAs("ANY", "FilterRules", function(from) FilterRules(from))
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###
 

@@ -34,6 +34,7 @@
 \alias{[[<-,List-method}
 \alias{$,List-method}
 \alias{$<-,List-method}
+\alias{setListElement,List-method}
 
 \alias{show,List-method}
 

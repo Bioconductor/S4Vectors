@@ -638,9 +638,8 @@ setAs("integer", "DataFrame",
 
 setAs("AsIs", "DataFrame",
       function(from) {
-        df <- new2("DataFrame", nrows = NROW(from), check=FALSE)
-        df[[1]] <- from
-        df
+        new2("DataFrame", nrows = NROW(from), listData = list(from),
+             check=FALSE)
       })
 
 setAs("ANY", "AsIs", function(from) I(from))
