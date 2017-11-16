@@ -293,7 +293,7 @@ test_normalizeDoubleBracketSubscript <- function()
         test_valid_name(x, "A", exact=FALSE)
     }
 
-    if (!(is.data.frame(x) || is(x, "DataFrame"))) {
+    if (!(is.data.frame(x0) || is(x0, "DataFrame"))) {
         ## Test on empty unnamed object.
         x <- x0[0]
         names(x) <- NULL
@@ -325,7 +325,7 @@ test_normalizeDoubleBracketSubscript <- function()
         test_invalid_position(x, 10.99)
     }
 
-    if (!(is.data.frame(x) || is(x, "DataFrame"))) {
+    if (!(is.data.frame(x0) || is(x0, "DataFrame"))) {
         ## Test on full unnamed object.
         x <- x0
         names(x) <- NULL
@@ -469,7 +469,7 @@ test_getListElement_list <- function()
         test_valid_name(x, "A", value0)  # append
     }
 
-    if (!(is.data.frame(x) || is(x, "DataFrame"))) {
+    if (!(is.data.frame(x0) || is(x0, "DataFrame"))) {
         ## Test on empty unnamed object.
         x <- x0[0]
         names(x) <- NULL
@@ -521,7 +521,7 @@ test_getListElement_list <- function()
         test_invalid_position(x, 11, value0)
     }
 
-    if (!(is.data.frame(x) || is(x, "DataFrame"))) {
+    if (!(is.data.frame(x0) || is(x0, "DataFrame"))) {
         ## Test on full unnamed object.
         x <- x0
         names(x) <- NULL

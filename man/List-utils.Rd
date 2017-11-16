@@ -6,18 +6,12 @@
 \alias{sapply,List-method}
 
 \alias{endoapply}
-\alias{endoapply,list-method}
-\alias{endoapply,data.frame-method}
-\alias{endoapply,List-method}
 
 \alias{revElements}
 \alias{revElements,list-method}
 \alias{revElements,List-method}
 
 \alias{mendoapply}
-\alias{mendoapply,list-method}
-\alias{mendoapply,data.frame-method}
-\alias{mendoapply,List-method}
 
 \alias{pc}
 
@@ -93,8 +87,8 @@ pc(...)
     For \code{lapply}, \code{sapply}, and \code{endoapply}, optional
     arguments to \code{FUN}.
 
-    For \code{mendoapply}, a set of list, data.frame or \link{List}
-    objects to compute over.
+    For \code{mendoapply}, a set of \link{List} derivatives to compute over.
+    Ordinary list and data frame objects are accepted.
 
     For \code{pc}, one or more list-like objects.
 
@@ -143,7 +137,7 @@ pc(...)
 
     \code{endoapply} and \code{mendoapply} perform the endomorphic equivalents
     of \code{\link[base]{lapply}} and \code{\link[base]{mapply}} by returning
-    objects of the same class as the inputs rather than a list.
+    objects of the same class as the inputs rather than an ordinary list.
 
     \code{revElements(x, i)} reverses the list elements in \code{x} specified
     by \code{i}. It's equivalent to, but faster than, doing

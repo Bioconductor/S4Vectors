@@ -142,32 +142,6 @@ setMethod("lapply", "SimpleList",
           function(X, FUN, ...)
               lapply(as.list(X), FUN = FUN, ...))
 
-setMethod("endoapply", "SimpleList",
-          function(X, FUN, ...) {
-              FUN <- match.fun(FUN)
-              listData <- lapply(X, FUN = FUN, ...)
-              elementTypeX <- elementType(X)
-              if (!all(sapply(listData,
-                              function(Xi) extends(class(Xi), elementTypeX))))
-                  stop("all results must be of class '", elementTypeX, "'")
-              slot(X, "listData", check=FALSE) <- listData
-              X
-          })
-
-setMethod("mendoapply", "SimpleList",
-          function(FUN, ..., MoreArgs = NULL) {
-              X <- list(...)[[1L]]
-              elementTypeX <- elementType(X)
-              FUN <- match.fun(FUN)
-              listData <-
-                mapply(FUN = FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = FALSE)
-              if (!all(sapply(listData,
-                              function(Xi) extends(class(Xi), elementTypeX))))
-                  stop("all results must be of class '", elementTypeX, "'")
-              slot(X, "listData", check=FALSE) <- listData
-              X
-          })
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
 ###

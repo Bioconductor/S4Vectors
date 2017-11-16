@@ -20,8 +20,6 @@
 
 % looping
 \alias{lapply,SimpleList-method}
-\alias{endoapply,SimpleList-method}
-\alias{mendoapply,SimpleList-method}
 
 % displaying
 \alias{classNameForDisplay,SimpleList-method}

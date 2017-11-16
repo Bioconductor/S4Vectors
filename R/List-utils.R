@@ -21,28 +21,16 @@ setMethod("lapply", "List",
 environment(.sapplyDefault) <- topenv()
 setMethod("sapply", "List", .sapplyDefault)
 
-setGeneric("endoapply", signature = "X",
-           function(X, FUN, ...) standardGeneric("endoapply"))
-
-setMethod("endoapply", "list",
-          function(X, FUN, ...) lapply(X = X, FUN = match.fun(FUN), ...))
-
-setMethod("endoapply", "data.frame",
-          function(X, FUN, ...)
-          as.data.frame(lapply(X = X, FUN = match.fun(FUN), ...)))
-
-setMethod("endoapply", "List",
-          function(X, FUN, ...) {
-              elementTypeX <- elementType(X)
-              FUN <- match.fun(FUN)
-              for (i in seq_len(length(X))) {
-                  elt <- FUN(X[[i]], ...)
-                  if (!extends(class(elt), elementTypeX))
-                      stop("'FUN' must return elements of class ", elementTypeX)
-                  X[[i]] <- elt
-              }
-              X
-          })
+endoapply <- function(X, FUN, ...)
+{
+    ans <- lapply(X, FUN, ...)
+    ans <- as2(ans, class(X))
+    if (is(X, "Vector")) {
+        metadata(ans) <- metadata(X)
+        mcols(ans) <- mcols(X)
+    }
+    ans
+}
 
 setGeneric("revElements", signature="x",
     function(x, i) standardGeneric("revElements")
@@ -67,31 +55,17 @@ setMethod("revElements", "List",
     }
 )
 
-setGeneric("mendoapply", signature = "...",
-           function(FUN, ..., MoreArgs = NULL) standardGeneric("mendoapply"))
-BiocGenerics:::apply_hotfix73465(getGeneric("mendoapply"))
-
-setMethod("mendoapply", "list", function(FUN, ..., MoreArgs = NULL)
-          mapply(FUN = FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = FALSE))
-
-setMethod("mendoapply", "data.frame", function(FUN, ..., MoreArgs = NULL)
-          as.data.frame(mapply(FUN = match.fun(FUN), ..., MoreArgs = MoreArgs,
-                               SIMPLIFY = FALSE)))
-
-setMethod("mendoapply", "List",
-          function(FUN, ..., MoreArgs = NULL) {
-              X <- list(...)[[1L]]
-              elementTypeX <- elementType(X)
-              FUN <- match.fun(FUN)
-              listData <-
-                mapply(FUN = FUN, ..., MoreArgs = MoreArgs, SIMPLIFY = FALSE)
-              for (i in seq_len(length(listData))) {
-                  if (!extends(class(listData[[i]]), elementTypeX))
-                      stop("'FUN' must return elements of class ", elementTypeX)
-                  X[[i]] <- listData[[i]]
-              }
-              X
-          })
+mendoapply <- function(FUN, ..., MoreArgs=NULL)
+{
+    arg1 <- list(...)[[1L]]
+    ans <- mapply(FUN, ..., MoreArgs=MoreArgs, SIMPLIFY=FALSE)
+    ans <- as2(ans, class(arg1))
+    if (is(arg1, "Vector")) {
+        metadata(ans) <- metadata(arg1)
+        mcols(ans) <- mcols(arg1)
+    }
+    ans
+}
 
 ### Element-wise c() for list-like objects.
 ### This is a fast mapply(c, ..., SIMPLIFY=FALSE) but with the following

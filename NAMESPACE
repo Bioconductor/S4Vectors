@@ -302,6 +302,9 @@ export(
     ## List-class.R:
     List, phead, ptail, pc,
 
+    ## List-utils.R:
+    endoapply, mendoapply,
+
     ## SimpleList-class.R:
     SimpleList,
 
@@ -388,7 +391,6 @@ export(
     pcompareRecursively,
 
     ## List-utils.R:
-    endoapply, mendoapply,
     revElements,
 
     ## HitsList-class.R:
@@ -432,7 +434,6 @@ exportMethods(
     isEmpty,
     relistToClass,
     pcompareRecursively,
-    endoapply, mendoapply,
     revElements,
     space,
     expand,
