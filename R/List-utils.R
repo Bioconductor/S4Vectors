@@ -21,15 +21,45 @@ setMethod("lapply", "List",
 environment(.sapplyDefault) <- topenv()
 setMethod("sapply", "List", .sapplyDefault)
 
-endoapply <- function(X, FUN, ...)
+### Turn ordinary list 'ans' into an object of the same class as list-like
+### object 'X'. Preserve the length and names of 'ans'. Propagate the metadata
+### and metadata columns from 'X'.
+.make_endoapply_ans <- function(ans, X)
 {
-    ans <- lapply(X, FUN, ...)
+    if (is(X, "SimpleList")) {
+        ## Before we try to coerce to 'class(X)', we wrap 'ans' in a SimpleList
+        ## instance. That brings 'ans' a little bit closer to 'class(X)' and
+        ## actually helps in the situation were coercing directly from list
+        ## to 'class(X)' is not supported but coercing from SimpleList to
+        ## 'class(X)'. For example:
+        ##
+        ##   library(Rsamtools)
+        ##   as(list(), "BamFileList")  # Error
+        ##   as(SimpleList(), "BamFileList")  # works
+        ##
+        ##   library(MultiAssayExperiment)
+        ##   as(list(), "ExperimentList")  # Error
+        ##   as(SimpleList(), "ExperimentList")  # works
+        ##
+        ## So we're helping them but really these classes should support
+        ## direct coercion from list.
+        ## Note that we use the SimpleList() constructor function for this
+        ## instead of coercion to SimpleList (which is too high level and
+        ## tries to be too smart).
+        ans <- SimpleList(ans)
+    }
     ans <- as2(ans, class(X))
     if (is(X, "Vector")) {
         metadata(ans) <- metadata(X)
         mcols(ans) <- mcols(X)
     }
     ans
+}
+
+endoapply <- function(X, FUN, ...)
+{
+    ans <- lapply(X, FUN, ...)
+    .make_endoapply_ans(ans, X)
 }
 
 setGeneric("revElements", signature="x",
@@ -59,12 +89,7 @@ mendoapply <- function(FUN, ..., MoreArgs=NULL)
 {
     arg1 <- list(...)[[1L]]
     ans <- mapply(FUN, ..., MoreArgs=MoreArgs, SIMPLIFY=FALSE)
-    ans <- as2(ans, class(arg1))
-    if (is(arg1, "Vector")) {
-        metadata(ans) <- metadata(arg1)
-        mcols(ans) <- mcols(arg1)
-    }
-    ans
+    .make_endoapply_ans(ans, arg1)
 }
 
 ### Element-wise c() for list-like objects.
