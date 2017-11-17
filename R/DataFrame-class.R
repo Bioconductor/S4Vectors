@@ -646,6 +646,28 @@ setAs("ANY", "AsIs", function(from) I(from))
 
 setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
 
+### Turn an ordinary list into a DataFrame in the most possibly
+### straightforward way.
+setMethod("coerce2", "DataFrame",
+    function(from, to)
+    {
+        if (class(from) != "list")
+            return(callNextMethod())
+        if (length(from) == 0L) {
+            nrows <- 0L
+            names(from) <- character(0)
+        } else {
+            elt_nrows <- elementNROWS(from)
+            nrows <- elt_nrows[[1L]]
+            if (!all(elt_nrows == nrows))
+                stop(wmsg("list elements imply differing number of rows"))
+            if (is.null(names(from)))
+                names(from) <- paste0("V", seq_along(from))
+        }
+        new2("DataFrame", nrows=nrows, listData=from, check=FALSE)
+    }
+)
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
 ###
