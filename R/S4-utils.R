@@ -84,34 +84,43 @@ coercerToClass <- function(class) {
   }
 }
 
-### A version of as() that tries to do a better job at coercing to an S3 class.
+### A version of coerce() that tries to do a better job at coercing to an
+### S3 class. Dispatch on the 2nd argument only!
+setGeneric("coerce2", signature="to",
+    function(from, to) standardGeneric("coerce2")
+)
+
 ### TODO: Should probably use coercerToClass() internally (but coercerToClass()
 ### would first need to be improved).
-as2 <- function(object, Class)
-{
-    if (Class == "data.frame") {
-        ans <- as.data.frame(object, check.names=FALSE, stringsAsFactors=FALSE)
-    } else {
-        S3coerceFUN <- try(match.fun(paste0("as.", Class)), silent=TRUE)
-        if (!inherits(S3coerceFUN, "try-error")) {
-            ans <- S3coerceFUN(object)
+setMethod("coerce2", "ANY",
+    function(from, to)
+    {
+        if (is.data.frame(to)) {
+            ans <- as.data.frame(from, check.names=FALSE,
+                                       stringsAsFactors=FALSE)
         } else {
-            ans <- as(object, Class)
+            S3coerceFUN <- try(match.fun(paste0("as.", class(to))),
+                               silent=TRUE)
+            if (!inherits(S3coerceFUN, "try-error")) {
+                ans <- S3coerceFUN(from)
+            } else {
+                ans <- as(from, class(to))
+            }
         }
+        if (length(ans) != length(from))
+            stop(wmsg("coercion of ", class(from), " object to ", class(to),
+                      " didn't preserve its length"))
+        ## Try to restore the names if they were lost (e.g. by as.integer())
+        ## or altered (e.g. by as.data.frame(), which will alter names equal
+        ## to the empty string even if called with 'check.names=FALSE').
+        if (!identical(names(ans), names(from))) {
+            tmp <- try(`names<-`(ans, value=names(from)) , silent=TRUE)
+            if (!inherits(tmp, "try-error"))
+                ans <- tmp
+        }
+        ans
     }
-    if (length(ans) != length(object))
-        stop(wmsg("coercion of ", class(object), " object to ", Class,
-                  " didn't preserve its length"))
-    ## Try to restore the names if they were lost (e.g. by as.integer()) or
-    ## altered (e.g. by as.data.frame(), which will alter names equal to the
-    ## empty string even if called with 'check.names=FALSE').
-    if (!identical(names(ans), names(object))) {
-        tmp <- try(`names<-`(ans, value=names(object)) , silent=TRUE)
-        if (!inherits(tmp, "try-error"))
-            ans <- tmp
-    }
-    ans
-}
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

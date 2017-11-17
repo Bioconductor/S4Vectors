@@ -146,6 +146,40 @@ setMethod("lapply", "SimpleList",
 ### Coercion.
 ###
 
+### Unfortunately, not all SimpleList subclasses (e.g. BamFileList or
+### ExperimentList) support coercion from an ordinary list (even though
+### they probably should), so the default "coerce2" method will fail to
+### convert an ordinary list to one of these classes. The good news is that
+### coercing from SimpleList to one of these classes does work. For example:
+###
+###   library(Rsamtools)
+###   as(list(), "BamFileList")           # error
+###   as(SimpleList(), "BamFileList")     # works
+###
+###   library(MultiAssayExperiment)
+###   as(list(), "ExperimentList")        # error
+###   as(SimpleList(), "ExperimentList")  # works
+###
+### So when the default "coerce2" method fails to coerce an ordinary list,
+### we wrap the list in a SimpleList instance and try again. Note that this
+### should help in general because it brings 'from' a little bit closer to
+### 'class(to)'.
+setMethod("coerce2", "SimpleList",
+    function(from, to)
+    {
+        ans <- try(callNextMethod(), silent=TRUE)
+        if (!inherits(ans, "error"))
+            return(ans)
+        if (!is.list(from))
+            stop(wmsg(attr(ans, "condition")$message))
+        ## We use the SimpleList() constructor function to wrap 'from' in a
+        ## SimpleList instance instead of coercion to SimpleList (which is
+        ## too high level and tries to be too smart).
+        from <- SimpleList(from)
+        callNextMethod()
+    }
+)
+
 .as.list.SimpleList <- function(x, use.names=TRUE)
 {
     if (!isTRUEorFALSE(use.names))

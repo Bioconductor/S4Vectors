@@ -26,29 +26,7 @@ setMethod("sapply", "List", .sapplyDefault)
 ### and metadata columns from 'X'.
 .make_endoapply_ans <- function(ans, X)
 {
-    if (is(X, "SimpleList")) {
-        ## Before we try to coerce to 'class(X)', we wrap 'ans' in a SimpleList
-        ## instance. That brings 'ans' a little bit closer to 'class(X)' and
-        ## actually helps in the situation were coercing directly from list
-        ## to 'class(X)' is not supported but coercing from SimpleList to
-        ## 'class(X)'. For example:
-        ##
-        ##   library(Rsamtools)
-        ##   as(list(), "BamFileList")  # Error
-        ##   as(SimpleList(), "BamFileList")  # works
-        ##
-        ##   library(MultiAssayExperiment)
-        ##   as(list(), "ExperimentList")  # Error
-        ##   as(SimpleList(), "ExperimentList")  # works
-        ##
-        ## So we're helping them but really these classes should support
-        ## direct coercion from list.
-        ## Note that we use the SimpleList() constructor function for this
-        ## instead of coercion to SimpleList (which is too high level and
-        ## tries to be too smart).
-        ans <- SimpleList(ans)
-    }
-    ans <- as2(ans, class(X))
+    ans <- coerce2(ans, X)
     if (is(X, "Vector")) {
         metadata(ans) <- metadata(X)
         mcols(ans) <- mcols(X)

@@ -685,7 +685,7 @@ setMethod("getListElement", "list",
             value <- tmp
     }
     value <- setNames(list(value), name)
-    value <- try(as2(value, class(x)), silent=TRUE)
+    value <- try(coerce2(value, x), silent=TRUE)
     if (inherits(value, "try-error"))
         stop(wmsg("failed to coerce 'list(value)' to a ", class(x),
                   " object of length 1"))
@@ -698,7 +698,7 @@ setMethod("getListElement", "list",
 .append_list_element <- function(x, value, name=NULL)
 {
     value <- .wrap_in_length_one_list_like_object(value, name, x)
-    as2(c(x, value), class(x))
+    coerce2(c(x, value), x)
 }
 
 ### Based on `[<-`.
