@@ -150,7 +150,7 @@ setMethod("lapply", "SimpleList",
 ### ExperimentList) support coercion from an ordinary list (even though
 ### they probably should), so the default "coerce2" method will fail to
 ### convert an ordinary list to one of these classes. The good news is that
-### coercing from SimpleList to one of these classes does work. For example:
+### coercion from SimpleList to one of these classes does work. For example:
 ###
 ###   library(Rsamtools)
 ###   as(list(), "BamFileList")           # error
@@ -168,7 +168,7 @@ setMethod("coerce2", "SimpleList",
     function(from, to)
     {
         ans <- try(callNextMethod(), silent=TRUE)
-        if (!inherits(ans, "error"))
+        if (!inherits(ans, "try-error"))
             return(ans)
         if (!is.list(from))
             stop(wmsg(attr(ans, "condition")$message))
@@ -176,7 +176,23 @@ setMethod("coerce2", "SimpleList",
         ## SimpleList instance instead of coercion to SimpleList (which is
         ## too high level and tries to be too smart).
         from <- SimpleList(from)
-        callNextMethod()
+        ans <- callNextMethod()
+        ## Even though coercion from SimpleList to 'class(to)' "worked", it
+        ## can return a broken object. This happens when an automatic coercion
+        ## method gets in the way. For example:
+        ##
+        ##   selectMethod("coerce", c("SimpleList", "BamFileList"))
+        ##
+        ## shows one of these methods (it's not coming from the Rsamtools or
+        ## S4Vectors package). The problem with these methods is that they
+        ## don't always do the right thing. How could they? Another problem
+        ## is that don't bother to validate the object they return!
+        ## One known problem with the automatic coercion method from
+        ## SimpleList to one of its subclass is that it sets the elementType
+        ## slot to "ANY" which is generally wrong. So we fix this.
+        ans@elementType <- to@elementType
+        validObject(ans)
+        ans
     }
 )
 

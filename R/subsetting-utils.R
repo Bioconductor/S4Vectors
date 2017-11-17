@@ -678,7 +678,7 @@ setMethod("getListElement", "list",
 .wrap_in_length_one_list_like_object <- function(value, name, x)
 {
     stopifnot(is.list(x) || is(x, "List"))
-    stopifnot(is.null(name) || isSingleString(name))
+    stopifnot(is.null(name) || isSingleStringOrNA(name))
     if (is(x, "List")) {
         tmp <- try(as(value, elementType(x)), silent=TRUE)
         if (!inherits(tmp, "try-error"))
@@ -697,6 +697,8 @@ setMethod("getListElement", "list",
 ### a Vector derivative.
 .append_list_element <- function(x, value, name=NULL)
 {
+    if (is.null(name) && !is.null(names(x)))
+        name <- ""
     value <- .wrap_in_length_one_list_like_object(value, name, x)
     coerce2(c(x, value), x)
 }
@@ -704,7 +706,7 @@ setMethod("getListElement", "list",
 ### Based on `[<-`.
 .replace_list_element <- function(x, i, value)
 {
-    value <- .wrap_in_length_one_list_like_object(value, NULL, x)
+    value <- .wrap_in_length_one_list_like_object(value, names(x)[[i]], x)
     ## `[<-` propagates the metadata columns from 'value' to 'x' but here
     ## we don't want that.
     if (is(x, "Vector"))
