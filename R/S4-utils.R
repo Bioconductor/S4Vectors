@@ -4,6 +4,22 @@
 ###
 
 
+### Not really a S4-related utility but I don't have a better place to put
+### this at the moment.
+drop_AsIs <- function(x)
+{
+    x_class <- class(x)
+    class(x) <- x_class[x_class != "AsIs"]
+    x
+}
+
+setAs("ANY", "AsIs", function(from) I(from))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Some convenient union classes
+###
+
 setClassUnion("character_OR_NULL", c("character", "NULL"))
 
 ### WARNING: The behavior of is.vector(), is( , "vector"), is.list(), and

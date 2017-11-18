@@ -38,7 +38,6 @@
 \alias{coerce,xtabs,DataFrame-method}
 \alias{coerce,ANY,DataFrame-method}
 \alias{coerce,SimpleList,DataFrame-method}
-\alias{coerce,ANY,AsIs-method}
 
 % combining
 \alias{cbind,DataFrame-method}

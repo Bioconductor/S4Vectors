@@ -129,6 +129,37 @@ setValidity2("DataFrame", .valid.DataFrame)
 ### Constructor.
 ###
 
+### Low-level constructor. For internal use only.
+### Note that, when supplied, 'nrows' is trusted.
+### Calling 'new_DataFrame(x)' on an ordinary named list 'x' will turn it
+### into a DataFrame in the most possibly straightforward way, that is,
+### calling 'as.list()' on the result will return a list identical to 'x'.
+### This is unlike 'DataFrame(x)' or 'as(x, "DataFrame")' which can do all
+### kind of hard-to-predict mangling to 'x', unless the user does something
+### like 'DataFrame(lapply(x, I))'. Not super convenient or intuitive!
+new_DataFrame <- function(listData=list(), nrows=NA, what="arguments")
+{
+        stopifnot(is.list(listData))
+        stopifnot(isSingleNumberOrNA(nrows))
+        if (!is.integer(nrows))
+            nrows <- as.integer(nrows)
+        if (length(listData) == 0L) {
+            if (is.na(nrows))
+                nrows <- 0L
+            names(listData) <- character(0)
+        } else {
+            if (is.na(nrows)) {
+                elt_nrows <- elementNROWS(listData)
+                nrows <- elt_nrows[[1L]]
+                if (!all(elt_nrows == nrows))
+                    stop(wmsg(what, " imply differing number of rows"))
+            }
+            if (is.null(names(listData)))
+                names(listData) <- paste0("V", seq_along(listData))
+        }
+        new2("DataFrame", nrows=nrows, listData=listData, check=FALSE)
+}
+
 DataFrame <- function(..., row.names = NULL, check.names = TRUE)
 {
   ## build up listData, with names from arguments
@@ -160,8 +191,9 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
       ncols[i] <- ncol(element)
       varlist[[i]] <- as.list(element, use.names = FALSE)
       if (!is(listData[[i]], "AsIs")) {
-        if (((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
-             is.list(listData[[i]])))
+        listData[[i]] <- drop_AsIs(listData[[i]])
+        if ((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
+             is.list(listData[[i]]))
           {
             if (emptynames[i])
               varnames[[i]] <- colnames(element)
@@ -197,8 +229,9 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
     row.names <- as.character(row.names)
   }
 
-  new2("DataFrame", listData=varlist, rownames=row.names,
-       nrows=as.integer(max(nr, length(row.names))), check=FALSE)
+  ans <- new_DataFrame(varlist, nrows=as.integer(max(nr, length(row.names))))
+  ans@rownames <- row.names
+  ans
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -566,7 +599,9 @@ setAs("data.frame", "DataFrame",
 ### But unclass() causes deep copy
         attr(from, "row.names") <- NULL
         class(from) <- NULL
-        new2("DataFrame", listData=from, nrows=nr, rownames=rn, check=FALSE)
+        ans <- new_DataFrame(from, nrows=nr)
+        ans@rownames <- rn
+        ans
       })
 
 setAs("data.table", "DataFrame",
@@ -601,8 +636,9 @@ setAs("xtabs", "DataFrame",
     as(df, "DataFrame")
   } else {
     row.names <- if (!anyDuplicated(names(from))) names(from) else NULL
-    new2("DataFrame", listData = setNames(list(from), "X"),
-         nrows = length(from), rownames = row.names, check=FALSE)
+    ans <- new_DataFrame(setNames(list(from), "X"), nrows=length(from))
+    ans@rownames <- row.names
+    ans
   }
 }
 
@@ -638,11 +674,8 @@ setAs("integer", "DataFrame",
 
 setAs("AsIs", "DataFrame",
       function(from) {
-        new2("DataFrame", nrows = NROW(from), listData = list(from),
-             check=FALSE)
+        new_DataFrame(setNames(list(drop_AsIs(from)), "X"))
       })
-
-setAs("ANY", "AsIs", function(from) I(from))
 
 setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
 
@@ -653,18 +686,7 @@ setMethod("coerce2", "DataFrame",
     {
         if (class(from) != "list")
             return(callNextMethod())
-        if (length(from) == 0L) {
-            nrows <- 0L
-            names(from) <- character(0)
-        } else {
-            elt_nrows <- elementNROWS(from)
-            nrows <- elt_nrows[[1L]]
-            if (!all(elt_nrows == nrows))
-                stop(wmsg("list elements imply differing number of rows"))
-            if (is.null(names(from)))
-                names(from) <- paste0("V", seq_along(from))
-        }
-        new2("DataFrame", nrows=nrows, listData=from, check=FALSE)
+        new_DataFrame(from, what="list elements")
     }
 )
 
@@ -736,8 +758,7 @@ setMethod("rbind", "DataFrame", function(..., deparse.level=1) {
       combined
     })
     names(cols) <- colnames(df)
-    ans <- new2("DataFrame", listData = cols, nrows = NROW(cols[[1]]),
-                             check = FALSE)
+    ans <- new_DataFrame(cols, nrows=NROW(cols[[1]]))
   }
 
   rn <- unlist(lapply(args, rownames), use.names=FALSE)

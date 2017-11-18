@@ -305,8 +305,7 @@ setGeneric("elementMetadata<-",
 ### SummarizedExperiment, GenomicAlignments, and maybe more...
 ### 3x faster than new("DataFrame", nrows=nrow).
 ### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
-make_zero_col_DataFrame <- function(nrow)
-    new2("DataFrame", nrows=nrow, check=FALSE)
+make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
 
 .normalize_mcols_replacement_value <- function(value, x)
 {

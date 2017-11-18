@@ -1,6 +1,7 @@
 \name{S4Vectors internals}
 
 % Stuff from R/S4-utils.R:
+\alias{coerce,ANY,AsIs-method}
 \alias{class:character_OR_NULL}
 \alias{character_OR_NULL-class}
 \alias{character_OR_NULL}
