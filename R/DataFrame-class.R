@@ -190,8 +190,9 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
       varlist[[i]] <- as.list(element, use.names = FALSE)
-      if (!is(listData[[i]], "AsIs")) {
+      if (is(listData[[i]], "AsIs")) {
         listData[[i]] <- drop_AsIs(listData[[i]])
+      } else {
         if ((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
              is.list(listData[[i]]))
           {
