@@ -108,6 +108,13 @@ FilterRules <- function(exprs = list(), ..., active = TRUE) {
 
 setAs("ANY", "FilterRules", function(from) FilterRules(from))
 
+### Coercion from SimpleList to FilterRules works out-of-the-box but silently
+### returns a broken object! The problem is that this coercion is performed by
+### one of the dummy coercion methods that are automatically defined by the
+### methods package and that often do the wrong thing (like here). Furthermore,
+### they don't bother to validate the object they return. So we overwrite it.
+setAs("SimpleList", "FilterRules", function(from) FilterRules(from))
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting.
 ###

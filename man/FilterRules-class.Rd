@@ -16,6 +16,7 @@
 
 % coercion
 \alias{coerce,ANY,FilterRules-method}
+\alias{coerce,SimpleList,FilterRules-method}
 
 % subsetting
 \alias{[,FilterRules-method}

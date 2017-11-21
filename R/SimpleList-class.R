@@ -176,6 +176,8 @@ setMethod("coerce2", "SimpleList",
         ## SimpleList instance instead of coercion to SimpleList (which is
         ## too high level and tries to be too smart).
         from <- SimpleList(from)
+        mcols(from) <- mcols(to)[rep.int(NA_integer_, length(from)), ,
+                                 drop=FALSE]
         ans <- callNextMethod()
         ## Even though coercion from SimpleList to 'class(to)' "worked", it
         ## can return a broken object. This happens when an automatic coercion
@@ -185,11 +187,11 @@ setMethod("coerce2", "SimpleList",
         ##
         ## shows one of these methods (it's not coming from the Rsamtools or
         ## S4Vectors package). The problem with these methods is that they
-        ## don't always do the right thing. How could they? Another problem
-        ## is that don't bother to validate the object they return!
-        ## One known problem with the automatic coercion method from
-        ## SimpleList to one of its subclass is that it sets the elementType
-        ## slot to "ANY" which is generally wrong. So we fix this.
+        ## often do the wrong thing and don't even bother to validate the
+        ## object they return!
+        ## One known problem with the automatic coercion method from SimpleList
+        ## to one of its subclass is that it sets the elementType slot to "ANY"
+        ## which is generally wrong. So we fix this.
         ans@elementType <- to@elementType
         validObject(ans)
         ans
