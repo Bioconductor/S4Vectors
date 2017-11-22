@@ -340,24 +340,76 @@ setMethod("[", "DataFrame",
     }
 )
 
+.make_rownames <- function(x, i, value)
+{
+    x_nrow <- nrow(x)
+    i_max <- max(i)
+    x_rownames <- rownames(x)
+    value_rownames <- rownames(value)
+    if (i_max <= x_nrow || is.null(x_rownames) && is.null(value_rownames))
+        return(x_rownames)
+    ans_rownames <- as.character(seq_len(max(x_nrow, i_max)))
+    if (!is.null(value_rownames))
+        ans_rownames <- replaceROWS(ans_rownames, i, value_rownames)
+    if (is.null(x_rownames))
+        x_rownames <- as.character(seq_len(x_nrow))
+    ans_rownames <- replaceROWS(ans_rownames, seq_len(x_nrow), x_rownames)
+    make.unique(ans_rownames)
+}
+
 setMethod("replaceROWS", "DataFrame",
     function(x, i, value)
     {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
+                                             as.NSBS=TRUE)
         x_ncol <- ncol(x)
         value_ncol <- ncol(value)
         if (value_ncol > x_ncol)
             stop("provided ", value_ncol, " variables ",
                  "to replace ", x_ncol, " variables")
-        slot(x, "listData", check=FALSE) <-
-            lapply(structure(seq_len(ncol(x)), names=names(x)),
-                   function(j)
-                       replaceROWS(x[[j]], i,
-                                   value[[((j - 1L) %% value_ncol) + 1L]]))
+        if (x_ncol != 0L) {
+            if (value_ncol == 0L)
+                stop("replacement has length zero")
+            new_listData <-
+                lapply(structure(seq_len(ncol(x)), names=names(x)),
+                       function(j)
+                           replaceROWS(x[[j]], i,
+                                       value[[((j - 1L) %% value_ncol) + 1L]]))
+            slot(x, "listData", check=FALSE) <- new_listData
+        }
+        i <- as.integer(i)
+        i_max <- max(i)
+        x_nrow <- nrow(x)
+        if (i_max > x_nrow) {
+            x@rownames <- .make_rownames(x, i, value)
+            x@nrows <- i_max
+        }
         x
     }
 )
 
+### TODO: Refactor this to use one of the two following 3-step approaches:
+###
+###  (1) Linear `[` + replaceROWS() + linear `[<-`, i.e. something like:
+###        `[<-`(x, j, value=replaceROWS(x[j], i, value))
+###
+###  (2) extractROWS() + linear `[<-` + replaceROWS(), i.e. something like:
+###        replaceROWS(x, i, `[<-`(extractROWS(x, i), j, value=value))
+###
+### (Not sure which one is better, need to figure this out.)
+###
+### Current implementation is a 157-line monolithic function. Doing (1)
+### or (2) means implementing linear `[<-` in a separate helper (e.g.
+### replaceCOLS()) and simplify and reduce the size of the whole thing.
+### Would also make it easier to fix some of the long standing bugs (some
+### of them would just vanish):
+###
+###   `[<-`(DataFrame(aa=1:3), 4, , value=DataFrame(aa=11))  # broken object
+###   DF <- DataFrame(aa=1:3, row.names=LETTERS[1:3])
+###   `[<-`(DF[0], 4, , value=DataFrame(aa=11)[0])  # wrong nrow
+###   `[<-`(DF[0], 2, value=DataFrame(bb=1:3))  # wrong nrow & ncol
+###   etc...
+###
 setReplaceMethod("[", "DataFrame",
                  function(x, i, j, ..., value)
                  {
@@ -501,8 +553,9 @@ setReplaceMethod("[", "DataFrame",
                      oldcn <- head(colnames(x), length(x) - length(newcn))
                      colnames(x) <- make.unique(c(oldcn, newcn))
                      if (!is.null(mcols(x)))
-                       mcols(x)[tail(names(x),length(newcn)),] <-
-                         DataFrame(NA)
+                       mcols(x) <- replaceROWS(mcols(x),
+                                               tail(names(x), length(newcn)),
+                                               DataFrame(NA))
                    }
                    if (length(newrn)) {
                      notj <- setdiff(seq_len(ncol(x)), j)
@@ -511,7 +564,7 @@ setReplaceMethod("[", "DataFrame",
                               function(y) c(y, rep(NA, length(newrn))))
                      x@rownames <- make.unique(c(rownames(x), newrn))
                    }
-                   x@nrows <- length(x[[1]]) # we should always have a column
+                   x@nrows <- NROW(x[[1]]) # we should always have a column
                    x
                  })
 
