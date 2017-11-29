@@ -30,7 +30,9 @@ sapply_NROW <- function(x)
     return(vapply(x, NROW, integer(1)))
 }
 
+### TODO: Remove in BioC 3.8.
 listElementType <- function(x) {
+  .Defunct("lowestListElementClass")
   cl <- lapply(x, class)
   clnames <- unique(unlist(cl, use.names=FALSE))
   if (length(clnames) == 1L) {
@@ -47,6 +49,54 @@ listElementType <- function(x) {
       NULL
     }
   }
+}
+
+### A replacement for listElementType() that has a slightly different semantic.
+### - listElementType(): return the closest common ancestor class of all the
+###   list elements in 'x', or NULL.
+### - lowestListElementClass(): return the common ancestor class **among**
+###   the classes of the list elements in 'x', or "ANY". In other words, if
+###   all the classes in 'x' extend one of them, then lowestListElementClass()
+###   returns it. Otherwise, it returns "ANY".
+### As a consequence, unlike listElementType() which can return the name of a
+### virtual class (e.g. vector_OR_factor), lowestListElementClass() is
+### guaranteed to always return a **concrete** class or "ANY".
+###
+### For example:
+###
+###   classes in 'x'              listElementType      lowestListElementClass
+###   -------------------------   ------------------   ----------------------
+###   all the same                common class         common class
+###   integer,numeric             "numeric"            "numeric"
+###   integer,factor              "integer"            "integer"
+###   numeric,factor              "numeric"            "numeric"
+###   integer,numeric,character   "vector"             "ANY"
+###   character,factor            "vector_OR_factor"   "ANY"
+###   matrix, data.frame          "vector"             "ANY"
+###   character,list              "vector"             "ANY"
+###
+lowestListElementClass <- function(x)
+{
+    stopifnot(is.list(x))
+    if (length(x) == 0L)
+        return("ANY")
+    all_classes <- unique(vapply(x, function(x_elt) class(x_elt)[[1L]],
+                                 character(1), USE.NAMES=FALSE))
+    nclasses <- length(all_classes)
+    if (nclasses == 1L)
+        return(all_classes)
+    ## If all the classes in 'all_classes' have a common ancestor **among**
+    ## 'all_classes', then return it. Otherwise return "ANY".
+    ans <- all_classes[[1L]]
+    for (i in 2:nclasses) {
+        class <- all_classes[[i]]
+        if (extends(class, ans))
+            next
+        if (!extends(ans, class))
+            return("ANY")
+        ans <- class
+    }
+    ans
 }
 
 

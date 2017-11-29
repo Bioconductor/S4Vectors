@@ -222,7 +222,7 @@ coerceToSimpleList <- function(from, element.type, ...) {
     if (is(from, "List"))
       element.type <- from@elementType
     else if (is.list(from))
-      element.type <- listElementType(from)
+      element.type <- lowestListElementClass(from)
     else element.type <- class(from)
   }
   SimpleListClass <- listClassName("Simple", element.type)
