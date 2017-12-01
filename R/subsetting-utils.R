@@ -680,7 +680,7 @@ setMethod("getListElement", "list",
     stopifnot(is.list(x) || is(x, "List"))
     stopifnot(is.null(name) || isSingleStringOrNA(name))
     if (is(x, "List")) {
-        tmp <- try(as(value, elementType(x)), silent=TRUE)
+        tmp <- try(as(value, elementType(x), strict=FALSE), silent=TRUE)
         if (!inherits(tmp, "try-error"))
             value <- tmp
     }
