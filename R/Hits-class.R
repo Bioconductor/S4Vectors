@@ -485,8 +485,9 @@ setMethod("sort", "SortedByQueryHits",
           function(x, decreasing = FALSE, na.last = NA, by) {
     byQueryHits <- !missing(by) && is(by, "formula") && length(by) == 2L &&
         identical(by[[2L]], quote(queryHits))
-    if (!byQueryHits)
-        x <- as(x, "Hits")
+    if (byQueryHits)
+        return(x)
+    x <- as(x, "Hits")
     callNextMethod()
 })
 
