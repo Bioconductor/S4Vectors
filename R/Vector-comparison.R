@@ -297,10 +297,13 @@ orderBy <- function(formula, x, decreasing=FALSE, na.last=TRUE) {
 
 setMethod("rank", "Vector",
     function(x, na.last=TRUE,
-             ties.method=c("average", "first", "last", "random", "max", "min"))
+             ties.method=c("average", "first", "last", "random", "max", "min"),
+             by)
     {
         ties.method <- match.arg(ties.method)
-        oo <- order(x, na.last=na.last)
+        if (!missing(by))
+            oo <- orderBy(by, x, na.last=na.last)
+        else oo <- order(x, na.last=na.last)
         ## 'ans' is the reverse permutation of 'oo'.
         ans <- integer(length(oo))
         ans[oo] <- seq_along(oo)

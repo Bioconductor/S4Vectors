@@ -115,6 +115,12 @@ selfmatch(x, ...)
 findMatches(x, table, select=c("all", "first", "last"), ...)
 countMatches(x, table, ...)
 
+## rank()
+## ------
+
+\S4method{rank}{Vector}(x, na.last = TRUE, ties.method = c("average", 
+        "first", "last", "random", "max", "min"), by)
+
 ## sort()
 ## ------
 
@@ -146,6 +152,9 @@ countMatches(x, table, ...)
     Only \code{select="all"} is supported at the moment.
     Note that you can use \code{match} if you want to do \code{select="first"}.
     Otherwise you're welcome to request this on the Bioconductor mailing list.
+  }
+  \item{ties.method}{
+    See \code{?base::\link[base]{rank}}.
   }
   \item{decreasing, na.last}{
     See \code{?base::\link[base]{sort}}.
