@@ -210,12 +210,14 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
       of the hits, so, in that case, step (3) is also a no-op (but is still
       performed).
     }
-    \item{}{\code{breakTies(x, method=c("first", "last"))}: Restrict the
+    \item{}{\code{breakTies(x, method=c("first", "last"), rank)}: Restrict the
       hits so that every left node maps to at most one right node. If
       \code{method} is \dQuote{first}, for each left node, select the
       edge with the first (lowest rank) right node, if any. If
       \code{method} is \dQuote{last}, select the edge with the last
-      (highest rank) right node.
+      (highest rank) right node. If \code{rank} is not missing, it
+      should be a formula specifying an alternative ranking according to
+      its terms (see \code{\link[=rank,Vector-method]{rank}}).
     }
   }
 }

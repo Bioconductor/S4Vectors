@@ -477,21 +477,45 @@ setMethod("c", "Hits",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Sorting
+###
+
+setMethod("sort", "SortedByQueryHits",
+          function(x, decreasing = FALSE, na.last = NA, by) {
+    byQueryHits <- !missing(by) && is(by, "formula") && length(by) == 2L &&
+        identical(by[[2L]], quote(queryHits))
+    if (!byQueryHits)
+        x <- as(x, "Hits")
+    callNextMethod()
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selectHits()
 ###
 
-selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
-                                   "count"))
+selectHits <- function(x,
+                       select=c("all", "first", "last", "arbitrary", "count"),
+                       rank)
 {
     if (!is(x, "Hits"))
         stop("'x' must be a Hits object")
     select <- match.arg(select)
     if (select == "all")
         return(x)
-    .Call2("select_hits", from(x), to(x), nLnode(x), select,
-                          PACKAGE="S4Vectors")
+    to <- to(x)
+    if (!missing(rank)) {
+        r <- rank(x, ties.method="first", by=rank)
+        revmap <- integer()
+        revmap[r] <- to
+        to <- r
+    }
+    ans <- .Call2("select_hits", from(x), to, nLnode(x), select,
+                  PACKAGE="S4Vectors")
+    if (!missing(rank)) {
+        ans <- revmap[ans]
+    }
+    ans
 }
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -502,11 +526,11 @@ selectHits <- function(x, select=c("all", "first", "last", "arbitrary",
 ### controlled via an extra arg to selectHits() e.g. 'as.Hits' (FALSE by
 ### default). H.P. -- Oct 16, 2016
 
-breakTies <- function(x, method=c("first", "last")) {
+breakTies <- function(x, method=c("first", "last"), rank) {
     if (!is(x, "Hits"))
         stop("'x' must be a Hits object")
     method <- match.arg(method)
-    to <- selectHits(x, method)
+    to <- selectHits(x, method, rank)
     .new_Hits("SortedByQueryHits", which(!is.na(to)), to[!is.na(to)],
               nLnode(x), nRnode(x), NULL)
 }
