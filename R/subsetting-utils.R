@@ -129,7 +129,7 @@ setClass("NativeNSBS",  # not exported
     )
 )
 
-### Construction methods.
+### Construction.
 ### Supplied arguments are trusted so we don't check them!
 
 NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict, has_NAs)
@@ -138,15 +138,6 @@ NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict, has_NAs)
                        upper_bound_is_strict=upper_bound_is_strict,
                        has_NAs=has_NAs,
                        check=FALSE)
-
-setMethod("NSBS", "missing",
-    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
-    {
-        x_NROW <- NROW(x)
-        i <- seq_len(x_NROW)
-        NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
-    }
-)
 
 setMethod("NSBS", "NULL",
     function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
@@ -247,6 +238,7 @@ setMethod("NSBS", "array",
 
 ### Other methods.
 
+### We override the "as.integer" default method for NSBS objects.
 setMethod("as.integer", "NativeNSBS", function(x) x@subscript)
 
 
@@ -264,7 +256,7 @@ setClass("RangeNSBS",  # not exported
     )
 )
 
-### Constructor.
+### Construction.
 
 .normarg_range_start <- function(start, argname="start")
 {
@@ -311,6 +303,20 @@ RangeNSBS <- function(x, start=NA, end=NA, width=NA)
                       upper_bound=x_NROW,
                       check=FALSE)
 }
+
+setMethod("NSBS", "missing",
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
+    {
+        RangeNSBS(x, start=1L, end=NROW(x))
+    }
+)
+
+
+### Other methods.
+
+### We override the "as.integer", "length", "anyDuplicated", and
+### "isStrictlySorted" default methods for NSBS objects with more
+### efficient ones.
 
 setMethod("as.integer", "RangeNSBS",
     function(x)
