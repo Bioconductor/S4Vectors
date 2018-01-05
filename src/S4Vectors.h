@@ -867,6 +867,7 @@ SEXP map_positions(
 /* Hits_class.c */
 
 SEXP _new_Hits(
+	const char *Class,
 	int *from,
 	const int *to,
 	int nhit,

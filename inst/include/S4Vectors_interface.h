@@ -529,6 +529,7 @@ SEXP find_interv_and_start_from_width(
  */
 
 SEXP new_Hits(
+	const char *Class,
 	int *from,
 	const int *to,
 	int nhit,

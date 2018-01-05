@@ -513,8 +513,8 @@ DEFINE_CCALLABLE_STUB(SEXP, find_interv_and_start_from_width,
  */
 
 DEFINE_CCALLABLE_STUB(SEXP, new_Hits,
-	(int *from, const int *to, int nhit, int nLnode, int nRnode, int already_sorted),
-	(     from,            to,     nhit,     nLnode,     nRnode,     already_sorted)
+	(const char *Class, int *from, const int *to, int nhit, int nLnode, int nRnode, int already_sorted),
+	(            Class,      from,            to,     nhit,     nLnode,     nRnode,     already_sorted)
 )
 
 DEFINE_CCALLABLE_STUB(int, get_select_mode,

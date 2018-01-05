@@ -118,15 +118,14 @@ static void tsort_hits(int *from_in, const int *to_in,
 	return;
 }
 
-SEXP _new_Hits(int *from, const int *to, int nhit,
+SEXP _new_Hits(const char *Class, int *from, const int *to, int nhit,
 	       int nLnode, int nRnode, int already_sorted)
 {
 	SEXP ans_from, ans_to, ans;
 	int *from_out, *to_out;
 
 	if (already_sorted || nhit <= 1 || nLnode <= 1)
-		return new_Hits1("SortedByQueryHits", from, to, nhit,
-						      nLnode, nRnode);
+		return new_Hits1(Class, from, to, nhit, nLnode, nRnode);
 	PROTECT(ans_from = NEW_INTEGER(nhit));
 	PROTECT(ans_to = NEW_INTEGER(nhit));
 	from_out = INTEGER(ans_from);
@@ -135,8 +134,7 @@ SEXP _new_Hits(int *from, const int *to, int nhit,
 		tsort_hits(from, to, from_out, to_out, nhit, nLnode, NULL);
 	else
 		qsort_hits(from, to, from_out, to_out, nhit, NULL);
-	ans = new_Hits0("SortedByQueryHits", ans_from, ans_to,
-					     nLnode, nRnode);
+	ans = new_Hits0(Class, ans_from, ans_to, nLnode, nRnode);
 	UNPROTECT(2);
 	return ans;
 }
@@ -153,7 +151,7 @@ static SEXP new_Hits_with_revmap(const char *classname,
 		memcpy(from2, from, sizeof(int) * nhit);
 	}
 	if (revmap == NULL)
-		return _new_Hits(from2, to, nhit, nLnode, nRnode, 0);
+		return _new_Hits(classname, from2, to, nhit, nLnode, nRnode, 0);
 	PROTECT(ans_from = NEW_INTEGER(nhit));
 	PROTECT(ans_to = NEW_INTEGER(nhit));
 	from_out = INTEGER(ans_from);
