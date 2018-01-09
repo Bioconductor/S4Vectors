@@ -533,19 +533,19 @@ rbind_mcols <- function(x, ...)
     do.call(rbind, lapply(mcols_list, fillCols))
 }
 
-### The "concatenate_objects" method for Vector objects concatenates the
-### objects in 'objects' by concatenating their parallel slots. Note that
-### it works out-of-the-box and does the right thing on most Vector
+### The "concatenateObjects" method for Vector objects concatenates the
+### objects in 'objects' by concatenating their parallel slots. Note
+### that it works out-of-the-box and does the right thing on most Vector
 ### derivatives as long as parallelSlotNames() returns the names of all
 ### the parallel slots. For those Vector derivatives for which it does
 ### not work nor do the right thing, it is strongly advised to override
 ### it rather than trying to override the "c" method for Vector objects
-### with a specialized method. The specialized "concatenate_objects"
+### with a specialized method. The specialized "concatenateObjects"
 ### method will typically delegate to the method below via the use of
-### callNextMethod(). See "concatenate_objects" methods for Hits and Rle
+### callNextMethod(). See "concatenateObjects" methods for Hits and Rle
 ### objects for some examples.
-### No Vector derivative should need to override the "c" method for Vector
-### objects.
+### No Vector derivative should need to override the "c" method for
+### Vector objects.
 .concatenate_Vector_objects <- function(.Object, objects,
                                         use.names=TRUE, ignore.mcols=FALSE)
 {
@@ -584,7 +584,7 @@ rbind_mcols <- function(x, ...)
     ans_pslots <- lapply(setNames(pslotnames, pslotnames),
         function(slotname) {
             slot_list <- lapply(objects, slot, slotname)
-            concatenate_objects(slot(.Object, slotname), slot_list)
+            concatenateObjects(slot(.Object, slotname), slot_list)
         }
     )
 
@@ -600,10 +600,10 @@ rbind_mcols <- function(x, ...)
     ans
 }
 
-setMethod("concatenate_objects", "Vector", .concatenate_Vector_objects)
+setMethod("concatenateObjects", "Vector", .concatenate_Vector_objects)
 
-### Thin wrapper around concatenate_objects(). No Vector derivative should
-### need to override this method. See "concatenate_objects" method for Vector
+### Thin wrapper around concatenateObjects(). No Vector derivative should
+### need to override this method. See "concatenateObjects" method for Vector
 ### objects above for more information.
 setMethod("c", "Vector",
     function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
@@ -617,7 +617,7 @@ setMethod("c", "Vector",
         } else {
             objects <- list(x, ...)
         }
-        concatenate_objects(x, objects,
+        concatenateObjects(x, objects,
                             use.names=TRUE,
                             ignore.mcols=ignore.mcols)
     }

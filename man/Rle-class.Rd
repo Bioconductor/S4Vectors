@@ -60,7 +60,7 @@
 \alias{rep.int,Rle-method}
 \alias{rep,Rle-method}
 
-\alias{concatenate_objects,Rle-method}
+\alias{concatenateObjects,Rle-method}
 \alias{append,Rle,vector-method}
 \alias{append,vector,Rle-method}
 \alias{\%in\%,Rle,ANY-method}

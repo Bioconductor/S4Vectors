@@ -342,7 +342,7 @@ export(
     classNameForDisplay, showAsCell,
 
     ## LLint-class.R:
-    concatenate_objects,
+    concatenateObjects,
 
     ## isSorted.R:
     isConstant, isSorted, isStrictlySorted,
@@ -415,7 +415,7 @@ export(
 ### Exactly the same list as above.
 exportMethods(
     classNameForDisplay, showAsCell,
-    concatenate_objects,
+    concatenateObjects,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
     normalizeSingleBracketReplacementValue,

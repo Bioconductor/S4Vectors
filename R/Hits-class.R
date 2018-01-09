@@ -388,7 +388,7 @@ setMethod("show", "Hits",
 ###
 
 ### '.Object' is assumed to contain the expected common number of left and
-### right nodes in the "nLnode" and "nRnode" slots.
+### right nodes in its "nLnode" and "nRnode" slots.
 .check_that_Hits_objects_are_concatenable <- function(.Object, objects)
 {
     objects_nLnode <- vapply(objects, slot, integer(1), "nLnode",
@@ -409,7 +409,7 @@ setMethod("show", "Hits",
     ans
 }
 
-setMethod("concatenate_objects", "Hits", .concatenate_Hits_objects)
+setMethod("concatenateObjects", "Hits", .concatenate_Hits_objects)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -121,12 +121,12 @@ lowestListElementClass <- function(x)
     ans
 }
 
-setMethod("concatenate_objects", "vector", .concatenate_vectors)
+setMethod("concatenateObjects", "vector", .concatenate_vectors)
 
 ### Assumes that 'x' is a list of length >= 1 with no names, and that the
 ### list elements in 'x' have the same type. This is NOT checked!
-### TODO: quick_unlist() is superseded by concatenate_objects(). Search code
-### for use of quick_unlist() and replace with use of concatenate_objects().
+### TODO: quick_unlist() is superseded by concatenateObjects(). Search code
+### for use of quick_unlist() and replace with use of concatenateObjects().
 ### Then remove quick_unlist() definition below.
 quick_unlist <- function(x)
 {

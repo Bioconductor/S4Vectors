@@ -59,7 +59,7 @@
 \alias{show,Hits-method}
 
 % concatenation
-\alias{concatenate_objects,Hits-method}
+\alias{concatenateObjects,Hits-method}
 
 % other transformations
 \alias{t,Hits-method}

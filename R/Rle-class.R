@@ -618,7 +618,7 @@ setMethod("rep", "Rle",
     callNextMethod()
 }
 
-setMethod("concatenate_objects", "Rle", .concatenate_Rle_objects)
+setMethod("concatenateObjects", "Rle", .concatenate_Rle_objects)
 
 setMethod("append", c("Rle", "vector"),
           function (x, values, after = length(x)) {

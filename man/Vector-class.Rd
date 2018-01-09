@@ -73,7 +73,7 @@
 \alias{tail.Vector}
 \alias{tail,Vector-method}
 
-\alias{concatenate_objects,Vector-method}
+\alias{concatenateObjects,Vector-method}
 \alias{c,Vector-method}
 \alias{append,Vector,Vector-method}
 

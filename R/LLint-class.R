@@ -156,9 +156,9 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ### Low-level generic intended to facilitate implementation of "c" methods
 ### for vector-like objects. See R/Vector-class.R for more information.
 ### It can also be used to unlist an ordinary list of vector-like objects.
-setGeneric("concatenate_objects", signature=".Object",
+setGeneric("concatenateObjects", signature=".Object",
     function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE)
-        standardGeneric("concatenate_objects")
+        standardGeneric("concatenateObjects")
 )
 
 ### Ignore the '.Object' argument.
@@ -202,9 +202,9 @@ setGeneric("concatenate_objects", signature=".Object",
     new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 
-setMethod("concatenate_objects", "LLint", .concatenate_LLint_objects)
+setMethod("concatenateObjects", "LLint", .concatenate_LLint_objects)
 
-### Thin wrapper around concatenate_objects().
+### Thin wrapper around concatenateObjects().
 setMethod("c", "LLint",
     function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
@@ -217,7 +217,7 @@ setMethod("c", "LLint",
         } else {
             objects <- list(x, ...)
         }
-        concatenate_objects(x, objects)
+        concatenateObjects(x, objects)
     }
 )
 

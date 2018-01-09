@@ -35,7 +35,7 @@
 \alias{fold}
 
 % Stuff from R/vector-utils.R:
-\alias{concatenate_objects,vector-method}
+\alias{concatenateObjects,vector-method}
 
 % Stuff from R/integer-utils.R:
 \alias{orderIntegerPairs}
