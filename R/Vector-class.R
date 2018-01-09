@@ -534,8 +534,10 @@ rbind_mcols <- function(x, ...)
 }
 
 ### The "concatenateObjects" method for Vector objects concatenates the
-### objects in 'objects' by concatenating their parallel slots. Note
-### that it works out-of-the-box and does the right thing on most Vector
+### objects in 'objects' by concatenating their parallel slots. The
+### concatenated slots are returned in '.Object' so the method behaves
+### like an endomorphism with respect to its first argument. Note that
+### it will work out-of-the-box and do the right thing on most Vector
 ### derivatives as long as parallelSlotNames() returns the names of all
 ### the parallel slots. For those Vector derivatives for which it does
 ### not work nor do the right thing, it is strongly advised to override
@@ -579,8 +581,9 @@ rbind_mcols <- function(x, ...)
     names(objects) <- NULL  # so lapply(objects, ...) below returns an
                             # unnamed list
 
-    ## Concatenate all parallel slots (except elementMetadata).
-    pslotnames <- setdiff(parallelSlotNames(.Object), "elementMetadata")
+    ## Concatenate all parallel slots except "NAMES" and "elementMetadata".
+    pslotnames <- setdiff(parallelSlotNames(.Object),
+                          c("NAMES", "elementMetadata"))
     ans_pslots <- lapply(setNames(pslotnames, pslotnames),
         function(slotname) {
             slot_list <- lapply(objects, slot, slotname)
@@ -595,16 +598,31 @@ rbind_mcols <- function(x, ...)
 
     ans <- do.call(BiocGenerics:::replaceSlots,
                    c(list(.Object), ans_pslots, list(check=TRUE)))
-    if (!use.names)
+
+    if (use.names) {
+        names_list <- lapply(objects, names)
+        object_has_no_names <- vapply(names_list, is.null, logical(1))
+        if (!all(object_has_no_names)) {
+            names_list[object_has_no_names] <-
+                lapply(objects[object_has_no_names],
+                       function(object) character(length(object)))
+            ans_names <- unlist(names_list, use.names=FALSE)
+            names(ans) <- ans_names
+        }
+    } else {
         names(ans) <- NULL
+    }
     ans
 }
 
 setMethod("concatenateObjects", "Vector", .concatenate_Vector_objects)
 
-### Thin wrapper around concatenateObjects(). No Vector derivative should
-### need to override this method. See "concatenateObjects" method for Vector
-### objects above for more information.
+### Thin wrapper around concatenateObjects(). Behave like an endomorphism
+### i.e. return an object of the same class as 'x'. In particular 'c(x)'
+### should return 'x'.
+### No Vector derivative should need to override this method.
+### See "concatenateObjects" method for Vector objects above for more
+### information.
 setMethod("c", "Vector",
     function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
@@ -617,9 +635,7 @@ setMethod("c", "Vector",
         } else {
             objects <- list(x, ...)
         }
-        concatenateObjects(x, objects,
-                            use.names=TRUE,
-                            ignore.mcols=ignore.mcols)
+        concatenateObjects(x, objects, ignore.mcols=ignore.mcols)
     }
 )
 

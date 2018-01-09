@@ -222,6 +222,13 @@
       \code{table}.
     }
     \item{}{
+      \code{c(x, ..., ignore.mcols=FALSE)}:
+      Concatenate Rle object \code{x} and the Rle objects in
+      \code{...} together.
+      See \code{?\link{c}} in this package (the \pkg{S4Vectors} package)
+      for more information about concatenating Vector derivatives.
+    }
+    \item{}{
       \code{append(x, values, after = length(x))}:
       Insert one Rle into another Rle.
       \describe{
@@ -229,10 +236,6 @@
         \item{\code{after}}{the subscript in \code{x} after which the values
           are to be inserted.}
       }
-    }
-    \item{}{
-      \code{c(x, ...)}:
-      Concatenate a set of Rle objects.
     }
     \item{}{
       \code{findRun(x, vec)}:

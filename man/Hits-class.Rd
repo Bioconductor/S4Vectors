@@ -164,6 +164,18 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
   }
 }
 
+\section{Concatenation}{
+  \describe{
+    \item{}{
+      \code{c(x, ..., ignore.mcols=FALSE)}:
+      Concatenate Hits object \code{x} and the Hits objects in
+      \code{...} together.
+      See \code{?\link{c}} in this package (the \pkg{S4Vectors} package)
+      for more information about concatenating Vector derivatives.
+    }
+  }
+}
+
 \section{Other transformations}{
   In the code snippets below, \code{x} is a \code{Hits} object.
   \describe{

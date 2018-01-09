@@ -206,7 +206,7 @@ setMethod("concatenateObjects", "LLint", .concatenate_LLint_objects)
 
 ### Thin wrapper around concatenateObjects().
 setMethod("c", "LLint",
-    function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    function (x, ..., recursive=FALSE)
     {
         if (!identical(recursive, FALSE))
             stop("\"c\" method for LLint objects ",

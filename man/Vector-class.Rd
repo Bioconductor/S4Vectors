@@ -74,7 +74,9 @@
 \alias{tail,Vector-method}
 
 \alias{concatenateObjects,Vector-method}
+\alias{c}
 \alias{c,Vector-method}
+\alias{append}
 \alias{append,Vector,Vector-method}
 
 \alias{expand.grid}
@@ -216,11 +218,27 @@
 
   \describe{
     \item{}{
-      \code{c(x, ...)}:
+      \code{c(x, ..., ignore.mcols=FALSE)}:
       Concatenate \code{x} and the Vector objects in \code{...} together.
       Any object in \code{...} must belong to the same class as \code{x},
       or to one of its subclasses, or must be \code{NULL}.
       The result is an object of the same class as \code{x}.
+
+      Handling of the metadata columns:
+      \itemize{
+        \item If only one of the Vector objects has metadata columns,
+              then the corresponding metadata columns are attached to
+              the other Vector objects and set to \code{NA}.
+        \item When multiple Vector objects have their own metadata columns,
+              the user must ensure that each such \link{DataFrame} have
+              identical layouts to each other (same columns defined),
+              in order for the concatenation to be successful, otherwise
+              an error will be thrown.
+        \item The user can call \code{c(x, ..., ignore.mcols=TRUE)} in
+              order to concatenate Vector objects with differing sets of
+              metadata columns, which will result in the concatenated
+              object having NO metadata columns.
+      }
     }
     \item{}{\code{append(x, values, after = length(x))}: Insert the
       \code{Vector} \code{values} onto \code{x} at the position given by

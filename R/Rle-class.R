@@ -606,11 +606,22 @@ setMethod("rep", "Rle",
     if (!isTRUEorFALSE(ignore.mcols))
         stop("'ignore.mcols' must be TRUE or FALSE")
 
+    NULL_idx <- which(sapply_isNULL(objects))
+    if (length(NULL_idx) != 0L)
+        objects <- objects[-NULL_idx]
+    if (length(objects) == 0L) {
+        if (length(.Object) != 0L)
+            .Object <- .Object[integer(0)]
+        return(.Object)
+    }
+
     objects <- lapply(unname(objects), Rle)
 
+    ## Combine "values" slots.
     values_list <- lapply(objects, slot, "values")
     ans_values <- unlist(values_list, recursive=FALSE)
 
+    ## Combine "lengths" slots.
     lengths_list <- lapply(objects, slot, "lengths")
     ans_lengths <- unlist(lengths_list, recursive=FALSE)
 
