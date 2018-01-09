@@ -592,24 +592,33 @@ setMethod("rep", "Rle",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining.
+### Concatenation
 ###
 
-setMethod("c", "Rle", 
-          function(x, ..., recursive = FALSE)
-          {
-              args <- lapply(unname(list(x, ...)), Rle)
-              args_values <- lapply(args, slot, "values")
-              ## use unlist() for factors:
-              ans_values <- unlist(args_values, recursive=FALSE)
-              if (is.null(ans_values)) {
-                  ## use c() to get type promotion right in zero-length case:
-                  ans_values <- do.call(c, args_values)
-              }
-              ans_lengths <- unlist(lapply(args, slot, "lengths"),
-                                    recursive=FALSE)
-              Rle(ans_values, ans_lengths)
-          })
+### Ignore the '.Object' argument.
+.concatenate_Rle_objects <- function(.Object, objects,
+                                     use.names=TRUE, ignore.mcols=FALSE)
+{
+    if (!is.list(objects))
+        stop("'objects' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+
+    objects <- lapply(unname(objects), Rle)
+
+    values_list <- lapply(objects, slot, "values")
+    ans_values <- unlist(values_list, recursive=FALSE)
+
+    lengths_list <- lapply(objects, slot, "lengths")
+    ans_lengths <- unlist(lengths_list, recursive=FALSE)
+
+    .Object <- Rle(ans_values, ans_lengths)
+    callNextMethod()
+}
+
+setMethod("concatenate_objects", "Rle", .concatenate_Rle_objects)
 
 setMethod("append", c("Rle", "vector"),
           function (x, values, after = length(x)) {

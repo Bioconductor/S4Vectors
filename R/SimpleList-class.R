@@ -2,15 +2,28 @@
 ### SimpleList objects
 ### -------------------------------------------------------------------------
 
+
 setClass("SimpleList",
-         contains="List",
-         representation(
-                        listData="list"
-                        )
-         )
+    contains="List",
+    representation(
+        listData="list"
+    )
+)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### parallelSlotNames()
+###
+
+### Combine the new parallel slots with those of the parent class. Make sure
+### to put the new parallel slots *first*.
+setMethod("parallelSlotNames", "SimpleList",
+    function(x) c("listData", callNextMethod())
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Accessor methods
 ###
 
 setMethod("length", "SimpleList", function(x) length(as.list(x)))
@@ -23,8 +36,9 @@ setReplaceMethod("names", "SimpleList",
                      x
                  })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
+### Constructor
 ###
 
 ### Low-level. NOT exported.
@@ -75,7 +89,7 @@ SimpleList <- function(...)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
+### Validity
 ###
 
 .valid.SimpleList.listData <- function(x)
@@ -104,11 +118,8 @@ setMethod("classNameForDisplay", "SimpleList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting
 ###
-
-setMethod("parallelSlotNames", "SimpleList",
-          function(x) c("listData", callNextMethod()))
 
 setMethod("getListElement", "SimpleList",
     function(x, i, exact=TRUE)
@@ -117,24 +128,7 @@ setMethod("getListElement", "SimpleList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining.
-###
-
-## NOTE: while the 'c' function does not have an 'x', the generic does
-## c() is a primitive, so 'x' can be missing; dispatch is by position,
-## although sometimes this does not work so well, so it's best to keep
-## names off the parameters whenever feasible.
-setMethod("c", "SimpleList",
-          function(x, ..., recursive = FALSE) {
-              slot(x, "listData") <-
-                do.call(c, lapply(unname(list(x, ...)), as.list))
-              if (!is.null(mcols(x)))
-                mcols(x) <- rbind_mcols(x, ...)
-              x
-          })
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Looping.
+### Looping
 ###
 
 ### TODO: easily generalized to List
@@ -142,8 +136,9 @@ setMethod("lapply", "SimpleList",
           function(X, FUN, ...)
               lapply(as.list(X), FUN = FUN, ...))
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion
 ###
 
 ### Unfortunately, not all SimpleList subclasses (e.g. BamFileList or
@@ -236,6 +231,7 @@ coerceToSimpleList <- function(from, element.type, ...) {
   }
 }
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### unique()
 ###
@@ -245,3 +241,4 @@ coerceToSimpleList <- function(from, element.type, ...) {
     as(lapply(x, unique, incomparables=incomparables, ...), class(x))
 }
 setMethod("unique", "SimpleList", .unique.SimpleList)
+

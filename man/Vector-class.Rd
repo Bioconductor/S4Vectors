@@ -10,6 +10,9 @@
 \alias{Vector-class}
 \alias{Vector}
 
+\alias{parallelSlotNames}
+\alias{parallelSlotNames,Vector-method}
+
 \alias{length,Vector-method}
 \alias{lengths,Vector-method}
 \alias{NROW,Vector-method}
@@ -70,6 +73,8 @@
 \alias{tail.Vector}
 \alias{tail,Vector-method}
 
+\alias{concatenate_objects,Vector-method}
+\alias{c,Vector-method}
 \alias{append,Vector,Vector-method}
 
 \alias{expand.grid}
@@ -206,13 +211,13 @@
   }
 }
 
-\section{Combining}{
+\section{Concatenation}{
   In the code snippets below, \code{x} is a Vector object.
 
   \describe{
     \item{}{
       \code{c(x, ...)}:
-      Combine \code{x} and the Vector objects in \code{...} together.
+      Concatenate \code{x} and the Vector objects in \code{...} together.
       Any object in \code{...} must belong to the same class as \code{x},
       or to one of its subclasses, or must be \code{NULL}.
       The result is an object of the same class as \code{x}.

@@ -143,9 +143,9 @@ pc(...)
     by \code{i}. It's equivalent to, but faster than, doing
     \code{x[i] <- endoapply(x[i], rev)}.
 
-    \code{pc(...)} combines list-like objects in an element-wise fashion.
-    It's similar to, but faster than, \code{mapply(c, ..., SIMPLIFY=FALSE)}.
-    With the following differences:
+    \code{pc(...)} combine list-like objects by concatenating them in an
+    element-wise fashion. It's similar to, but faster than,
+    \code{mapply(c, ..., SIMPLIFY=FALSE)}. With the following differences:
     \enumerate{
       \item \code{pc()} ignores the supplied objects that are NULL.
       \item \code{pc()} does not recycle its arguments. All the supplied

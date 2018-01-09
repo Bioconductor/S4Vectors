@@ -5,6 +5,8 @@
 \alias{SimpleList}
 \alias{SimpleList-class}
 
+\alias{parallelSlotNames,SimpleList-method}
+
 % accessors
 \alias{length,SimpleList-method}
 \alias{names,SimpleList-method}
@@ -14,9 +16,6 @@
 \alias{as.list,SimpleList-method}
 \alias{coerce,ANY,SimpleList-method}
 \alias{coerce,list,List-method}
-
-% combining
-\alias{c,SimpleList-method}
 
 % looping
 \alias{lapply,SimpleList-method}

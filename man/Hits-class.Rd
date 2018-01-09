@@ -58,8 +58,8 @@
 \alias{classNameForDisplay,SelfHits-method}
 \alias{show,Hits-method}
 
-% commbining
-\alias{c,Hits-method}
+% concatenation
+\alias{concatenate_objects,Hits-method}
 
 % other transformations
 \alias{t,Hits-method}

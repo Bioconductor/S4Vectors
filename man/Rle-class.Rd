@@ -60,7 +60,7 @@
 \alias{rep.int,Rle-method}
 \alias{rep,Rle-method}
 
-\alias{c,Rle-method}
+\alias{concatenate_objects,Rle-method}
 \alias{append,Rle,vector-method}
 \alias{append,vector,Rle-method}
 \alias{\%in\%,Rle,ANY-method}
@@ -232,7 +232,7 @@
     }
     \item{}{
       \code{c(x, ...)}:
-      Combines a set of Rle objects.
+      Concatenate a set of Rle objects.
     }
     \item{}{
       \code{findRun(x, vec)}:
@@ -320,7 +320,8 @@
       \code{table(...)}:
       Returns a table containing the counts of the unique values. Supported
       arguments include \code{useNA} with values of `no' and `ifany'.
-      Multiple Rle's must be combined with \code{c()} before calling \code{table}.
+      Multiple Rle's must be concatenated with \code{c()} before calling
+      \code{table}.
     }
     \item{}{
       \code{tabulate(bin, nbins = max(bin, 1L, na.rm = TRUE))}:

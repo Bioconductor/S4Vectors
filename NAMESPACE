@@ -27,8 +27,8 @@ exportClasses(
     SimpleList,
     HitsList, SortedByQueryHitsList,
     DataFrame,
-    expression_OR_function, FilterRules, FilterMatrix,
-    Pairs
+    Pairs,
+    expression_OR_function, FilterRules, FilterMatrix
 )
 
 
@@ -314,11 +314,11 @@ export(
     ## DataFrame-class.R:
     DataFrame,
 
-    ## FilterRules-class.R:
-    FilterRules, FilterMatrix,
-
     ## Pairs-class.R:
-    Pairs, first, "first<-", second, "second<-", zipup, zipdown
+    Pairs,
+
+    ## FilterRules-class.R:
+    FilterRules, FilterMatrix
 )
 
 
@@ -340,6 +340,9 @@ export(
 export(
     ## show-utils.R:
     classNameForDisplay, showAsCell,
+
+    ## LLint-class.R:
+    concatenate_objects,
 
     ## isSorted.R:
     isConstant, isSorted, isStrictlySorted,
@@ -396,6 +399,9 @@ export(
     ## HitsList-class.R:
     space,
 
+    ## Pairs-class.R:
+    first, "first<-", second, "second<-", zipup, zipdown,
+
     ## expand-methods.R
     expand,
 
@@ -409,6 +415,7 @@ export(
 ### Exactly the same list as above.
 exportMethods(
     classNameForDisplay, showAsCell,
+    concatenate_objects,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
     normalizeSingleBracketReplacementValue,
@@ -436,6 +443,7 @@ exportMethods(
     pcompareRecursively,
     revElements,
     space,
+    first, "first<-", second, "second<-", zipup, zipdown,
     expand,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
     shiftApply

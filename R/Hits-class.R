@@ -384,98 +384,33 @@ setMethod("show", "Hits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining
-###
-### Note that supporting "extractROWS" and "c" makes "replaceROWS" (and thus
-### "[<-") work out-of-the-box!
+### Concatenation
 ###
 
-### 'Class' must be "Hits" or the name of a concrete Hits subclass.
-### 'objects' must be a list of Hits objects.
-### Returns an instance of class 'Class'.
-combine_Hits_objects <- function(Class, objects,
-                                 use.names=TRUE, ignore.mcols=FALSE)
+### '.Object' is assumed to contain the expected common number of left and
+### right nodes in the "nLnode" and "nRnode" slots.
+.check_that_Hits_objects_are_concatenable <- function(.Object, objects)
 {
-    if (!isSingleString(Class))
-        stop("'Class' must be a single character string")
-    if (!extends(Class, "Hits"))
-        stop("'Class' must be the name of a class that extends Hits")
-    if (!is.list(objects))
-        stop("'objects' must be a list")
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
-    ### TODO: Support 'use.names=TRUE'.
-    if (use.names)
-        stop("'use.names=TRUE' is not supported yet")
-    if (!isTRUEorFALSE(ignore.mcols))
-        stop("'ignore.mcols' must be TRUE or FALSE")
-
-    NULL_idx <- which(sapply_isNULL(objects))
-    if (length(NULL_idx) != 0L)
-        objects <- objects[-NULL_idx]
-    if (length(objects) == 0L)
-        return(new(Class))
-
-    ## TODO: Implement (in C) fast 'elementIs(objects, class)' in S4Vectors
-    ## that does 'sapply(objects, is, class, USE.NAMES=FALSE)', and use it
-    ## here. 'elementIs(objects, "NULL")' should work and be equivalent to
-    ## 'sapply_isNULL(objects)'.
-    if (!all(vapply(objects, is, logical(1), Class, USE.NAMES=FALSE)))
-        stop("the objects to combine must be ", Class, " objects (or NULLs)")
-    names(objects) <- NULL  # so lapply(objects, ...) below returns an
-                            # unnamed list
-
-    ## Combine "nLnode" slots.
-    nLnode_slots <- lapply(objects, function(x) x@nLnode)
-    ans_nLnode <- unlist(nLnode_slots, use.names=FALSE)
-
-    ## Combine "nRnode" slots.
-    nRnode_slots <- lapply(objects, function(x) x@nRnode)
-    ans_nRnode <- unlist(nRnode_slots, use.names=FALSE)
-
-    if (!(all(ans_nLnode == ans_nLnode[[1L]]) &&
-          all(ans_nRnode == ans_nRnode[[1L]])))
-        stop(wmsg("the objects to combine are incompatible Hits objects ",
-                  "by number of left and/or right nodes"))
-    ans_nLnode <- ans_nLnode[[1L]]
-    ans_nRnode <- ans_nRnode[[1L]]
-
-    ## Combine "from" slots.
-    from_slots <- lapply(objects, function(x) x@from)
-    ans_from <- unlist(from_slots, use.names=FALSE)
-
-    ## Combine "to" slots.
-    to_slots <- lapply(objects, function(x) x@to)
-    ans_to <- unlist(to_slots, use.names=FALSE)
-
-    ## Combine "mcols" slots.
-    if (ignore.mcols) {
-        ans_mcols <- NULL
-    } else {
-        ans_mcols <- do.call(rbind_mcols, objects)
-    }
-
-    ## Make 'ans' and return it.
-    .new_Hits(Class, ans_from, ans_to, ans_nLnode, ans_nRnode, ans_mcols)
+    objects_nLnode <- vapply(objects, slot, integer(1), "nLnode",
+                             USE.NAMES=FALSE)
+    objects_nRnode <- vapply(objects, slot, integer(1), "nRnode",
+                             USE.NAMES=FALSE)
+    if (!(all(objects_nLnode == .Object@nLnode) &&
+          all(objects_nRnode == .Object@nRnode)))
+        stop(wmsg("the objects to concatenate are incompatible Hits ",
+                  "objects by number of left and/or right nodes"))
 }
 
-setMethod("c", "Hits",
-    function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
-    {
-        if (!identical(recursive, FALSE))
-            stop("\"c\" method for Hits objects ",
-                 "does not support the 'recursive' argument")
-        if (missing(x)) {
-            objects <- list(...)
-            x <- objects[[1L]]
-        } else {
-            objects <- list(x, ...)
-        }
-        combine_Hits_objects(class(x), objects,
-                             use.names=FALSE,
-                             ignore.mcols=ignore.mcols)
-    }
-)
+.concatenate_Hits_objects <- function(.Object, objects,
+                                      use.names=TRUE, ignore.mcols=FALSE)
+{
+    ans <- callNextMethod()
+    .check_that_Hits_objects_are_concatenable(.Object, objects)
+    ans
+}
+
+setMethod("concatenate_objects", "Hits", .concatenate_Hits_objects)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Sorting

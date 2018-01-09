@@ -8,6 +8,8 @@
 \alias{class:FilterRules}
 \alias{FilterRules-class}
 
+\alias{parallelSlotNames,FilterRules-method}
+
 % accessors
 \alias{active}
 \alias{active,FilterRules-method}
@@ -23,10 +25,6 @@
 \alias{[[<-,FilterRules-method}
 \alias{subsetByFilter}
 \alias{subsetByFilter,ANY,FilterRules-method}
-
-% splitting and combining
-\alias{append,FilterRules,FilterRules-method}
-\alias{c,FilterRules-method}
 
 % evaluating
 \alias{eval,FilterRules,ANY-method}
@@ -136,16 +134,16 @@
   }
 }
 
-\section{Combining}{
+\section{Concatenation}{
   In the code snippets below, \code{x} is a \code{FilterRules} object.
   
   \describe{
+    \item{}{\code{c(x, ..., recursive = FALSE)}: Concatenates the
+      \code{FilterRule} instances in \code{...} onto the end of \code{x}.
+    }
     \item{}{\code{append(x, values, after = length(x))}: Appends the
       \code{values} \code{FilterRules} instance onto \code{x} at the
       index given by \code{after}.
-    }
-    \item{}{\code{c(x, ..., recursive = FALSE)}: Concatenates the
-      \code{FilterRule} instances in \code{...} onto the end of \code{x}.
     }
   }
 }

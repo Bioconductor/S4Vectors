@@ -207,7 +207,7 @@ test_List_replace <- function() {
   }
 }
 
-test_List_combine <- function() {
+test_List_concatenate <- function() {
   int1 <- c(1L,2L,3L,5L,2L,8L)
   int2 <- c(15L,45L,20L,1L,15L,100L,80L,5L)
   for (compress in c(TRUE, FALSE)) {

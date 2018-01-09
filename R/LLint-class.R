@@ -150,42 +150,61 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining
+### Concatenation
 ###
 
-combine_LLint_objects <- function(objects)
+### Low-level generic intended to facilitate implementation of "c" methods
+### for vector-like objects. See R/Vector-class.R for more information.
+### It can also be used to unlist an ordinary list of vector-like objects.
+setGeneric("concatenate_objects", signature=".Object",
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE)
+        standardGeneric("concatenate_objects")
+)
+
+### Ignore the '.Object' argument.
+.concatenate_LLint_objects <- function(.Object, objects,
+                                       use.names=TRUE, ignore.mcols=FALSE)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+
     ## If one of the objects to combine is a character vector, then all the
     ## objects are coerced to character and combined.
     if (any(vapply(objects, is.character, logical(1), USE.NAMES=FALSE))) {
         ans <- unlist(lapply(objects, as.character), use.names=FALSE)
         return(ans)
     }
+
     ## If one of the objects to combine is a double vector, then all the
     ## objects are coerced to double and combined.
     if (any(vapply(objects, is.double, logical(1), USE.NAMES=FALSE))) {
         ans <- unlist(lapply(objects, as.double), use.names=FALSE)
         return(ans)
     }
+
     ## Combine "bytes" slots.
-    bytes_slots <- lapply(objects,
-        function(x) {
-            if (is.null(x))
+    bytes_list <- lapply(objects,
+        function(object) {
+            if (is.null(object))
                 return(NULL)
-            if (is.logical(x) || is.integer(x))
-                x <- as.LLint(x)
-            if (is.LLint(x))
-                return(x@bytes)
+            if (is.logical(object) || is.integer(object))
+                object <- as.LLint(object)
+            if (is.LLint(object))
+                return(object@bytes)
             stop(wmsg("cannot combine LLint objects ",
-                      "with objects of class ", class(x)))
+                      "with objects of class ", class(object)))
         }
     )
-    ans_bytes <- unlist(bytes_slots, use.names=FALSE)
+    ans_bytes <- unlist(bytes_list, use.names=FALSE)
+
     new2("LLint", bytes=ans_bytes, check=FALSE)
 }
 
+setMethod("concatenate_objects", "LLint", .concatenate_LLint_objects)
+
+### Thin wrapper around concatenate_objects().
 setMethod("c", "LLint",
     function (x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
@@ -198,7 +217,7 @@ setMethod("c", "LLint",
         } else {
             objects <- list(x, ...)
         }
-        combine_LLint_objects(objects)
+        concatenate_objects(x, objects)
     }
 )
 

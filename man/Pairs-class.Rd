@@ -29,9 +29,6 @@
 \alias{coerce,Pairs,DataFrame-method}
 \alias{as.data.frame,Pairs-method}
 
-% combination
-\alias{c,Pairs-method}
-
 % displaying
 \alias{show,Pairs-method}
 

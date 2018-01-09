@@ -53,7 +53,7 @@ setMethod("parallelVectorNames", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Getters.
+### Getters
 ###
 
 setMethod("length", "Vector",
@@ -111,8 +111,9 @@ setMethod("anyNA", "Vector", function(x, recursive=FALSE) any(is.na(x)))
 
 setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
+### Validity
 ###
 
 .valid.Vector.length <- function(x)
@@ -203,7 +204,7 @@ setValidity2("Vector", .valid.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion
 ###
 
 setMethod("as.logical", "Vector",
@@ -294,8 +295,9 @@ setMethod("as.env", "Vector", function(x, enclos, tform = identity) {
 as.list.Vector <- function(x, ...) as.list(x, ...)
 setMethod("as.list", "Vector", function(x, ...) as.list(as(x, "List"), ...))
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Setters.
+### Setters
 ###
 
 setGeneric("elementMetadata<-",
@@ -368,8 +370,9 @@ setGeneric("rename", function(x, ...) standardGeneric("rename"))
 setMethod("rename", "vector", .renameVector)
 setMethod("rename", "Vector", .renameVector)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting
 ###
 ### The "[" and "[<-" methods for Vector objects are just delegating to
 ### extractROWS() and replaceROWS() for performing the real work. Most of
@@ -465,7 +468,7 @@ setMethod("replaceROWS", "Vector",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Convenience wrappers for common subsetting operations.
+### Convenience wrappers for common subsetting operations
 ###
 
 ### S3/S4 combo for window.Vector
@@ -492,7 +495,10 @@ revROWS <- function(x) extractROWS(x, rev(seq_len(NROW(x))))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining.
+### Concatenation
+###
+### Note that supporting "extractROWS" and "c" makes "replaceROWS" (and thus
+### "[<-") work out-of-the-box!
 ###
 
 ### Somewhat painful that we do not always have a DataFrame in elementMetadata
@@ -527,6 +533,96 @@ rbind_mcols <- function(x, ...)
     do.call(rbind, lapply(mcols_list, fillCols))
 }
 
+### The "concatenate_objects" method for Vector objects concatenates the
+### objects in 'objects' by concatenating their parallel slots. Note that
+### it works out-of-the-box and does the right thing on most Vector
+### derivatives as long as parallelSlotNames() returns the names of all
+### the parallel slots. For those Vector derivatives for which it does
+### not work nor do the right thing, it is strongly advised to override
+### it rather than trying to override the "c" method for Vector objects
+### with a specialized method. The specialized "concatenate_objects"
+### method will typically delegate to the method below via the use of
+### callNextMethod(). See "concatenate_objects" methods for Hits and Rle
+### objects for some examples.
+### No Vector derivative should need to override the "c" method for Vector
+### objects.
+.concatenate_Vector_objects <- function(.Object, objects,
+                                        use.names=TRUE, ignore.mcols=FALSE)
+{
+    if (!is.list(objects))
+        stop("'objects' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(ignore.mcols))
+        stop("'ignore.mcols' must be TRUE or FALSE")
+
+    NULL_idx <- which(sapply_isNULL(objects))
+    if (length(NULL_idx) != 0L)
+        objects <- objects[-NULL_idx]
+    if (length(objects) == 0L) {
+        if (length(.Object) != 0L)
+            .Object <- .Object[integer(0)]
+        return(.Object)
+    }
+
+    ## TODO: Implement (in C) fast 'elementIs(objects, class)' that does
+    ##
+    ##     sapply(objects, is, class, USE.NAMES=FALSE)
+    ##
+    ## and use it here. 'elementIs(objects, "NULL")' should work and be
+    ## equivalent to 'sapply_isNULL(objects)'.
+    if (!all(vapply(objects, is, logical(1), class(.Object),
+                    USE.NAMES=FALSE)))
+        stop(wmsg("the objects to concatenate must be ", class(.Object),
+                  " objects (or NULLs)"))
+
+    names(objects) <- NULL  # so lapply(objects, ...) below returns an
+                            # unnamed list
+
+    ## Concatenate all parallel slots (except elementMetadata).
+    pslotnames <- setdiff(parallelSlotNames(.Object), "elementMetadata")
+    ans_pslots <- lapply(setNames(pslotnames, pslotnames),
+        function(slotname) {
+            slot_list <- lapply(objects, slot, slotname)
+            concatenate_objects(slot(.Object, slotname), slot_list)
+        }
+    )
+
+    ## Concatenate elementMetadata slots.
+    if (!ignore.mcols)
+        ans_pslots <- c(ans_pslots,
+                        list(elementMetadata=do.call(rbind_mcols, objects)))
+
+    ans <- do.call(BiocGenerics:::replaceSlots,
+                   c(list(.Object), ans_pslots, list(check=TRUE)))
+    if (!use.names)
+        names(ans) <- NULL
+    ans
+}
+
+setMethod("concatenate_objects", "Vector", .concatenate_Vector_objects)
+
+### Thin wrapper around concatenate_objects(). No Vector derivative should
+### need to override this method. See "concatenate_objects" method for Vector
+### objects above for more information.
+setMethod("c", "Vector",
+    function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop(wmsg("\"c\" method for Vector objects ",
+                      "does not support the 'recursive' argument"))
+        if (missing(x)) {
+            objects <- list(...)
+            x <- objects[[1L]]
+        } else {
+            objects <- list(x, ...)
+        }
+        concatenate_objects(x, objects,
+                            use.names=TRUE,
+                            ignore.mcols=ignore.mcols)
+    }
+)
+
 ### FIXME: This method doesn't work properly on DataTable objects if 'after'
 ### is >= 1 and < length(x).
 setMethod("append", c("Vector", "Vector"),
@@ -546,7 +642,7 @@ setMethod("append", c("Vector", "Vector"),
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Evaluating.
+### Evaluating
 ###
 
 setMethod("eval", c("expression", "Vector"),
@@ -579,8 +675,9 @@ transform.Vector <- transformColumns
 
 setMethod("transform", "Vector", transform.Vector)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Utilities.
+### Utilities
 ###
 
 setGeneric("expand.grid", signature="...")
@@ -616,3 +713,4 @@ setMethod("by", "Vector",
           })
 
 diff.Vector <- function(x, ...) diff(x, ...)
+

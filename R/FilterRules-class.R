@@ -8,6 +8,9 @@ setClass("FilterRules", representation(active = "logical"),
          prototype(elementType = "expression_OR_function"),
          contains = "SimpleList")
 
+setMethod("parallelSlotNames", "FilterRules",
+          function(x) c("active", callNextMethod()))
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessors.
 ###
@@ -52,9 +55,6 @@ setReplaceMethod("active", "FilterRules", function(x, value) {
     x
   } else stop("unsupported type of 'value'")
 })
-
-setMethod("parallelSlotNames", "FilterRules",
-          function(x) c("active", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor.
@@ -165,50 +165,6 @@ setReplaceMethod("[[", "FilterRules",
   c(.valid.FilterRules.active(x), .valid.FilterRules.rules(x))
 
 setValidity2("FilterRules", .valid.FilterRules)
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining
-###
-
-setMethod("append", c("FilterRules", "FilterRules"),
-          function(x, values, after=length(x))
-          {
-            if (!isSingleNumber(after))
-              stop("'after' must be a single number")
-            ans <-
-              FilterRules(append(as.list(x, use.names = TRUE),
-                                 as.list(values, use.names = TRUE),
-                                 after = after))
-            active(ans) <-
-              structure(append(active(x), active(values), after),
-                        names = names(ans))
-            mcols(ans) <- rbind(mcols(x), mcols(values))
-            ans
-          })
-
-setMethod("c", "FilterRules",
-          function(x, ..., recursive = FALSE) {
-            if (!identical(recursive, FALSE))
-              stop("\"c\" method for FilterRules objects ",
-                   "does not support the 'recursive' argument")
-            if (missing(x))
-              args <- unname(list(...))
-            else
-              args <- unname(list(x, ...))
-            args <- lapply(args, as, "FilterRules")              
-            ans <-
-              FilterRules(unlist(lapply(args,
-                                        function(x) {
-                                          elts <- as.list(x)
-                                          names(elts) <- names(x)
-                                          elts
-                                        }), recursive = FALSE))
-            active(ans) <-
-              structure(unlist(lapply(args, active), use.names = FALSE),
-                        names = names(ans))
-            mcols(ans) <- do.call(rbind, lapply(args, mcols))
-            ans
-          })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Evaluating

@@ -34,14 +34,18 @@
 \alias{recycleArg}
 \alias{fold}
 
-\alias{duplicatedIntegerPairs}
-\alias{duplicatedIntegerQuads}
-\alias{matchIntegerPairs}
-\alias{matchIntegerQuads}
+% Stuff from R/vector-utils.R:
+\alias{concatenate_objects,vector-method}
+
+% Stuff from R/integer-utils.R:
 \alias{orderIntegerPairs}
-\alias{orderIntegerQuads}
+\alias{matchIntegerPairs}
 \alias{selfmatchIntegerPairs}
+\alias{duplicatedIntegerPairs}
+\alias{orderIntegerQuads}
+\alias{matchIntegerQuads}
 \alias{selfmatchIntegerQuads}
+\alias{duplicatedIntegerQuads}
 
 \title{S4Vectors internals}
 

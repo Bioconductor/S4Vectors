@@ -101,13 +101,33 @@ lowestListElementClass <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### quick_unlist() and quick_unsplit()
-###
-### Both functions *assume* that 'x' is a list of length >= 1 with no names,
-### and that the list elements in 'x' have the same type. But they don't
-### actually check this!
+### Concatenation
 ###
 
+### Exported!
+### Works on atomic vectors, lists, and factors.
+### Ignore the 'ignore.mcols' argument.
+.concatenate_vectors <- function(.Object, objects,
+                                 use.names=TRUE, ignore.mcols=FALSE)
+{
+    if (!is.list(objects))
+        stop("'objects' must be a list")
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+
+    ans <- as(unlist(unname(objects), recursive=FALSE), class(.Object))
+    if (!use.names)
+        names(ans) <- NULL
+    ans
+}
+
+setMethod("concatenate_objects", "vector", .concatenate_vectors)
+
+### Assumes that 'x' is a list of length >= 1 with no names, and that the
+### list elements in 'x' have the same type. This is NOT checked!
+### TODO: quick_unlist() is superseded by concatenate_objects(). Search code
+### for use of quick_unlist() and replace with use of concatenate_objects().
+### Then remove quick_unlist() definition below.
 quick_unlist <- function(x)
 {
     x1 <- x[[1L]]
@@ -119,6 +139,14 @@ quick_unlist <- function(x)
         do.call(c, x)  # doesn't work on list of factors
     }
 }
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### quick_unsplit()
+###
+### Assumes that 'x' is a list of length >= 1 with no names, and that the
+### list elements in 'x' have the same type. This is NOT checked!
+###
 
 quick_unsplit <- function(x, f)
 {
@@ -141,7 +169,6 @@ quick_unsplit <- function(x, f)
 ### and only a waste of time.
 ###
 
-### NOT exported.
 extract_data_frame_rows <- function(x, i)
 {
     stopifnot(is.data.frame(x))
