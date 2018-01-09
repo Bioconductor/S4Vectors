@@ -617,11 +617,11 @@ setMethod("rep", "Rle",
 
     objects <- lapply(unname(objects), Rle)
 
-    ## Combine "values" slots.
+    ## Concatenate "values" slots.
     values_list <- lapply(objects, slot, "values")
     ans_values <- unlist(values_list, recursive=FALSE)
 
-    ## Combine "lengths" slots.
+    ## Concatenate "lengths" slots.
     lengths_list <- lapply(objects, slot, "lengths")
     ans_lengths <- unlist(lengths_list, recursive=FALSE)
 

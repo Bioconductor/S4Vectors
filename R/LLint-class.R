@@ -184,7 +184,7 @@ setGeneric("concatenateObjects", signature=".Object",
         return(ans)
     }
 
-    ## Combine "bytes" slots.
+    ## Concatenate "bytes" slots.
     bytes_list <- lapply(objects,
         function(object) {
             if (is.null(object))
