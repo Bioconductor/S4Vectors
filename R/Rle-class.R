@@ -626,6 +626,10 @@ setMethod("rep", "Rle",
     ans_lengths <- unlist(lengths_list, recursive=FALSE)
 
     .Object <- Rle(ans_values, ans_lengths)
+
+    ## Call method for Vector objects to concatenate all the parallel
+    ## slots (only "elementMetadata" in the case of Rle) and stick them
+    ## into '.Object'.
     callNextMethod()
 }
 
