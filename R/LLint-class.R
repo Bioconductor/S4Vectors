@@ -157,18 +157,34 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ### for vector-like objects. See R/Vector-class.R for more information.
 ### It can also be used to unlist an ordinary list of vector-like objects.
 setGeneric("concatenateObjects", signature=".Object",
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE)
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
         standardGeneric("concatenateObjects")
 )
 
-### Ignore the '.Object' argument.
-.concatenate_LLint_objects <- function(.Object, objects,
-                                       use.names=TRUE, ignore.mcols=FALSE)
+### Low-level utility used by many "concatenateObjects" methods.
+### Not exported.
+check_class_of_objects_to_concatenate <- function(.Object, objects)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
+    ## TODO: Implement (in C) fast 'elementIs(objects, class)' that does
+    ##
+    ##     sapply(objects, is, class, USE.NAMES=FALSE)
+    ##
+    ## and use it here. 'elementIs(objects, "NULL")' should work and be
+    ## equivalent to 'sapply_isNULL(objects)'.
+    if (!all(vapply(objects, is, logical(1), class(.Object),
+                    USE.NAMES=FALSE)))
+        stop(wmsg("the objects to concatenate must be ", class(.Object),
+                  " objects (or NULLs)"))
+}
+
+### Arguments '.Object', 'use.names', and 'ignore.mcols' are ignored.
+.concatenate_LLint_objects <-
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+{
+    if (!is.list(objects))
+        stop("'objects' must be a list")
 
     ## If one of the objects to combine is a character vector, then all the
     ## objects are coerced to character and combined.
@@ -199,7 +215,7 @@ setGeneric("concatenateObjects", signature=".Object",
     )
     ans_bytes <- unlist(bytes_list, use.names=FALSE)
 
-    new2("LLint", bytes=ans_bytes, check=FALSE)
+    new2("LLint", bytes=ans_bytes, check=check)
 }
 
 setMethod("concatenateObjects", "LLint", .concatenate_LLint_objects)

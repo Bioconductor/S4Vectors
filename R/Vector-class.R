@@ -548,38 +548,24 @@ rbind_mcols <- function(x, ...)
 ### objects for some examples.
 ### No Vector derivative should need to override the "c" method for
 ### Vector objects.
-.concatenate_Vector_objects <- function(.Object, objects,
-                                        use.names=TRUE, ignore.mcols=FALSE)
+.concatenate_Vector_objects <-
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    if (!is.list(objects))
-        stop("'objects' must be a list")
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
     if (!isTRUEorFALSE(ignore.mcols))
         stop("'ignore.mcols' must be TRUE or FALSE")
+    if (!isTRUEorFALSE(check))
+        stop("'check' must be TRUE or FALSE")
 
-    NULL_idx <- which(sapply_isNULL(objects))
-    if (length(NULL_idx) != 0L)
-        objects <- objects[-NULL_idx]
+    objects <- unname(delete_NULLs(objects))
+    check_class_of_objects_to_concatenate(.Object, objects)
+
     if (length(objects) == 0L) {
         if (length(.Object) != 0L)
             .Object <- .Object[integer(0)]
         return(.Object)
     }
-
-    ## TODO: Implement (in C) fast 'elementIs(objects, class)' that does
-    ##
-    ##     sapply(objects, is, class, USE.NAMES=FALSE)
-    ##
-    ## and use it here. 'elementIs(objects, "NULL")' should work and be
-    ## equivalent to 'sapply_isNULL(objects)'.
-    if (!all(vapply(objects, is, logical(1), class(.Object),
-                    USE.NAMES=FALSE)))
-        stop(wmsg("the objects to concatenate must be ", class(.Object),
-                  " objects (or NULLs)"))
-
-    names(objects) <- NULL  # so lapply(objects, ...) below returns an
-                            # unnamed list
 
     ## Concatenate all parallel slots except "NAMES" and "elementMetadata".
     pslotnames <- setdiff(parallelSlotNames(.Object),
@@ -600,12 +586,13 @@ rbind_mcols <- function(x, ...)
     }
 
     ans <- do.call(BiocGenerics:::replaceSlots,
-                   c(list(.Object), ans_pslots, list(check=TRUE)))
+                   c(list(.Object), ans_pslots, list(check=FALSE)))
 
     if (use.names) {
         names_list <- lapply(objects, names)
         object_has_no_names <- vapply(names_list, is.null, logical(1))
         if (!all(object_has_no_names)) {
+            ## Concatenate names.
             names_list[object_has_no_names] <-
                 lapply(objects[object_has_no_names],
                        function(object) character(length(object)))
@@ -615,6 +602,9 @@ rbind_mcols <- function(x, ...)
     } else {
         names(ans) <- NULL
     }
+
+    if (check)
+        validObject(ans)
     ans
 }
 

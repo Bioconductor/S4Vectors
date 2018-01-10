@@ -14,8 +14,17 @@ last_or <- function(x, or)
 }
 
 ### TODO: Maybe implement this in C?
-sapply_isNULL <- function(x)
-    vapply(x, is.null, logical(1), USE.NAMES=FALSE)
+sapply_isNULL <- function(objects)
+    vapply(objects, is.null, logical(1), USE.NAMES=FALSE)
+
+### TODO: Maybe implement this in C?
+delete_NULLs <- function(objects)
+{
+    NULL_idx <- which(sapply_isNULL(objects))
+    if (length(NULL_idx) != 0L)
+        objects <- objects[-NULL_idx]
+    objects
+}
 
 sapply_NROW <- function(x)
 {
@@ -106,9 +115,9 @@ lowestListElementClass <- function(x)
 
 ### Exported!
 ### Works on atomic vectors, lists, and factors.
-### Ignore the 'ignore.mcols' argument.
-.concatenate_vectors <- function(.Object, objects,
-                                 use.names=TRUE, ignore.mcols=FALSE)
+### Arguments 'ignore.mcols' and 'check' are ignored.
+.concatenate_vectors <-
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")

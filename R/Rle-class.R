@@ -595,27 +595,21 @@ setMethod("rep", "Rle",
 ### Concatenation
 ###
 
-### Ignore the '.Object' argument.
-.concatenate_Rle_objects <- function(.Object, objects,
-                                     use.names=TRUE, ignore.mcols=FALSE)
+### Argument '.Object' is ignored.
+.concatenate_Rle_objects <-
+    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
-    if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
-    if (!isTRUEorFALSE(ignore.mcols))
-        stop("'ignore.mcols' must be TRUE or FALSE")
 
-    NULL_idx <- which(sapply_isNULL(objects))
-    if (length(NULL_idx) != 0L)
-        objects <- objects[-NULL_idx]
+    objects <- unname(delete_NULLs(objects))
+    objects <- lapply(objects, Rle)
+
     if (length(objects) == 0L) {
         if (length(.Object) != 0L)
             .Object <- .Object[integer(0)]
         return(.Object)
     }
-
-    objects <- lapply(unname(objects), Rle)
 
     ## Concatenate "values" slots.
     values_list <- lapply(objects, slot, "values")
