@@ -436,10 +436,11 @@ setMethod("replaceROWS", "Vector",
 
         ## --<1>-- Concatenate 'x' and 'value' with c() -----
 
-        ## We assume that c() works on objects of class 'class(x)' and that it
-        ## does the right thing i.e. that it returns an object of the same
-        ## class as 'x' and of length 'length(x) + length(value)'.
-        ans <- c(x, value)
+        ## We assume that concatenateObjects() works on objects of
+        ## class 'class(x)' and does the right thing i.e. that it
+        ## returns an object of the same class as 'x' and of length
+        ## 'length(x) + length(value)'. We skip validation.
+        ans <- concatenateObjects(x, list(x, value), check=FALSE)
 
         ## --<2>-- Subset 'c(x, value)' with extractROWS() -----
 
@@ -450,6 +451,8 @@ setMethod("replaceROWS", "Vector",
         ## trying to normalize it.
         idx <- NativeNSBS(idx, length(ans), TRUE, FALSE)
         ## We assume that extractROWS() works on an object of class 'class(x)'.
+        ## For some objects (e.g. Hits), extractROWS() will take care of
+        ## validating the returned object.
         ans <- extractROWS(ans, idx)
 
         ## --<3>-- Restore the original decoration -----
