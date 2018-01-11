@@ -456,7 +456,7 @@ setReplaceMethod("[", "DataFrame",
                    if (!length(j)) # nothing to replace
                      return(x)
                    if (is(value, "list") || is(value, "List")) {
-                     null <- vapply(value, is.null, logical(1L))
+                     null <- sapply_isNULL(value)
                      if (any(null)) { ### FIXME: data.frame handles gracefully
                        stop("NULL elements not allowed in list value")
                      }

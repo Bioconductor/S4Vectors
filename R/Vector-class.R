@@ -516,7 +516,7 @@ rbind_mcols <- function(x, ...)
     mcols_list <- lapply(args, mcols)
     if (length(mcols_list) == 1L)
         return(mcols_list[[1L]])
-    mcols_is_null <- sapply(mcols_list, is.null)
+    mcols_is_null <- sapply_isNULL(mcols_list)
     if (all(mcols_is_null))
         return(NULL)    
     mcols_list[mcols_is_null] <- lapply(
@@ -591,7 +591,7 @@ rbind_mcols <- function(x, ...)
 
     if (use.names) {
         names_list <- lapply(objects, names)
-        object_has_no_names <- vapply(names_list, is.null, logical(1))
+        object_has_no_names <- sapply_isNULL(names_list)
         if (!all(object_has_no_names)) {
             ## Concatenate names.
             names_list[object_has_no_names] <-

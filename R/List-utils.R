@@ -196,7 +196,7 @@ setMethod("within", "List",
             e <- list2env(as.list(data), parent=enclos)
             safeEval(substitute(expr), e, enclos)
             l <- mget(ls(e), e)
-            l <- l[!sapply(l, is.null)]
+            l <- delete_NULLs(l)
             nD <- length(del <- setdiff(names(data), (nl <- names(l))))
             for (nm in nl)
               data[[nm]] <- l[[nm]]
