@@ -4,6 +4,8 @@
 \alias{class:Pairs}
 \alias{Pairs-class}
 
+\alias{parallelSlotNames,Pairs-method}
+
 % accessors
 \alias{first}
 \alias{first,Pairs-method}
@@ -15,8 +17,6 @@
 \alias{second<-,Pairs-method}
 \alias{names,Pairs-method}
 \alias{names<-,Pairs-method}
-\alias{length,Pairs-method}
-\alias{parallelSlotNames,Pairs-method}
 
 % comparison
 \alias{match,Pairs,Pairs-method}

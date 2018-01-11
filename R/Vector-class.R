@@ -577,9 +577,7 @@ rbind_mcols <- function(x, ...)
         }
     )
 
-    if (ignore.mcols) {
-        mcols(.Object) <- NULL
-    } else {
+    if (!ignore.mcols) {
         ## Concatenate "elementMetadata" slots.
         ans_mcols <- do.call(rbind_mcols, objects)
         ans_pslots <- c(ans_pslots, list(elementMetadata=ans_mcols))
@@ -587,6 +585,9 @@ rbind_mcols <- function(x, ...)
 
     ans <- do.call(BiocGenerics:::replaceSlots,
                    c(list(.Object), ans_pslots, list(check=FALSE)))
+
+    if (ignore.mcols)
+        mcols(ans) <- NULL
 
     if (use.names) {
         names_list <- lapply(objects, names)

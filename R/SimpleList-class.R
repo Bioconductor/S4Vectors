@@ -26,8 +26,6 @@ setMethod("parallelSlotNames", "SimpleList",
 ### Accessor methods
 ###
 
-setMethod("length", "SimpleList", function(x) length(as.list(x)))
-
 setMethod("names", "SimpleList", function(x) names(as.list(x)))
 
 setReplaceMethod("names", "SimpleList",

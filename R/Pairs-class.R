@@ -14,16 +14,8 @@ setClass("Pairs",
                    second=logical(0L),
                    elementMetadata=DataFrame()))
 
-setValidity2("Pairs", .valid.Pairs)
-
-.valid.Pairs <- function(object) {
-    c(if (length(object@first) != length(object@second))
-          "'first' and 'second' must have the same length",
-      if (!is.null(object@NAMES) &&
-          length(object@NAMES) != length(object@first))
-          "'NAMES', if not NULL, must have the same length as object"
-      )
-}
+setMethod("parallelSlotNames", "Pairs", function(x)
+    c("first", "second", "NAMES", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessors
@@ -54,11 +46,6 @@ setReplaceMethod("names", "Pairs", function(x, value) {
                      x@NAMES <- value
                      x
                  })
-
-setMethod("length", "Pairs", function(x) length(first(x)))
-
-setMethod("parallelSlotNames", "Pairs", function(x)
-    c("first", "second", "NAMES", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Constructor

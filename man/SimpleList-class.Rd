@@ -8,7 +8,6 @@
 \alias{parallelSlotNames,SimpleList-method}
 
 % accessors
-\alias{length,SimpleList-method}
 \alias{names,SimpleList-method}
 \alias{names<-,SimpleList-method}
 
