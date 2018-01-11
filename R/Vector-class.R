@@ -380,7 +380,15 @@ setMethod("rename", "Vector", .renameVector)
 ### "extractROWS" and "replaceROWS" method for his/her objects.
 ###
 
-setMethod("[", "Vector", subset_along_ROWS)
+setMethod("[", "Vector",
+    function(x, i, j, ..., drop=TRUE)
+    {
+        ans <- subset_along_ROWS(x, i, , ..., drop=drop)
+        if (!missing(j))
+            mcols(ans) <- mcols(ans)[ , j, drop=FALSE]
+        ans
+    }
+)
 
 ### We provide a default "extractROWS" method for Vector objects that only
 ### subsets the individual parallel slots. That should be enough for most
