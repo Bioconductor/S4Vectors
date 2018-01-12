@@ -230,9 +230,12 @@
     \item{}{
       \code{c(x, ..., ignore.mcols=FALSE)}:
       Concatenate \code{x} and the Vector objects in \code{...} together.
-      Any object in \code{...} must belong to the same class as \code{x},
-      or to one of its subclasses, or must be \code{NULL}.
-      The result is an object of the same class as \code{x}.
+      Any object in \code{...} should belong to the same class as \code{x}
+      or to one of its subclasses. If not, then an attempt will be made to
+      coerce it with \code{as(object, class(x), strict=FALSE)}.
+      \code{NULL}s are accepted and ignored.
+      The result of the concatenation is an object of the same class
+      as \code{x}.
 
       Handling of the metadata columns:
       \itemize{
@@ -250,10 +253,11 @@
               object having NO metadata columns.
       }
     }
-    \item{}{\code{append(x, values, after = length(x))}: Insert the
-      \code{Vector} \code{values} onto \code{x} at the position given by
-      \code{after}. \code{values} must have an \code{elementType} that extends
-      that of \code{x}.
+    \item{}{
+      \code{append(x, values, after=length(x))}:
+      Insert the \code{Vector} \code{values} onto \code{x} at the position
+      given by \code{after}. \code{values} must have an \code{elementType}
+      that extends that of \code{x}.
     }
     \item{}{\code{expand.grid(...)}: Find cartesian product of every
       vector in \code{\dots} and return a data.frame, each column of

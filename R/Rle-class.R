@@ -593,11 +593,7 @@ setMethod("rep", "Rle",
 .concatenate_Rle_objects <-
     function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    if (!is.list(objects))
-        stop("'objects' must be a list")
-
-    objects <- unname(delete_NULLs(objects))
-    objects <- lapply(objects, Rle)
+    objects <- prepare_objects_to_concatenate(.Object, objects)
 
     if (length(objects) == 0L) {
         if (length(.Object) != 0L)

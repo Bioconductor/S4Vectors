@@ -404,8 +404,7 @@ setMethod("show", "Hits",
 .concatenate_Hits_objects <-
     function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    objects <- unname(delete_NULLs(objects))
-    check_class_of_objects_to_concatenate(.Object, objects)
+    objects <- prepare_objects_to_concatenate(.Object, objects)
     .check_that_Hits_objects_are_concatenable(.Object, objects)
     callNextMethod()
 }

@@ -215,8 +215,10 @@ test_List_concatenate <- function() {
     col2 <- IntegerList(two=int2, one=int1, compress=compress)
     col3 <- IntegerList(int2, compress=compress)
 
-    if (compress)
+    if (compress) {
       checkException(append(col1, col2, c(1,2,3)), silent=TRUE)
+      checkException(c(col1, col2, recursive=TRUE), silent=TRUE)
+    }
     checkException(append(col1, col2, col3), silent=TRUE)
 
     checkIdentical(append(col1, col2),
@@ -236,10 +238,8 @@ test_List_concatenate <- function() {
     checkIdentical(c(col1, col2, col3),
                    IntegerList(one=int1, int2, two=int2, one=int1,
                                int2, compress=compress))
-    if (compress) {
-      checkException(c(col1, int2), silent=TRUE)
-      checkException(c(col1, col2, recursive=TRUE), silent=TRUE)
-    }
+    checkIdentical(IntegerList(c(as.list(col1), int2), compress=compress),
+                   c(col1, int2))
   }
 }
 

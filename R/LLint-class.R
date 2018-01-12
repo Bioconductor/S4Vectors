@@ -163,20 +163,18 @@ setGeneric("concatenateObjects", signature=".Object",
 
 ### Low-level utility used by many "concatenateObjects" methods.
 ### Not exported.
-check_class_of_objects_to_concatenate <- function(.Object, objects)
+prepare_objects_to_concatenate <- function(.Object, objects)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
-    ## TODO: Implement (in C) fast 'elementIs(objects, class)' that does
-    ##
-    ##     sapply(objects, is, class, USE.NAMES=FALSE)
-    ##
-    ## and use it here. 'elementIs(objects, "NULL")' should work and be
-    ## equivalent to 'sapply_isNULL(objects)'.
-    if (!all(vapply(objects, is, logical(1), class(.Object),
-                    USE.NAMES=FALSE)))
-        stop(wmsg("the objects to concatenate must be ", class(.Object),
-                  " objects (or NULLs)"))
+    .Object_class <- class(.Object)
+    lapply(unname(delete_NULLs(objects)),
+        function(object)
+            if (!is(object, .Object_class))
+                as(object, .Object_class, strict=FALSE)
+            else
+                object
+    )
 }
 
 ### Arguments '.Object', 'use.names', and 'ignore.mcols' are ignored.

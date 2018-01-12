@@ -587,8 +587,7 @@ rbind_mcols <- function(x, ...)
     if (!isTRUEorFALSE(check))
         stop("'check' must be TRUE or FALSE")
 
-    objects <- unname(delete_NULLs(objects))
-    check_class_of_objects_to_concatenate(.Object, objects)
+    objects <- prepare_objects_to_concatenate(.Object, objects)
 
     if (length(objects) == 0L) {
         if (length(.Object) != 0L)

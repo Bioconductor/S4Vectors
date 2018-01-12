@@ -13,7 +13,13 @@ last_or <- function(x, or)
     if (x_len != 0L) x[[x_len]] else or
 }
 
-### TODO: Maybe implement this in C?
+### TODO: Maybe implement sapply_isNULL in C? Also maybe
+### Implement (in C) fast 'elementIs(objects, class)' that does
+###
+###     sapply(objects, is, class, USE.NAMES=FALSE)
+###
+### and use it here. 'elementIs(objects, "NULL")' should work and be
+### equivalent to 'sapply_isNULL(objects)'.
 sapply_isNULL <- function(objects)
     vapply(objects, is.null, logical(1), USE.NAMES=FALSE)
 
