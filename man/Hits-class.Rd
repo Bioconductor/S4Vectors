@@ -174,7 +174,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
       Replacement version of \code{x[i]}.
     }
   }
-  See \code{?\link[S4Vectors]{[}} in this package (the \pkg{S4Vectors}
+  See \code{?`\link[S4Vectors]{[}`} in this package (the \pkg{S4Vectors}
   package) for more information about subsetting Vector derivatives and
   for an important note about the \code{x[i, j]} form.
 }

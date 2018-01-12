@@ -59,6 +59,7 @@
 \alias{as.list.Vector}
 \alias{as.list,Vector-method}
 
+\alias{[}
 \alias{[,Vector-method}
 \alias{[<-,Vector-method}
 \alias{replaceROWS,Vector-method}
