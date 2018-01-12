@@ -36,6 +36,7 @@
 
 % Stuff from R/vector-utils.R:
 \alias{concatenateObjects,vector-method}
+\alias{concatenateObjects,matrix-method}
 
 % Stuff from R/integer-utils.R:
 \alias{orderIntegerPairs}

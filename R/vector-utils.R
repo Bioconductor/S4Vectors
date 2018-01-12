@@ -120,7 +120,7 @@ lowestListElementClass <- function(x)
 ###
 
 ### Exported!
-### Works on atomic vectors, lists, and factors.
+### Works on atomic vectors, factors, lists, matrices, and data frames.
 ### Arguments 'ignore.mcols' and 'check' are ignored.
 .concatenate_vectors <-
     function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
@@ -130,13 +130,20 @@ lowestListElementClass <- function(x)
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
 
-    ans <- as(unlist(unname(objects), recursive=FALSE), class(.Object))
-    if (!use.names)
-        names(ans) <- NULL
+    if (length(dim(.Object)) == 2L) {
+        ans <- do.call(rbind, unname(objects))
+        if (!use.names)
+            rownames(ans) <- NULL
+    } else {
+        ans <- unlist(unname(objects), recursive=FALSE)
+        if (!use.names)
+            names(ans) <- NULL
+    }
     ans
 }
 
 setMethod("concatenateObjects", "vector", .concatenate_vectors)
+setMethod("concatenateObjects", "matrix", .concatenate_vectors)
 
 ### Assumes that 'x' is a list of length >= 1 with no names, and that the
 ### list elements in 'x' have the same type. This is NOT checked!
