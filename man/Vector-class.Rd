@@ -252,6 +252,11 @@
               metadata columns, which will result in the concatenated
               object having NO metadata columns.
       }
+
+      IMPORTANT NOTE: Be aware that calling \code{c} with named arguments
+      (e.g. \code{c(a=x, b=y)}) tends to break method dispatch so please
+      make sure that \code{args} is an \emph{unnamed} list when using
+      \code{do.call(c, args)} to concatenate a list of objects together.
     }
     \item{}{
       \code{append(x, values, after=length(x))}:

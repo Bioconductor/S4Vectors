@@ -218,8 +218,8 @@
       \code{c(x, ..., ignore.mcols=FALSE)}:
       Concatenate Rle object \code{x} and the Rle objects in
       \code{...} together.
-      See \code{?\link{c}} in this package (the \pkg{S4Vectors} package)
-      for more information about concatenating Vector derivatives.
+      See \code{?\link[S4Vectors]{c}} in this package (the \pkg{S4Vectors}
+      package) for more information about concatenating Vector derivatives.
     }
     \item{}{
       \code{append(x, values, after = length(x))}:
