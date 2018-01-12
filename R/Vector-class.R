@@ -376,10 +376,17 @@ setMethod("rename", "Vector", .renameVector)
 ###
 ### The "[" and "[<-" methods for Vector objects are just delegating to
 ### extractROWS() and replaceROWS() for performing the real work. Most of
-### the times, the author of a Vector subclass only needs to implement an
-### "extractROWS" and "replaceROWS" method for his/her objects.
+### the times, the author of a Vector subclass only needs to implement
+### an "extractROWS" and "replaceROWS" method for his/her objects.
 ###
 
+### The "[" method for Vector objects supports the 'x[i, j]' form to
+### allow the user to conveniently subset the metadata columns thru 'j'.
+### Note that a Vector subclass with a true 2-D semantic (e.g.
+### SummarizedExperiment) needs to overwrite this. This means that code
+### that handles a Vector derivative 'x' should not use this feature as it
+### can not reliably assume that 'x' supports it. For this reason this
+### feature should only be used interactively.
 setMethod("[", "Vector",
     function(x, i, j, ..., drop=TRUE)
     {
@@ -391,8 +398,17 @@ setMethod("[", "Vector",
 )
 
 ### We provide a default "extractROWS" method for Vector objects that only
-### subsets the individual parallel slots. That should be enough for most
-### Vector derivatives that have parallelSlotNames() properly set.
+### subsets the individual parallel slots.
+### Note that this method will work out-of-the-box and do the right thing
+### on most Vector subclasses as long as parallelSlotNames() returns the
+### names of all the parallel slots on objects of the subclass (some Vector
+### subclasses might require a "parallelSlotNames" method for this to happen).
+### For those Vector subclasses on which extractROWS() does not work
+### out-of-the-box nor do the right thing, it is strongly advised to override
+### the method for Vector objects rather than trying to override the "["
+### method for Vector objects with a specialized method. The specialized
+### "extractROWS" method will typically delegate to the method below via the
+### use of callNextMethod(). See "extractROWS" method for Hits for an example.
 setMethod("extractROWS", "Vector",
     function(x, i)
     {
@@ -435,7 +451,7 @@ setReplaceMethod("[", "Vector",
     }
 )
 
-### Work on any Vector object for which c() and extractROWS() work.
+### Work on any Vector object on which c() and extractROWS() work.
 ### Assume 'value' is compatible with 'x'.
 setMethod("replaceROWS", "Vector",
     function(x, i, value)
@@ -544,20 +560,22 @@ rbind_mcols <- function(x, ...)
     do.call(rbind, lapply(mcols_list, fillCols))
 }
 
-### The "concatenateObjects" method for Vector objects concatenates the
-### objects in 'objects' by concatenating their parallel slots. The
-### concatenated slots are returned in '.Object' so the method behaves
-### like an endomorphism with respect to its first argument. Note that
-### it will work out-of-the-box and do the right thing on most Vector
-### derivatives as long as parallelSlotNames() returns the names of all
-### the parallel slots. For those Vector derivatives for which it does
-### not work nor do the right thing, it is strongly advised to override
-### it rather than trying to override the "c" method for Vector objects
-### with a specialized method. The specialized "concatenateObjects"
-### method will typically delegate to the method below via the use of
-### callNextMethod(). See "concatenateObjects" methods for Hits and Rle
-### objects for some examples.
-### No Vector derivative should need to override the "c" method for
+### We provide a default "concatenateObjects" method for Vector objects that
+### only concatenates the individual parallel slots. The concatenated slots
+### are returned in '.Object' so the method behaves like an endomorphism with
+### respect to its first argument.
+### Note that this method will work out-of-the-box and do the right thing
+### on most Vector subclasses as long as parallelSlotNames() returns the
+### names of all the parallel slots on objects of the subclass (some Vector
+### subclasses might require a "parallelSlotNames" method for this to happen).
+### For those Vector subclasses on which concatenateObjects() does not work
+### out-of-the-box nor do the right thing, it is strongly advised to override
+### the method for Vector objects rather than trying to override the "c"
+### method for Vector objects with a specialized method. The specialized
+### "concatenateObjects" method will typically delegate to the method below
+### via the use of callNextMethod(). See "concatenateObjects" methods for
+### Hits and Rle objects for some examples.
+### No Vector subclass should need to override the "c" method for
 ### Vector objects.
 .concatenate_Vector_objects <-
     function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
@@ -625,9 +643,8 @@ setMethod("concatenateObjects", "Vector", .concatenate_Vector_objects)
 ### Thin wrapper around concatenateObjects(). Behave like an endomorphism
 ### i.e. return an object of the same class as 'x'. In particular 'c(x)'
 ### should return 'x'.
-### No Vector derivative should need to override this method.
-### See "concatenateObjects" method for Vector objects above for more
-### information.
+### No Vector subclass should need to override this method. See the
+### "concatenateObjects" method for Vector objects above for more information.
 setMethod("c", "Vector",
     function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
