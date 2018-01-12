@@ -384,9 +384,9 @@ setMethod("rename", "Vector", .renameVector)
 ### allow the user to conveniently subset the metadata columns thru 'j'.
 ### Note that a Vector subclass with a true 2-D semantic (e.g.
 ### SummarizedExperiment) needs to overwrite this. This means that code
-### that handles a Vector derivative 'x' should not use this feature as it
-### can not reliably assume that 'x' supports it. For this reason this
-### feature should only be used interactively.
+### intended to operate on an arbitrary Vector derivative 'x' should not
+### use this feature as there is no guarantee that 'x' supports it. For
+### this reason this feature should preferrably be used interactively only.
 setMethod("[", "Vector",
     function(x, i, j, ..., drop=TRUE)
     {

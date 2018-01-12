@@ -193,18 +193,27 @@
 }
 
 \section{Subsetting}{
-  In the code snippets below, \code{x} is a Vector object or regular R vector
-  object. The R vector object methods for \code{window} are defined in this
-  package and the remaining methods are defined in base R.
+  In the code snippets below, \code{x} is a Vector object.
 
   \describe{
     \item{}{
-      \code{x[i, drop=TRUE]}:
-      If defined, returns a new Vector object made of selected elements
+      \code{x[i]}:
+      When supported, return a new Vector object made of selected elements
       \code{i}, which can be missing; an NA-free logical, numeric, or
-      character vector; or a logical Rle object. The \code{drop} argument
-      specifies whether or not to coerce the returned sequence to an ordinary
-      vector.
+      character vector; or a logical Rle object.
+    }
+    \item{}{
+      \code{x[i, j]}:
+      Like the above, but allow the user to conveniently subset the metadata
+      columns thru \code{j}.
+
+      NOTE TO DEVELOPERS: A Vector subclass with a true 2-D semantic (e.g.
+      \link[SummarizedExperiment]{SummarizedExperiment}) needs to overwrite
+      the \code{"["} method for Vector objects. This means that code intended
+      to operate on an arbitrary Vector derivative \code{x} should not use
+      this feature as there is no guarantee that \code{x} supports it. For
+      this reason this feature should preferrably be used \emph{interactively}
+      only.
     }
     \item{}{
       \code{x[i] <- value}:
