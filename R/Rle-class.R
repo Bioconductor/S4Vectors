@@ -289,7 +289,7 @@ setMethod("replaceROWS", "Rle",
         if (lv != 1L) {
             ans <- Rle(replaceROWS(decodeRle(x), i, as.vector(value)))
             mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
-            return(ans)
+            return(as(ans, class(x)))  # so the function is an endomorphism
         }
 
         ## From here, 'value' is guaranteed to be of length 1.
@@ -373,7 +373,7 @@ setMethod("replaceROWS", "Rle",
             values <- dummy_value[values]
         ans <- Rle(values, unlist(lapply(subseqs, "[[", "lengths")))
         mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
-        ans
+        as(ans, class(x))  # so the function is an endomorphism
     }
 )
 
@@ -535,7 +535,7 @@ setMethod("rep.int", "Rle",
             stop("invalid 'times' argument")
         ans <- Rle(rep.int(runValue(x), times),
                    rep.int(runLength(x), times))
-        as(ans, class(x))  # rep.int() must act like an endomorphism
+        as(ans, class(x))  # so the function is an endomorphism
     }
 )
 
