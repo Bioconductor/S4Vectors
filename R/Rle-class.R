@@ -289,7 +289,7 @@ setMethod("replaceROWS", "Rle",
         if (lv != 1L) {
             ans <- Rle(replaceROWS(decodeRle(x), i, as.vector(value)))
             mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
-            return(as(ans, class(x)))  # so the function is an endomorphism
+            return(ans)
         }
 
         ## From here, 'value' is guaranteed to be of length 1.
@@ -373,7 +373,7 @@ setMethod("replaceROWS", "Rle",
             values <- dummy_value[values]
         ans <- Rle(values, unlist(lapply(subseqs, "[[", "lengths")))
         mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
-        as(ans, class(x))  # so the function is an endomorphism
+        ans
     }
 )
 
