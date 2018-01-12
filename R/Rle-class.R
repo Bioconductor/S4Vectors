@@ -67,7 +67,8 @@ setValidity2("Rle", .valid_Rle)
 ### Low-level constructor.
 new_Rle <- function(values=logical(0), lengths=NULL)
 {
-    stopifnot(is(values, "vector_OR_factor"))
+    if (!is(values, "vector_OR_factor"))
+        stop("Rle of type '", typeof(values), "' is not supported")
     if (!is.null(lengths)) {
         if (!(is.numeric(lengths) || is.LLint(lengths)))
             stop("'lengths' must be NULL or a numeric or LLint vector")
@@ -122,14 +123,7 @@ setReplaceMethod("runValue", "Rle",
 ### Coercion
 ###
 
-setAs("vector", "Rle", function(from) Rle(from))
-setAs("logical", "Rle", function(from) Rle(from))
-setAs("integer", "Rle", function(from) Rle(from))
-setAs("numeric", "Rle", function(from) Rle(from))
-setAs("complex", "Rle", function(from) Rle(from))
-setAs("character", "Rle", function(from) Rle(from))
-setAs("raw", "Rle", function(from) Rle(from))
-setAs("factor", "Rle", function(from) Rle(from))
+setAs("ANY", "Rle", function(from) Rle(from))
 
 setAs("Rle", "vector", function(from) as.vector(from))
 setAs("Rle", "logical", function(from) as.logical(from))

@@ -29,14 +29,7 @@
 \alias{as.data.frame,Rle-method}
 \alias{as.list,Rle-method}
 \alias{coerce,Rle,list-method}
-\alias{coerce,vector,Rle-method}
-\alias{coerce,logical,Rle-method}
-\alias{coerce,integer,Rle-method}
-\alias{coerce,numeric,Rle-method}
-\alias{coerce,complex,Rle-method}
-\alias{coerce,character,Rle-method}
-\alias{coerce,raw,Rle-method}
-\alias{coerce,factor,Rle-method}
+\alias{coerce,ANY,Rle-method}
 \alias{coerce,Rle,vector-method}
 \alias{coerce,Rle,logical-method}
 \alias{coerce,Rle,integer-method}
