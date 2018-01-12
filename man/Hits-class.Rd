@@ -158,10 +158,25 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 }
 
 \section{Subsetting}{
-  In the code snippets below, \code{x} is a \code{Hits} object.
+  In the code snippets below, \code{x} is a Hits object.
   \describe{
-    \item{}{\code{x[i]}: Subset the Hits object.}
+    \item{}{
+      \code{x[i]}:
+      Return a new Hits object made of the elements selected by \code{i}.
+    }
+    \item{}{
+      \code{x[i, j]}:
+      Like the above, but allow the user to conveniently subset the metadata
+      columns thru \code{j}.
+    }
+    \item{}{
+      \code{x[i] <- value}:
+      Replacement version of \code{x[i]}.
+    }
   }
+  See \code{?\link[S4Vectors]{[}} in this package (the \pkg{S4Vectors}
+  package) for more information about subsetting Vector derivatives and
+  for an important note about the \code{x[i, j]} form.
 }
 
 \section{Concatenation}{
@@ -170,8 +185,8 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
       \code{c(x, ..., ignore.mcols=FALSE)}:
       Concatenate Hits object \code{x} and the Hits objects in
       \code{...} together.
-      See \code{?\link{c}} in this package (the \pkg{S4Vectors} package)
-      for more information about concatenating Vector derivatives.
+      See \code{?\link[S4Vectors]{c}} in this package (the \pkg{S4Vectors}
+      package) for more information about concatenating Vector derivatives.
     }
   }
 }

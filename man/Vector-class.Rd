@@ -194,13 +194,13 @@
 
 \section{Subsetting}{
   In the code snippets below, \code{x} is a Vector object.
-
   \describe{
     \item{}{
       \code{x[i]}:
-      When supported, return a new Vector object made of selected elements
-      \code{i}, which can be missing; an NA-free logical, numeric, or
-      character vector; or a logical Rle object.
+      When supported, return a new Vector object of the same class as \code{x}
+      made of the elements selected by \code{i}. \code{i} can be missing;
+      an NA-free logical, numeric, or character vector or factor (as ordinary
+      vector or \link{Rle} object); or a \link[IRanges]{Ranges} object.
     }
     \item{}{
       \code{x[i, j]}:
