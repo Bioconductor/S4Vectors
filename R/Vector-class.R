@@ -594,8 +594,11 @@ rbind_mcols <- function(x, ...)
     pslotnames <- setdiff(x_pslotnames, c("NAMES", "elementMetadata"))
     ans_pslots <- lapply(setNames(pslotnames, pslotnames),
         function(slotname) {
-            slot_list <- lapply(all_objects, slot, slotname)
-            concatenateObjects(slot_list[[1L]], slot_list[-1L])
+            x_slot <- slot(x, slotname)
+            if (is.null(x_slot))
+                return(NULL)
+            slot_list <- lapply(objects, slot, slotname)
+            concatenateObjects(x_slot, slot_list)
         }
     )
 
