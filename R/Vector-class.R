@@ -397,10 +397,10 @@ setMethod("[", "Vector",
     }
 )
 
-### We provide a default "extractROWS" method for Vector objects that only
-### subsets the individual parallel slots.
+### We provide a default "extractROWS" method for Vector objects that subsets
+### all the parallel slots.
 ### Note that this method will work out-of-the-box and do the right thing
-### on most Vector subclasses as long as parallelSlotNames() returns the
+### on most Vector subclasses as long as parallelSlotNames() reports the
 ### names of all the parallel slots on objects of the subclass (some Vector
 ### subclasses might require a "parallelSlotNames" method for this to happen).
 ### For those Vector subclasses on which extractROWS() does not work
@@ -464,7 +464,7 @@ setMethod("replaceROWS", "Vector",
         ## class 'class(x)' and does the right thing i.e. that it
         ## returns an object of the same class as 'x' and of length
         ## 'length(x) + length(value)'. We skip validation.
-        ans <- concatenateObjects(x, list(x, value), check=FALSE)
+        ans <- concatenateObjects(x, list(value), check=FALSE)
 
         ## --<2>-- Subset 'c(x, value)' with extractROWS() -----
 
@@ -561,11 +561,10 @@ rbind_mcols <- function(x, ...)
 }
 
 ### We provide a default "concatenateObjects" method for Vector objects that
-### only concatenates the individual parallel slots. The concatenated slots
-### are returned in '.Object' so the method behaves like an endomorphism with
-### respect to its first argument.
+### concatenates all the parallel slots. The method behaves like
+### an endomorphism with respect to its first argument 'x'.
 ### Note that this method will work out-of-the-box and do the right thing
-### on most Vector subclasses as long as parallelSlotNames() returns the
+### on most Vector subclasses as long as parallelSlotNames() reports the
 ### names of all the parallel slots on objects of the subclass (some Vector
 ### subclasses might require a "parallelSlotNames" method for this to happen).
 ### For those Vector subclasses on which concatenateObjects() does not work
@@ -578,7 +577,7 @@ rbind_mcols <- function(x, ...)
 ### No Vector subclass should need to override the "c" method for
 ### Vector objects.
 .concatenate_Vector_objects <-
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
@@ -587,53 +586,47 @@ rbind_mcols <- function(x, ...)
     if (!isTRUEorFALSE(check))
         stop("'check' must be TRUE or FALSE")
 
-    objects <- prepare_objects_to_concatenate(.Object, objects)
+    objects <- prepare_objects_to_concatenate(x, objects)
+    all_objects <- c(list(x), objects)
 
-    if (length(objects) == 0L) {
-        if (length(.Object) != 0L)
-            .Object <- .Object[integer(0)]
-        return(.Object)
-    }
-
-    ## Concatenate all parallel slots except "NAMES" and "elementMetadata".
-    pslotnames <- setdiff(parallelSlotNames(.Object),
-                          c("NAMES", "elementMetadata"))
+    ## Concatenate all the parallel slots except "NAMES" and "elementMetadata".
+    x_pslotnames <- parallelSlotNames(x)
+    pslotnames <- setdiff(x_pslotnames, c("NAMES", "elementMetadata"))
     ans_pslots <- lapply(setNames(pslotnames, pslotnames),
         function(slotname) {
-            slot_list <- lapply(objects, slot, slotname)
-            concatenateObjects(slot(.Object, slotname), slot_list)
+            slot_list <- lapply(all_objects, slot, slotname)
+            concatenateObjects(slot_list[[1L]], slot_list[-1L])
         }
     )
 
+    if ("NAMES" %in% x_pslotnames) {
+        ans_NAMES <- NULL
+        if (use.names) {
+            names_list <- lapply(all_objects, slot, "NAMES")
+            object_has_no_names <- sapply_isNULL(names_list)
+            if (!all(object_has_no_names)) {
+                ## Concatenate the "NAMES" slots.
+                names_list[object_has_no_names] <-
+                    lapply(all_objects[object_has_no_names],
+                           function(object) character(length(object)))
+                ans_NAMES <- unlist(names_list, use.names=FALSE)
+            }
+        }
+        ans_pslots <- c(ans_pslots, list(NAMES=ans_NAMES))
+    }
+
     if (!ignore.mcols) {
-        ## Concatenate "elementMetadata" slots.
-        ans_mcols <- do.call(rbind_mcols, objects)
+        ## Concatenate the "elementMetadata" slots.
+        ans_mcols <- do.call(rbind_mcols, all_objects)
         ans_pslots <- c(ans_pslots, list(elementMetadata=ans_mcols))
     }
 
     ans <- do.call(BiocGenerics:::replaceSlots,
-                   c(list(.Object), ans_pslots, list(check=FALSE)))
+                   c(list(x), ans_pslots, list(check=check)))
 
     if (ignore.mcols)
         mcols(ans) <- NULL
 
-    if (use.names) {
-        names_list <- lapply(objects, names)
-        object_has_no_names <- sapply_isNULL(names_list)
-        if (!all(object_has_no_names)) {
-            ## Concatenate names.
-            names_list[object_has_no_names] <-
-                lapply(objects[object_has_no_names],
-                       function(object) character(length(object)))
-            ans_names <- unlist(names_list, use.names=FALSE)
-            names(ans) <- ans_names
-        }
-    } else {
-        names(ans) <- NULL
-    }
-
-    if (check)
-        validObject(ans)
     ans
 }
 
@@ -650,13 +643,7 @@ setMethod("c", "Vector",
         if (!identical(recursive, FALSE))
             stop(wmsg("\"c\" method for Vector objects ",
                       "does not support the 'recursive' argument"))
-        if (missing(x)) {
-            objects <- list(...)
-            x <- objects[[1L]]
-        } else {
-            objects <- list(x, ...)
-        }
-        concatenateObjects(x, objects, ignore.mcols=ignore.mcols)
+        concatenateObjects(x, list(...), ignore.mcols=ignore.mcols)
     }
 )
 

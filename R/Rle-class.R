@@ -589,32 +589,37 @@ setMethod("rep", "Rle",
 ### Concatenation
 ###
 
-### Argument '.Object' is ignored.
 .concatenate_Rle_objects <-
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    objects <- prepare_objects_to_concatenate(.Object, objects)
+    objects <- prepare_objects_to_concatenate(x, objects)
+    all_objects <- c(list(x), objects)
 
-    if (length(objects) == 0L) {
-        if (length(.Object) != 0L)
-            .Object <- .Object[integer(0)]
-        return(.Object)
-    }
-
-    ## Concatenate "values" slots.
-    values_list <- lapply(objects, slot, "values")
-    ans_values <- unlist(values_list, recursive=FALSE)
-
-    ## Concatenate "lengths" slots.
-    lengths_list <- lapply(objects, slot, "lengths")
-    ans_lengths <- unlist(lengths_list, recursive=FALSE)
-
-    .Object <- Rle(ans_values, ans_lengths)
+    ## 1. Take care of the parallel slots
 
     ## Call method for Vector objects to concatenate all the parallel
     ## slots (only "elementMetadata" in the case of Rle) and stick them
-    ## into '.Object'.
-    callNextMethod()
+    ## into 'ans'. Note that the resulting 'ans' can be an invalid object
+    ## because its "elementMetadata" slot can be longer (i.e. have more rows)
+    ## than 'ans' itself so we use 'check=FALSE' to skip validation.
+    ans <- callNextMethod(x, objects, use.names=use.names,
+                                      ignore.mcols=ignore.mcols,
+                                      check=FALSE)
+
+    ## 2. Take care of the non-parallel slots
+
+    ## Concatenate the "values" slots.
+    values_list <- lapply(all_objects, slot, "values")
+    tmp_values <- unlist(values_list, recursive=FALSE)
+
+    ## Concatenate the "lengths" slots.
+    lengths_list <- lapply(all_objects, slot, "lengths")
+    tmp_lengths <- unlist(lengths_list, recursive=FALSE)
+
+    tmp <- Rle(tmp_values, tmp_lengths)
+    BiocGenerics:::replaceSlots(ans, values=tmp@values,
+                                     lengths=tmp@lengths,
+                                     check=check)
 }
 
 setMethod("concatenateObjects", "Rle", .concatenate_Rle_objects)

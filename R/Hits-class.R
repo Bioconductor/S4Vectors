@@ -387,25 +387,23 @@ setMethod("show", "Hits",
 ### Concatenation
 ###
 
-### '.Object' is assumed to contain the expected common number of left and
-### right nodes in its "nLnode" and "nRnode" slots.
-.check_that_Hits_objects_are_concatenable <- function(.Object, objects)
+.check_that_Hits_objects_are_concatenable <- function(x, objects)
 {
     objects_nLnode <- vapply(objects, slot, integer(1), "nLnode",
                              USE.NAMES=FALSE)
     objects_nRnode <- vapply(objects, slot, integer(1), "nRnode",
                              USE.NAMES=FALSE)
-    if (!(all(objects_nLnode == .Object@nLnode) &&
-          all(objects_nRnode == .Object@nRnode)))
+    if (!(all(objects_nLnode == x@nLnode) &&
+          all(objects_nRnode == x@nRnode)))
         stop(wmsg("the objects to concatenate are incompatible Hits ",
                   "objects by number of left and/or right nodes"))
 }
 
 .concatenate_Hits_objects <-
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    objects <- prepare_objects_to_concatenate(.Object, objects)
-    .check_that_Hits_objects_are_concatenable(.Object, objects)
+    objects <- prepare_objects_to_concatenate(x, objects)
+    .check_that_Hits_objects_are_concatenable(x, objects)
     callNextMethod()
 }
 

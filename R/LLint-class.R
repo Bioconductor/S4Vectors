@@ -156,50 +156,54 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ### Low-level generic intended to facilitate implementation of "c" methods
 ### for vector-like objects. See R/Vector-class.R for more information.
 ### It can also be used to unlist an ordinary list of vector-like objects.
-setGeneric("concatenateObjects", signature=".Object",
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+setGeneric("concatenateObjects", signature="x",
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
         standardGeneric("concatenateObjects")
 )
 
-### Low-level utility used by many "concatenateObjects" methods.
 ### Not exported.
-prepare_objects_to_concatenate <- function(.Object, objects)
+### Low-level utility used by many "concatenateObjects" methods.
+### Prepare 'objects' by deleting NULLs from it, dropping its names, and
+### making sure that each of its list element belongs to the same class
+### as 'x' (or to one of its subclasses) by coercing it if necessary.
+prepare_objects_to_concatenate <- function(x, objects=list())
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
-    .Object_class <- class(.Object)
+    x_class <- class(x)
     lapply(unname(delete_NULLs(objects)),
         function(object)
-            if (!is(object, .Object_class))
-                as(object, .Object_class, strict=FALSE)
+            if (!is(object, x_class))
+                as(object, x_class, strict=FALSE)
             else
                 object
     )
 }
 
-### Arguments '.Object', 'use.names', and 'ignore.mcols' are ignored.
+### Arguments 'use.names' and 'ignore.mcols' are ignored.
 .concatenate_LLint_objects <-
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
+    all_objects <- c(list(x), unname(objects))
 
     ## If one of the objects to combine is a character vector, then all the
     ## objects are coerced to character and combined.
-    if (any(vapply(objects, is.character, logical(1), USE.NAMES=FALSE))) {
-        ans <- unlist(lapply(objects, as.character), use.names=FALSE)
+    if (any(vapply(all_objects, is.character, logical(1), USE.NAMES=FALSE))) {
+        ans <- unlist(lapply(all_objects, as.character), use.names=FALSE)
         return(ans)
     }
 
     ## If one of the objects to combine is a double vector, then all the
     ## objects are coerced to double and combined.
-    if (any(vapply(objects, is.double, logical(1), USE.NAMES=FALSE))) {
-        ans <- unlist(lapply(objects, as.double), use.names=FALSE)
+    if (any(vapply(all_objects, is.double, logical(1), USE.NAMES=FALSE))) {
+        ans <- unlist(lapply(all_objects, as.double), use.names=FALSE)
         return(ans)
     }
 
     ## Concatenate "bytes" slots.
-    bytes_list <- lapply(objects,
+    bytes_list <- lapply(all_objects,
         function(object) {
             if (is.null(object))
                 return(NULL)
@@ -225,13 +229,7 @@ setMethod("c", "LLint",
         if (!identical(recursive, FALSE))
             stop("\"c\" method for LLint objects ",
                  "does not support the 'recursive' argument")
-        if (missing(x)) {
-            objects <- list(...)
-            x <- objects[[1L]]
-        } else {
-            objects <- list(x, ...)
-        }
-        concatenateObjects(x, objects)
+        concatenateObjects(x, list(...))
     }
 )
 

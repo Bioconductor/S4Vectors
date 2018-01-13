@@ -123,19 +123,21 @@ lowestListElementClass <- function(x)
 ### Works on atomic vectors, factors, lists, matrices, and data frames.
 ### Arguments 'ignore.mcols' and 'check' are ignored.
 .concatenate_vectors <-
-    function(.Object, objects, use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
 
-    if (length(dim(.Object)) == 2L) {
-        ans <- do.call(rbind, unname(objects))
+    all_objects <- c(list(x), unname(objects))
+
+    if (length(dim(x)) == 2L) {
+        ans <- do.call(rbind, all_objects)
         if (!use.names)
             rownames(ans) <- NULL
     } else {
-        ans <- unlist(unname(objects), recursive=FALSE)
+        ans <- unlist(all_objects, recursive=FALSE)
         if (!use.names)
             names(ans) <- NULL
     }
