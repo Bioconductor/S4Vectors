@@ -622,11 +622,13 @@ rbind_mcols <- function(x, ...)
     }
 
     ans <- do.call(BiocGenerics:::replaceSlots,
-                   c(list(x), ans_pslots, list(check=check)))
+                   c(list(x), ans_pslots, list(check=FALSE)))
 
     if (ignore.mcols)
         mcols(ans) <- NULL
 
+    if (check)
+        validObject(ans)
     ans
 }
 
