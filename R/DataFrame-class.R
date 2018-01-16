@@ -189,7 +189,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
              "\" to a DataFrame")
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
-      varlist[[i]] <- as.list(element, use.names = FALSE)
+      varlist[[i]] <- element
       if (is(listData[[i]], "AsIs")) {
         listData[[i]] <- drop_AsIs(listData[[i]])
       } else {
@@ -205,6 +205,8 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
       if (missing(row.names))
         row.names <- rownames(element)
     }
+    mcols <- do.call(rbind_mcols, varlist)
+    varlist <- lapply(varlist, as.list, use.names = FALSE)
     nr <- max(nrows)
     for (i in which((nrows > 0L) & (nrows < nr) & (nr %% nrows == 0L))) {
       recycle <- rep(seq_len(nrows[i]), length.out = nr)
@@ -218,7 +220,10 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
     if (check.names)
       nms <- make.names(nms, unique = TRUE)
     names(varlist) <- nms
-  } else names(varlist) <- character(0)
+  } else {
+      names(varlist) <- character(0)
+      mcols <- NULL
+  }
 
   if (!is.null(row.names)) {
     if (anyMissing(row.names))
@@ -232,6 +237,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
 
   ans <- new_DataFrame(varlist, nrows=as.integer(max(nr, length(row.names))))
   ans@rownames <- row.names
+  mcols(ans) <- mcols
   ans
 }
 
@@ -749,10 +755,7 @@ setMethod("coerce2", "DataFrame",
 ###
 
 cbind.DataFrame <- function(..., deparse.level = 1) {
-  dfs <- lapply(list(...), as, "DataFrame", strict=FALSE)
-  ans <- DataFrame(dfs)
-  mcols(ans) <- do.call(rbind_mcols, dfs)
-  ans
+  DataFrame(..., check.names=FALSE)
 }
 
 setMethod("cbind", "DataFrame", cbind.DataFrame)
