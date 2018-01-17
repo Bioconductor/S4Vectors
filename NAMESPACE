@@ -368,6 +368,7 @@ export(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
+    equisplit,
 
     ## Vector-comparison.R:
     pcompare,
@@ -429,6 +430,7 @@ exportMethods(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
+    equisplit,
     pcompare, 
     selfmatch,
     findMatches, countMatches,
