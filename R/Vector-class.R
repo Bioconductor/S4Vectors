@@ -743,5 +743,5 @@ setMethod("by", "Vector",
 
 diff.Vector <- function(x, ...) diff(x, ...)
 
-setGeneric("equisplit", function(x) standardGeneric("equisplit"))
+setGeneric("equisplit", function(x, ...) standardGeneric("equisplit"))
 
