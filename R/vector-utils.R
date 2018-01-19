@@ -130,6 +130,7 @@ lowestListElementClass <- function(x)
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
 
+    objects <- prepare_objects_to_concatenate(x, objects)
     all_objects <- c(list(x), unname(objects))
 
     if (length(dim(x)) == 2L) {
