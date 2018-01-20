@@ -289,8 +289,9 @@ setMethod(">", c("Vector", "Vector"),
     \item The \pkg{S4Vectors} package provides no \code{pcompare} method for
           \link{Vector} objects. Specific \code{pcompare} methods need to be
           implemented for specific \link{Vector} subclasses (e.g. for
-          \link{Hits} and \link[IRanges]{Ranges} objects). These specific
-          methods must obey the rules described in the Details section above.
+          \link{Hits} and \link[IRanges]{IntegerRanges} objects). These
+          specific methods must obey the rules described in the Details
+          section above.
 
     \item The \code{duplicated}, \code{unique}, and \code{\%in\%} methods for
           \link{Vector} objects are implemented on top of \code{selfmatch},
@@ -321,7 +322,7 @@ setMethod(">", c("Vector", "Vector"),
     \item The \pkg{S4Vectors} package provides no \code{match} or \code{order}
           methods for \link{Vector} objects. Specific methods need to be
           implemented for specific \link{Vector} subclasses (e.g. for
-          \link{Hits} and \link[IRanges]{Ranges} objects).
+          \link{Hits} and \link[IRanges]{IntegerRanges} objects).
   }
 }
 
@@ -337,8 +338,8 @@ setMethod(">", c("Vector", "Vector"),
 
     \item \link{Vector-merge} for merging vector-like objects.
 
-    \item \link[IRanges]{Ranges-comparison} in the \pkg{IRanges} package for
-          comparing and ordering ranges.
+    \item \link[IRanges]{IntegerRanges-comparison} in the \pkg{IRanges}
+          package for comparing and ordering ranges.
 
     \item \code{\link{==}} and \code{\link{\%in\%}} in the \pkg{base} package,
           and \code{BiocGenerics::\link[BiocGenerics]{match}},
@@ -369,8 +370,8 @@ x <- c(unique(y), 999L)
 findMatches(x, y)
 countMatches(x, y)
 
-## See ?`Ranges-comparison` for more examples (on Ranges objects). You
-## might need to load the IRanges package first.
+## See ?`IntegerRanges-comparison` for more examples (on IntegerRanges
+## objects). You might need to load the IRanges package first.
 
 ## ---------------------------------------------------------------------
 ## B. FOR DEVELOPERS: HOW TO IMPLEMENT THE BINARY COMPARISON OPERATORS

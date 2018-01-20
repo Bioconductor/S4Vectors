@@ -201,7 +201,7 @@
       When supported, return a new Vector object of the same class as \code{x}
       made of the elements selected by \code{i}. \code{i} can be missing;
       an NA-free logical, numeric, or character vector or factor (as ordinary
-      vector or \link{Rle} object); or a \link[IRanges]{Ranges} object.
+      vector or \link{Rle} object); or a \link[IRanges]{IntegerRanges} object.
     }
     \item{}{
       \code{x[i, j]}:

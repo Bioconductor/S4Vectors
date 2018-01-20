@@ -19,7 +19,7 @@
   \item{x, y, ...}{
     Vector-like objects, typically all of the same class and typically not
     list-like objects (even though some list-like objects like
-    \link[IRanges]{Ranges} and \link[Biostrings]{DNAStringSet} are
+    \link[IRanges]{IntegerRanges} and \link[Biostrings]{DNAStringSet} are
     supported).
     Duplicated elements in each object are removed with a warning.
   }

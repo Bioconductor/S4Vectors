@@ -23,28 +23,28 @@
 ### anymore because the user can aggregate by range by passing
 ### IRanges(start, end, width) to 'by'. After removing these arguments,
 ### the remaining arguments would be as in stats:::aggregate.data.frame.
-### Finally make sure that, when 'by' is not a Ranges, the "aggregate" method
-### for vector objects behaves exactly like stats:::aggregate.data.frame
+### Finally make sure that, when 'by' is not an IntegerRanges, the "aggregate"
+### method for vector objects behaves exactly like stats:::aggregate.data.frame
 ### (the easiest way would be to delegate to it).
 ###
 ### A nice extension would be to have 'by' accept an IntegerList object, not
-### just a Ranges (which is a special case of IntegerList), to let the user
-### specify the subsets of 'x'. When 'by' is an IntegerList, aggregate() would
-### be equivalent to:
+### just an IntegerRanges (which is a special case of IntegerList), to let the
+### user specify the subsets of 'x'. When 'by' is an IntegerList, aggregate()
+### would be equivalent to:
 ###
 ###   sapply(seq_along(by),
 ###          function(i) FUN(x[by[[i]]], ...), simplify=simplify)
 ###
 ### This could be how it is implemented, except for the common use case where
-### 'by' is a Ranges (needs special treatment in order to remain as fast as it
-### is at the moment). This could even be extended to 'by' being a List (e.g.
-### CharacterList, RleList, etc...)
+### 'by' is an IntegerRanges (needs special treatment in order to remain as
+### fast as it is at the moment). This could even be extended to 'by' being a
+### List (e.g. CharacterList, RleList, etc...)
 ###
 ### Other options (non-exclusive) to explore:
 ###
 ### (a) aggregateByRanges() new generic (should go in IRanges). aggregate()
-###     would simply delegate to it when 'by' is a Ranges object (but that
-###     means that the "aggregate" methods should also go in IRanges).
+###     would simply delegate to it when 'by' is an IntegerRanges object (but
+###     that means that the "aggregate" methods should also go in IRanges).
 ###
 ### (b) lapply/sapply on Views objects (but only works if Views(x, ...)
 ###     works and views can only be created on a few specific types of
@@ -168,7 +168,7 @@ setMethod("aggregate", "Rle", .aggregate.Rle)
         return(ans)
     }
     if (length(x) != length(by))
-        stop("for Ranges 'by', 'length(x) != length(by)'")
+        stop("for IntegerRanges 'by', 'length(x) != length(by)'")
     y <- as.list(x)
     result <- lapply(structure(seq_len(length(x)), names = names(x)),
                      function(i)

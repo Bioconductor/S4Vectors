@@ -317,7 +317,7 @@ setMethod("[", "DataFrame",
                     return(x)
                 j <- i
             }
-            if (!is(j, "Ranges")) {
+            if (!is(j, "IntegerRanges")) {
                 xstub <- setNames(seq_along(x), names(x))
                 j <- normalizeSingleBracketSubscript(j, xstub)
             }

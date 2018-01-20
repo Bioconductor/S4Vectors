@@ -18,8 +18,8 @@
 ### NOT exported!
 ###
 ### By default, List objects pcompare recursively. Exceptions to the rule
-### (e.g. Ranges, XString, etc...) must define a "pcompareRecursively" method
-### that returns FALSE.
+### (e.g. IntegerRanges, XStringList, etc...) must define a
+### "pcompareRecursively" method that returns FALSE.
 ###
 
 setGeneric("pcompareRecursively",

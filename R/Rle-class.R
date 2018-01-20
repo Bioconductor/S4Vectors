@@ -294,7 +294,7 @@ setMethod("replaceROWS", "Rle",
 
         ## From here, 'value' is guaranteed to be of length 1.
 
-        ## TODO: Maybe make this the coercion method from NSBS to Ranges.
+        ## TODO: Maybe make this the coercion method from NSBS to IntegerRanges.
         if (is(i, "RangesNSBS")) {
             ir <- i@subscript
         } else {
@@ -440,8 +440,8 @@ setMethod("NSBS", "Rle",
             ## IRanges package.
             if (requireNamespace("IRanges", quietly=TRUE)) {
                 i <- as(i, "NormalIRanges")
-                ## This will call the "NSBS" method for Ranges objects defined
-                ## in the IRanges package and return a RangesNSBS, or
+                ## This will call the "NSBS" method for IntegerRanges objects
+                ## defined in the IRanges package and return a RangesNSBS, or
                 ## RangeNSBS, or NativeNSBS object.
                 return(callGeneric())
             }

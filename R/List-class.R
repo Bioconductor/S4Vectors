@@ -263,9 +263,9 @@ setMethod("unlist", "List",
             return("NL")
         }
     }
-    if (extends(i_LEPType, "Ranges")) {
-        ## 'i' is a List of Ranges objects.
-        ## We select the "RL" fast path ("Ranges List").
+    if (extends(i_LEPType, "IntegerRanges")) {
+        ## 'i' is a List of IntegerRanges objects.
+        ## We select the "RL" fast path ("IntegerRanges List").
         return("RL")
     }
     return(NA_character_)
@@ -305,7 +305,7 @@ setMethod("unlist", "List",
 }
 
 ### Assume 'x' and 'i' are parallel List objects (i.e. same length),
-### and 'i' is a List of Ranges objects.
+### and 'i' is a List of IntegerRanges objects.
 .unlist_RL_subscript <- function(i, x)
 {
     unlisted_i <- unlist(i, use.names=FALSE)
@@ -353,7 +353,7 @@ setMethod("unlist", "List",
     relist(unlisted_ans, ans_skeleton)
 }
 
-### Fast subset by List of Ranges objects.
+### Fast subset by List of IntegerRanges objects.
 ### Assume 'x' and 'i' are parallel List objects (i.e. same length).
 ### Propagate 'names(x)' only. Caller is responsible for propagating 'mcols(x)'
 ### and 'metadata(x)'.
@@ -529,7 +529,7 @@ setMethod("[", "List",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
-        if (is.list(i) || (is(i, "List") && !is(i, "Ranges")))
+        if (is.list(i) || (is(i, "List") && !is(i, "IntegerRanges")))
             return(subset_List_by_List(x, i))
         callNextMethod(x, i)
     }
@@ -540,7 +540,8 @@ setReplaceMethod("[", "List",
     {
         if (!missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
-        if (!missing(i) && (is.list(i) || (is(i, "List") && !is(i, "Ranges"))))
+        if (!missing(i) && (is.list(i) ||
+                            (is(i, "List") && !is(i, "IntegerRanges"))))
                 return(lsubset_List_by_List(x, i, value))
         callNextMethod(x, i, value=value)
     }
