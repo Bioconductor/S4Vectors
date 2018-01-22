@@ -163,7 +163,7 @@ setMethod("aggregate", "Rle", .aggregate.Rle)
 {
     if (missing(by)
      || !requireNamespace("IRanges", quietly=TRUE)
-     || !is(by, "RangesList")) {
+     || !is(by, "IntegerRangesList")) {
         ans <- callNextMethod()
         return(ans)
     }

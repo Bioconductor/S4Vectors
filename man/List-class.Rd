@@ -70,7 +70,7 @@
     \item Use of a constructor function. Many constructor functions are
           provided for List objects e.g. \code{List},
           \code{\link[IRanges]{IntegerList}}, \code{\link[IRanges]{RleList}},
-          \code{\link[IRanges]{RangesList}},
+          \code{\link[IRanges]{IntegerRangesList}},
           \code{\link[GenomicRanges]{GRangesList}}, etc...
           Which one to use depends on the particular type of List object
           to construct. The name of a constructor function is always
@@ -80,11 +80,12 @@
           function returns an instance of that class. If it's the name of a
           \emph{virtual} class (e.g. the \code{List} constructor defined in
           this package, or the \code{\link[IRanges]{IntegerList}} or
-          \code{\link[IRanges]{RleList}} or \code{\link[IRanges]{RangesList}}
-          constructors defined in the \pkg{IRanges} package), then the returned
-          object belongs to a concrete subclass of that virtual class. Which
-          subclass exactly depends on each constructor function (see man page
-          of a particular constructor function for the details).
+          \code{\link[IRanges]{RleList}} or
+          \code{\link[IRanges]{IntegerRangesList}} constructors defined in the
+          \pkg{IRanges} package), then the returned object belongs to a
+          concrete subclass of that virtual class. Which subclass exactly
+          depends on each constructor function (see man page of a particular
+          constructor function for the details).
 
     \item Coercion to List or to a List subclass. Many coercion methods are
           provided to turn any object into a List object. One general and
@@ -203,7 +204,7 @@
       details), plus the following types: \link[IRanges]{IntegerList},
       \link[IRanges]{LogicalList}, \link[IRanges]{CharacterList},
       integer-\link[IRanges]{RleList}, logical-\link[IRanges]{RleList},
-      character-\link[IRanges]{RleList}, and \link[IRanges]{RangesList}.
+      character-\link[IRanges]{RleList}, and \link[IRanges]{IntegerRangesList}.
       Those additional types perform subsetting within the list elements
       rather than across them.
     }

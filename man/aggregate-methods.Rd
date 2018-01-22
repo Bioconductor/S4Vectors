@@ -39,10 +39,11 @@
     methods.
 
     If \code{x} is a \link{List} object, the \code{by} parameter can be a
-    \link[IRanges]{RangesList} object to aggregate within the list elements
-    rather than across them. When \code{by} is a \link[IRanges]{RangesList}
-    object, the output is either a \link[IRanges]{SimpleAtomicList} object,
-    if possible, or a \link{SimpleList} object, if not.
+    \link[IRanges]{IntegerRangesList} object to aggregate within the list
+    elements rather than across them. When \code{by} is a
+    \link[IRanges]{IntegerRangesList} object, the output is either a
+    \link[IRanges]{SimpleAtomicList} object, if possible, or a
+    \link{SimpleList} object, if not.
   }
   \item{FUN}{
     The function, found via \code{match.fun}, to be applied to each subset

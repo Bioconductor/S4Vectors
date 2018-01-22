@@ -35,7 +35,7 @@
 \description{
   The HitsList class stores a set of \link{Hits} objects. It's typically
   used to represent the result of \code{\link[IRanges]{findOverlaps}} on
-  two \link[IRanges]{RangesList} objects.
+  two \link[IRanges]{IntegerRangesList} objects.
 }
 
 \details{
@@ -44,7 +44,7 @@
   
   The \code{as.matrix} method coerces a HitsList object in a
   similar way to \link{Hits}, except a column is prepended that indicates
-  which space (or element in the query \link[IRanges]{RangesList})
+  which space (or element in the query \link[IRanges]{IntegerRangesList})
   to which the row corresponds.
 
   The \code{as.table} method flattens or unlists the list, counts the
@@ -67,8 +67,8 @@
       \code{unname(as.matrix(x)[,2])}.
     }
     \item{}{\code{space(x)}: gets the character vector naming the space
-      in the query \link[IRanges]{RangesList} for each hit, or \code{NULL}
-      if the query did not have any names.
+      in the query \link[IRanges]{IntegerRangesList} for each hit,
+      or \code{NULL} if the query did not have any names.
     }
   }
 }
@@ -100,7 +100,7 @@
   \itemize{
     \item \code{\link[IRanges]{findOverlaps}} in the \pkg{IRanges} package,
           which returns a HitsList object when the query and subject are
-          \link[IRanges]{RangesList} objects.
+          \link[IRanges]{IntegerRangesList} objects.
   }
 }
 \keyword{methods}
