@@ -171,13 +171,7 @@ prepare_objects_to_concatenate <- function(x, objects=list())
     if (!is.list(objects))
         stop("'objects' must be a list")
     x_class <- class(x)
-    lapply(unname(delete_NULLs(objects)),
-        function(object)
-            if (!is(object, x_class))
-                as(object, x_class, strict=FALSE)
-            else
-                object
-    )
+    lapply(unname(delete_NULLs(objects)), coerce2, x)
 }
 
 ### Arguments 'use.names' and 'ignore.mcols' are ignored.

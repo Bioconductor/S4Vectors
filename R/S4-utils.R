@@ -111,20 +111,23 @@ setGeneric("coerce2", signature="to",
 setMethod("coerce2", "ANY",
     function(from, to)
     {
+        to_class <- class(to)
+        if (is(from, to_class))
+            return(from)
         if (is.data.frame(to)) {
             ans <- as.data.frame(from, check.names=FALSE,
                                        stringsAsFactors=FALSE)
         } else {
-            S3coerceFUN <- try(match.fun(paste0("as.", class(to))),
+            S3coerceFUN <- try(match.fun(paste0("as.", to_class)),
                                silent=TRUE)
             if (!inherits(S3coerceFUN, "try-error")) {
                 ans <- S3coerceFUN(from)
             } else {
-                ans <- as(from, class(to))
+                ans <- as(from, to_class, strict=FALSE)
             }
         }
         if (length(ans) != length(from))
-            stop(wmsg("coercion of ", class(from), " object to ", class(to),
+            stop(wmsg("coercion of ", class(from), " object to ", to_class,
                       " didn't preserve its length"))
         ## Try to restore the names if they were lost (e.g. by as.integer())
         ## or altered (e.g. by as.data.frame(), which will alter names equal
