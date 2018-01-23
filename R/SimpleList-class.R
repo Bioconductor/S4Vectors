@@ -129,10 +129,9 @@ setMethod("getListElement", "SimpleList",
 ### Looping
 ###
 
-### TODO: easily generalized to List
 setMethod("lapply", "SimpleList",
-          function(X, FUN, ...)
-              lapply(as.list(X), FUN = FUN, ...))
+    function(X, FUN, ...) lapply(as.list(X), match.fun(FUN), ...)
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

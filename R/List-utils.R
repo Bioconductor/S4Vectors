@@ -9,13 +9,13 @@
 ###
 
 setMethod("lapply", "List",
-          function(X, FUN, ...)
-          {
-              FUN <- match.fun(FUN)
-              ii <- seq_len(length(X))
-              names(ii) <- names(X)
-              lapply(ii, function(i) FUN(X[[i]], ...))
-          })
+    function(X, FUN, ...)
+    {
+        FUN <- match.fun(FUN)
+        ii <- setNames(seq_along(X), names(X))
+        lapply(ii, function(i) FUN(X[[i]], ...))
+    }
+)
 
 .sapplyDefault <- base::sapply
 environment(.sapplyDefault) <- topenv()
