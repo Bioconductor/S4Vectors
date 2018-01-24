@@ -387,7 +387,7 @@ export(
     runsum, runmean, runwtsum, runq,
 
     ## List-class.R:
-    elementType, elementNROWS, isEmpty, relistToClass, pwindow,
+    elementType, elementNROWS, isEmpty, relistToClass,
 
     ## List-comparison.R:
     pcompareRecursively,
@@ -436,7 +436,7 @@ exportMethods(
     Rle,
     findRun,
     runsum, runmean, runwtsum, runq,
-    elementType, elementNROWS, isEmpty, relistToClass, pwindow,
+    elementType, elementNROWS, isEmpty, relistToClass,
     pcompareRecursively,
     revElements,
     space,
