@@ -23,7 +23,7 @@ exportClasses(
     DataTable_OR_NULL, Vector,
     Hits, SelfHits, SortedByQueryHits, SortedByQuerySelfHits,
     Rle,
-    List,
+    List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
     DataFrame,
@@ -218,6 +218,7 @@ exportMethods(
     transform,
     nchar, substr, substring, levels, "levels<-", droplevels,
     "[[", "[[<-", "$", "$<-",
+    lengths,
     split,
     eval, with, within,
     expand.grid,
@@ -386,9 +387,7 @@ export(
     runsum, runmean, runwtsum, runq,
 
     ## List-class.R:
-    elementType, elementNROWS, lengths,
-    isEmpty,
-    relistToClass,
+    elementType, elementNROWS, isEmpty, relistToClass, pwindow,
 
     ## List-comparison.R:
     pcompareRecursively,
@@ -437,9 +436,7 @@ exportMethods(
     Rle,
     findRun,
     runsum, runmean, runwtsum, runq,
-    elementType, elementNROWS, lengths,
-    isEmpty,
-    relistToClass,
+    elementType, elementNROWS, isEmpty, relistToClass, pwindow,
     pcompareRecursively,
     revElements,
     space,

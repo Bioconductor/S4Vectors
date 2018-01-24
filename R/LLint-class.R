@@ -162,7 +162,7 @@ setGeneric("concatenateObjects", signature="x",
 )
 
 ### Not exported.
-### Low-level utility used by many "concatenateObjects" methods.
+### Low-level utility used by various "concatenateObjects" methods.
 ### Prepare 'objects' by deleting NULLs from it, dropping its names, and
 ### making sure that each of its list element belongs to the same class
 ### as 'x' (or to one of its subclasses) by coercing it if necessary.

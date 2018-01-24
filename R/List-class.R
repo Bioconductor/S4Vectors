@@ -15,6 +15,8 @@ setClass("List",
     prototype(elementType="ANY")
 )
 
+setClassUnion("list_OR_List", c("list", "List"))  # list-like objects
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods.
@@ -57,7 +59,7 @@ setMethod("isEmpty", "ANY",
           {
               if (is.atomic(x))
                   return(length(x) == 0L)
-              if (!is.list(x) && !is(x, "List"))
+              if (!is(x, "list_OR_List"))
                   stop("isEmpty() is not defined for objects of class ",
                        class(x))
               ## Recursive definition
@@ -216,6 +218,73 @@ setMethod("unlist", "List",
 ### Subsetting.
 ###
 
+### pwindow() is a "parallel" version of window() for list-like objects. That
+### is, it does 'mendoapply(window, x, start, end, width)' but uses a fast
+### implementation.
+setGeneric("pwindow", signature="x",
+    function(x, start=NA, end=NA, width=NA) standardGeneric("pwindow")
+)
+
+### Not exported.
+### Low-level utility used by various "pwindow" methods.
+make_IRanges_from_pwindow_args <- function(x, start=NA, end=NA, width=NA)
+{
+    x_eltNROWS <- elementNROWS(x)
+    if (!is(start, "IntegerRanges"))
+        return(IRanges::solveUserSEW(x_eltNROWS,
+                                     start=start, end=end, width=width))
+    if (!(identical(end, NA) && identical(width, NA)))
+        stop(wmsg("'end' or 'width' should not be specified or must be ",
+                  "set to NA when 'start' is an IntegerRanges object"))
+    if (!is(start, "IRanges"))
+        start <- as(start, "IRanges")
+    ir <- V_recycle(start, x, x_what="start", skeleton_what="x")
+    if (any(start(ir) < 1L) || any(end(ir) > x_eltNROWS))
+        stop(wmsg("'start' contains out-of-bounds ranges"))
+    ir
+}
+
+setMethod("pwindow", "list_OR_List",
+    function(x, start=NA, end=NA, width=NA)
+    {
+        ir <- make_IRanges_from_pwindow_args(x, start, end, width)
+        if (length(x) == 0L)
+            return(x)
+
+        ## -- Slow path (loops over the list elements of 'x') --
+
+        #for (k in seq_along(x))
+        #    x[[k]] <- extractROWS(x[[k]], ir[k])
+        #return(x)
+
+        ## -- Fast path --
+
+        ## Unlist 'x' and shift the ranges in 'ir'.
+        if (is.list(x))
+            unlisted_x <- unlist(x, recursive=FALSE, use.names=FALSE)
+        else
+            unlisted_x <- unlist(x, use.names=FALSE)
+        offsets <- c(0L, end(IRanges::PartitioningByEnd(x))[-length(x)])
+        ir <- IRanges::shift(ir, shift=offsets)
+
+        ## Subset.
+        unlisted_ans <- extractROWS(unlisted_x, ir)
+
+        ## Relist.
+        ans_breakpoints <- cumsum(width(ir))
+        ans_partitioning <- IRanges::PartitioningByEnd(ans_breakpoints,
+                                                       names=names(x))
+        ans <- as(relist(unlisted_ans, ans_partitioning), class(x))
+
+        ## Propagate 'metadata(x)' and 'mcols(x)'.
+        if (is(x, "List")) {
+            metadata(ans) <- metadata(x)
+            mcols(ans) <- mcols(x)
+        }
+        ans
+    }
+)
+
 ### Assume 'x' and 'i' are parallel List objects (i.e. same length).
 ### Returns TRUE iff 'i' contains non-NA positive values that are compatible
 ### with the shape of 'x'.
@@ -329,9 +398,9 @@ setMethod("unlist", "List",
     ## Relist.
     group <- rep.int(seq_along(x), elementNROWS(x))
     group <- extractROWS(group, unlisted_i)
-    ans_skeleton <- IRanges::PartitioningByEnd(group, NG=length(x),
-                                               names=names(x))
-    relist(unlisted_ans, ans_skeleton)
+    ans_partitioning <- IRanges::PartitioningByEnd(group, NG=length(x),
+                                                   names=names(x))
+    relist(unlisted_ans, ans_partitioning)
 }
 
 ### Fast subset by List of numeric vectors or numeric-Rle objects.
@@ -349,8 +418,9 @@ setMethod("unlist", "List",
 
     ## Relist.
     ans_breakpoints <- cumsum(unname(elementNROWS(i)))
-    ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
-    relist(unlisted_ans, ans_skeleton)
+    ans_partitioning <- IRanges::PartitioningByEnd(ans_breakpoints,
+                                                   names=names(x))
+    relist(unlisted_ans, ans_partitioning)
 }
 
 ### Fast subset by List of IntegerRanges objects.
@@ -359,6 +429,12 @@ setMethod("unlist", "List",
 ### and 'metadata(x)'.
 .fast_subset_List_by_RL <- function(x, i)
 {
+    i_eltNROWS <- elementNROWS(i)
+    if (all(i_eltNROWS == 1L)) {
+        unlisted_i <- unlist(i, use.names=FALSE)
+        return(pwindow(x, unlisted_i))
+    }
+
     ## Unlist 'x' and 'i'.
     unlisted_x <- unlist(x, use.names=FALSE)
     unlisted_i <- .unlist_RL_subscript(i, x)
@@ -368,8 +444,9 @@ setMethod("unlist", "List",
 
     ## Relist.
     ans_breakpoints <- cumsum(unlist(sum(width(i)), use.names=FALSE))
-    ans_skeleton <- IRanges::PartitioningByEnd(ans_breakpoints, names=names(x))
-    relist(unlisted_ans, ans_skeleton)
+    ans_partitioning <- IRanges::PartitioningByEnd(ans_breakpoints,
+                                                   names=names(x))
+    relist(unlisted_ans, ans_partitioning)
 }
 
 ### Subset a List object by a list-like subscript.
@@ -529,7 +606,7 @@ setMethod("[", "List",
             stop("invalid subsetting")
         if (missing(i))
             return(x)
-        if (is.list(i) || (is(i, "List") && !is(i, "IntegerRanges")))
+        if (is(i, "list_OR_List") && !is(i, "IntegerRanges"))
             return(subset_List_by_List(x, i))
         callNextMethod(x, i)
     }
@@ -540,9 +617,8 @@ setReplaceMethod("[", "List",
     {
         if (!missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
-        if (!missing(i) && (is.list(i) ||
-                            (is(i, "List") && !is(i, "IntegerRanges"))))
-                return(lsubset_List_by_List(x, i, value))
+        if (!missing(i) && is(i, "list_OR_List") && !is(i, "IntegerRanges"))
+            return(lsubset_List_by_List(x, i, value))
         callNextMethod(x, i, value=value)
     }
 )
@@ -583,11 +659,11 @@ setMethod("setListElement", "List", setListElement_default)
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Simple helper functions for some common subsetting operations.
 ###
-### TODO: Move to List-utils.R (Looping methods section).
-###
-### phead() and ptail(): "parallel" versions of head() and tail() for List
-### objects. They're just fast equivalents of 'mapply(head, x, n)' and
-### 'mapply(tail, x, n)', respectively.
+
+### phead() and ptail() are "parallel" versions of head() and tail(),
+### respectively, for list-like objects. That is, they do
+### 'mendoapply(head, x, n)' and 'mendoapply(tail, x, n)' but use a
+### fast implementation.
 .normarg_n <- function(n, x_eltNROWS)
 {
     if (!is.numeric(n))
@@ -607,22 +683,14 @@ phead <- function(x, n=6L)
 {
     x_eltNROWS <- unname(elementNROWS(x))
     n <- .normarg_n(n, x_eltNROWS)
-    unlisted_i <- IRanges::IRanges(start=rep.int(1L, length(n)), width=n)
-    i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
-    ans <- x[i]
-    mcols(ans) <- mcols(x)
-    ans
+    pwindow(x, start=1L, width=n)
 }
 
 ptail <- function(x, n=6L)
 {
     x_eltNROWS <- unname(elementNROWS(x))
     n <- .normarg_n(n, x_eltNROWS)
-    unlisted_i <- IRanges::IRanges(end=x_eltNROWS, width=n)
-    i <- relist(unlisted_i, IRanges::PartitioningByEnd(seq_along(x)))
-    ans <- x[i]
-    mcols(ans) <- mcols(x)
-    ans
+    pwindow(x, end=x_eltNROWS, width=n)
 }
 
 
