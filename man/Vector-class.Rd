@@ -83,6 +83,9 @@
 \alias{expand.grid}
 \alias{expand.grid,Vector-method}
 
+\alias{equisplit}
+\alias{equisplit,Vector-method}
+
 \alias{parallelVectorNames}
 \alias{parallelVectorNames,ANY-method}
 
@@ -268,6 +271,11 @@
       vector in \code{\dots} and return a data.frame, each column of
       which corresponds to an argument.
       See \code{\link[base]{expand.grid}}.
+    }
+    \item{}{\code{equisplit(x)}: Splits Vector \code{x} in n partitions of
+      equal length. Splitting can be done by partition size or
+      partition number. Currently implemented as a generic only,
+      not a method.
     }
   }
 }
