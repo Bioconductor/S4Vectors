@@ -63,6 +63,50 @@ groupsum <- function(x, breakpoints)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### toListOfIntegerVectors()
+###
+### On a character vector toListOfIntegerVectors(x) is an alternative to:
+###   lapply(strsplit(x, ",", fixed=TRUE), as.integer)
+### except that:
+###  - strsplit() accepts NAs but we don't (we raise an error);
+###  - as.integer() introduces NAs by coercion (with a warning) but we don't
+###    (we raise an error);
+###  - as.integer() supports "inaccurate integer conversion in coercion"
+###    when the value to coerce is > INT_MAX (then it's coerced to INT_MAX)
+###    but we don't (we raise an error);
+###  - as.integer() will coerce non-integer values (e.g. 10.3) to an int
+###    by truncating them but we don't (we raise an error).
+### Also when it fails, toListOfIntegerVectors() prints a detailed parse
+### error message.
+### Finally it's faster and uses much less memory. E.g. it's 8x faster and
+### uses < 1 Mb versus > 60 Mb on the 'biginput' character vector below:
+###   library(rtracklayer)
+###   session <- browserSession()
+###   genome(session) <- "hg19"
+###   query <- ucscTableQuery(session, "UCSC Genes")
+###   tx <- getTable(query)
+###   ## 165920 strings in 'biginput' as of Jan 31, 2018.
+###   biginput <- c(as.character(tx$exonStarts), as.character(tx$exonEnds))
+
+### Exported!
+toListOfIntegerVectors <- function(x, sep=",")
+{
+    if (!isSingleString(sep) || nchar(sep) != 1L)
+        stop("'sep' must be a single-letter string")
+    ans <- .Call2("to_list_of_ints", x, sep, PACKAGE="S4Vectors")
+    names(ans) <- names(x)
+    ans
+}
+
+### Exported!
+strsplitAsListOfIntegerVectors <- function(x, sep=",")
+{
+    .Deprecated("toListOfIntegerVectors")
+    toListOfIntegerVectors(x, sep=sep)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Fast ordering/comparing of integer pairs.
 ###
 

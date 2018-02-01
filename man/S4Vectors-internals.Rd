@@ -38,16 +38,6 @@
 \alias{concatenateObjects,vector-method}
 \alias{concatenateObjects,matrix-method}
 
-% Stuff from R/integer-utils.R:
-\alias{orderIntegerPairs}
-\alias{matchIntegerPairs}
-\alias{selfmatchIntegerPairs}
-\alias{duplicatedIntegerPairs}
-\alias{orderIntegerQuads}
-\alias{matchIntegerQuads}
-\alias{selfmatchIntegerQuads}
-\alias{duplicatedIntegerQuads}
-
 \title{S4Vectors internals}
 
 \description{

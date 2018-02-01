@@ -279,6 +279,7 @@ export(
     normalizeDoubleBracketSubscript,
 
     ## integer-utils.R:
+    toListOfIntegerVectors, strsplitAsListOfIntegerVectors,
     orderIntegerPairs,
     matchIntegerPairs, selfmatchIntegerPairs, duplicatedIntegerPairs,
     orderIntegerQuads,
@@ -286,7 +287,6 @@ export(
 
     ## character-utils.R:
     safeExplode,
-    strsplitAsListOfIntegerVectors,
     svn.time,
 
     ## Hits-class.R:

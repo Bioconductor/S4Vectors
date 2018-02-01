@@ -8,13 +8,8 @@
 
 #include "S4Vectors.h"
 
-#include <limits.h>  /* for UINT_MAX and UINT_MIN */
-#include <ctype.h>   /* for isblank() and isdigit() */
-#include <stdlib.h>  /* for free() */
+#include <stdlib.h>  /* for malloc() and free() */
 #include <time.h> 
-
-
-static char errmsg_buf[200];
 
 
 /****************************************************************************
@@ -43,6 +38,8 @@ static void join_strings_in_buf(char *dest, SEXP x,
 	}
 	return;
 }
+
+static char errmsg_buf[200];
 
 /*
  * Returns a CHARSXP if success, or R_NilValue if failure.
@@ -146,83 +143,6 @@ SEXP safe_strexplode(SEXP s)
 	for (i = 0; i < s0_length; i++) {
 		buf[0] = CHAR(s0)[i];
 		SET_STRING_ELT(ans, i, mkChar(buf));
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-
-/****************************************************************************
- * strsplit_as_list_of_ints()
- */
-
-static SEXP explode_string_as_integer_vector(SEXP s, char sep0, IntAE *tmp_buf)
-{
-	const char *str;
-	int offset, n, ret;
-	long int val;
-
-	str = CHAR(s);
-	offset = _IntAE_set_nelt(tmp_buf, 0);
-	while (str[offset]) {
-		ret = sscanf(str + offset, "%ld%n", &val, &n);
-		if (ret != 1) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "decimal integer expected at char %d",
-				 offset + 1);
-			return R_NilValue;
-		}
-		offset += n;
-		while (isblank(str[offset])) offset++;
-		if (val < INT_MIN || val > INT_MAX) {
-			UNPROTECT(1);
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "out of range integer at char %d",
-				 offset + 1);
-			return R_NilValue;
-		}
-		_IntAE_insert_at(tmp_buf, _IntAE_get_nelt(tmp_buf), (int) val);
-		if (str[offset] == '\0')
-			break;
-		if (str[offset] != sep0) {
-			snprintf(errmsg_buf, sizeof(errmsg_buf),
-				 "separator expected at char %d",
-				 offset + 1);
-			return R_NilValue;
-		}
-		offset++;
-	}
-	return _new_INTEGER_from_IntAE(tmp_buf);
-}
-
-/* --- .Call ENTRY POINT --- */
-SEXP strsplit_as_list_of_ints(SEXP x, SEXP sep)
-{
-	SEXP ans, x_elt, ans_elt;
-	int ans_length, i;
-	char sep0;
-	IntAE *tmp_buf;
-
-	ans_length = LENGTH(x);
-	sep0 = CHAR(STRING_ELT(sep, 0))[0];
-	if (isdigit(sep0) || sep0 == '+' || sep0 == '-')
-		error("'sep' cannot be a digit, \"+\" or \"-\"");
-	tmp_buf = _new_IntAE(0, 0, 0);
-	PROTECT(ans = NEW_LIST(ans_length));
-	for (i = 0; i < ans_length; i++) {
-		x_elt = STRING_ELT(x, i);
-		if (x_elt == NA_STRING) {
-			UNPROTECT(1);
-			error("'x' contains NAs");
-		}
-		PROTECT(ans_elt = explode_string_as_integer_vector(x_elt, sep0,
-								   tmp_buf));
-		if (ans_elt == R_NilValue) {
-			UNPROTECT(2);
-			error("in list element %d: %s", i + 1, errmsg_buf);
-		}
-		SET_VECTOR_ELT(ans, i, ans_elt);
-		UNPROTECT(1);
 	}
 	UNPROTECT(1);
 	return ans;

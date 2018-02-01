@@ -1,7 +1,7 @@
 #include "S4Vectors.h"
 
-#include <stdlib.h>  /* for malloc(), free() */
-#include <limits.h>  /* for INT_MAX */
+#include <limits.h>  /* for INT_MAX and INT_MIN */
+#include <ctype.h>   /* for isspace() and isdigit() */
 
 
 static int get_bucket_idx_for_int_pair(const struct htab *htab,
@@ -45,6 +45,108 @@ static int get_bucket_idx_for_int_quad(const struct htab *htab,
 		bucket_idx = (bucket_idx + 1) % htab->M;
 	}
 	return bucket_idx;
+}
+
+
+/****************************************************************************
+ * to_list_of_ints()
+ */
+
+static char errmsg_buf[200];
+
+static SEXP explode_string_as_integer_vector(const char *s, int s_len,
+		char sep, IntAE *tmp_buf)
+{
+	int offset, n, ovflow_flag;
+	long long int val;
+	char last_parsed;
+
+	_IntAE_set_nelt(tmp_buf, 0);
+	offset = 0;
+	while (s_len > 0) {
+		_reset_ovflow_flag();
+		n = sscan_llint(s, s_len, &val, 0);
+		last_parsed = s[n - 1];
+		if (last_parsed == sep || last_parsed == '\0' ||
+		    isdigit(last_parsed) || isspace(last_parsed))
+		{
+			ovflow_flag = _get_ovflow_flag();
+			if (val != NA_LLINT) {
+				/* syntactically correct number */
+				if (val >= INT_MIN && val <= INT_MAX) {
+					_IntAE_insert_at(tmp_buf,
+						_IntAE_get_nelt(tmp_buf),
+						(int) val);
+					s += n;
+					s_len -= n;
+					offset += n;
+					continue;
+				}
+				ovflow_flag = 1;
+			}
+			if (ovflow_flag) {
+				/* syntactically correct number but overflow */
+				snprintf(errmsg_buf, sizeof(errmsg_buf),
+					 "out of range integer found "
+					 "at char positions %d-%d",
+					 offset + 1, offset + n);
+				return R_NilValue;
+			}
+		}
+		/* syntactically incorrect number */
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "unexpected char at position %d",
+			 offset + n);
+		return R_NilValue;
+	}
+	return _new_INTEGER_from_IntAE(tmp_buf);
+}
+
+/* --- .Call ENTRY POINT --- */
+SEXP to_list_of_ints(SEXP x, SEXP sep)
+{
+	SEXP ans, x_elt, ans_elt;
+	int ans_len, i;
+	char sep0;
+	IntAE *tmp_buf;
+	const char *s;
+
+	if (!(IS_CHARACTER(x) || isVectorList(x)))  // IS_LIST() is broken
+		error("'x' must be a character vector or list of raw vectors");
+	ans_len = LENGTH(x);
+	sep0 = CHAR(STRING_ELT(sep, 0))[0];
+	if (isdigit(sep0) || sep0 == '+' || sep0 == '-')
+		error("'sep' cannot be a digit, \"+\" or \"-\"");
+	tmp_buf = _new_IntAE(0, 0, 0);
+	PROTECT(ans = NEW_LIST(ans_len));
+	for (i = 0; i < ans_len; i++) {
+		if (IS_CHARACTER(x)) {
+			x_elt = STRING_ELT(x, i);
+			if (x_elt == NA_STRING) {
+				UNPROTECT(1);
+				error("'x' contains NAs");
+			}
+			s = CHAR(x_elt);
+		} else {
+			x_elt = VECTOR_ELT(x, i);
+			if (!IS_RAW(x_elt)) {
+				UNPROTECT(1);
+				error("x[[%d]] is not a raw vector", i + 1);
+			}
+			s = (const char *) RAW(x_elt);
+		}
+		PROTECT(ans_elt = explode_string_as_integer_vector(
+						s, LENGTH(x_elt),
+						sep0, tmp_buf));
+		if (ans_elt == R_NilValue) {
+			UNPROTECT(2);
+			error("in x[[%d]]: %s", i + 1, errmsg_buf);
+		}
+		SET_VECTOR_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
 }
 
 

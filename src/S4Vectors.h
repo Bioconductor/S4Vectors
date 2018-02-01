@@ -502,6 +502,13 @@ int _is_LLint(SEXP x);
 
 SEXP make_RAW_from_NA_LLINT();
 
+int sscan_llint(
+	const char *s,
+	int maxparse,
+	long long int *val,
+	int parse_dec
+);
+
 R_xlen_t _get_LLint_length(SEXP x);
 
 long long int *_get_LLint_dataptr(SEXP x);
@@ -609,6 +616,11 @@ SEXP logical2_sum(
 
 
 /* integer_utils.c */
+
+SEXP to_list_of_ints(
+	SEXP x,
+	SEXP sep
+);
 
 SEXP Integer_any_missing_or_outside(SEXP x, SEXP lower, SEXP upper);
 
@@ -795,8 +807,6 @@ SEXP findIntervalAndStartFromWidth(
 SEXP unstrsplit_list(SEXP x, SEXP sep);
 
 SEXP safe_strexplode(SEXP s);
-
-SEXP strsplit_as_list_of_ints(SEXP x, SEXP sep);
 
 SEXP svn_time();
 

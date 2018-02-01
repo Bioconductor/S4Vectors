@@ -41,6 +41,7 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(logical2_sum, 2),
 
 /* integer_utils.c */
+	CALLMETHOD_DEF(to_list_of_ints, 2),
 	CALLMETHOD_DEF(Integer_any_missing_or_outside, 3),
 	CALLMETHOD_DEF(Integer_diff_with_0, 1),
 	CALLMETHOD_DEF(Integer_diff_with_last, 2),
@@ -68,7 +69,6 @@ static const R_CallMethodDef callMethods[] = {
 /* character_utils.c */
 	CALLMETHOD_DEF(unstrsplit_list, 2),
 	CALLMETHOD_DEF(safe_strexplode, 1),
-	CALLMETHOD_DEF(strsplit_as_list_of_ints, 2),
 	CALLMETHOD_DEF(svn_time, 0),
 
 /* eval_utils.c */

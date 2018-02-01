@@ -29,6 +29,91 @@ SEXP make_RAW_from_NA_LLINT()
 
 
 /****************************************************************************
+ * sscan_llint()
+ *
+ * If 'maxparse' is < 0, parsing stops at the "deal-breaker character" i.e.
+ * at the first character in the string pointed by 's' that is not considered
+ * part of the representation of the long long integer (this includes the '\0'
+ * character found at the end of a C string).
+ * The caller can set the maximum number of characters to parse by setting
+ * 'maxparse' to a non-negative value, in which case parsing stops when
+ * reaching the "deal-breaker character" or when this maximum has been
+ * reached, whichever occurs first.
+ * After parsing stops, sscan_llint() returns the number of characters that
+ * got parsed, counting the "deal-breaker character" one was reached. Note
+ * that when setting 'maxparse' to a negative value, this number will always
+ * be >= 1 because sscan_llint() always sparses at least the first character
+ * in the string (i.e. s[0]). Also im this case it's the responsibility of
+ * the caller to make sure that the string contains a "deal-breaker character".
+ * Note that caller can always safely access the last parsed character with
+ * s[n - 1] (except when 'maxparse' is set to 0).
+ * On return, 'val' will contain one of the following:
+ *   (a) the value of the parsed long long integer;
+ *   (b) NA_LLINT.
+ * (b) occurs in one of the 2 following situations:
+ *   (b1) no integer could be parsed i.e. parsing stopped before reaching
+ *        any digit;
+ *   (b2) an integer was successfully parsed but was too big to be
+ *        represented as a long long int (overflow).
+ * It's the responsibility of the caller to reset the global overflow flag
+ * (with _reset_ovflow_flag()) before calling sscan_llint() so that
+ * _get_ovflow_flag() can be called after sscan_llint() returns as a reliable
+ * mean to differentiate between (b1) and (b2).
+ */
+
+int sscan_llint(const char *s, int maxparse, long long int *val, int parse_dot)
+{
+	int n;
+	char c, sign;
+
+	n = 0;
+	*val = NA_LLINT;
+	/* Skip leading spaces. */
+	do {
+		if (maxparse >= 0 && n >= maxparse)
+			return n;
+	} while (isspace(c = s[n++]));
+	/* Scan unary +/- sign. */
+	if (c == '+' || c == '-') {
+		sign = c;
+		if (maxparse >= 0 && n >= maxparse)
+			return n;
+		c = s[n++];
+	} else {
+		sign = '+';
+	}
+	if (isdigit(c)) {
+		/* Scan digits. */
+		*val = 0;
+		do {
+			*val = _safe_llint_mult(*val, 10LL);
+			*val = _safe_llint_add(*val, (long long int) c - '0');
+			if (maxparse >= 0 && n >= maxparse)
+				goto bailout;
+		} while (isdigit(c = s[n++]));
+		if (c == '.' && parse_dot) {
+			/* Parse decimal part but ignore it. */
+			do {
+				if (maxparse >= 0 && n >= maxparse)
+					goto bailout;
+			} while (isdigit(c = s[n++]));
+		}
+		if (isspace(c)) {
+			/* Skip trailing spaces. */
+			do {
+				if (maxparse >= 0 && n >= maxparse)
+					goto bailout;
+			} while (isspace(c = s[n++]));
+		}
+		bailout:
+		if (sign == '-')
+			*val = -(*val);
+	}
+	return n;
+}
+
+
+/****************************************************************************
  * C-level getters and setter.
  */
 
@@ -140,83 +225,39 @@ static void from_doubles_to_llints(const double *from, long long int *to,
 	return;
 }
 
-/* Return 1 if the string to parse 's' contains a number that is syntactically
-   correct AND cannot be represented by a long long int (overflow).
-   Otherwise return 0. */
-static int scan_llint(const char *s, long long int *out)
-{
-	char c, sign;
-	long long int val;
-
-	*out = NA_LLINT;
-	/* Skip leading spaces. */
-	while (isspace(c = *(s++))) {};
-	if (c == '\0') 
-		return 0;  /* syntactically incorrect */
-	/* Scan unary +/- sign. */
-	if (c == '+' || c == '-') {
-		sign = c;
-		c = *(s++);
-	} else {
-		sign = '+';
-	}
-	if (!isdigit(c))
-		return 0;  /* syntactically incorrect */
-	/* Scan digits. */
-	_reset_ovflow_flag();
-	val = c - '0';
-	while (isdigit(c = *(s++))) {
-		val = _safe_llint_mult(val, 10LL);
-		val = _safe_llint_add(val, (long long int) c - '0');
-	}
-	if (sign == '-')
-		val = -val;
-	if (c == '\0')
-		goto syntactically_correct;
-	/* Scan decimal part. */
-	if (c == '.') {
-		/* Decimal part is ignored. */
-		while (isdigit(c = *(s++))) {};
-		if (c == '\0')
-			goto syntactically_correct;
-	}
-	/* Skip trailing spaces. */
-	if (isspace(c))
-		while (isspace(c = *(s++))) {};
-	if (c != '\0')
-		return 0;  /* syntactically incorrect */
-	syntactically_correct:
-	*out = val;
-	return _get_ovflow_flag();
-}
-
 static void from_STRSXP_to_llints(SEXP from, long long int *to)
 {
-	R_xlen_t n, i;
-	int first_time1, first_time2;
+	R_xlen_t from_len, i;
+	int first_time1, first_time2, n;
 	SEXP from_elt;
+	const char *s;
 
-	n = XLENGTH(from);
+	from_len = XLENGTH(from);
 	first_time1 = first_time2 = 1;
-	for (i = 0; i < n; i++, to++) {
+	for (i = 0; i < from_len; i++, to++) {
 		from_elt = STRING_ELT(from, i);
 		if (from_elt == NA_STRING) {
 			*to = NA_LLINT;
 			continue;
 		}
-		if (scan_llint(CHAR(from_elt), to)) {
-			/* syntactically correct number but overflow */
-			if (first_time1) {
-				warning("out-of-range values coerced to NAs "
-					"in coercion to LLint");
-				first_time1 = 0;
+		s = CHAR(from_elt);
+		_reset_ovflow_flag();
+		n = sscan_llint(s, -1, to, 1);
+		if (s[n - 1] == '\0') {
+			if (*to != NA_LLINT)
+				continue;
+			if (_get_ovflow_flag()) {
+				/* syntactically correct number but overflow */
+				if (first_time1) {
+					warning("out-of-range values coerced "
+						"to NAs in coercion to LLint");
+					first_time1 = 0;
+				}
+				continue;
 			}
-			continue;
 		}
-		if (*to != NA_LLINT)
-			continue;
+		/* syntactically incorrect number */
 		if (first_time2) {
-			/* syntactically incorrect number */
 			warning("syntactically incorrect numbers "
 				"coerced to NAs in coercion to LLint");
 			first_time2 = 0;
