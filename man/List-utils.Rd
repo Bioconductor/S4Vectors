@@ -87,14 +87,8 @@ pc(...)
     For \code{lapply}, \code{sapply}, and \code{endoapply}, optional
     arguments to \code{FUN}.
 
-    For \code{mendoapply}, a set of \link{List} derivatives to compute over.
-    Ordinary list and data frame objects are accepted.
-
-    For \code{pc}, one or more list-like objects.
-
-    For \code{Map}, one or more \link{List} objects.
-    (FIXME: Mixing \link{List} objects with ordinary lists doesn't seem
-    to work properly at the moment.)
+    For \code{mendoapply}, \code{pc} and \code{Map}, one or more list-like
+    objects.
   }
   \item{simplify, USE.NAMES}{
     See \code{?base::\link[base]{sapply}} for a description of
