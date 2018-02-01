@@ -201,10 +201,14 @@ extract_data_frame_rows <- function(x, i)
     ## normalized only once) as the code below but unfortunately it's not.
     ## TODO: Investigate why and make it as fast as the code below.
     #i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, as.NSBS=TRUE)
-    #data.frame(lapply(x, extractROWS, i),
-    #           check.names=FALSE, stringsAsFactors=FALSE)
+    #ans <- lapply(x, extractROWS, i)
     i <- normalizeSingleBracketSubscript(i, x, exact=FALSE)
-    data.frame(lapply(x, "[", i),
-               check.names=FALSE, stringsAsFactors=FALSE)
+    ans <- lapply(x, "[", i)
+    ## Do NOT use data.frame() or as.data.frame() here as it adds a lot of
+    ## overhead and will mess up non-atomic columns.
+    #data.frame(ans, check.names=FALSE, stringsAsFactors=FALSE)
+    attr(ans, "row.names") <- seq_along(i)
+    attr(ans, "class") <- "data.frame"
+    ans
 }
 
