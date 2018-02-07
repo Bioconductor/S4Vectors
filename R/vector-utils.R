@@ -137,6 +137,7 @@ lowestListElementClass <- function(x)
     ##      which would significantly slow down concatenation of hundreds
     ##      of thousands or millions of (short) vectors.
     all_objects <- c(list(x), unname(objects))
+
     if (length(dim(x)) == 2L) {
         ans <- do.call(rbind, all_objects)
         if (!use.names)
