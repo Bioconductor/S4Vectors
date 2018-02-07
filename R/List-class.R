@@ -385,6 +385,8 @@ setMethod("unlist", "List",
 ### Subset a List object by a list-like subscript.
 subset_List_by_List <- function(x, i)
 {
+    if (missing(i))
+        return(x)
     li <- length(i)
     if (is.null(names(i))) {
         lx <- length(x)
@@ -535,13 +537,15 @@ lsubset_List_by_List <- function(x, i, value)
 setMethod("[", "List",
     function(x, i, j, ..., drop=TRUE)
     {
-        if (!missing(j) || length(list(...)) > 0L)
+        if (length(list(...)) > 0L)
             stop("invalid subsetting")
-        if (missing(i))
-            return(x)
-        if (is(i, "list_OR_List") && !is(i, "IntegerRanges"))
+        if (is(i, "list_OR_List") && !is(i, "IntegerRanges")) {
+            ## x[i, j] not supported yet when 'i' is a list-like subscript.
+            if (!missing(j))
+                stop("invalid subsetting")
             return(subset_List_by_List(x, i))
-        callNextMethod(x, i)
+        }
+        callNextMethod(x, i, j)
     }
 )
 
