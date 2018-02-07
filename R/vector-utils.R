@@ -130,6 +130,12 @@ lowestListElementClass <- function(x)
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
 
+    ## Do NOT call prepare_objects_to_concatenate() here. Two reasons:
+    ##   1) semantic: we want to be consistent with c() and unlist() when
+    ##      combining atomic vectors of mixed types.
+    ##   2) speed: prepare_objects_to_concatenate() uses an lapply loop
+    ##      which would significantly slow down concatenation of hundreds
+    ##      of thousands or millions of (short) vectors.
     all_objects <- c(list(x), unname(objects))
     if (length(dim(x)) == 2L) {
         ans <- do.call(rbind, all_objects)
