@@ -93,10 +93,6 @@ setMethod("NSBS", "NSBS",
     }
 )
 
-### NSBS concrete subclasses NativeNSBS, RangeNSBS, and RleNSBS override this
-### default method.
-setMethod("as.integer", "NSBS", function(x) as.integer(x@subscript))
-
 ### The 3 default methods below work out-of-the-box on NSBS objects for which
 ### as.integer() works. However, concrete subclasses RangeNSBS, RleNSBS, and
 ### RangesNSBS override some of them with more efficient versions that avoid
