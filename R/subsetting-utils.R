@@ -679,7 +679,7 @@ setMethod("getListElement", "list",
 
 .wrap_in_length_one_list_like_object <- function(value, name, x)
 {
-    stopifnot(is.list(x) || is(x, "List"))
+    stopifnot(is(x, "list_OR_List"))
     stopifnot(is.null(name) || isSingleStringOrNA(name))
     if (is(x, "List")) {
         tmp <- try(as(value, elementType(x), strict=FALSE), silent=TRUE)

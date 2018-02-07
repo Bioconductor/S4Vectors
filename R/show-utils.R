@@ -395,7 +395,7 @@ setGeneric("showAsCell",
     return(.showAsCell_array(object))
   if (NROW(object) == 0L)
     return(character(0L))
-  if (is.list(object) || is(object, "List")) {
+  if (is(object, "list_OR_List")) {
     vapply(object, function(x) {
       str <- paste(head(unlist(x), 3L), collapse = ",")
       if (length(x) > 3L)

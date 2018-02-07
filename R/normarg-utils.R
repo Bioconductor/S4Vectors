@@ -84,8 +84,8 @@ V_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton")
 H_recycle <- function(x, skeleton, x_what="x", skeleton_what="skeleton",
                       more_blahblah=NA)
 {
-    stopifnot(is.list(x) || is(x, "List"))
-    stopifnot(is.list(skeleton) || is(skeleton, "List"))
+    stopifnot(is(x, "list_OR_List"))
+    stopifnot(is(skeleton, "list_OR_List"))
     x_len <- length(x)
     skeleton_len <- length(skeleton)
     stopifnot(x_len == skeleton_len)
