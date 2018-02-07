@@ -86,7 +86,6 @@ test_FilterRules_subset <- function() {
                  structure(filts[1:2], names = filts[1:2]))
   checkIdentical(sapply(unlist(filters[]),deparse),
                  structure(filts, names = filts))
-  checkException(filters[1,2], silent = TRUE)
 }
 
 test_FilterRules_active <- function() {

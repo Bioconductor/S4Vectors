@@ -102,13 +102,10 @@ test_List_subset <- function() {
     collection <- IntegerList(one=int1, int2, compress=compress)
     unnamed <- IntegerList(int1, int2, compress=compress)
 
-    checkException(collection[1,2], silent=TRUE)
-    if (compress) {
-      checkException(collection[5], silent=TRUE)
-      checkException(collection[c(NA, 2)], silent=TRUE)
-      checkException(collection[c(TRUE, TRUE, TRUE)], silent=TRUE)
-      checkException(unnamed["one"], silent=TRUE)
-    }
+    checkException(collection[5], silent=TRUE)
+    checkException(collection[c(NA, 2)], silent=TRUE)
+    checkException(collection[c(TRUE, TRUE, TRUE)], silent=TRUE)
+    checkException(unnamed["one"], silent=TRUE)
     checkException(collection[c(-1,2)], silent=TRUE)
 
     empty <- IntegerList(compress=compress)
