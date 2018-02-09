@@ -461,10 +461,14 @@ setReplaceMethod("[", "DataFrame",
                    j <- j2
                    if (!length(j)) # nothing to replace
                      return(x)
-                   if (is(value, "list") || is(value, "List")) {
-                     null <- sapply_isNULL(value)
-                     if (any(null)) { ### FIXME: data.frame handles gracefully
-                       stop("NULL elements not allowed in list value")
+                   if (is(value, "list_OR_List") &&
+                       pcompareRecursively(value))
+                   {
+                     if (is(value, "List") && is(NULL, elementType(value))) {
+                       null <- sapply_isNULL(value)
+                       if (any(null)) { ### FIXME: data.frame handles gracefully
+                         stop("NULL elements not allowed in list value")
+                       }
                      }
                      value <- as(value, "DataFrame")
                    }
