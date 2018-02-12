@@ -412,6 +412,8 @@ setMethod("[", "Vector",
 setMethod("extractROWS", "Vector",
     function(x, i)
     {
+        ## Fix old objects on-the-fly (e.g. old GRanges or GAlignments
+        ## instances).
         x <- updateObject(x, check=FALSE)
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         x_pslotnames <- parallelSlotNames(x)
