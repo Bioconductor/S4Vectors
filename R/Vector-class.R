@@ -204,6 +204,21 @@ setValidity2("Vector", .valid.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### The default method (defined in BiocGenerics) does complicated, costly,
+### and dangerous things, and sometimes it actually breaks valid objects
+### (e.g. it breaks valid OverlapEncodings objects). So we overwrite it with
+### a method for Vector objects that does nothing! That way it's simple,
+### cheap, and safe ;-). And that's really all it needs to do at the moment.
+###
+
+setMethod("updateObject", "Vector",
+    function(object, ..., verbose=FALSE) object
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
 
@@ -548,7 +563,7 @@ rbind_mcols <- function(x, ...)
         return(mcols_list[[1L]])
     mcols_is_null <- sapply_isNULL(mcols_list)
     if (all(mcols_is_null))
-        return(NULL)    
+        return(NULL)
     mcols_list[mcols_is_null] <- lapply(
         args[mcols_is_null],
         function(arg) make_zero_col_DataFrame(length(arg))
