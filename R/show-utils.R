@@ -365,9 +365,7 @@ setMethod("classNameForDisplay", "AsIs",
 ###
 
 ### Exported!
-setGeneric("showAsCell",
-    function(object) standardGeneric("showAsCell")
-)
+setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
 
 ### Must work on any array-like object (i.e. on any object with 2 dimensions
 ### or more) e.g. ordinary array or matrix, Matrix, data.frame, DataFrame,
@@ -393,21 +391,22 @@ setGeneric("showAsCell",
   ## a "dim" method that return a matrix!
   if (length(dim(object)) >= 2L && !is.matrix(dim(object)))
     return(.showAsCell_array(object))
-  if (NROW(object) == 0L)
+  object_NROW <- NROW(object)
+  if (object_NROW == 0L)
     return(character(0L))
-  if (is(object, "list_OR_List")) {
-    vapply(object, function(x) {
-      str <- paste(showAsCell(head(x, 3L)), collapse=",")
-      if (length(x) > 3L)
-        str <- paste0(str, ",...")
-      str
-    }, character(1L))
-  } else {
-    attempt <- try(as.character(object), silent=TRUE)
-    if (is(attempt, "try-error"))
-      rep.int("########", length(object))
-    else attempt
-  }
+  attempt <- try(as.character(object), silent=TRUE)
+  if (!is(attempt, "try-error"))
+      return(attempt)
+  if (!is(object, "list_OR_List"))
+      return(rep.int("#####", object_NROW))
+  vapply(object,
+      function(x) {
+          str <- paste(showAsCell(head(x, 3L)), collapse=",")
+          if (length(x) > 3L)
+              str <- paste0(str, ",...")
+          str
+      },
+      character(1L))
 }
 
 setMethod("showAsCell", "ANY", .default_showAsCell)
