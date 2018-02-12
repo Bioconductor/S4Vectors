@@ -412,6 +412,7 @@ setMethod("[", "Vector",
 setMethod("extractROWS", "Vector",
     function(x, i)
     {
+        x <- updateObject(x, check=FALSE)
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         x_pslotnames <- parallelSlotNames(x)
         ans_pslots <- lapply(setNames(x_pslotnames, x_pslotnames),
