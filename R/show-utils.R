@@ -403,7 +403,7 @@ setGeneric("showAsCell",
       str
     }, character(1L))
   } else {
-    attempt <- try(as.vector(object), silent=TRUE)
+    attempt <- try(as.character(object), silent=TRUE)
     if (is(attempt, "try-error"))
       rep.int("########", length(object))
     else attempt
