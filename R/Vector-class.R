@@ -332,13 +332,14 @@ make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
     if (!("elementMetadata" %in% names(x_slots)))
         stop(wmsg("trying to set metadata columns on an object that does ",
                   "not support them (i.e. with no 'elementMetadata' slot)"))
-    mcols_class <- x_slots[["elementMetadata"]]
+    target_class <- x_slots[["elementMetadata"]]
     if (is.null(value)) {
-        if (is(NULL, mcols_class))
+        if (is(NULL, target_class))
             return(NULL)
         value <- make_zero_col_DataFrame(length(x))
     }
-    value <- as(value, mcols_class, strict=TRUE)
+    if (!is(value, target_class))
+        value <- as(value, target_class)
     ## From here 'value' is guaranteed to be a DataTable object.
     if (!is.null(rownames(value)))
         rownames(value) <- NULL
