@@ -1,63 +1,56 @@
 %\VignetteIndexEntry{An Overview of the S4Vectors package}
-%\VignetteDepends{}
+%\VignetteDepends{S4Vectors}
 %\VignetteKeywords{Vector,Hits,Rle,List,DataFrame}
 %\VignettePackage{S4Vectors}
-\documentclass[10pt]{article}
 
-\usepackage{times}
-\usepackage{hyperref}
+\documentclass{article}
 
-\textwidth=6.5in
-\textheight=8.5in
-%\parskip=.3cm
-\oddsidemargin=-.1in
-\evensidemargin=-.1in
-\headheight=-.3in
+\usepackage[authoryear,round]{natbib}
 
-\newcommand{\Rfunction}[1]{{\texttt{#1}}}
-\newcommand{\Robject}[1]{{\texttt{#1}}}
-\newcommand{\Rpackage}[1]{{\textit{#1}}}
-\newcommand{\Rmethod}[1]{{\texttt{#1}}}
-\newcommand{\Rfunarg}[1]{{\texttt{#1}}}
-\newcommand{\Rclass}[1]{{\textit{#1}}}
-\newcommand{\Rcode}[1]{{\texttt{#1}}}
+<<style, echo=FALSE, results=tex>>=
+BiocStyle::latex(use.unsrturl=FALSE)
+@
 
-\newcommand{\software}[1]{\textsf{#1}}
-\newcommand{\R}{\software{R}}
-
-\title{An Overview of the \Rpackage{S4Vectors} package}
+\title{An Overview of the \Biocpkg{S4Vectors} package}
 \author{Patrick Aboyoun, Michael Lawrence, Herv\'e Pag\`es}
-\date{\today}
+\date{Edited: February 2018; Compiled: \today}
 
 \begin{document}
 
 \maketitle
 
+\tableofcontents
+
 <<options,echo=FALSE>>=
 options(width=72)
 @
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Introduction}
 
-The \Rpackage{S4Vectors} package provides a framework for representing
+The \Biocpkg{S4Vectors} package provides a framework for representing
 vector-like and list-like objects as S4 objects. It defines two central
 virtual classes, \Rclass{Vector} and \Rclass{List}, and a set of generic
 functions that extend the semantic of ordinary vectors and lists in \R{}.
 Package developers can easily implement vector-like or list-like objects
 as \Rclass{Vector} and/or \Rclass{List} derivatives.
 A few low-level \Rclass{Vector} and \Rclass{List} derivatives are
-implemented in the \Rpackage{S4Vectors} package itself e.g. \Rclass{Hits},
+implemented in the \Biocpkg{S4Vectors} package itself e.g. \Rclass{Hits},
 \Rclass{Rle}, and \Rclass{DataFrame}). Many more are implemented in the
-\Rpackage{IRanges} and \Rpackage{GenomicRanges} infrastructure packages,
+\Biocpkg{IRanges} and \Biocpkg{GenomicRanges} infrastructure packages,
 and in many other Bioconductor packages.
 
 In this vignette, we will rely on simple, illustrative example
 datasets, rather than large, real-world data, so that each data structure
 and algorithm can be explained in an intuitive, graphical manner. We
-expect that packages that apply \Rpackage{S4Vectors} to a particular
+expect that packages that apply \Biocpkg{S4Vectors} to a particular
 problem domain will provide vignettes with relevant, realistic examples.
 
-The \Rpackage{S4Vectors} package is available at bioconductor.org and
+The \Biocpkg{S4Vectors} package is available at bioconductor.org and
 can be downloaded via \Rfunction{biocLite}:
 
 <<biocLite, eval=FALSE>>=
@@ -68,9 +61,14 @@ biocLite("S4Vectors")
 library(S4Vectors)
 @
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Vector-like and list-like objects}
 
-In the context of the \Rpackage{S4Vectors} package, a vector-like object
+In the context of the \Biocpkg{S4Vectors} package, a vector-like object
 is an ordered finite collection of elements. All vector-like objects have
 three main properties: (1) a notion of length or number of elements,
 (2) the ability to extract elements to create new vector-like objects,
@@ -83,7 +81,7 @@ vector-like object manipulations can be constructed using them.
 Some vector-like objects can also have a list-like semantic, which means
 that individual elements can be extracted with \Rcode{[[}.
 
-In \Rpackage{S4Vectors} and many other Bioconductor packages, vector-like
+In \Biocpkg{S4Vectors} and many other Bioconductor packages, vector-like
 and list-like objects derive from the \Rclass{Vector} and \Rclass{List}
 virtual classes, respectively. Note that \Rclass{List} is a subclass of
 \Rclass{Vector}.
@@ -101,7 +99,7 @@ value is paired with a run length. For example, the sequence
 \{1, 1, 1, 2, 3,  3\} can be represented as values = \{1, 2, 3\},
 run lengths = \{3, 1, 2\}.
 
-The \Rclass{Rle} class defined in the \Rpackage{S4Vectors} package is used
+The \Rclass{Rle} class defined in the \Biocpkg{S4Vectors} package is used
 to represent a run-length encoded (compressed) sequence of \Rclass{logical},
 \Rclass{integer}, \Rclass{numeric}, \Rclass{complex}, \Rclass{character},
 \Rclass{raw}, or \Rclass{factor} values.
@@ -139,7 +137,7 @@ reorder the elements being extracted, the result is called a
 \textit{subsequence}. In general, the \Rfunction{[} function can be used
 to construct a new sequence or extract a subsequence, but its interface
 is often inconvenient and not amenable to optimization. To compensate for
-this, the \Rpackage{S4Vectors} package supports seven additional functions
+this, the \Biocpkg{S4Vectors} package supports seven additional functions
 for sequence extraction:
 
 \begin{enumerate}
@@ -171,10 +169,10 @@ subset(xSnippet, xSnippet >= 5L)
 
 \subsubsection{Concatenating vector-like objects}
 
-The \Rpackage{S4Vectors} package uses two generic functions, \Rfunction{c}
+The \Biocpkg{S4Vectors} package uses two generic functions, \Rfunction{c}
 and \Rfunction{append}, for concatenating two \Rclass{Vector} derivatives.
 The methods for \Rclass{Vector} objects follow the definition that these
-two functions are given the \Rpackage{base} package.
+two functions are given the \Biocpkg{base} package.
 
 <<seq-concatenate>>=
 c(xSnippet, rev(xSnippet))
@@ -184,10 +182,10 @@ append(xSnippet, xSnippet, after=3)
 \subsubsection{Looping over subsequences of vector-like objects}
 
 In \R{}, \Rfunction{for} looping can be an expensive operation.
-To compensate for this, the \Rpackage{S4Vectors} package provides
+To compensate for this, the \Biocpkg{S4Vectors} package provides
 \Rfunction{aggregate} and \Rfunction{shiftApply} methods
 (\Rfunction{shiftApply} is a new generic function defined in
-\Rpackage{S4Vectors}) to perform calculations over subsequences
+\Biocpkg{S4Vectors}) to perform calculations over subsequences
 of vector-like objects.
 
 The \Rfunction{aggregate} function combines sequence extraction functionality
@@ -295,7 +293,7 @@ for concatenating, and \Rfunction{lapply}/\Rfunction{sapply} for looping.
 many \R{} users since they are the standard functions for looping
 over the elements of an \R{} \Rclass{list} object.
 
-In addition, the \Rpackage{S4Vectors} package introduces the
+In addition, the \Biocpkg{S4Vectors} package introduces the
 \Rfunction{endoapply} function to perform an endomorphism equivalent
 to \Rfunction{lapply}, i.e. it returns a \Rclass{List} derivative of
 the same class as the input rather than a \Rclass{list} object.
@@ -320,9 +318,13 @@ endoapply(df, `+`, 0.5)
 For more information on \Rclass{DataFrame} objects, consult the
 \Rcode{DataFrame} man page.
 
-See the ``An Overview of the \Rpackage{IRanges} package'' vignette in the
-\Rpackage{IRanges} package for many more examples of \Rclass{List} derivatives.
+See the ``An Overview of the \Biocpkg{IRanges} package'' vignette in the
+\Biocpkg{IRanges} package for many more examples of \Rclass{List} derivatives.
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Data Tables}
 
@@ -331,6 +333,11 @@ To Do:
 \Rclass{DataFrame},
 \Rclass{DataFrameList},
 \Rclass{SplitDataFrameList}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Vector Annotations}
 
@@ -354,17 +361,17 @@ Two kinds of metadata can be attached to a \Rclass{Vector} object:
 \end{enumerate}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 \section{Session Information}
 
-\begin{table*}[tbp]
-\begin{minipage}{\textwidth}
-<<sessionInfo, results=tex, print=TRUE>>=
-toLatex(sessionInfo())
+Here is the output of \Rcode{sessionInfo()} on the system on which this
+document was compiled:
+
+<<SessionInfo, echo=FALSE>>=
+sessionInfo()
 @
-\end{minipage}
-\caption{\label{tab:sessioninfo}%
-The output of \Rfunction{sessionInfo} on the build system after running
-this vignette.}
-\end{table*}
 
 \end{document}
