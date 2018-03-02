@@ -190,7 +190,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
 
     endomorphism <- FALSE
     if (missing(by)) {
-        if (is(x, "List") && !is(x, "DataTable")) {
+        if (is(x, "List") && !is(x, "DataTable") && !is(x, "Ranges")) {
             by <- IRanges::PartitioningByEnd(x)
             x <- unlist(x, use.names=FALSE)
         } else {
@@ -199,7 +199,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
         }
     }
 
-    if (is(by, "IntegerList")) {
+    if (is(by, "IntegerList") && !is(x, "Ranges")) {
         by <- IRanges::ManyToManyGrouping(by, nobj=NROW(x))
     }
     
