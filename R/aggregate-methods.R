@@ -199,7 +199,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
         }
     }
 
-    if (is(by, "IntegerList") && !is(x, "Ranges")) {
+    if (is(by, "IntegerList") && !is(by, "Ranges")) {
         by <- IRanges::ManyToManyGrouping(by, nobj=NROW(x))
     }
     
