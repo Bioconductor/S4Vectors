@@ -45,8 +45,7 @@ setReplaceMethod("names", "SimpleList",
 ### or with
 ###   new_SimpleList_from_list(..., mcols=somestuff)
 ### The latter is the new recommended form.
-new_SimpleList_from_list <- function(Class, x, ...,
-                                     mcols=make_zero_col_DataFrame(length(x)))
+new_SimpleList_from_list <- function(Class, x, ..., mcols)
 {
     if (!extends(Class, "SimpleList"))
         stop("class ", Class, " must extend SimpleList")
@@ -61,6 +60,8 @@ new_SimpleList_from_list <- function(Class, x, ...,
     ans_elementType <- elementType(new(Class))
     if (!all(sapply(x, function(xi) extends(class(xi), ans_elementType))))
         stop("all elements in 'x' must be ", ans_elementType, " objects")
+    if (missing(mcols))
+        return(new2(Class, listData=x, ..., check=FALSE))
     new2(Class, listData=x, ..., elementMetadata=mcols, check=FALSE)
 }
 
