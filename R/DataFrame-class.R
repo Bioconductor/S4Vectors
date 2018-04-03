@@ -168,7 +168,10 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
   nr <- 0
   listData <- list(...)
   varlist <- vector("list", length(listData))
+  metadata <- list()
   if (length(listData) > 0) {
+    if (is(listData[[1L]], "Annotated"))
+        metadata <- metadata(listData[[1L]])
     dotnames <- names(listData)
     if (is.null(dotnames)) {
       emptynames <- rep.int(TRUE, length(listData))
@@ -238,6 +241,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
   ans <- new_DataFrame(varlist, nrows=as.integer(max(nr, length(row.names))))
   ans@rownames <- row.names
   mcols(ans) <- mcols
+  metadata(ans) <- metadata
   ans
 }
 
@@ -769,22 +773,33 @@ rbind.DataFrame <- function(..., deparse.level = 1) {
 }
 
 setMethod("rbind", "DataFrame", function(..., deparse.level=1) {
-  args <- list(...)
-  hasrows <- unlist(lapply(args, nrow), use.names=FALSE) > 0L
-  hascols <- unlist(lapply(args, ncol), use.names=FALSE) > 0L
+  args <- list(...)    
+  
+  hasrows <- elementNROWS(args) > 0L
+  hascols <- vapply(args, ncol, integer(1L)) > 0L
 
+  ans <- NULL
   if (!any(hasrows | hascols)) {
-    return(DataFrame())
+    ans <- DataFrame()
   } else if (!any(hasrows)) {
-    return(args[[which(hascols)[1L]]])
+    ans <- args[[which(hascols)[1L]]]
   } else if (sum(hasrows) == 1) {
-    return(args[[which(hasrows)]])
+    ans <- args[[which(hasrows)]]
   } else {
     args <- args[hasrows]
   }
 
   df <- args[[1L]]
 
+  ans_metadata <- metadata(df)
+  ans_mcols <- mcols(df)
+  
+  if (!is.null(ans)) {
+      metadata(ans) <- ans_metadata
+      mcols(ans) <- ans_mcols
+      return(ans)
+  }
+  
   for (i in 2:length(args)) {
     if (ncol(df) != ncol(args[[i]]))
       stop("number of columns for arg ", i, " do not match those of first arg")
@@ -830,13 +845,10 @@ setMethod("rbind", "DataFrame", function(..., deparse.level=1) {
       rn <- make.unique(rn, sep = "")
   }
   rownames(ans) <- rn
-
-  if (!is.null(mcols(df))) {
-    df_mcols <- mcols(df)
-    if (all(sapply(args, function(x) identical(mcols(x), df_mcols))))
-      mcols(ans) <- df_mcols
-  }
-
+  
+  metadata(ans) <- ans_metadata
+  mcols(ans) <- ans_mcols
+ 
   ans
 })
 
