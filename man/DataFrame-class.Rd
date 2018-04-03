@@ -179,12 +179,14 @@
       \code{...}. Very similar to \code{\link{rbind.data.frame}}, except
       in the handling of row names. If all elements have row names, they
       are concatenated and made unique. Otherwise, the result does not
-      have row names.
+      have row names. The return value inherits its metadata from
+      the first argument.
     }
     \item{}{
       \code{cbind(...)}: Creates a new \code{DataFrame} by
       combining the columns of the \code{DataFrame} objects in
-      \code{...}. Very similar to \code{\link{cbind.data.frame}}.
+      \code{...}. Very similar to \code{\link{cbind.data.frame}}. The
+      return value inherits its metadata from the first argument.
     }
   }
 }
