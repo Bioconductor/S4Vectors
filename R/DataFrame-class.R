@@ -823,9 +823,10 @@ setMethod("rbind", "DataFrame", function(..., deparse.level=1) {
         levs <- unique(unlist(lapply(cols, levels), use.names=FALSE))
         cols <- lapply(cols, factor, levs)
       }
-      rectangular <- length(dim(cols[[1]])) == 2L
-      if (rectangular) {
+      matrix_like <- length(dim(cols[[1]])) == 2L
+      if (matrix_like) {
         combined <- do.call(rbind, unname(cols))
+        ### FIXME: handle the general array case (arbind)
       } else {
         combined <- do.call(c, unname(cols))
       }
