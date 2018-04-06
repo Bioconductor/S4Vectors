@@ -142,19 +142,19 @@ setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
                  "must be \"elementMetadata\"")
         return(paste(msg, collapse=""))
     }
-    for (slotname in x_pslotnames) {
+    msg <- NULL
+    for (slotname in head(x_pslotnames, -1L)) {
         tmp <- slot(x, slotname)
         if (!(is.null(tmp) || NROW(tmp) == x_len)) {
-            if (slotname == "elementMetadata") {
-                what <- "mcols(x)"
-            } else {
-                what <- paste0("x@", slotname)
-            }
-            msg <- c("'", what, "' is not parallel to 'x'")
-            return(paste(msg, collapse=""))
+            what <- paste0("x@", slotname)
+            msg <- c(msg, paste0("'", what, "' is not parallel to 'x'"))
         }
     }
-    NULL
+    tmp <- mcols(x)
+    if (!(is.null(tmp) || nrow(tmp) == x_len)) {
+        msg <- c(msg, "'mcols(x)' is not parallel to 'x'")
+    }
+    msg
 }
 
 .valid.Vector.names <- function(x)
