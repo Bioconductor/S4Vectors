@@ -170,7 +170,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE)
   varlist <- vector("list", length(listData))
   metadata <- list()
   if (length(listData) > 0) {
-    if (is(listData[[1L]], "Annotated"))
+    if (is(listData[[1L]], getClass("Annotated")))
         metadata <- metadata(listData[[1L]])
     dotnames <- names(listData)
     if (is.null(dotnames)) {
