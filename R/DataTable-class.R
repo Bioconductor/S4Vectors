@@ -65,6 +65,8 @@ setMethod("subset", "DataTable",
               x[i, j, drop=drop]
           })
 
+### FIXME: na.omit() and na.exclude() set non-slot attributes,
+###        and will fail with things like Rle.
 setMethod("na.omit", "DataTable",
           function(object, ...) {
             attr(object, "row.names") <- rownames(object)
