@@ -148,8 +148,12 @@ setMethod("NSBS", "NULL",
                           strict.upper.bound=TRUE, allow.NAs=FALSE)
 {
     x_NROW <- NROW(x)
-    if (!is.integer(i))
-        i <- as.integer(i)
+    if (is.integer(i)) {
+        if (!is.null(names(i)))
+            names(i) <- NULL
+    } else {
+        i <- as.integer(i)  # this also drops the names
+    }
     has_NAs <- anyNA(i)
     if (!allow.NAs && has_NAs)
         .subscript_error("subscript contains NAs")
@@ -178,6 +182,8 @@ setMethod("NSBS", "logical",
         x_NROW <- NROW(x)
         if (anyNA(i))
             .subscript_error("logical subscript contains NAs")
+        if (!is.null(names(i)))
+            names(i) <- NULL
         li <- length(i)
         if (strict.upper.bound && li > x_NROW) {
             if (any(i[(x_NROW+1L):li]))
@@ -359,6 +365,8 @@ setMethod("show", "RangeNSBS",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeSingleBracketSubscript()
+###
+### Must return an unnamed integer vector when 'as.NSBS' is FALSE.
 ###
 
 normalizeSingleBracketSubscript <- function(i, x, exact=TRUE,
