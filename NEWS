@@ -1,3 +1,105 @@
+CHANGES IN VERSION 0.18.0
+-------------------------
+
+NEW FEATURES
+
+    o The package gets a new vignette: S4VectorsOverview.Rnw
+      The material in this new vignette comes from the IRangesOverview.Rnw
+      vignette located in the IRanges package. All the S4Vectors-specific
+      material was moved from the IRangesOverview.Rnw vignette to the new
+      S4VectorsOverview.Rnw vignette.
+
+    o All Vector derivatives now support 'x[i, j]' by default. This allows
+      the user to conveniently subset the metadata columns thru 'j'.
+      Note that GenomicRanges objects have been supporting this feature for
+      years but now all Vector derivatives support it. Developers of Vector
+      derivatives with a true 2-D semantic (e.g. SummarizedExperiment) need
+      to overwrite this.
+
+    o rank() now suports 'by' on Vector derivatives.
+
+    o Add concatenateObjects() generic and methods for LLint, vector, Vector,
+      Hits, and Rle objects. This is a low-level generic intended to
+      facilitate implementation of c() on vector-like objects.
+      The "concatenateObjects" method for Vector objects concatenates the
+      objects by concatenating all their parallel slots. The method behaves
+      like an endomorphism with respect to its first argument 'x'. Note that
+      this method will work out-of-the-box and do the right thing on most
+      Vector subclasses as long as parallelSlotNames() reports the names of
+      all the parallel slots on objects of the subclass (some Vector subclasses
+      might require a "parallelSlotNames" method for this to happen). For those
+      Vector subclasses on which concatenateObjects() does not work
+      out-of-the-box or does not do the right thing, it is strongly advised
+      to override the method for Vector objects rather than trying to override
+      the (new) "c" method for Vector objects with a specialized method. The
+      specialized "concatenateObjects" method will typically delegate to the
+      method below via the use of callNextMethod(). See "concatenateObjects"
+      methods for Hits and Rle objects for some examples. No Vector subclass
+      should need to override the "c" method for Vector objects.
+
+    o Major refactoring of [[<- for List objects. It's now based on a new
+      "setListElement" method for List objects that relies on `[<-` for
+      replacement, c() for appending, and `[` for removal, which are the 3
+      operations that setListElement() can perform (depending on how it's
+      called). As a consequence [[<- now works out-of-the box on any List
+      derivative for which `[<-`, c(), and `[` work.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o endoapply() and mendoapply() are now regular functions instead of
+      generic functions.
+
+    o A couple of minor improvements to how default "showAsCell" method
+      handles list-like and non-list like objects.
+
+    o Replace strsplitAsListOfIntegerVectors() with toListOfIntegerVectors().
+      (The former is still available but deprecated in favor of the latter.)
+      The input of toListOfIntegerVectors() now can be a list of raw vectors
+      (in addition to be a character vector), in which case it's treated like
+      if it was 'sapply(x, rawToChar)'.
+
+    o A couple of optimizations to "[<-" method for DataFrame objects
+      (see commit e63f4cfd637e3471e4b04015c2938348df17e14a).
+
+DEPRECATED AND DEFUNCT
+
+    o phead() and ptail() are deprecated in favor of IRanges::heads() and
+      IRanges::tails().
+
+    o strsplitAsListOfIntegerVectors() is deprecated in favor of
+      toListOfIntegerVectors().
+
+BUG FIXES
+
+    o The mcols() setter no more tries to downgrade to DataFrame a supplied
+      right value that extends DataFrame (e.g. DelayedDataFrame).
+
+    o 'DataFrame(I(x)) and as(I(x), "DataFrame")' now drops the I() wrapping
+      before storing 'x' in the returned object. This wrapping was ugly, not
+      needed, and breaking S4 objects.
+
+    o Fix a couple of long-standing bugs in DataFrame subassignment:
+      - Bug in the "[<-" method for DataFrame objects where replacing the
+        1st variable with a rectangular object (e.g. x[1] <-
+        DataFrame(aa=I(matrix(1:6, ncol=2)))) was returning a DataFrame
+        with the "nrows" slot set incorrectly.
+      - A couple of bugs in the "replaceROWS" method for DataFrame objects
+        when used in "rbind mode" i.e. when max(i) > nrow(x).
+
+    o Fix bug in "cbind" method for DataFrame where it was appending X to
+      the column names in some situations (see
+      https://github.com/Bioconductor/S4Vectors/issues/8).
+
+    o Fix order() on SortedByQueryHits objects (see
+      https://github.com/Bioconductor/S4Vectors/issues/6).
+
+    o Fix bug in internal new_Hits() constructor where it was not returning an
+      object of the class specified via 'Class' in some situations.
+
+    o "lapply" for SimpleList objects now calls match.fun(FUN) internally to
+      find the function to apply.
+
+
 CHANGES IN VERSION 0.16.0
 -------------------------
 
