@@ -45,50 +45,24 @@ sapply_NROW <- function(x)
     return(vapply(x, NROW, integer(1)))
 }
 
-### TODO: Remove in BioC 3.8.
-listElementType <- function(x) {
-  .Defunct("lowestListElementClass")
-  cl <- lapply(x, class)
-  clnames <- unique(unlist(cl, use.names=FALSE))
-  if (length(clnames) == 1L) {
-    clnames
-  } else {
-    contains <- lapply(cl, function(x) getClass(x, TRUE)@contains)
-    clnames <- c(clnames,
-                 unlist(lapply(contains, names), use.names=FALSE))
-    cltab <- table(factor(clnames, unique(clnames)))
-    clnames <- names(cltab)[cltab == length(x)]
-    if (length(clnames) > 0L) {
-      clnames[1]
-    } else {
-      NULL
-    }
-  }
-}
-
-### A replacement for listElementType() that has a slightly different semantic.
-### - listElementType(): return the closest common ancestor class of all the
-###   list elements in 'x', or NULL.
-### - lowestListElementClass(): return the common ancestor class **among**
-###   the classes of the list elements in 'x', or "ANY". In other words, if
-###   all the classes in 'x' extend one of them, then lowestListElementClass()
-###   returns it. Otherwise, it returns "ANY".
-### As a consequence, unlike listElementType() which can return the name of a
-### virtual class (e.g. vector_OR_factor), lowestListElementClass() is
-### guaranteed to always return a **concrete** class or "ANY".
+### Return the common ancestor class **among** the classes of the list elements
+### in 'x', or "ANY". In other words, if all the classes in 'x' extend one of
+### them, then lowestListElementClass() returns it. Otherwise, it returns "ANY".
+### As a consequence, lowestListElementClass() is guaranteed to always return a
+### **concrete** class or "ANY".
 ###
 ### For example:
 ###
-###   classes in 'x'              listElementType      lowestListElementClass
-###   -------------------------   ------------------   ----------------------
-###   all the same                common class         common class
-###   integer,numeric             "numeric"            "numeric"
-###   integer,factor              "integer"            "integer"
-###   numeric,factor              "numeric"            "numeric"
-###   integer,numeric,character   "vector"             "ANY"
-###   character,factor            "vector_OR_factor"   "ANY"
-###   matrix, data.frame          "vector"             "ANY"
-###   character,list              "vector"             "ANY"
+###   classes in 'x'              lowestListElementClass
+###   -------------------------   ----------------------
+###   all the same                common class
+###   integer,numeric             "numeric"
+###   integer,factor              "integer"
+###   numeric,factor              "numeric"
+###   integer,numeric,character   "ANY"
+###   character,factor            "ANY"
+###   matrix, data.frame          "ANY"
+###   character,list              "ANY"
 ###
 lowestListElementClass <- function(x)
 {
