@@ -91,6 +91,8 @@ S3method(setequal, Vector)
 
 S3method(sort, Vector)
 
+S3method(subset, Vector)
+
 S3method(summary, Rle)
 
 S3method(t, Hits)
@@ -166,6 +168,8 @@ export(
     setequal.Vector,
 
     sort.Vector,
+
+    subset.Vector,
 
     summary.Rle,
 

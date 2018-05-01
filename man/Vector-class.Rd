@@ -64,6 +64,9 @@
 \alias{[<-,Vector-method}
 \alias{replaceROWS,Vector-method}
 
+\alias{subset}
+\alias{subset.Vector}
+\alias{subset,Vector-method}
 \alias{window}
 \alias{window.Vector}
 \alias{window,Vector-method}
@@ -195,6 +198,7 @@
 
 \section{Subsetting}{
   In the code snippets below, \code{x} is a Vector object.
+
   \describe{
     \item{}{
       \code{x[i]}:
@@ -219,6 +223,50 @@
     \item{}{
       \code{x[i] <- value}:
       Replacement version of \code{x[i]}.
+    }
+  }
+}
+
+\section{Convenience wrappers for common subsetting operations}{
+  In the code snippets below, \code{x} is a Vector object.
+
+  \describe{
+    \item{}{
+      \code{subset(x, subset, select, drop=FALSE, ...)}:
+      Return a new Vector object made of the subset using logical vector
+      \code{subset}, where missing values are taken as FALSE.
+      TODO: Document \code{select}, \code{drop}, and \code{...}.
+    }
+    \item{}{
+      \code{window(x, start=NA, end=NA, width=NA)}:
+      Extract the subsequence from \code{x} that corresponds to the window
+      defined by \code{start}, \code{end}, and \code{width}.
+      At most 2 of \code{start}, \code{end}, and \code{width} can be set
+      to a non-\code{NA} value, which must be a non-negative integer.
+      More precisely:
+      \itemize{
+        \item If \code{width} is set to \code{NA}, then \code{start} or
+              \code{end} or both can be set to \code{NA}. In this case
+              \code{start=NA} is equivalent to \code{start=1} and
+              \code{end=NA} is equivalent to \code{end=length(x)}.
+        \item If \code{width} is set to a non-negative integer value, then
+              one of \code{start} or \code{end} must be set to a non-negative
+              integer value and the other one to \code{NA}.
+      }
+    }
+    \item{}{
+      \code{head(x, n=6L)}:
+      If \code{n} is non-negative, returns the first n elements of the Vector
+      object.
+      If \code{n} is negative, returns all but the last \code{abs(n)} elements
+      of the Vector object.
+    }
+    \item{}{
+      \code{tail(x, n=6L)}:
+      If \code{n} is non-negative, returns the last n elements of the Vector
+      object.
+      If \code{n} is negative, returns all but the first \code{abs(n)} elements
+      of the Vector object.
     }
   }
 }
