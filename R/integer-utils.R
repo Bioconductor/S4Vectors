@@ -101,7 +101,7 @@ toListOfIntegerVectors <- function(x, sep=",")
 ### Exported!
 strsplitAsListOfIntegerVectors <- function(x, sep=",")
 {
-    .Deprecated("toListOfIntegerVectors")
+    .Defunct("toListOfIntegerVectors")
     toListOfIntegerVectors(x, sep=sep)
 }
 

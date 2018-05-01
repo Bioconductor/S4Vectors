@@ -598,13 +598,13 @@ setMethod("setListElement", "List", setListElement_default)
 
 phead <- function(x, n=6L)
 {
-    .Deprecated("IRanges::heads")
+    .Defunct("IRanges::heads")
     IRanges::heads(x, n=n)
 }
 
 ptail <- function(x, n=6L)
 {
-    .Deprecated("IRanges::tails")
+    .Defunct("IRanges::tails")
     IRanges::tails(x, n=n)
 }
 
