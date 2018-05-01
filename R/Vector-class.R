@@ -517,6 +517,19 @@ setMethod("replaceROWS", "Vector",
 ### Convenience wrappers for common subsetting operations
 ###
 
+### S3/S4 combo for subset.Vector
+subset.Vector <- function(x, ...) subset(x, ...)
+subset_Vector <- function(x, subset, select, drop=FALSE, ...)
+{
+    i <- evalqForSubset(subset, x, ...)
+    if (!is.null(mcols(x))) {
+        j <- evalqForSelect(select, mcols(x), ...)
+        mcols(x) <- mcols(x)[ , j, drop=FALSE]
+    }
+    x[i, drop=drop]
+}
+setMethod("subset", "Vector", subset_Vector)
+
 ### S3/S4 combo for window.Vector
 window.Vector <- function(x, ...) window(x, ...)
 Vector_window <- function(x, start=NA, end=NA, width=NA)
