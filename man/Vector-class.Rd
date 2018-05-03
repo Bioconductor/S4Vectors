@@ -81,6 +81,8 @@
 \alias{rev,Vector-method}
 \alias{rep}
 \alias{rep,Vector-method}
+\alias{rep.int}
+\alias{rep.int,Vector-method}
 
 \alias{concatenateObjects,Vector-method}
 \alias{c}
@@ -279,7 +281,7 @@
       order.
     }
     \item{}{
-      \code{rep(x, times, length.out, each)}:
+      \code{rep(x, times, length.out, each)} and \code{rep.int(x, times)}:
       Repeats the values in \code{x} through one of the following conventions:
       \itemize{
         \item \code{times}: Vector giving the number of times to repeat each
