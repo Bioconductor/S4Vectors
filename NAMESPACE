@@ -83,6 +83,7 @@ S3method(quantile, Rle)
 
 S3method(rbind, DataFrame)
 
+S3method(rev, Vector)
 S3method(rev, Rle)
 
 S3method(setdiff, Vector)
@@ -161,6 +162,7 @@ export(
 
     rbind.DataFrame,
 
+    rev.Vector,
     rev.Rle,
 
     setdiff.Vector,
@@ -208,8 +210,7 @@ exportMethods(
     as.list, as.data.frame,
     as.matrix, as.table,
     "[", "[<-",
-    subset,
-    rep.int,
+    subset, rev, rep, rep.int,
     c, append,
     "==", "!=", "<=", ">=", "<", ">",
     "Ops", "Summary",

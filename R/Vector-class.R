@@ -552,6 +552,15 @@ setMethod("rep.int", "Vector", rep.int_along_ROWS)
 ## NOT exported.
 revROWS <- function(x) extractROWS(x, rev(seq_len(NROW(x))))
 
+### S3/S4 combo for rev.Vector
+rev.Vector <- revROWS
+setMethod("rev", "Vector", revROWS)
+
+## NOT exported.
+repROWS <- function(x, ...) extractROWS(x, rep(seq_len(NROW(x)), ...))
+
+setMethod("rep", "Vector", repROWS)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Concatenation

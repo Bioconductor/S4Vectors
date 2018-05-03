@@ -76,6 +76,11 @@
 \alias{tail}
 \alias{tail.Vector}
 \alias{tail,Vector-method}
+\alias{rev}
+\alias{rev.Vector}
+\alias{rev,Vector-method}
+\alias{rep}
+\alias{rep,Vector-method}
 
 \alias{concatenateObjects,Vector-method}
 \alias{c}
@@ -267,6 +272,24 @@
       object.
       If \code{n} is negative, returns all but the first \code{abs(n)} elements
       of the Vector object.
+    }
+    \item{}{
+      \code{rev(x)}:
+      Return a new Vector object made of the original elements in the reverse
+      order.
+    }
+    \item{}{
+      \code{rep(x, times, length.out, each)}:
+      Repeats the values in \code{x} through one of the following conventions:
+      \itemize{
+        \item \code{times}: Vector giving the number of times to repeat each
+              element if of length \code{length(x)}, or to repeat the whole
+              vector if of length 1.
+        \item \code{length.out}: Non-negative integer. The desired length of
+              the output vector.
+        \item \code{each}: Non-negative integer.  Each element of \code{x} is
+              repeated \code{each} times.
+      }
     }
   }
 }
