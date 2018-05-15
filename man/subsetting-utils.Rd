@@ -35,6 +35,8 @@
 \alias{extractROWS}
 \alias{extractROWS,ANY,ANY-method}
 \alias{extractROWS,vector_OR_factor,RangeNSBS-method}
+\alias{extractROWS,array,RangeNSBS-method}
+\alias{extractROWS,data.frame,RangeNSBS-method}
 \alias{replaceROWS}
 \alias{replaceROWS,ANY-method}
 

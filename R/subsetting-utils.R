@@ -450,7 +450,7 @@ setGeneric("replaceROWS", signature="x",
     function(x, i, value) standardGeneric("replaceROWS")
 )
 
-.extractROWSWithBracket <- function(x, i)
+default_extractROWS <- function(x, i)
 {
   if (is.null(x) || missing(i))
     return(x)
@@ -463,7 +463,7 @@ setGeneric("replaceROWS", signature="x",
   do.call(`[`, args)
 }
 
-.replaceROWSWithBracket <- function(x, i, value)
+default_replaceROWS <- function(x, i, value)
 {
   if (is.null(x))
     return(x)
@@ -475,7 +475,7 @@ setGeneric("replaceROWS", signature="x",
   do.call(`[<-`, args)
 }
 
-setMethod("extractROWS", c("ANY", "ANY"), .extractROWSWithBracket)
+setMethod("extractROWS", c("ANY", "ANY"), default_extractROWS)
 
 ### NOT exported but used in IRanges package (by "extractROWS" method with
 ### signature vector_OR_factor,RangesNSBS).
@@ -494,8 +494,8 @@ setMethod("extractROWS", c("vector_OR_factor", "RangeNSBS"),
     }
 )
 
-setMethod("extractROWS", c("array", "RangeNSBS"), .extractROWSWithBracket)
-setMethod("extractROWS", c("array", "RangesNSBS"), .extractROWSWithBracket)
+setMethod("extractROWS", c("array", "RangeNSBS"), default_extractROWS)
+setMethod("extractROWS", c("data.frame", "RangeNSBS"), default_extractROWS)
 
 ### NOT exported but will be used in IRanges package (by "extractROWS" method
 ### with signature LLint,RangesNSBS).
@@ -547,7 +547,7 @@ subset_along_ROWS <- function(x, i, j, ..., drop=TRUE)
 
 setMethod("[", "LLint", subset_along_ROWS)
 
-setMethod("replaceROWS", "ANY", .replaceROWSWithBracket)
+setMethod("replaceROWS", "ANY", default_replaceROWS)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
