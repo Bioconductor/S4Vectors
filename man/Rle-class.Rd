@@ -53,7 +53,7 @@
 \alias{rep.int,Rle-method}
 \alias{rep,Rle-method}
 
-\alias{concatenateObjects,Rle-method}
+\alias{bindROWS,Rle-method}
 \alias{append,Rle,vector-method}
 \alias{append,vector,Rle-method}
 \alias{\%in\%,Rle,ANY-method}

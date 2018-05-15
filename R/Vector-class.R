@@ -479,11 +479,11 @@ setMethod("replaceROWS", "Vector",
 
         ## --<1>-- Concatenate 'x' and 'value' with c() -----
 
-        ## We assume that concatenateObjects() works on objects of
-        ## class 'class(x)' and does the right thing i.e. that it
-        ## returns an object of the same class as 'x' and of length
-        ## 'length(x) + length(value)'. We skip validation.
-        ans <- concatenateObjects(x, list(value), check=FALSE)
+        ## We assume that bindROWS() works on objects of class 'class(x)'
+        ## and does the right thing i.e. that it returns an object of the
+        ## same class as 'x' and of NROW 'NROW(x) + NROW(value)'. We skip
+        ## validation.
+        ans <- bindROWS(x, list(value), check=FALSE)
 
         ## --<2>-- Subset 'c(x, value)' with extractROWS() -----
 
@@ -563,7 +563,7 @@ setMethod("rep", "Vector", repROWS)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Concatenation
+### Concatenation along the ROWS
 ###
 ### Note that supporting "extractROWS" and "c" makes "replaceROWS" (and thus
 ### "[<-") work out-of-the-box!
@@ -601,19 +601,19 @@ rbind_mcols <- function(x, ...)
     do.call(rbind, lapply(mcols_list, fillCols))
 }
 
-### We provide a default "concatenateObjects" method for Vector objects that
-### concatenates all the parallel slots. The method behaves like
-### an endomorphism with respect to its first argument 'x'.
-### Note that this method will work out-of-the-box and do the right thing
-### on most Vector subclasses as long as parallelSlotNames() reports the
-### names of all the parallel slots on objects of the subclass (some Vector
-### subclasses might require a "parallelSlotNames" method for this to happen).
-### For those Vector subclasses on which concatenateObjects() does not work
-### out-of-the-box nor do the right thing, it is strongly advised to override
-### the method for Vector objects rather than trying to override the "c"
-### method for Vector objects with a specialized method. The specialized
-### "concatenateObjects" method will typically delegate to the method below
-### via the use of callNextMethod(). See "concatenateObjects" methods for
+### We provide a default "bindROWS" method for Vector objects that uses
+### bindROWS() internally to concatenate the parallel slots along the ROWS.
+### The method behaves like an endomorphism with respect to its first
+### argument 'x'. Note that this method will work out-of-the-box and do the
+### right thing on most Vector subclasses as long as parallelSlotNames()
+### reports the names of all the parallel slots on objects of the subclass
+### (some Vector subclasses might require a "parallelSlotNames" method for
+### this to happen). For those Vector subclasses on which bindROWS() does not
+### work out-of-the-box nor do the right thing, it is strongly advised to
+### override the method for Vector objects rather than trying to override
+### the "c" method for Vector objects with a specialized method. The
+### specialized "bindROWS" method will typically delegate to the method
+### below via the use of callNextMethod(). See "bindROWS" methods for
 ### Hits and Rle objects for some examples.
 ### No Vector subclass should need to override the "c" method for
 ### Vector objects.
@@ -627,7 +627,7 @@ rbind_mcols <- function(x, ...)
     if (!isTRUEorFALSE(check))
         stop("'check' must be TRUE or FALSE")
 
-    objects <- prepare_objects_to_concatenate(x, objects)
+    objects <- prepare_objects_to_bind(x, objects)
     all_objects <- c(list(x), objects)
 
     ## Concatenate all the parallel slots except "NAMES" and "elementMetadata".
@@ -639,7 +639,7 @@ rbind_mcols <- function(x, ...)
             if (is.null(x_slot))
                 return(NULL)
             slot_list <- lapply(objects, slot, slotname)
-            concatenateObjects(x_slot, slot_list)
+            bindROWS(x_slot, slot_list)
         }
     )
 
@@ -676,20 +676,19 @@ rbind_mcols <- function(x, ...)
     ans
 }
 
-setMethod("concatenateObjects", "Vector", .concatenate_Vector_objects)
+setMethod("bindROWS", "Vector", .concatenate_Vector_objects)
 
-### Thin wrapper around concatenateObjects(). Behave like an endomorphism
-### i.e. return an object of the same class as 'x'. In particular 'c(x)'
-### should return 'x'.
+### Thin wrapper around bindROWS(). Behave like an endomorphism i.e. return
+### an object of the same class as 'x'. In particular 'c(x)' should return 'x'.
 ### No Vector subclass should need to override this method. See the
-### "concatenateObjects" method for Vector objects above for more information.
+### "bindROWS" method for Vector objects above for more information.
 setMethod("c", "Vector",
     function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
         if (!identical(recursive, FALSE))
             stop(wmsg("\"c\" method for Vector objects ",
                       "does not support the 'recursive' argument"))
-        concatenateObjects(x, list(...), ignore.mcols=ignore.mcols)
+        bindROWS(x, list(...), ignore.mcols=ignore.mcols)
     }
 )
 

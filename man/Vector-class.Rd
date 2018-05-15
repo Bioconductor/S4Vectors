@@ -84,7 +84,7 @@
 \alias{rep.int}
 \alias{rep.int,Vector-method}
 
-\alias{concatenateObjects,Vector-method}
+\alias{bindROWS,Vector-method}
 \alias{c}
 \alias{c,Vector-method}
 \alias{append}

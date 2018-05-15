@@ -592,7 +592,7 @@ setMethod("rep", "Rle",
 .concatenate_Rle_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    objects <- prepare_objects_to_concatenate(x, objects)
+    objects <- prepare_objects_to_bind(x, objects)
     all_objects <- c(list(x), objects)
 
     ## 1. Take care of the parallel slots
@@ -622,7 +622,7 @@ setMethod("rep", "Rle",
                                      check=check)
 }
 
-setMethod("concatenateObjects", "Rle", .concatenate_Rle_objects)
+setMethod("bindROWS", "Rle", .concatenate_Rle_objects)
 
 setMethod("append", c("Rle", "vector"),
           function (x, values, after = length(x)) {

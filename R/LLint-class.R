@@ -156,17 +156,17 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ### Low-level generic intended to facilitate implementation of "c" methods
 ### for vector-like objects. See R/Vector-class.R for more information.
 ### It can also be used to unlist an ordinary list of vector-like objects.
-setGeneric("concatenateObjects", signature="x",
+setGeneric("bindROWS", signature="x",
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
-        standardGeneric("concatenateObjects")
+        standardGeneric("bindROWS")
 )
 
 ### Not exported.
-### Low-level utility used by various "concatenateObjects" methods.
+### Low-level utility used by various "bindROWS" methods.
 ### Prepare 'objects' by deleting NULLs from it, dropping its names, and
 ### making sure that each of its list element belongs to the same class
 ### as 'x' (or to one of its subclasses) by coercing it if necessary.
-prepare_objects_to_concatenate <- function(x, objects=list())
+prepare_objects_to_bind <- function(x, objects=list())
 {
     if (!is.list(objects))
         stop("'objects' must be a list")
@@ -213,16 +213,16 @@ prepare_objects_to_concatenate <- function(x, objects=list())
     new2("LLint", bytes=ans_bytes, check=check)
 }
 
-setMethod("concatenateObjects", "LLint", .concatenate_LLint_objects)
+setMethod("bindROWS", "LLint", .concatenate_LLint_objects)
 
-### Thin wrapper around concatenateObjects().
+### Thin wrapper around bindROWS().
 setMethod("c", "LLint",
     function (x, ..., recursive=FALSE)
     {
         if (!identical(recursive, FALSE))
             stop("\"c\" method for LLint objects ",
                  "does not support the 'recursive' argument")
-        concatenateObjects(x, list(...))
+        bindROWS(x, list(...))
     }
 )
 

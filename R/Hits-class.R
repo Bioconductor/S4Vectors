@@ -402,12 +402,12 @@ setMethod("show", "Hits",
 .concatenate_Hits_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
-    objects <- prepare_objects_to_concatenate(x, objects)
+    objects <- prepare_objects_to_bind(x, objects)
     .check_that_Hits_objects_are_concatenable(x, objects)
     callNextMethod()
 }
 
-setMethod("concatenateObjects", "Hits", .concatenate_Hits_objects)
+setMethod("bindROWS", "Hits", .concatenate_Hits_objects)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

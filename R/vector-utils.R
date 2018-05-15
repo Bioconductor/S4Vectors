@@ -90,13 +90,13 @@ lowestListElementClass <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Concatenation
+### Concatenation along the ROWS
 ###
 
 ### Exported!
 ### Works on atomic vectors, factors, lists, matrices, and data frames.
 ### Arguments 'ignore.mcols' and 'check' are ignored.
-.concatenate_vectors <-
+.default_bindROWS <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!is.list(objects))
@@ -104,7 +104,7 @@ lowestListElementClass <- function(x)
     if (!isTRUEorFALSE(use.names))
         stop("'use.names' must be TRUE or FALSE")
 
-    ## We do not call prepare_objects_to_concatenate() because we do not want
+    ## We do not call prepare_objects_to_bind() because we do not want
     ## to force all the objects in 'objects' to be of the type of 'x'. This
     ## way we are consistent with what c() and unlist() do when combining
     ## atomic vectors of mixed types.
@@ -125,13 +125,13 @@ lowestListElementClass <- function(x)
     ans
 }
 
-setMethod("concatenateObjects", "vector", .concatenate_vectors)
-setMethod("concatenateObjects", "matrix", .concatenate_vectors)
+setMethod("bindROWS", "vector", .default_bindROWS)
+setMethod("bindROWS", "matrix", .default_bindROWS)
 
 ### Assumes that 'x' is a list of length >= 1 with no names, and that the
 ### list elements in 'x' have the same type. This is NOT checked!
-### TODO: quick_unlist() is superseded by concatenateObjects(). Search code
-### for use of quick_unlist() and replace with use of concatenateObjects().
+### TODO: quick_unlist() is superseded by bindROWS(). Search code
+### for use of quick_unlist() and replace with use of bindROWS().
 ### Then remove quick_unlist() definition below.
 quick_unlist <- function(x)
 {

@@ -28,8 +28,8 @@
 \alias{show,LLint-method}
 \alias{showAsCell,LLint-method}
 
-\alias{concatenateObjects}
-\alias{concatenateObjects,LLint-method}
+\alias{bindROWS}
+\alias{bindROWS,LLint-method}
 \alias{c,LLint-method}
 
 \alias{NA_LLint_}

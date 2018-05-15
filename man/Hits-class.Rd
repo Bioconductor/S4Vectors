@@ -59,7 +59,7 @@
 \alias{show,Hits-method}
 
 % concatenation
-\alias{concatenateObjects,Hits-method}
+\alias{bindROWS,Hits-method}
 
 % other transformations
 \alias{t,Hits-method}

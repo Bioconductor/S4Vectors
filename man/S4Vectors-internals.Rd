@@ -35,8 +35,8 @@
 \alias{fold}
 
 % Stuff from R/vector-utils.R:
-\alias{concatenateObjects,vector-method}
-\alias{concatenateObjects,matrix-method}
+\alias{bindROWS,vector-method}
+\alias{bindROWS,matrix-method}
 
 \title{S4Vectors internals}
 
