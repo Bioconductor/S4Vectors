@@ -119,7 +119,7 @@ lowestListElementClass <- function(x)
         ans <- unlist(all_objects, recursive=FALSE)
         if (!use.names)
             names(ans) <- NULL
-    } else if (x_ndim <= 1L) {
+    } else if (x_ndim == 1L) {
         ## 'x' is a 1D array.
         ## base::rbind() is broken on 1D arrays so we need to handle this
         ## specially.
