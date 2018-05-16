@@ -154,7 +154,6 @@ lowestListElementClass <- function(x)
 ### selectMethod("bindROWS", "data.frame")) so we don't need to
 ### define a bindROWS,data.frame method.
 setMethod("bindROWS", "vector", .default_bindROWS)
-setMethod("bindROWS", "matrix", .default_bindROWS)
 
 ### Even though calling bindROWS() on an array would dispatch on the
 ### bindROWS,vector method (is(x, "vector") is TRUE) we still need to

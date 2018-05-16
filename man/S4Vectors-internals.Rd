@@ -36,7 +36,6 @@
 
 % Stuff from R/vector-utils.R:
 \alias{bindROWS,vector-method}
-\alias{bindROWS,matrix-method}
 \alias{bindROWS,array-method}
 
 \title{S4Vectors internals}
