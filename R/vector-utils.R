@@ -94,8 +94,8 @@ lowestListElementClass <- function(x)
 ###
 
 ### Exported!
-### Works on atomic vectors, factors, lists, matrices, and data frames.
-### Arguments 'ignore.mcols' and 'check' are ignored.
+### Works on atomic vectors, factors, lists, 1D arrays, matrices, and
+### data frames. Arguments 'ignore.mcols' and 'check' are ignored.
 .default_bindROWS <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
@@ -113,20 +113,57 @@ lowestListElementClass <- function(x)
             if (is(object, "Rle")) decodeRle(object) else object)
     all_objects <- c(list(x), objects)
 
-    if (length(dim(x)) == 2L) {
+    x_ndim <- length(dim(x))
+    if (x_ndim == 0L) {
+        ## 'x' is an atomic vector, a factor, or a list.
+        ans <- unlist(all_objects, recursive=FALSE)
+        if (!use.names)
+            names(ans) <- NULL
+    } else if (x_ndim <= 1L) {
+        ## 'x' is a 1D array.
+        ## base::rbind() is broken on 1D arrays so we need to handle this
+        ## specially.
+        ## Note that all objects in 'objects' are also treated as if they
+        ## were 1D arrays (even if they have >= 2 dimensions). This is
+        ## probably too laxist!
+        ans <- unlist(all_objects, recursive=FALSE)
+        if (use.names)
+            ans_rownames <- names(ans)
+        dim(ans) <- length(ans)  # this drops the names
+        if (use.names)
+            rownames(ans) <- ans_rownames
+    } else if (x_ndim == 2L) {
+        ## 'x' is a matrix or data frame.
         ans <- do.call(rbind, all_objects)
         if (!use.names)
             rownames(ans) <- NULL
     } else {
-        ans <- unlist(all_objects, recursive=FALSE)
-        if (!use.names)
-            names(ans) <- NULL
+        ## 'x' is an array with more than 2 dimensions.
+        ## Binding multi-dimensional arrays along the rows is exactly what
+        ## the DelayedArray::arbind() generic does so we should probably move
+        ## this generic to S4Vectors (or to BiocGenerics?).
+        stop(wmsg("bindROWS() does not support arrays ",
+                  "with more than 2 dimensions yet"))
     }
     ans
 }
 
+### Even though is(x, "vector") and is.vector(x) are FALSE when 'x'
+### is a data frame, calling bindROWS() on 'x' will actually dispatch
+### on the bindROWS,vector method (this can be checked with
+### selectMethod("bindROWS", "data.frame")) so we don't need to
+### define a bindROWS,data.frame method.
 setMethod("bindROWS", "vector", .default_bindROWS)
 setMethod("bindROWS", "matrix", .default_bindROWS)
+
+### Even though calling bindROWS() on an array would dispatch on the
+### bindROWS,vector method (is(x, "vector") is TRUE) we still need to
+### define the bindROWS,array method. Otherwise, the dispatch mechanism
+### seems to remove the dim attribute from 'x' **before** passing it to
+### the bindROWS,vector method.
+### See https://stat.ethz.ch/pipermail/r-devel/2018-May/076205.html for
+### the bug report.
+setMethod("bindROWS", "array", .default_bindROWS)
 
 ### Assumes that 'x' is a list of length >= 1 with no names, and that the
 ### list elements in 'x' have the same type. This is NOT checked!
