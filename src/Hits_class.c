@@ -168,16 +168,16 @@ static SEXP new_Hits_with_revmap(const char *classname,
 	return ans;
 }
 
-static int check_nnode(SEXP nnode, const char *side)
+static int get_nnode(SEXP nnode, const char *side)
 {
 	int nnode0;
 
 	if (!IS_INTEGER(nnode) || LENGTH(nnode) != 1)
-		error("'n%snode(x)' must be a single integer",
+		error("'n%snode(hits)' must be a single integer",
                       side);
 	nnode0 = INTEGER(nnode)[0];
 	if (nnode0 == NA_INTEGER || nnode0 < 0)
-		error("'n%snode(x)' must be a single non-negative integer",
+		error("'n%snode(hits)' must be a single non-negative integer",
                       side);
 	return nnode0;
 }
@@ -193,15 +193,15 @@ static int check_hits(const int *from, const int *to, int nhit,
 	for (k = 0; k < nhit; k++, from++, to++) {
 		i = *from;
 		if (i == NA_INTEGER || i < 1 || i > nLnode)
-			error("'from(x)' must contain non-NA values "
-			      ">= 1 and <= 'nLnode(x)'");
+			error("'from(hits)' must contain non-NA values "
+			      ">= 1 and <= 'nLnode(hits)'");
 		if (i < prev_i)
 			already_sorted = 0;
 		prev_i = i;
 		j = *to;
 		if (j == NA_INTEGER || j < 1 || j > nRnode)
-			error("'to(x)' must contain non-NA values "
-			      ">= 1 and <= 'nRnode(x)'");
+			error("'to(hits)' must contain non-NA values "
+			      ">= 1 and <= 'nRnode(hits)'");
 	}
 	return already_sorted;
 }
@@ -217,9 +217,9 @@ SEXP Hits_new(SEXP Class, SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
 
 	classname = CHAR(STRING_ELT(Class, 0));
 	nhit = _check_integer_pairs(from, to, &from_p, &to_p,
-				    "from(x)", "to(x)");
-	nLnode0 = check_nnode(nLnode, "L");
-	nRnode0 = check_nnode(nRnode, "R");
+				    "from(hits)", "to(hits)");
+	nLnode0 = get_nnode(nLnode, "L");
+	nRnode0 = get_nnode(nRnode, "R");
 	already_sorted = check_hits(from_p, to_p, nhit, nLnode0, nRnode0);
 	if (already_sorted)
 		return new_Hits1(classname, from_p, to_p, nhit,
@@ -273,33 +273,82 @@ int _get_select_mode(SEXP select)
 	return 0;
 }
 
-/* --- .Call ENTRY POINT --- */
-
-SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP select)
+static int get_nodup(SEXP nodup)
 {
-	int nhit, ans_len, select_mode, init_val, i, k, j1;
+	int nodup0;
+
+	if (!IS_LOGICAL(nodup) || LENGTH(nodup) != 1
+	 || (nodup0 = LOGICAL(nodup)[0]) == NA_LOGICAL)
+		error("'nodup' must be a TRUE or FALSE");
+	return nodup0;
+}
+
+/* --- .Call ENTRY POINT ---
+ * Args:
+ *   from, to, nLnode, nRnode: The 4 slots of a Hits object.
+ *   select: Must be "first" "last", "arbitrary", or "count". Note that 'to'
+ *           is ignored when 'select' is set to "count".
+ *   nodup:  Must be TRUE or FALSE. If TRUE then 'select' must be "first",
+ *           "last" or "arbitrary", and 'from' must be sorted. Note that
+ *           'nRnode' is ignored when 'nodup' is set to FALSE.
+ */
+SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
+		 SEXP select, SEXP nodup)
+{
+	int nhit, ans_len, select_mode, nodup0,
+	    init_val, i, i_prev, k, *ans_p, ans_elt;
 	const int *from_p, *to_p;
 	SEXP ans;
+	CharAE *is_used;
 
 	nhit = _check_integer_pairs(from, to,
 				    &from_p, &to_p,
-				    "from(x)", "to(x)");
-	ans_len = INTEGER(nLnode)[0];
+				    "from(hits)", "to(hits)");
+	ans_len = get_nnode(nLnode, "L");
 	select_mode = _get_select_mode(select);
+	nodup0 = get_nodup(nodup);
+	if (nodup0) {
+		if (select_mode != FIRST_HIT
+		 && select_mode != LAST_HIT
+		 && select_mode != ARBITRARY_HIT)
+			error("'nodup=TRUE' is only supported when "
+			      "'select' is \"first\", \"last\",\n"
+			      "  or \"arbitrary\"");
+	}
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	init_val = select_mode == COUNT_HITS ? 0 : NA_INTEGER;
-	for (i = 0; i < ans_len; i++)
-		INTEGER(ans)[i] = init_val;
+	for (i = 0, ans_p = INTEGER(ans); i < ans_len; i++, ans_p++)
+		*ans_p = init_val;
+	if (nodup0) {
+		is_used = _new_CharAE(get_nnode(nRnode, "R"));
+		memset(is_used->elts, 0, is_used->_buflength);
+	}
+	i_prev = 0;
 	for (k = 0; k < nhit; k++, from_p++, to_p++) {
 		i = *from_p - 1;
+		ans_p = INTEGER(ans) + i;
 		if (select_mode == COUNT_HITS) {
-			INTEGER(ans)[i]++;
+			(*ans_p)++;
 			continue;
 		}
-		j1 = *to_p;
-		if (INTEGER(ans)[i] == NA_INTEGER
-		 || (select_mode == FIRST_HIT) == (j1 < INTEGER(ans)[i]))
-			INTEGER(ans)[i] = j1;
+		if (nodup0 && k != 0) {
+			if (i < i_prev)
+				error("'nodup=TRUE' is only supported "
+				      "on a Hits object where the hits\n"
+				      "  are sorted by query at the moment");
+			if (i > i_prev) {
+				ans_elt = INTEGER(ans)[i_prev];
+				is_used->elts[ans_elt - 1] = 1;
+			}
+		}
+		i_prev = i;
+		ans_elt = *to_p;
+		if (nodup0 && is_used->elts[ans_elt - 1])
+			continue;
+		if (*ans_p != NA_INTEGER
+		 && (select_mode == FIRST_HIT) != (ans_elt < *ans_p))
+			continue;
+		*ans_p = ans_elt;
 	}
 	UNPROTECT(1);
 	return ans;

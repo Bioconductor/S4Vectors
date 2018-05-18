@@ -901,7 +901,9 @@ SEXP select_hits(
 	SEXP from,
 	SEXP to,
 	SEXP nLnode,
-	SEXP select
+	SEXP nRnode,
+	SEXP select,
+	SEXP nodup
 );
 
 SEXP make_all_group_inner_hits(

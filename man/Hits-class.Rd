@@ -309,8 +309,13 @@ hits <- findMatches(x, table)  # sorts the hits by query
 hits
 
 selectHits(hits, select="all")  # no-op
+
 selectHits(hits, select="first")
+selectHits(hits, select="first", nodup=TRUE)
+
 selectHits(hits, select="last")
+selectHits(hits, select="last", nodup=TRUE)
+
 selectHits(hits, select="arbitrary")
 selectHits(hits, select="count")
 

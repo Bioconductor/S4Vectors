@@ -423,33 +423,74 @@ setMethod("sort", "SortedByQueryHits",
     callNextMethod()
 })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selectHits()
 ###
 
-selectHits <- function(x,
-                       select=c("all", "first", "last", "arbitrary", "count"),
-                       rank)
+### Return an integer vector parallel to the query (i.e. of length
+### 'nLnode(hits)') except when select="all", in which case it's a no-op.
+###
+### 'nodup' must be TRUE or FALSE (the default) and can only be set to TRUE
+### when 'select' is "first", "last" or "arbitrary", and when the input hits
+### are sorted by query. When 'nodup=TRUE', a given element in the subject is
+### not allowed to be assigned to more than one element in the query, which is
+### achieved by following a simple "first come first served" pairing strategy.
+### So the returned vector is guaranteed to contain unique non-NA values.
+### Note that such vector represents a mapping between the query and subject
+### that is one-to-zero-or-one in *both* directions. So it represents a
+### pairing between the elements in query and subject, where a given element
+### belongs to at most one pair.
+### A note about the "first come first served" pairing strategy: This strategy
+### is simple and fast, but, in general, it won't achieve a "maximal pairing"
+### (i.e. a pairing with the most possible number of pairs) for a given input
+### Hits object. However it actually does produce a maximal pairing if the
+### Hits object is the result of call to findMatches() (with select="all")'.
+### Also, in that case, this pairing strategy is symetric i.e. the resulting
+### pairs are not affected by switching 'x' and 'table' in the call to
+### findMatches() (or by transposing the input Hits object).
+###
+### Finally note that when 'select' is "first" or "last" and 'nodup' is FALSE,
+### or when 'select' is "count", the output of selectHits() is not affected
+### by the order of the hits in the input Hits object.
+selectHits <- function(hits,
+    select=c("all", "first", "last", "arbitrary", "count"),
+    nodup=FALSE,
+    rank)
 {
-    if (!is(x, "Hits"))
-        stop("'x' must be a Hits object")
+    if (!is(hits, "Hits"))
+        stop("'hits' must be a Hits object")
     select <- match.arg(select)
+    if (!isTRUEorFALSE(nodup))
+        stop(wmsg("'nodup' must be TRUE or FALSE"))
+    if (nodup && !(select %in% c("first", "last", "arbitrary")))
+        stop(wmsg("'nodup=TRUE' is only supported when 'select' ",
+                  "is \"first\", \"last\", or \"arbitrary\""))
+    if (!missing(rank) && (!(select %in% c("first", "last")) || nodup))
+        stop(wmsg("'rank' is only supported when 'select' ",
+                  "is \"first\" or \"last\" and 'nodup' is FALSE"))
     if (select == "all")
-        return(x)
-    to <- to(x)
+        return(hits)  # no-op
+
+    hits_from <- from(hits)
+    hits_to <- to(hits)
+    hits_nLnode <- nLnode(hits)
+    hits_nRnode <- nRnode(hits)
+
     if (!missing(rank)) {
-        r <- rank(x, ties.method="first", by=rank)
+        r <- rank(hits, ties.method="first", by=rank)
         revmap <- integer()
-        revmap[r] <- to
-        to <- r
+        revmap[r] <- hits_to
+        hits_to <- r
     }
-    ans <- .Call2("select_hits", from(x), to, nLnode(x), select,
-                  PACKAGE="S4Vectors")
-    if (!missing(rank)) {
+    ans <- .Call2("select_hits", hits_from, hits_to, hits_nLnode, hits_nRnode,
+                                 select, nodup,
+                                 PACKAGE="S4Vectors")
+    if (!missing(rank))
         ans <- revmap[ans]
-    }
     ans
 }
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### breakTies()
@@ -467,6 +508,7 @@ breakTies <- function(x, method=c("first", "last"), rank) {
     .new_Hits("SortedByQueryHits", which(!is.na(to)), to[!is.na(to)],
               nLnode(x), nRnode(x), NULL)
 }
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### revmap()
