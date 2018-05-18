@@ -168,18 +168,18 @@ static SEXP new_Hits_with_revmap(const char *classname,
 	return ans;
 }
 
-static int get_nnode(SEXP len, const char *side)
+static int check_nnode(SEXP nnode, const char *side)
 {
-	int len0;
+	int nnode0;
 
-	if (!IS_INTEGER(len) || LENGTH(len) != 1)
+	if (!IS_INTEGER(nnode) || LENGTH(nnode) != 1)
 		error("'n%snode(x)' must be a single integer",
                       side);
-	len0 = INTEGER(len)[0];
-	if (len0 == NA_INTEGER || len0 < 0)
+	nnode0 = INTEGER(nnode)[0];
+	if (nnode0 == NA_INTEGER || nnode0 < 0)
 		error("'n%snode(x)' must be a single non-negative integer",
                       side);
-	return len0;
+	return nnode0;
 }
 
 /* Return 1 if 'from' is already sorted and 0 otherwise. */
@@ -218,8 +218,8 @@ SEXP Hits_new(SEXP Class, SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
 	classname = CHAR(STRING_ELT(Class, 0));
 	nhit = _check_integer_pairs(from, to, &from_p, &to_p,
 				    "from(x)", "to(x)");
-	nLnode0 = get_nnode(nLnode, "L");
-	nRnode0 = get_nnode(nRnode, "R");
+	nLnode0 = check_nnode(nLnode, "L");
+	nRnode0 = check_nnode(nRnode, "R");
 	already_sorted = check_hits(from_p, to_p, nhit, nLnode0, nRnode0);
 	if (already_sorted)
 		return new_Hits1(classname, from_p, to_p, nhit,
@@ -274,20 +274,21 @@ int _get_select_mode(SEXP select)
 }
 
 /* --- .Call ENTRY POINT --- */
+
 SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP select)
 {
-	int nhit, annRnode, select_mode, init_val, i, k, j1;
+	int nhit, ans_len, select_mode, init_val, i, k, j1;
 	const int *from_p, *to_p;
 	SEXP ans;
 
 	nhit = _check_integer_pairs(from, to,
 				    &from_p, &to_p,
 				    "from(x)", "to(x)");
-	annRnode = INTEGER(nLnode)[0];
+	ans_len = INTEGER(nLnode)[0];
 	select_mode = _get_select_mode(select);
-	PROTECT(ans = NEW_INTEGER(annRnode));
+	PROTECT(ans = NEW_INTEGER(ans_len));
 	init_val = select_mode == COUNT_HITS ? 0 : NA_INTEGER;
-	for (i = 0; i < annRnode; i++)
+	for (i = 0; i < ans_len; i++)
 		INTEGER(ans)[i] = init_val;
 	for (k = 0; k < nhit; k++, from_p++, to_p++) {
 		i = *from_p - 1;
@@ -313,14 +314,14 @@ SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP select)
  */
 SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 {
-	int ngroup, htype, annRnode, i, j, k, gs, nhit,
+	int ngroup, htype, ans_len, i, j, k, gs, nhit,
 	    iofeig, *left, *right;
 	const int *group_sizes_elt;
 	SEXP ans_from, ans_to, ans;
 
 	ngroup = LENGTH(group_sizes);
 	htype = INTEGER(hit_type)[0];
-	for (i = annRnode = 0, group_sizes_elt = INTEGER(group_sizes);
+	for (i = ans_len = 0, group_sizes_elt = INTEGER(group_sizes);
 	     i < ngroup;
 	     i++, group_sizes_elt++)
 	{
@@ -328,11 +329,11 @@ SEXP make_all_group_inner_hits(SEXP group_sizes, SEXP hit_type)
 		if (gs == NA_INTEGER || gs < 0)
 			error("'group_sizes' contains NAs or negative values");
 		nhit = htype == 0 ? gs * gs : (gs * (gs - 1)) / 2;
-		annRnode += nhit;
+		ans_len += nhit;
 		
 	}
-	PROTECT(ans_from = NEW_INTEGER(annRnode));
-	PROTECT(ans_to = NEW_INTEGER(annRnode));
+	PROTECT(ans_from = NEW_INTEGER(ans_len));
+	PROTECT(ans_to = NEW_INTEGER(ans_len));
 	left = INTEGER(ans_from);
 	right = INTEGER(ans_to);
 	iofeig = 0; /* 0-based Index Of First Element In Group */
