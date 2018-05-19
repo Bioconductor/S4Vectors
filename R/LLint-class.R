@@ -166,6 +166,9 @@ setGeneric("bindROWS", signature="x",
 setMethod("bindROWS", "NULL",
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
     {
+        if (!is.list(objects))
+            stop("'objects' must be a list")
+        objects <- delete_NULLs(objects)
         if (length(objects) == 0L)
             return(NULL)
         x <- objects[[1L]]

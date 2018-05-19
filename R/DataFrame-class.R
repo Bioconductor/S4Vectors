@@ -642,8 +642,9 @@ injectIntoScope <- function(x, ...) {
                 })
     IRanges.data.frame <- injectIntoScope(data.frame, as.data.frame)
     do.call(IRanges.data.frame,
-            c(l, list(row.names=row.names),
-              check.names=!optional, stringsAsFactors=FALSE))
+            c(l, list(row.names=row.names,
+                      check.names=!optional,
+                      stringsAsFactors=FALSE)))
 }
 setMethod("as.data.frame", "DataFrame", .as.data.frame.DataFrame)
 
@@ -728,7 +729,7 @@ setAs("Vector", "DataFrame", .VectorAsDataFrame)
 ## is this a bug or a feature?
 setAs("list", "DataFrame",
       function(from) {
-        do.call(DataFrame, c(from, check.names = is.null(names(from))))
+        do.call(DataFrame, c(from, list(check.names=is.null(names(from)))))
       })
 
 setAs("NULL", "DataFrame", function(from) as(list(), "DataFrame"))
@@ -896,11 +897,20 @@ setMethod("bindROWS", "DataFrame", .rbind_DataFrame_objects)
 ### Argument 'deparse.level' is ignored.
 rbind.DataFrame <- function(..., deparse.level=1)
 {
-    objects <- delete_NULLs(list(...))
+    objects <- list(...)
     bindROWS(objects[[1L]], objects[-1L], check=FALSE)
 }
 
 setMethod("rbind", "DataFrame", rbind.DataFrame)
+
+### Argument 'deparse.level' is ignored.
+cbind.DataFrame <- function(..., deparse.level=1)
+{
+    objects <- delete_NULLs(list(...))
+    do.call(DataFrame, c(objects, list(check.names=FALSE)))
+}
+
+setMethod("cbind", "DataFrame", cbind.DataFrame)
 
 ### If we didn't define this method, calling c() on DataFrame objects would
 ### call the "c" method for Vector objects, which just delegates to bindROWS()
@@ -910,15 +920,16 @@ setMethod("rbind", "DataFrame", rbind.DataFrame)
 setMethod("c", "DataFrame",
     function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
     {
+        if (!isTRUEorFALSE(ignore.mcols))
+            stop("'ignore.mcols' must be TRUE or FALSE")
         if (!identical(recursive, FALSE))
             stop(wmsg("\"c\" method for DataFrame objects ",
                       "does not support the 'recursive' argument"))
-        concatenate_Vector_objects(x, list(...), ignore.mcols=ignore.mcols)
+        objects <- unname(list(x, ...))
+        ans <- do.call(cbind, objects)
+        if (ignore.mcols)
+            mcols(ans) <- NULL
+        ans
     }
 )
-
-### Argument 'deparse.level' is ignored.
-cbind.DataFrame <- function(..., deparse.level=1) c(...)
-
-setMethod("cbind", "DataFrame", cbind.DataFrame)
 
