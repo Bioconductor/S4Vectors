@@ -596,7 +596,7 @@ droplevels.DataFrame <- function(x, except=NULL) {
       hasS3Method("droplevels", class(xi))
   }
   drop.levels <- vapply(x, canDropLevels, NA)
-  if (!is.null(except)) 
+  if (!is.null(except))
     drop.levels[except] <- FALSE
   x@listData[drop.levels] <- lapply(x@listData[drop.levels], droplevels)
   x
@@ -762,94 +762,163 @@ setMethod("coerce2", "DataFrame",
 ### Combining.
 ###
 
-cbind.DataFrame <- function(..., deparse.level = 1) {
-  DataFrame(..., check.names=FALSE)
+### Return an integer matrix with 1 column per object in 'objects' and 1 row
+### per column in 'x'.
+.make_colmaps <- function(x, objects)
+{
+    x_colnames <- colnames(x)
+    x_ncol <- length(x_colnames)
+    map_x_colnames_to_object_colnames <- function(object_colnames) {
+        if (length(object_colnames) != x_ncol)
+            stop(wmsg("the DataFrame objects to rbind ",
+                      "must have the same number of columns"))
+        colmap <- selectHits(findMatches(x_colnames, object_colnames),
+                             select="first", nodup=TRUE)
+        if (anyNA(colmap))
+            stop(wmsg("the DataFrame objects to rbind ",
+                      "must have the same colnames"))
+        colmap
+    }
+    if (length(objects) == 0L) {
+        colmaps <- integer(0)
+    } else {
+        colmaps <- lapply(objects,
+            function(object)
+                map_x_colnames_to_object_colnames(colnames(object)))
+        colmaps <- unlist(colmaps, use.names=FALSE)
+    }
+    dim(colmaps) <- c(x_ncol, length(objects))
+    colmaps
 }
+
+### A thin wrapper around bindROWS()
+###
+### If all the columns to bind have the same type, the result of the binding
+### should be a column of that type (endomorphism). Note that this is what
+### happens with ordinary data frames. So we could just use bindROWS() for
+### that. However, when the columns to bind have mixed types, bindROWS()
+### won't necessarily do the right thing.
+### The purpose of the wrapper below is to improve handling of mixed type
+### columns by pre-processing some of them before calling bindROWS() on them.
+### More precisely, it tries to work around the 2 following problems that
+### direct use of bindROWS() on mixed type columns would pose:
+###  1) When the columns to bind are a mix of Rle and non-Rle objects,
+###     the type of the column returned by bindROWS() depends on the type
+###     of cols[[1]]. More precisely it's an Rle if and only if cols[[1]]
+###     is an Rle. The wrapper below **mitigate** this by decoding the Rle
+###     columns first. Note that this is a mitigation process only. For
+###     example it will help if Rle columns are mixed with atomic vectors
+###     or factors, but it won't help if the cols[[1]] is an Rle and the
+###     other columns are IntegerList objects.
+###  2) When the columns to bind are a mix of atomic vectors and factors,
+###     bindROWS() would **always** return an atomic vector (whatever
+###     cols[[1]] is, i.e. atomic vector or factor). However we **always**
+###     want a factor. This is an intended deviation with respect to what
+###     rbind() does on ordinary data frames where the 1st data frame
+###     involved in the binding operation governs (i.e. a column in the
+###     result will be atomic vector or factor depending on what the
+###     corresponding column in the 1st data frame is).
+.bind_cols_along_their_ROWS <- function(cols)
+{
+    is_Rle <- vapply(cols, is, logical(1L), "Rle")
+    if (any(is_Rle) && !all(is_Rle))
+        cols[is_Rle] <- lapply(cols[is_Rle], decodeRle)
+    is_factor <- vapply(cols, is.factor, logical(1L))
+    if (any(is_factor)) {
+        cols <- lapply(cols, as.factor)
+        all_levels <- unique(unlist(lapply(cols, levels), use.names=FALSE))
+        cols <- lapply(cols, factor, all_levels)
+    }
+    bindROWS(cols[[1L]], cols[-1L])
+}
+
+### Argument 'ignore.mcols' is ignored.
+.rbind_DataFrame_objects <-
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+{
+    if (!isTRUEorFALSE(use.names))
+        stop("'use.names' must be TRUE or FALSE")
+    objects <- prepare_objects_to_bind(x, objects)
+    all_objects <- c(list(x), objects)
+    has_rows <- vapply(all_objects, nrow, integer(1L), USE.NAMES=FALSE) > 0L
+    has_cols <- vapply(all_objects, ncol, integer(1L), USE.NAMES=FALSE) > 0L
+    if (!any(has_rows)) {
+        if (!any(has_cols))
+            return(x)
+        return(all_objects[[which(has_cols)[[1L]]]])
+    }
+    all_objects <- all_objects[has_rows]
+
+    ## From now on, all the objects to bind have rows.
+    x <- all_objects[[1L]]
+    objects <- all_objects[-1L]
+    colmaps <- .make_colmaps(x, objects)
+    if (ncol(x) == 0L) {
+        ans_listData <- x@listData
+        ans_nrow <- sum(unlist(lapply(all_objects, nrow), use.names=FALSE))
+    } else {
+        ans_listData <- lapply(setNames(seq_along(x), colnames(x)),
+            function(i) {
+                 x_col <- x[[i]]
+                 other_cols <- lapply(seq_along(objects),
+                                      function(j) objects[[j]][[colmaps[i, j]]])
+                 .bind_cols_along_their_ROWS(c(list(x_col), other_cols))
+            }
+        )
+        ans_nrow <- NROW(ans_listData[[1L]])
+    }
+    if (use.names) {
+        ## Bind the rownames.
+        ans_rownames <- unlist(lapply(all_objects, rownames), use.names=FALSE)
+        if (!is.null(ans_rownames)) {
+            if (length(ans_rownames) != ans_nrow) {
+                ## What we do here is surprising and inconsistent with
+                ## ordinary data frames.
+                ## TODO: Maybe reconsider this?
+                ans_rownames <- NULL  # why?
+            } else if (anyDuplicated(ans_rownames)) {
+                ans_rownames <- make.unique(ans_rownames, sep = "")
+            }
+        }
+    } else {
+        ans_rownames <- NULL
+    }
+    BiocGenerics:::replaceSlots(x, listData=ans_listData,
+                                   nrows=ans_nrow,
+                                   rownames=ans_rownames,
+                                   check=check)
+}
+
+setMethod("bindROWS", "DataFrame", .rbind_DataFrame_objects)
+
+### The "rbind" method for DataFrame objects is just a thin wrapper around
+### a call to bindROWS().
+### Argument 'deparse.level' is ignored.
+rbind.DataFrame <- function(..., deparse.level=1)
+{
+    objects <- delete_NULLs(list(...))
+    bindROWS(objects[[1L]], objects[-1L], check=FALSE)
+}
+
+setMethod("rbind", "DataFrame", rbind.DataFrame)
+
+### If we didn't define this method, calling c() on DataFrame objects would
+### call the "c" method for Vector objects, which just delegates to bindROWS()
+### so the binding would happen along the rows. This is not what we want so we
+### overwrite the "c" method for Vector objects with a method that binds along
+### the columns.
+setMethod("c", "DataFrame",
+    function(x, ..., ignore.mcols=FALSE, recursive=FALSE)
+    {
+        if (!identical(recursive, FALSE))
+            stop(wmsg("\"c\" method for DataFrame objects ",
+                      "does not support the 'recursive' argument"))
+        concatenate_Vector_objects(x, list(...), ignore.mcols=ignore.mcols)
+    }
+)
+
+### Argument 'deparse.level' is ignored.
+cbind.DataFrame <- function(..., deparse.level=1) c(...)
 
 setMethod("cbind", "DataFrame", cbind.DataFrame)
-
-rbind.DataFrame <- function(..., deparse.level = 1) {
-  do.call(rbind, lapply(list(...), as, "DataFrame"))
-}
-
-setMethod("rbind", "DataFrame", function(..., deparse.level=1) {
-  args <- list(...)    
-  
-  hasrows <- elementNROWS(args) > 0L
-  hascols <- vapply(args, ncol, integer(1L)) > 0L
-
-  ans <- NULL
-  if (!any(hasrows | hascols)) {
-    ans <- DataFrame()
-  } else if (!any(hasrows)) {
-    ans <- args[[which(hascols)[1L]]]
-  } else if (sum(hasrows) == 1) {
-    ans <- args[[which(hasrows)]]
-  } else {
-    args <- args[hasrows]
-  }
-
-  df <- args[[1L]]
-
-  ans_metadata <- metadata(df)
-  ans_mcols <- mcols(df)
-  
-  if (!is.null(ans)) {
-      metadata(ans) <- ans_metadata
-      mcols(ans) <- ans_mcols
-      return(ans)
-  }
-  
-  for (i in 2:length(args)) {
-    if (ncol(df) != ncol(args[[i]]))
-      stop("number of columns for arg ", i, " do not match those of first arg")
-    if (!identical(colnames(df), colnames(args[[i]])))
-      stop("column names for arg ", i, " do not match those of first arg")
-  }
-
-  if (ncol(df) == 0) {
-    ans <- DataFrame()
-    ans@nrows <- sum(unlist(lapply(args, nrow), use.names=FALSE))
-  } else {
-    cols <- lapply(colnames(df), function(cn) {
-      cols <- lapply(args, `[[`, cn)
-      isRle <- vapply(cols, is, logical(1L), "Rle")
-      if (any(isRle) && !all(isRle)) { # would fail dispatch to c,Rle
-        cols[isRle] <- lapply(cols[isRle], decodeRle)
-      }
-      isFactor <- vapply(cols, is.factor, logical(1L))
-      if (any(isFactor)) {
-        cols <- lapply(cols, as.factor)
-        levs <- unique(unlist(lapply(cols, levels), use.names=FALSE))
-        cols <- lapply(cols, factor, levs)
-      }
-      matrix_like <- length(dim(cols[[1]])) == 2L
-      if (matrix_like) {
-        combined <- do.call(rbind, unname(cols))
-        ### FIXME: handle the general array case (arbind)
-      } else {
-        combined <- do.call(c, unname(cols))
-      }
-      if (any(isFactor))
-        combined <- structure(combined, class="factor", levels=levs)
-      combined
-    })
-    names(cols) <- colnames(df)
-    ans <- new_DataFrame(cols, nrows=NROW(cols[[1]]))
-  }
-
-  rn <- unlist(lapply(args, rownames), use.names=FALSE)
-  if (!is.null(rn)) {
-    if (length(rn) != nrow(ans)) {
-      rn <- NULL
-    } else if (anyDuplicated(rn))
-      rn <- make.unique(rn, sep = "")
-  }
-  rownames(ans) <- rn
-  
-  metadata(ans) <- ans_metadata
-  mcols(ans) <- ans_mcols
- 
-  ans
-})
 

@@ -578,24 +578,24 @@ ensureMcols <- function(x) {
   mc
 }
 
-rbind_mcols <- function(x, ...)
+rbind_mcols <- function(...)
 {
-    args <- c(if (!missing(x)) list(x), list(...))
-    mcols_list <- lapply(args, mcols)
+    objects <- unname(list(...))
+    mcols_list <- lapply(objects, mcols)
     if (length(mcols_list) == 1L)
         return(mcols_list[[1L]])
     mcols_is_null <- sapply_isNULL(mcols_list)
     if (all(mcols_is_null))
         return(NULL)
     mcols_list[mcols_is_null] <- lapply(
-        args[mcols_is_null],
-        function(arg) make_zero_col_DataFrame(length(arg))
+        objects[mcols_is_null],
+        function(object) make_zero_col_DataFrame(length(object))
     )
     colnames_list <- lapply(mcols_list, colnames)
-    allCols <- unique(unlist(colnames_list, use.names=FALSE))
+    all_colnames <- unique(unlist(colnames_list, use.names=FALSE))
     fillCols <- function(df) {
         if (nrow(df))
-            df[setdiff(allCols, colnames(df))] <- DataFrame(NA)
+            df[setdiff(all_colnames, colnames(df))] <- DataFrame(NA)
         df
     }
     do.call(rbind, lapply(mcols_list, fillCols))
@@ -617,7 +617,7 @@ rbind_mcols <- function(x, ...)
 ### Hits and Rle objects for some examples.
 ### No Vector subclass should need to override the "c" method for
 ### Vector objects.
-.concatenate_Vector_objects <-
+concatenate_Vector_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
@@ -676,7 +676,7 @@ rbind_mcols <- function(x, ...)
     ans
 }
 
-setMethod("bindROWS", "Vector", .concatenate_Vector_objects)
+setMethod("bindROWS", "Vector", concatenate_Vector_objects)
 
 ### Thin wrapper around bindROWS(). Behave like an endomorphism i.e. return
 ### an object of the same class as 'x'. In particular 'c(x)' should return 'x'.

@@ -40,8 +40,10 @@
 \alias{coerce,SimpleList,DataFrame-method}
 
 % combining
-\alias{cbind,DataFrame-method}
+\alias{bindROWS,DataFrame-method}
 \alias{rbind,DataFrame-method}
+\alias{c,DataFrame-method}
+\alias{cbind,DataFrame-method}
 
 \title{DataFrame objects}
 

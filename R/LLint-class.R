@@ -153,12 +153,25 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ### Concatenation
 ###
 
-### Low-level generic intended to facilitate implementation of "c" methods
-### for vector-like objects. See R/Vector-class.R for more information.
-### It can also be used to unlist an ordinary list of vector-like objects.
+### Low-level generic for binding objects **along the ROWS**. It is intended
+### to facilitate implementation of "c" methods for vector-like objects and
+### "rbind" methods for rectangular objects. It can also be used to unlist
+### an ordinary list of vector-like or rectangular objects.
+### See R/Vector-class.R for more information.
 setGeneric("bindROWS", signature="x",
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
         standardGeneric("bindROWS")
+)
+
+setMethod("bindROWS", "NULL",
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+    {
+        if (length(objects) == 0L)
+            return(NULL)
+        x <- objects[[1L]]
+        objects <- objects[-1L]
+        callGeneric()
+    }
 )
 
 ### Not exported.
