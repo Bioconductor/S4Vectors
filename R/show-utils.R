@@ -367,19 +367,25 @@ setMethod("classNameForDisplay", "AsIs",
 ### Exported!
 setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
 
-### Must work on any array-like object (i.e. on any object with 2 dimensions
-### or more) e.g. ordinary array or matrix, Matrix, data.frame, DataFrame,
-### data.table, etc...
+### Should work on any matrix-like object e.g. ordinary matrix, Matrix,
+### data.frame, DataFrame, data.table, etc...
+### Should also work on any array-like object with more than 2 dimensions
+### that supports "reshaping" via the dim() setter. Note that DelayedArray
+### objects don't support this reshaping in general.
 .showAsCell_array <- function(object)
 {
-    if (length(dim(object)) > 2L)
-        dim(object) <- c(nrow(object), prod(tail(dim(object), -1L)))
+    if (length(dim(object)) > 2L) {
+        ## Reshape 'object' as a 2D object.
+        dim1 <- dim(object)[-1L]
+        dim(object) <- c(nrow(object), prod(dim1))
+    }
     object_ncol <- ncol(object)
     if (object_ncol == 0L)
         return(rep.int("", nrow(object)))
-    object <- lapply(head(seq_len(object_ncol), 3L),
-                     function(i) object[ , i, drop=TRUE])
-    ans <- do.call(paste, c(object, list(sep=":")))
+    first_cols <- lapply(seq_len(min(object_ncol, 3L)),
+        function(j) as.character(object[ , j, drop=TRUE])
+    )
+    ans <- do.call(paste, c(first_cols, list(sep=":")))
     if (object_ncol > 3L)
         ans <- paste0(ans, ":...")
     ans
