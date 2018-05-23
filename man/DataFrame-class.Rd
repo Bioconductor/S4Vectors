@@ -79,7 +79,8 @@
 }
 
 \section{Constructor}{
-  \describe{\code{DataFrame(..., row.names = NULL, check.names = TRUE)}:
+  \describe{\code{DataFrame(..., row.names = NULL, check.names = TRUE,
+      stringsAsFactors)}:
     Constructs a \code{DataFrame} in similar fashion to
     \code{\link{data.frame}}. Each argument in \code{...} is coerced to
     a \code{DataFrame} and combined column-wise. No special effort is
@@ -93,6 +94,10 @@
     To store an object of a class that does not support coercion to
     \code{DataFrame}, wrap it in \code{I()}. The class must still have
     methods for \code{length} and \code{[}.
+
+    The \code{stringsAsFactors} argument is ignored. The coercion of
+    column arguments to DataFrame determines whether strings
+    become factors.
   }
 }
 

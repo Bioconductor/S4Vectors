@@ -160,11 +160,14 @@ new_DataFrame <- function(listData=list(), nrows=NA, what="arguments")
         new2("DataFrame", nrows=nrows, listData=listData, check=FALSE)
 }
 
-DataFrame <- function(..., row.names = NULL, check.names = TRUE)
+DataFrame <- function(..., row.names = NULL, check.names = TRUE,
+                      stringsAsFactors)
 {
   ## build up listData, with names from arguments
   if (!isTRUEorFALSE(check.names))
     stop("'check.names' must be TRUE or FALSE")
+  if (!missing(stringsAsFactors))
+    warning("'stringsAsFactors' is ignored")
   nr <- 0
   listData <- list(...)
   varlist <- vector("list", length(listData))
