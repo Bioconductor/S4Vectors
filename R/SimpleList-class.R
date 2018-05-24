@@ -232,6 +232,27 @@ coerceToSimpleList <- function(from, element.type, ...) {
   }
 }
 
+setMethod("as.env", "SimpleList",
+          function(x, enclos = parent.frame(2), tform = identity) {
+              makeEnvForNames(x, names(x), enclos, tform)
+          })
+
+makeEnvForNames <- function(x, nms, enclos = parent.frame(2),
+                             tform = identity)
+{
+    env <- new.env(parent = enclos)
+    lapply(nms,
+           function(col) {
+               colFun <- function() {
+                   val <- tform(x[[col]])
+                   rm(list=col, envir=env)
+                   assign(col, val, env)
+                   val
+               }
+               makeActiveBinding(col, colFun, env)
+           })
+    addSelfRef(x, env)
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### unique()
