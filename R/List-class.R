@@ -591,6 +591,8 @@ setReplaceMethod("$", "List",
 
 setMethod("setListElement", "List", setListElement_default)
 
+setMethod("getListElement", "List",
+          function(x, i) getListElement(as.list(x), i))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Simple helper functions for some common subsetting operations.
