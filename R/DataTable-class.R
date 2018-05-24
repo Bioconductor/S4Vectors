@@ -260,22 +260,6 @@ addSelfRef <- function(x, env) {
   env
 }
 
-setMethod("as.env", "DataTable",
-          function(x, enclos = parent.frame(2), tform = identity) {
-              env <- new.env(parent = enclos)
-              lapply(colnames(x),
-                     function(col) {
-                         colFun <- function() {
-                             val <- tform(x[[col]])
-                             rm(list=col, envir=env)
-                             assign(col, val, env)
-                             val
-                         }
-                         makeActiveBinding(col, colFun, env)
-                     })
-              addSelfRef(x, env)
-          })
-
 as.data.frame.DataTable <- function(x, row.names=NULL, optional=FALSE, ...) {
     as.data.frame(x, row.names=NULL, optional=optional, ...)
 }
