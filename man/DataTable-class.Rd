@@ -40,7 +40,6 @@
 
 \alias{as.env}
 \alias{as.env,NULL-method}
-\alias{as.env,DataTable-method}
 \alias{as.data.frame.DataTable}
 \alias{as.data.frame,DataTable-method}
 

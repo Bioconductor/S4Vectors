@@ -15,6 +15,7 @@
 \alias{as.list,SimpleList-method}
 \alias{coerce,ANY,SimpleList-method}
 \alias{coerce,list,List-method}
+\alias{as.env,SimpleList-method}
 
 % looping
 \alias{lapply,SimpleList-method}
