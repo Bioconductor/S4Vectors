@@ -449,8 +449,7 @@ setReplaceMethod("[", "Vector",
     {
         if (!missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE,
-                                             allow.append=TRUE)
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         li <- length(i)
         if (li == 0L) {
             ## Surprisingly, in that case, `[<-` on standard vectors does not
