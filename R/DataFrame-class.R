@@ -234,8 +234,6 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
       stop("missing values in 'row.names'")
     if (length(varlist) && length(row.names) != nr)
       stop("invalid length of row names")
-    if (anyDuplicated(row.names))
-      stop("duplicate row names")
     row.names <- as.character(row.names)
   }
 
