@@ -170,7 +170,8 @@ test_DataFrame_dimnames_replace <- function() {
   rownames(sw) <- rn
   checkIdentical(rownames(sw), as.character(rn))
   checkException(rownames(sw) <- rn[1], silent = TRUE)
-  checkException(rownames(sw) <- rep(rn[1], nrow(sw)), silent = TRUE)
+  rownames(sw) <- rep(rn[1], nrow(sw))
+  checkIdentical(rownames(sw), as.character(rep(rn[1], nrow(sw))))
   rn[1] <- NA
   checkException(rownames(sw) <- rn, silent = TRUE)
 }
@@ -316,7 +317,7 @@ test_DataFrame_combine <- function() {
   checkIdentical(as.data.frame(rbind(DF1, DF2)), df12)
  
   checkIdentical(rownames(rbind(sw, DataFrame(swiss))),
-                 rownames(rbind(swiss, swiss)))
+                 c(rownames(swiss), rownames(swiss)))
   checkIdentical(rownames(do.call(rbind, lapply(swisssplit, DataFrame))),
                  unlist(lapply(swisssplit, rownames), use.names=FALSE))
 

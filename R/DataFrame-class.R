@@ -61,8 +61,6 @@ setReplaceMethod("rownames", "DataFrame",
                        stop("missing values not allowed in rownames")
                      if (length(value) != nrow(x))
                        stop("invalid rownames length")
-                     if (anyDuplicated(value))
-                       stop("duplicate rownames not allowed")
                      if (!is(value, "XStringSet"))
                        value <- as.character(value)
                    }
@@ -297,10 +295,8 @@ setMethod("extractROWS", "DataFrame",
             lapply(structure(seq_len(ncol(x)), names=names(x)),
                    function(j) extractROWS(x[[j]], i))
         slot(x, "nrows", check=FALSE) <- length(i)
-        if (!is.null(rownames(x))) {
-            slot(x, "rownames", check=FALSE) <-
-                make.unique(extractROWS(rownames(x), i))
-        }
+        if (!is.null(rownames(x)))
+            slot(x, "rownames", check=FALSE) <- extractROWS(rownames(x), i)
         x
     }
 )
@@ -366,8 +362,7 @@ setMethod("[", "DataFrame",
         ans_rownames <- replaceROWS(ans_rownames, i, value_rownames)
     if (is.null(x_rownames))
         x_rownames <- as.character(seq_len(x_nrow))
-    ans_rownames <- replaceROWS(ans_rownames, seq_len(x_nrow), x_rownames)
-    make.unique(ans_rownames)
+    replaceROWS(ans_rownames, seq_len(x_nrow), x_rownames)
 }
 
 setMethod("replaceROWS", "DataFrame",
@@ -579,7 +574,7 @@ setReplaceMethod("[", "DataFrame",
                      x@listData[notj] <-
                        lapply(x@listData[notj],
                               function(y) c(y, rep(NA, length(newrn))))
-                     x@rownames <- make.unique(c(rownames(x), newrn))
+                     x@rownames <- c(rownames(x), newrn)
                    }
                    x@nrows <- NROW(x[[1]]) # we should always have a column
                    x
@@ -631,8 +626,11 @@ injectIntoScope <- function(x, ...) {
     if (length(list(...)))
         warning("Arguments in '...' ignored")
     l <- as(x, "list")
-    if (is.null(row.names))
+    if (is.null(row.names)) {
         row.names <- rownames(x)
+        if (!is.null(row.names))
+            row.names <- make.unique(row.names)
+    }
     if (!length(l) && is.null(row.names))
         row.names <- seq_len(nrow(x))
     l <- lapply(l,
@@ -643,8 +641,8 @@ injectIntoScope <- function(x, ...) {
                         y <- I(y)
                     y
                 })
-    IRanges.data.frame <- injectIntoScope(data.frame, as.data.frame)
-    do.call(IRanges.data.frame,
+    S4Vectors.data.frame <- injectIntoScope(data.frame, as.data.frame)
+    do.call(S4Vectors.data.frame,
             c(l, list(row.names=row.names,
                       check.names=!optional,
                       stringsAsFactors=FALSE)))
@@ -880,8 +878,6 @@ setMethod("coerce2", "DataFrame",
                 ## ordinary data frames.
                 ## TODO: Maybe reconsider this?
                 ans_rownames <- NULL  # why?
-            } else if (anyDuplicated(ans_rownames)) {
-                ans_rownames <- make.unique(ans_rownames, sep = "")
             }
         }
     } else {
