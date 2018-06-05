@@ -703,9 +703,8 @@ setAs("xtabs", "DataFrame",
       names(df) <- character()
     as(df, "DataFrame")
   } else {
-    row.names <- if (!anyDuplicated(names(from))) names(from) else NULL
     ans <- new_DataFrame(setNames(list(from), "X"), nrows=length(from))
-    ans@rownames <- row.names
+    ans@rownames <- names(from)
     ans
   }
 }

@@ -6,8 +6,6 @@ test_DataFrame_construction <- function() {
   checkException(DataFrame(score, row.names = c("a", NA, "b")), silent = TRUE)
   ## invalid rn length
   checkException(DataFrame(score, row.names = "a"), silent = TRUE)
-  ## dups in rn
-  checkException(DataFrame(score, row.names = c("a", "b", "a")), silent = TRUE)
  
   DF <- DataFrame() # no args
   checkTrue(validObject(DF))
@@ -19,7 +17,16 @@ test_DataFrame_construction <- function() {
   DF <- DataFrame(score) # single, unnamed arg
   checkTrue(validObject(DF))
   checkIdentical(DF[["score"]], score)
-  DF <- DataFrame(score, row.names = row.names) #with row names
+  DF <- DataFrame(score, row.names = row.names) # with row names
+  checkTrue(validObject(DF))
+  checkIdentical(rownames(DF), row.names)
+
+  ## dups in rn
+  row.names = c("a", "b", "a")
+  DF <- DataFrame(score, row.names = row.names)
+  checkTrue(validObject(DF))
+  checkIdentical(rownames(DF), row.names)
+  DF <- DataFrame(score=setNames(score, row.names))
   checkTrue(validObject(DF))
   checkIdentical(rownames(DF), row.names)
  
