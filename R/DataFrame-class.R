@@ -902,8 +902,19 @@ setMethod("rbind", "DataFrame", rbind.DataFrame)
 ### Argument 'deparse.level' is ignored.
 cbind.DataFrame <- function(..., deparse.level=1)
 {
-    objects <- delete_NULLs(list(...))
-    do.call(DataFrame, c(objects, list(check.names=FALSE)))
+    ## It's important that the call to DataFrame() below is able to deparse
+    ## the arguments in ... so for example
+    ##   b <- 11:13
+    ##   selectMethod("cbind", "DataFrame")(b)
+    ## returns a DataFrame with a column named "b".
+    ## This prevents us from calling DataFrame() via do.call() e.g. we can't
+    ## do something like
+    ##   objects <- delete_NULLs(list(...))
+    ##   do.call(DataFrame, c(objects, list(check.names=FALSE)))
+    ## because then DataFrame() wouldn't be able to deparse what was in ...
+    ## and selectMethod("cbind", "DataFrame")(b) would produce a DataFrame
+    ## with a column named "11:13".
+    DataFrame(..., check.names=FALSE)
 }
 
 setMethod("cbind", "DataFrame", cbind.DataFrame)
@@ -921,7 +932,7 @@ setMethod("c", "DataFrame",
         if (!identical(recursive, FALSE))
             stop(wmsg("\"c\" method for DataFrame objects ",
                       "does not support the 'recursive' argument"))
-        objects <- unname(list(x, ...))
+        objects <- unname(delete_NULLs(list(x, ...)))
         ans <- do.call(cbind, objects)
         if (ignore.mcols)
             mcols(ans) <- NULL
