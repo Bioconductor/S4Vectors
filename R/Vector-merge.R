@@ -91,7 +91,8 @@
 .merge_mcols <- function(x, objects)
 {
     all_mcolnames <- unique(unlist(
-        lapply(objects, function(object) colnames(mcols(object)))
+        lapply(objects,
+            function(object) colnames(mcols(object, use.names=FALSE)))
     ))
     if (length(all_mcolnames) == 0L)
         return(NULL)
@@ -101,7 +102,7 @@
     merge_mcol <- function(colname) {
         cols <- mapply(
             function(object, revmap) {
-                col <- mcols(object)[[colname]]
+                col <- mcols(object, use.names=FALSE)[[colname]]
                 if (is.null(col))
                     return(NULL)
                 col <- col[revmap]

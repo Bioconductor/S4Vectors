@@ -266,7 +266,7 @@ setMethod("updateObject", "Hits",
 {
     new_Hits("SortedByQueryHits", from(from), to(from),
                                   nLnode(from), nRnode(from),
-                                  mcols(from))
+                                  mcols(from, use.names=FALSE))
 }
 setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
 
@@ -315,7 +315,7 @@ setMethod("classNameForDisplay", "SelfHits", function(x) "SelfHits")
 .make_naked_matrix_from_Hits <- function(x)
 {
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     ans <- cbind(from=as.character(from(x)),
                  to=as.character(to(x)))
@@ -334,7 +334,7 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
 {
     x_class <- class(x)
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     cat(classNameForDisplay(x), " object with ",
         x_len, " hit", ifelse(x_len == 1L, "", "s"),
@@ -526,7 +526,8 @@ breakTies <- function(x, method=c("first", "last"), rank) {
 ###     'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits in it
 ###     now "fully sorted".
 revmap_Hits <- function(x)
-    new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x), mcols(x))
+    new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x),
+                       mcols(x, use.names=FALSE))
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
 t.Hits <- function(x) t(x)
@@ -615,7 +616,7 @@ remapHits <- function(x, Lnodes.remapping=NULL, new.nLnode=NA,
                       "are < 1, or > 'new.nRnode'"))
         x_to <- Rnodes.remapping[x_to]
     }
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     add_counts <- function(counts) {
         if (is.null(x_mcols))
             return(DataFrame(counts=counts))

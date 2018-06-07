@@ -78,12 +78,12 @@ setMethod("ROWNAMES", "Vector", function(x) names(x))
 ### 3 accessors for the same slot: elementMetadata(), mcols(), and values().
 ### mcols() is the recommended one, use of elementMetadata() or values() is
 ### discouraged.
-setGeneric("elementMetadata",
-    function(x, use.names=FALSE, ...) standardGeneric("elementMetadata")
+setGeneric("elementMetadata", signature="x",
+    function(x, use.names=TRUE, ...) standardGeneric("elementMetadata")
 )
 
 setMethod("elementMetadata", "Vector",
-    function(x, use.names=FALSE, ...)
+    function(x, use.names=TRUE, ...)
     {
         if (!isTRUEorFALSE(use.names))
             stop("'use.names' must be TRUE or FALSE")
@@ -94,12 +94,12 @@ setMethod("elementMetadata", "Vector",
     }
 )
 
-setGeneric("mcols",
-    function(x, use.names=FALSE, ...) standardGeneric("mcols")
+setGeneric("mcols", signature="x",
+    function(x, use.names=TRUE, ...) standardGeneric("mcols")
 )
 
 setMethod("mcols", "Vector",
-    function(x, use.names=FALSE, ...)
+    function(x, use.names=TRUE, ...)
         elementMetadata(x, use.names=use.names, ...)
 )
 
@@ -150,7 +150,7 @@ setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
             msg <- c(msg, paste0("'", what, "' is not parallel to 'x'"))
         }
     }
-    tmp <- mcols(x)
+    tmp <- mcols(x, use.names=FALSE)
     if (!(is.null(tmp) || nrow(tmp) == x_len)) {
         msg <- c(msg, "'mcols(x)' is not parallel to 'x'")
     }
@@ -174,7 +174,7 @@ setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
 
 .valid.Vector.mcols <- function(x)
 {
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     if (!is(x_mcols, "DataTable_OR_NULL"))
         return("'mcols(x)' must be a DataTable object or NULL")
     if (is.null(x_mcols))
@@ -304,7 +304,8 @@ makeFixedColumnEnv <- function(x, parent, tform = identity) {
 }
 
 setMethod("as.env", "Vector", function(x, enclos, tform = identity) {
-  addSelfRef(x, makeFixedColumnEnv(x, as.env(mcols(x), enclos, tform), tform))
+  parent <- as.env(mcols(x, use.names=FALSE), enclos, tform)
+  addSelfRef(x, makeFixedColumnEnv(x, parent, tform))
 })
 
 as.list.Vector <- function(x, ...) as.list(x, ...)
@@ -408,7 +409,7 @@ setMethod("[", "Vector",
     {
         ans <- subset_along_ROWS(x, i, , ..., drop=drop)
         if (!missing(j))
-            mcols(ans) <- mcols(ans)[ , j, drop=FALSE]
+            mcols(ans) <- mcols(ans, use.names=FALSE)[ , j, drop=FALSE]
         ans
     }
 )
@@ -506,7 +507,7 @@ setMethod("replaceROWS", "Vector",
         ## metadata columns from 'value' so we do not restore the original
         ## metadata columns. See this thread on bioc-devel:
         ##  https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
-        #mcols(ans) <- mcols(x)
+        #mcols(ans) <- mcols(x, use.names=FALSE)
 
         ans
     }
@@ -522,9 +523,10 @@ subset.Vector <- function(x, ...) subset(x, ...)
 subset_Vector <- function(x, subset, select, drop=FALSE, ...)
 {
     i <- evalqForSubset(subset, x, ...)
-    if (!is.null(mcols(x))) {
-        j <- evalqForSelect(select, mcols(x), ...)
-        mcols(x) <- mcols(x)[ , j, drop=FALSE]
+    x_mcols <- mcols(x, use.names=FALSE)
+    if (!is.null(x_mcols)) {
+        j <- evalqForSelect(select, x_mcols, ...)
+        mcols(x) <- x_mcols[ , j, drop=FALSE]
     }
     x[i, drop=drop]
 }
@@ -571,17 +573,16 @@ setMethod("rep", "Vector", repROWS)
 
 ### Somewhat painful that we do not always have a DataFrame in elementMetadata
 ensureMcols <- function(x) {
-  mc <- mcols(x)
-  if (is.null(mc)) {
-    mc <- make_zero_col_DataFrame(length(x))
-  }
-  mc
+  ans <- mcols(x, use.names=FALSE)
+  if (is.null(ans))
+    ans <- make_zero_col_DataFrame(length(x))
+  ans
 }
 
 rbind_mcols <- function(...)
 {
     objects <- unname(list(...))
-    mcols_list <- lapply(objects, mcols)
+    mcols_list <- lapply(objects, mcols, use.names=FALSE)
     if (length(mcols_list) == 1L)
         return(mcols_list[[1L]])
     mcols_is_null <- sapply_isNULL(mcols_list)

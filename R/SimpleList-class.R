@@ -59,9 +59,8 @@ new_SimpleList_from_list <- function(Class, x, ..., mcols)
     class(x) <- "list"
     proto <- new(Class)
     ans_elementType <- elementType(proto)
-    if (is(S4Vectors::mcols(proto), "DataFrame")) {
+    if (is(S4Vectors::mcols(proto, use.names=FALSE), "DataFrame"))
         mcols <- make_zero_col_DataFrame(length(x))
-    }
     if (!all(sapply(x, function(xi) extends(class(xi), ans_elementType))))
         stop("all elements in 'x' must be ", ans_elementType, " objects")
     if (missing(mcols))
@@ -172,8 +171,9 @@ setMethod("coerce2", "SimpleList",
         ## SimpleList instance instead of coercion to SimpleList (which is
         ## too high level and tries to be too smart).
         from <- SimpleList(from)
-        mcols(from) <- mcols(to)[rep.int(NA_integer_, length(from)), ,
-                                 drop=FALSE]
+        to_mcols <- mcols(to, use.names=FALSE)
+        mcols(from) <- to_mcols[rep.int(NA_integer_, length(from)), ,
+                                drop=FALSE]
         ans <- callNextMethod()
         ## Even though coercion from SimpleList to 'class(to)' "worked", it
         ## can return a broken object. This happens when an automatic coercion

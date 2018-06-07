@@ -323,7 +323,7 @@ setMethod("[", "DataFrame",
                 j <- normalizeSingleBracketSubscript(j, xstub)
             }
             new_listData <- extractROWS(x@listData, j)
-            new_mcols <- extractROWS(mcols(x), j)
+            new_mcols <- extractROWS(mcols(x, use.names=FALSE), j)
             x <- initialize(x, listData=new_listData,
                                elementMetadata=new_mcols)
             if (anyDuplicated(names(x)))
@@ -562,8 +562,8 @@ setReplaceMethod("[", "DataFrame",
                    if (length(newcn)) {
                      oldcn <- head(colnames(x), length(x) - length(newcn))
                      colnames(x) <- make.unique(c(oldcn, newcn))
-                     if (!is.null(mcols(x)))
-                       mcols(x) <- replaceROWS(mcols(x),
+                     if (!is.null(mcols(x, use.names=FALSE)))
+                       mcols(x) <- replaceROWS(mcols(x, use.names=FALSE),
                                                tail(names(x), length(newcn)),
                                                DataFrame(NA))
                    }
@@ -713,9 +713,9 @@ setAs("ANY", "DataFrame", .defaultAsDataFrame)
 
 .VectorAsDataFrame <- function(from) {
   ans <- .defaultAsDataFrame(from)
-  if (!is.null(mcols(from))) {
-    ans <- cbind(ans, mcols(from))
-  }
+  from_mcols <- mcols(from, use.names=FALSE)
+  if (!is.null(from_mcols))
+    ans <- cbind(ans, from_mcols)
   ans
 }
 

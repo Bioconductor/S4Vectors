@@ -29,7 +29,7 @@ setMethod("sapply", "List", .sapplyDefault)
     ans <- coerce2(ans, X)
     if (is(X, "Vector")) {
         metadata(ans) <- metadata(X)
-        mcols(ans) <- mcols(X)
+        mcols(ans) <- mcols(X, use.names=FALSE)
     }
     ans
 }

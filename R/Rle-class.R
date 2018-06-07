@@ -242,7 +242,7 @@ setMethod("extractROWS", c("Rle", "RangeNSBS"),
         range_start <- range[[1L]]
         range_end <- range[[2L]]
         ans <- extract_range_from_Rle(x, range_start, range_end)
-        mcols(ans) <- extractROWS(mcols(x), i)
+        mcols(ans) <- extractROWS(mcols(x, use.names=FALSE), i)
         ans
     }
 )
@@ -251,7 +251,7 @@ setMethod("extractROWS", c("Rle", "NSBS"),
     function(x, i)
     {
         ans <- extract_positions_from_Rle(x, as.integer(i))
-        mcols(ans) <- extractROWS(mcols(x), i)
+        mcols(ans) <- extractROWS(mcols(x, use.names=FALSE), i)
         ans
     }
 )
@@ -288,7 +288,8 @@ setMethod("replaceROWS", "Rle",
         lv <- length(value)
         if (lv != 1L) {
             ans <- Rle(replaceROWS(decodeRle(x), i, as.vector(value)))
-            mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
+            mcols(ans) <- replaceROWS(mcols(x, use.names=FALSE), i,
+                                      mcols(value, use.names=FALSE))
             return(ans)
         }
 
@@ -372,7 +373,8 @@ setMethod("replaceROWS", "Rle",
         if (isFactorRle)
             values <- dummy_value[values]
         ans <- Rle(values, unlist(lapply(subseqs, "[[", "lengths")))
-        mcols(ans) <- replaceROWS(mcols(x), i, mcols(value))
+        mcols(ans) <- replaceROWS(mcols(x, use.names=FALSE), i,
+                                  mcols(value, use.names=FALSE))
         ans
     }
 )

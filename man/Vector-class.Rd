@@ -169,7 +169,7 @@
       Returns the number of factor levels.
     }
     \item{}{
-      \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
+      \code{mcols(x, use.names=TRUE)}, \code{mcols(x) <- value}:
       Get or set the metadata columns.
       If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
       then the names of \code{x} are propagated as the row names of the
@@ -320,7 +320,7 @@
               identical layouts to each other (same columns defined),
               in order for the concatenation to be successful, otherwise
               an error will be thrown.
-        \item The user can call \code{c(x, ..., ignore.mcols=TRUE)} in
+        \item The user can call \code{c(x, ..., ignore.mcols=FALSE)} in
               order to concatenate Vector objects with differing sets of
               metadata columns, which will result in the concatenated
               object having NO metadata columns.

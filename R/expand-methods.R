@@ -56,9 +56,9 @@ setMethod("expand", "Vector",
           function(x, colnames, keepEmptyRows = FALSE){
               stopifnot(isTRUEorFALSE(keepEmptyRows))
               if (missing(colnames)) {
-                  colnames <- defaultIndices(mcols(x))
+                  colnames <- defaultIndices(mcols(x, use.names=FALSE))
               }
-              df <- mcols(x)
+              df <- mcols(x, use.names=FALSE)
               df[["__index__"]] <- seq_along(x)
               ex <- .expand(df, colnames, keepEmptyRows)
               mcols(x) <- NULL

@@ -431,7 +431,7 @@ subset_List_by_List <- function(x, i)
             ans <- as(fast_path_FUN(x, i), class(x))  # fast path
             ## Propagate 'metadata(x)' and 'mcols(x)'.
             metadata(ans) <- metadata(x)
-            mcols(ans) <- mcols(x)
+            mcols(ans) <- mcols(x, use.names=FALSE)
             return(ans)
         }
     }
@@ -543,7 +543,7 @@ setMethod("[", "List",
             ans <- subset_List_by_List(x, i)
         }
         if (!missing(j))
-            mcols(ans) <- mcols(ans)[ , j, drop=FALSE]
+            mcols(ans) <- mcols(ans, use.names=FALSE)[ , j, drop=FALSE]
         ans
     }
 )
@@ -689,7 +689,7 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
                                                        group_name.as.factor)
     ans <- cbind(group_and_group_name, ans)
     if (use.outer.mcols) {
-        x_mcols <- mcols(x)
+        x_mcols <- mcols(x, use.names=FALSE)
         if (length(x_mcols) != 0L) {
             extra_cols <- as.data.frame(x_mcols)
             extra_cols <- extract_data_frame_rows(extra_cols, ans[[1L]])

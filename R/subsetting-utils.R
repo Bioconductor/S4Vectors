@@ -720,7 +720,7 @@ setMethod("getListElement", "list",
     ## `[<-` propagates the metadata columns from 'value' to 'x' but here
     ## we don't want that.
     if (is(x, "Vector"))
-        x_mcols <- mcols(x)
+        x_mcols <- mcols(x, use.names=FALSE)
     x[i] <- value
     if (is(x, "Vector"))
         mcols(x) <- x_mcols

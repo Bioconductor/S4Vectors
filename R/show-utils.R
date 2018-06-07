@@ -279,7 +279,7 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     right_brackets[!no_bracket] <- ">"
     ans <- paste0(left_brackets, col2class, right_brackets)
     names(ans) <- ans_names
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     if (x_nmc > 0L) {
         tmp <- sapply(x_mcols,

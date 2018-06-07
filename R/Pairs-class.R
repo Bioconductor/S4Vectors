@@ -108,7 +108,7 @@ setMethod("zipup", c("ANY", "ANY"), function(x, y) {
 setMethod("zipup", c("Pairs", "missing"), function(x, y, ...) {
               zipped <- zipup(first(x), second(x), ...)
               names(zipped) <- names(x)
-              mcols(zipped) <- mcols(x)
+              mcols(zipped) <- mcols(x, use.names=FALSE)
               zipped
           })
 
@@ -123,13 +123,13 @@ setMethod("zipdown", "ANY", function(x) {
 
 setMethod("zipdown", "List", function(x) {
               unzipped <- callNextMethod()
-              mcols(unzipped) <- mcols(x)
+              mcols(unzipped) <- mcols(x, use.names=FALSE)
               unzipped
           })
 
 setAs("Pairs", "DataFrame", function(from) {
           df <- DataFrame(first=first(from), second=second(from),
-                          mcols(from), check.names=FALSE)
+                          mcols(from, use.names=FALSE), check.names=FALSE)
           df$names <- names(from)
           df
       })
@@ -157,7 +157,7 @@ setMethod("t", "Pairs", function(x) {
 
 .makeNakedMatFromPairs <- function(x) {
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 
                  0L
              else ncol(x_mcols)
@@ -174,7 +174,7 @@ setMethod("t", "Pairs", function(x) {
 showPairs <- function(x, margin = "", print.classinfo = FALSE) {
     x_class <- class(x)
     x_len <- length(x)
-    x_mcols <- mcols(x)
+    x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 
                  0L
              else ncol(x_mcols)
