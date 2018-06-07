@@ -746,14 +746,36 @@ setAs("AsIs", "DataFrame",
 
 setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
 
-### Turn an ordinary list into a DataFrame in the most possibly
-### straightforward way.
 setMethod("coerce2", "DataFrame",
     function(from, to)
     {
-        if (class(from) != "list")
-            return(callNextMethod())
-        new_DataFrame(from, what="list elements")
+        if (class(from) == "list") {
+            ## Turn an ordinary list into a DataFrame in the most possibly
+            ## straightforward way.
+            return(new_DataFrame(from, what="list elements"))
+        }
+        ## Some objects like SplitDataFrameList have a "dim" method that
+        ## returns a non-MULL object (a matrix!) even though they don't have
+        ## an array-like (or matrix-like) semantic.
+        from_dim <- dim(from)
+        if (length(from_dim) == 2L && !is.matrix(from_dim)) {
+            to_class <- class(to)
+            if (is(from, to_class))
+                return(from)
+            ans <- as(from, to_class, strict=FALSE)
+            if (!identical(dim(ans), from_dim))
+                stop(wmsg("coercion of ", class(from), " object to ", to_class,
+                          " didn't preserve its dimensions"))
+            ## Try to restore the dimnames if they were lost or altered.
+            from_dimnames <- dimnames(from)
+            if (!identical(dimnames(ans), from_dimnames)) {
+                tmp <- try(`dimnames<-`(ans, value=from_dimnames), silent=TRUE)
+                if (!inherits(tmp, "try-error"))
+                    ans <- tmp
+            }
+            return(ans)
+        }
+        callNextMethod()
     }
 )
 

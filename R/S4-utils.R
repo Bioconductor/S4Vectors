@@ -133,7 +133,7 @@ setMethod("coerce2", "ANY",
         ## or altered (e.g. by as.data.frame(), which will alter names equal
         ## to the empty string even if called with 'check.names=FALSE').
         if (!identical(names(ans), names(from))) {
-            tmp <- try(`names<-`(ans, value=names(from)) , silent=TRUE)
+            tmp <- try(`names<-`(ans, value=names(from)), silent=TRUE)
             if (!inherits(tmp, "try-error"))
                 ans <- tmp
         }

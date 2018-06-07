@@ -393,8 +393,9 @@ setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
 
 .default_showAsCell <- function(object)
 {
-  ## Some objects like SplitDataFrameList are not array-like but have
-  ## a "dim" method that return a matrix!
+  ## Some objects like SplitDataFrameList have a "dim" method that
+  ## returns a non-MULL object (a matrix!) even though they don't have
+  ## an array-like semantic.
   if (length(dim(object)) >= 2L && !is.matrix(dim(object)))
     return(.showAsCell_array(object))
   object_NROW <- NROW(object)
