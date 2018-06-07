@@ -613,37 +613,37 @@ setAs("DataFrame", "data.frame",
         as.data.frame(from, optional=TRUE)
       })
 
-injectIntoScope <- function(x, ...) {
-  nms <- sapply(tail(substitute(list(...)), -1), deparse)
-  environment(x) <- list2env(setNames(list(...), nms), parent = environment(x))
-  x
-}
-
 .as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
 {
     if (length(list(...)))
         warning("Arguments in '...' ignored")
-    l <- as(x, "list")
     if (is.null(row.names)) {
         row.names <- rownames(x)
         if (!is.null(row.names))
             row.names <- make.unique(row.names)
+        else if (ncol(x) == 0L)
+            row.names <- seq_len(nrow(x))
     }
-    if (!length(l) && is.null(row.names))
-        row.names <- seq_len(nrow(x))
-    l <- lapply(l,
-                function(y) {
-                    if (is(y, "SimpleList") || is(y, "CompressedList"))
-                        y <- as.list(y)
-                    if (is.list(y))
-                        y <- I(y)
-                    y
-                })
-    S4Vectors.data.frame <- injectIntoScope(data.frame, as.data.frame)
-    do.call(S4Vectors.data.frame,
-            c(l, list(row.names=row.names,
-                      check.names=!optional,
-                      stringsAsFactors=FALSE)))
+    old_option <- getOption("stringsAsFactors")
+    options(stringsAsFactors=FALSE)
+    on.exit(options(stringsAsFactors=old_option))
+    x_colnames <- colnames(x)
+    df_list <- lapply(setNames(seq_along(x), x_colnames),
+        function(j) {
+            col <- x[[j]]
+            if (is.data.frame(col))
+                return(col)
+            if (is.list(col))
+                col <- I(col)
+            df <- as.data.frame(col, optional=optional)
+            if (is.null(colnames(col)) && ncol(df) == 1L)
+                colnames(df) <- x_colnames[[j]]
+            df
+        })
+    do.call(data.frame,
+            c(df_list, list(row.names=row.names,
+                            check.names=!optional,
+                            stringsAsFactors=FALSE)))
 }
 setMethod("as.data.frame", "DataFrame", .as.data.frame.DataFrame)
 
