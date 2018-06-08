@@ -446,7 +446,7 @@ setGeneric("extractROWS", signature=c("x", "i"),
     function(x, i) standardGeneric("extractROWS")
 )
 
-setGeneric("replaceROWS", signature="x",
+setGeneric("replaceROWS", signature=c("x", "i"),
     function(x, i, value) standardGeneric("replaceROWS")
 )
 
@@ -547,7 +547,7 @@ subset_along_ROWS <- function(x, i, j, ..., drop=TRUE)
 
 setMethod("[", "LLint", subset_along_ROWS)
 
-setMethod("replaceROWS", "ANY", default_replaceROWS)
+setMethod("replaceROWS", c("ANY", "ANY"), default_replaceROWS)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

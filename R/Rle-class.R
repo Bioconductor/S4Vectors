@@ -272,7 +272,7 @@ setMethod("[", "Rle",
 ### The replaced elements in 'x' must get their metadata columns from 'value'.
 ### See this thread on bioc-devel:
 ###   https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
-setMethod("replaceROWS", "Rle",
+setMethod("replaceROWS", c("Rle", "ANY"),
     function(x, i, value)
     {
         ## FIXME: Right now, the subscript 'i' is turned into an IRanges

@@ -62,7 +62,7 @@
 \alias{[}
 \alias{[,Vector-method}
 \alias{[<-,Vector-method}
-\alias{replaceROWS,Vector-method}
+\alias{replaceROWS,Vector,ANY-method}
 
 \alias{subset}
 \alias{subset.Vector}

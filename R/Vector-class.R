@@ -471,14 +471,15 @@ setReplaceMethod("[", "Vector",
     }
 )
 
-### Work on any Vector object on which c() and extractROWS() work.
-### Assume 'value' is compatible with 'x'.
-setMethod("replaceROWS", "Vector",
+### Work on any Vector object on which bindROWS() and extractROWS() work.
+### Assume that 'value' is compatible with 'x'.
+setMethod("replaceROWS", c("Vector", "ANY"),
     function(x, i, value)
     {
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        stopifnot(length(i) == NROW(value))
 
-        ## --<1>-- Concatenate 'x' and 'value' with c() -----
+        ## --<1>-- Concatenate 'x' and 'value' with bindROWS() -----
 
         ## We assume that bindROWS() works on objects of class 'class(x)'
         ## and does the right thing i.e. that it returns an object of the
@@ -486,26 +487,25 @@ setMethod("replaceROWS", "Vector",
         ## validation.
         ans <- bindROWS(x, list(value), check=FALSE)
 
-        ## --<2>-- Subset 'c(x, value)' with extractROWS() -----
+        ## --<2>-- Subset 'ans' with extractROWS() -----
 
-        idx <- replaceROWS(seq_along(x), i, seq_along(value) + length(x))
+        idx <- replaceROWS(seq_along(x), i, seq_along(value) + NROW(x))
         ## Because of how we constructed it, 'idx' is guaranteed to be a valid
         ## subscript to use in 'extractROWS(ans, idx)'. By wrapping it inside a
         ## NativeNSBS object, extractROWS() won't waste time checking it or
         ## trying to normalize it.
-        idx <- NativeNSBS(idx, length(ans), TRUE, FALSE)
+        idx <- NativeNSBS(idx, NROW(ans), TRUE, FALSE)
         ## We assume that extractROWS() works on an object of class 'class(x)'.
         ## For some objects (e.g. Hits), extractROWS() will take care of
         ## validating the returned object.
         ans <- extractROWS(ans, idx)
 
-        ## --<3>-- Restore the original decoration -----
+        ## --<3>-- Restore the original names -----
 
-        metadata(ans) <- metadata(x)
         names(ans) <- names(x)
-        ## However, we want the replaced elements in 'x' to get their
-        ## metadata columns from 'value' so we do not restore the original
-        ## metadata columns. See this thread on bioc-devel:
+        ## Note that we want the elements coming from 'value' to bring their
+        ## metadata columns into 'x' so we do NOT restore the original metadata
+        ## columns. See this thread on bioc-devel:
         ##  https://stat.ethz.ch/pipermail/bioc-devel/2015-November/008319.html
         #mcols(ans) <- mcols(x, use.names=FALSE)
 

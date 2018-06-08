@@ -363,7 +363,7 @@ setMethod("[", "DataFrame",
     replaceROWS(ans_rownames, seq_len(x_nrow), x_rownames)
 }
 
-setMethod("replaceROWS", "DataFrame",
+setMethod("replaceROWS", c("DataFrame", "ANY"),
     function(x, i, value)
     {
         i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
