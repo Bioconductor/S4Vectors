@@ -175,10 +175,10 @@ setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
 .valid.Vector.mcols <- function(x)
 {
     x_mcols <- mcols(x, use.names=FALSE)
-    if (!is(x_mcols, "DataTable_OR_NULL"))
-        return("'mcols(x)' must be a DataTable object or NULL")
     if (is.null(x_mcols))
         return(NULL)
+    if (!is(x_mcols, "DataTable"))
+        return("'mcols(x)' must be a DataTable object or NULL")
     ## 'x_mcols' is a DataTable object.
     x_mcols_rownames <- rownames(x_mcols)
     if (is.null(x_mcols_rownames))

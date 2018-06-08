@@ -457,7 +457,7 @@ default_extractROWS <- function(x, i)
   ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
   ndim <- max(length(dim(x)), 1L)
   i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE)
-  args <- rep.int(alist(foo=), ndim)
+  args <- rep.int(list(quote(expr=)), ndim)
   args[[1]] <- i
   args <- c(list(x), args, list(drop=FALSE))
   do.call(`[`, args)
@@ -469,7 +469,7 @@ default_replaceROWS <- function(x, i, value)
     return(x)
   ndim <- max(length(dim(x)), 1L)
   i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE)
-  args <- rep.int(alist(foo=), ndim)
+  args <- rep.int(list(quote(expr=)), ndim)
   args[[1]] <- i
   args <- c(list(x), args, list(value=value))
   do.call(`[<-`, args)
