@@ -633,6 +633,28 @@ setAs("DataFrame", "data.frame",
             col <- x[[j]]
             if (is.data.frame(col))
                 return(col)
+            if (is(col, "DataFrame"))
+                return(as.data.frame(col, optional=optional))
+            ## If 'col is an AtomicList derivative (e.g. IntegerList,
+            ## CharacterList, etc...) or other List derivative that compares
+            ## recursively (i.e. not an IRanges, GRanges, or DNAStringSet,
+            ## etc... object), we turn it into an ordinary list. This is
+            ## because the "as.data.frame" method for List objects produces
+            ## this weird data frame:
+            ##   > as.data.frame(IntegerList(11:12, 21:23))
+            ##     group group_name value
+            ##   1     1       <NA>    11
+            ##   2     1       <NA>    12
+            ##   3     2       <NA>    21
+            ##   4     2       <NA>    22
+            ##   5     2       <NA>    23
+            ## which is not what we want here.
+            ## List derivatives that compare recursively should not need this
+            ## because they are expected to override the "as.data.frame" method
+            ## for List objects with a method that returns a data.frame with
+            ## one row per list element.
+            if (is(col, "List") && pcompareRecursively(col))
+                col <- as.list(col)
             if (is.list(col))
                 col <- I(col)
             df <- as.data.frame(col, optional=optional)
