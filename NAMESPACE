@@ -284,6 +284,7 @@ export(
     normalizeDoubleBracketSubscript,
 
     ## integer-utils.R:
+    isSequence,
     toListOfIntegerVectors, strsplitAsListOfIntegerVectors,
     orderIntegerPairs,
     matchIntegerPairs, selfmatchIntegerPairs, duplicatedIntegerPairs,

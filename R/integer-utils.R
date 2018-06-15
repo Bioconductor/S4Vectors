@@ -6,6 +6,17 @@
 ### exported.
 ###
 
+### Exported!
+### TODO: Implment this in C so we won't need to create 'seq_len(of.length)'
+### and we will be able to bail out early.
+isSequence <- function(x, of.length=length(x))
+{
+    if (!is.integer(x))
+        stop("'x' must be an integer vector")
+    if (!isSingleNumber(of.length) || of.length < 0L)
+        stop("'length' must be a single non-negative integer")
+    length(x) == of.length && identical(x, seq_len(of.length))
+}
 
 anyMissingOrOutside <- function(x, lower = -.Machine$integer.max,
                                    upper = .Machine$integer.max)
