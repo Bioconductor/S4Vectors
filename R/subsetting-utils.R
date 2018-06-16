@@ -801,9 +801,9 @@ setMethod("tail", "LLint", tail.LLint)
 
 rep.int_along_ROWS <- function(x, times)
 {
-    x_len <- length(x)
     if (!(is.numeric(times) || is.LLint(times)))
         stop("'times' must be a numeric or LLint vector")
+    x_NROW <- NROW(x)
     times_len <- length(times)
     if (times_len == 1L) {
         if (times == 1L)
@@ -811,12 +811,12 @@ rep.int_along_ROWS <- function(x, times)
         if (times == 0L)
             return(extractROWS(x, integer(0)))
     }
-    if (times_len == x_len) {
-        i <- Rle(seq_len(x_len), times)
+    if (times_len == x_NROW) {
+        i <- Rle(seq_len(x_NROW), times)
     } else if (times_len == 1L) {
         if (is.LLint(times))
             times <- as.double(times)
-        i <- IRanges::IRanges(rep.int(1L, times), rep.int(x_len, times))
+        i <- IRanges::IRanges(rep.int(1L, times), rep.int(x_NROW, times))
     } else {
         stop("invalid 'times' value")
     }
