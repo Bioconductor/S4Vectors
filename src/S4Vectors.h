@@ -534,12 +534,12 @@ SEXP new_CHARACTER_from_LLint(SEXP x);
 
 /* subsetting_utils.c */
 
-int _copy_vector_block(
+long long int _copy_vector_block(
 	SEXP dest,
-	int dest_offset,
+	long long int dest_offset,
 	SEXP src,
-	int src_offset,
-	int block_width
+	long long int src_offset,
+	long long int block_length
 );
 
 int _copy_vector_positions(

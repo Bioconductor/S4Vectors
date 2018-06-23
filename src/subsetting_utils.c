@@ -9,27 +9,23 @@
  */
 
 /* Return new 'dest_offset'. */
-int _copy_vector_block(SEXP dest, int dest_offset,
-		SEXP src, int src_offset, int block_width)
+long long int _copy_vector_block(SEXP dest, long long int dest_offset,
+		SEXP src, long long int src_offset,
+		long long int block_length)
 {
-	int new_dest_offset, i;
+	long long int new_dest_offset, i;
 	void *dest_p;
 	const void *src_p;
 	size_t elt_size;
-	SEXP src_elt; // dest_elt;
+	SEXP src_elt;  // dest_elt;
 
-	if (block_width < 0)
+	if (block_length < 0)
 		error("negative widths are not allowed");
-	new_dest_offset = dest_offset + block_width;
-	if (dest_offset < 0 || new_dest_offset > LENGTH(dest)
-	 || src_offset < 0 || src_offset + block_width > LENGTH(src))
+	new_dest_offset = dest_offset + block_length;
+	if (dest_offset < 0 || new_dest_offset > XLENGTH(dest)
+	 || src_offset < 0 || src_offset + block_length > XLENGTH(src))
 		error("subscript contains out-of-bounds indices");
 	switch (TYPEOF(dest)) {
-	    case RAWSXP:
-		dest_p = (void *) (RAW(dest) + dest_offset);
-		src_p = (const void *) (RAW(src) + src_offset);
-		elt_size = sizeof(Rbyte);
-		break;
 	    case LGLSXP:
 		dest_p = (void *) (LOGICAL(dest) + dest_offset);
 		src_p = (const void *) (LOGICAL(src) + src_offset);
@@ -51,7 +47,7 @@ int _copy_vector_block(SEXP dest, int dest_offset,
 		elt_size = sizeof(Rcomplex);
 		break;
 	    case STRSXP:
-		for (i = 0; i < block_width; i++) {
+		for (i = 0; i < block_length; i++) {
 			src_elt = STRING_ELT(src, src_offset + i);
 			SET_STRING_ELT(dest, dest_offset + i, src_elt);
 			//PROTECT(dest_elt = duplicate(src_elt));
@@ -59,8 +55,13 @@ int _copy_vector_block(SEXP dest, int dest_offset,
 			//UNPROTECT(1);
 		}
 		return new_dest_offset;
+	    case RAWSXP:
+		dest_p = (void *) (RAW(dest) + dest_offset);
+		src_p = (const void *) (RAW(src) + src_offset);
+		elt_size = sizeof(Rbyte);
+		break;
 	    case VECSXP:
-		for (i = 0; i < block_width; i++) {
+		for (i = 0; i < block_length; i++) {
 			src_elt = VECTOR_ELT(src, src_offset + i);
 			SET_VECTOR_ELT(dest, dest_offset + i, src_elt);
 			//PROTECT(dest_elt = duplicate(src_elt));
@@ -72,7 +73,7 @@ int _copy_vector_block(SEXP dest, int dest_offset,
 		error("S4Vectors internal error in _copy_vector_block(): "
 		      "%s type not supported", CHAR(type2str(TYPEOF(dest))));
 	}
-	memcpy(dest_p, src_p, elt_size * block_width);
+	memcpy(dest_p, src_p, elt_size * block_length);
 	return new_dest_offset;
 }
 
@@ -83,8 +84,10 @@ int _copy_vector_positions(SEXP dest, int dest_offset,
 	int i;
 
 	for (i = 0; i < npos; i++)
-		dest_offset = _copy_vector_block(dest, dest_offset,
-						 src, pos[i] - 1, 1);
+		dest_offset = _copy_vector_block(
+				dest, (long long int) dest_offset,
+				src, (long long int) pos[i] - 1LL,
+				1LL);
 	return dest_offset;
 }
 
@@ -94,8 +97,10 @@ int _copy_vector_ranges(SEXP dest, int dest_offset,
 	int i;
 
 	for (i = 0; i < nranges; i++)
-		dest_offset = _copy_vector_block(dest, dest_offset,
-						 src, start[i] - 1, width[i]);
+		dest_offset = _copy_vector_block(
+				dest, (long long int) dest_offset,
+				src, (long long int) start[i] - 1LL,
+				(long long int) width[i]);
 	return dest_offset;
 }
 

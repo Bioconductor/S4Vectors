@@ -465,9 +465,9 @@ DEFINE_CCALLABLE_STUB(SEXP, alloc_LLint,
  * Stubs for callables defined in subsetting_utils.c
  */
 
-DEFINE_CCALLABLE_STUB(int, copy_vector_block,
-	(SEXP dest, int dest_offset, SEXP src, int src_offset, int block_width),
-	(     dest,     dest_offset,      src,     src_offset,     block_width)
+DEFINE_CCALLABLE_STUB(long long int, copy_vector_block,
+	(SEXP dest, long long int dest_offset, SEXP src, long long int src_offset, long long int block_length),
+	(     dest,               dest_offset,      src,               src_offset,               block_length)
 )
 
 DEFINE_CCALLABLE_STUB(int, copy_vector_positions,

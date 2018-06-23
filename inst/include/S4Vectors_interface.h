@@ -461,12 +461,12 @@ SEXP alloc_LLint(const char *classname, R_xlen_t length);
  * subsetting_utils.c
  */
 
-int copy_vector_block(
+long long int copy_vector_block(
 	SEXP dest,
-	int dest_offset,
+	long long int dest_offset,
 	SEXP src,
-	int src_offset,
-	int block_width
+	long long int src_offset,
+	long long int block_length
 );
 
 int copy_vector_positions(
