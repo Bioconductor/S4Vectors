@@ -11,7 +11,7 @@
 /* Return new 'dest_offset'. */
 long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 		SEXP src, long long int src_offset,
-		long long int block_length)
+		long long int block_nelt)
 {
 	long long int new_dest_offset, i;
 	void *dest_p;
@@ -19,11 +19,11 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 	size_t elt_size;
 	SEXP src_elt;  // dest_elt;
 
-	if (block_length < 0)
+	if (block_nelt < 0)
 		error("negative widths are not allowed");
-	new_dest_offset = dest_offset + block_length;
+	new_dest_offset = dest_offset + block_nelt;
 	if (dest_offset < 0 || new_dest_offset > XLENGTH(dest)
-	 || src_offset < 0 || src_offset + block_length > XLENGTH(src))
+	 || src_offset < 0 || src_offset + block_nelt > XLENGTH(src))
 		error("subscript contains out-of-bounds indices");
 	switch (TYPEOF(dest)) {
 	    case LGLSXP:
@@ -47,7 +47,7 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 		elt_size = sizeof(Rcomplex);
 		break;
 	    case STRSXP:
-		for (i = 0; i < block_length; i++) {
+		for (i = 0; i < block_nelt; i++) {
 			src_elt = STRING_ELT(src, src_offset + i);
 			SET_STRING_ELT(dest, dest_offset + i, src_elt);
 			//PROTECT(dest_elt = duplicate(src_elt));
@@ -61,7 +61,7 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 		elt_size = sizeof(Rbyte);
 		break;
 	    case VECSXP:
-		for (i = 0; i < block_length; i++) {
+		for (i = 0; i < block_nelt; i++) {
 			src_elt = VECTOR_ELT(src, src_offset + i);
 			SET_VECTOR_ELT(dest, dest_offset + i, src_elt);
 			//PROTECT(dest_elt = duplicate(src_elt));
@@ -73,7 +73,7 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 		error("S4Vectors internal error in _copy_vector_block(): "
 		      "%s type not supported", CHAR(type2str(TYPEOF(dest))));
 	}
-	memcpy(dest_p, src_p, elt_size * block_length);
+	memcpy(dest_p, src_p, elt_size * block_nelt);
 	return new_dest_offset;
 }
 

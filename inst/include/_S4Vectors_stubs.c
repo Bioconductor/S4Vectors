@@ -466,8 +466,8 @@ DEFINE_CCALLABLE_STUB(SEXP, alloc_LLint,
  */
 
 DEFINE_CCALLABLE_STUB(long long int, copy_vector_block,
-	(SEXP dest, long long int dest_offset, SEXP src, long long int src_offset, long long int block_length),
-	(     dest,               dest_offset,      src,               src_offset,               block_length)
+	(SEXP dest, long long int dest_offset, SEXP src, long long int src_offset, long long int block_nelt),
+	(     dest,               dest_offset,      src,               src_offset,               block_nelt)
 )
 
 DEFINE_CCALLABLE_STUB(int, copy_vector_positions,

@@ -466,7 +466,7 @@ long long int copy_vector_block(
 	long long int dest_offset,
 	SEXP src,
 	long long int src_offset,
-	long long int block_length
+	long long int block_nelt
 );
 
 int copy_vector_positions(
