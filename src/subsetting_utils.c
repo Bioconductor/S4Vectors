@@ -5,19 +5,15 @@
 
 
 /****************************************************************************
- * memcpy()-based copy of data from a vector to a vector of the same type.
+ * Copy a block of elements from a vector to a vector of the same type
+ *
+ * Return the new 'dest' offset.
  */
-
-/* Return new 'dest_offset'. */
 long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 		SEXP src, long long int src_offset,
 		long long int block_nelt)
 {
 	long long int new_dest_offset, i;
-	void *dest_p;
-	const void *src_p;
-	size_t elt_size;
-	SEXP src_elt;  // dest_elt;
 
 	if (block_nelt < 0)
 		error("negative widths are not allowed");
@@ -27,26 +23,40 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 		error("subscript contains out-of-bounds indices");
 	switch (TYPEOF(dest)) {
 	    case LGLSXP:
-		dest_p = (void *) (LOGICAL(dest) + dest_offset);
-		src_p = (const void *) (LOGICAL(src) + src_offset);
-		elt_size = sizeof(int);
-		break;
+	    {
+		int *dest2 = LOGICAL(dest) + dest_offset;
+		const int *src2 = LOGICAL(src) + src_offset;
+		for (i = 0; i < block_nelt; i++)
+			dest2[i] = src2[i];
+	    }
+	    break;
 	    case INTSXP:
-		dest_p = (void *) (INTEGER(dest) + dest_offset);
-		src_p = (const void *) (INTEGER(src) + src_offset);
-		elt_size = sizeof(int);
-		break;
+	    {
+		int *dest2 = INTEGER(dest) + dest_offset;
+		const int *src2 = INTEGER(src) + src_offset;
+		for (i = 0; i < block_nelt; i++)
+			dest2[i] = src2[i];
+	    }
+	    break;
 	    case REALSXP:
-		dest_p = (void *) (REAL(dest) + dest_offset);
-		src_p = (const void *) (REAL(src) + src_offset);
-		elt_size = sizeof(double);
-		break;
+	    {
+		double *dest2 = REAL(dest) + dest_offset;
+		const double *src2 = REAL(src) + src_offset;
+		for (i = 0; i < block_nelt; i++)
+			dest2[i] = src2[i];
+	    }
+	    break;
 	    case CPLXSXP:
-		dest_p = (void *) (COMPLEX(dest) + dest_offset);
-		src_p = (const void *) (COMPLEX(src) + src_offset);
-		elt_size = sizeof(Rcomplex);
-		break;
+	    {
+		Rcomplex *dest2 = COMPLEX(dest) + dest_offset;
+		const Rcomplex *src2 = COMPLEX(src) + src_offset;
+		for (i = 0; i < block_nelt; i++)
+			dest2[i] = src2[i];
+	    }
+	    break;
 	    case STRSXP:
+	    {
+		SEXP src_elt;  // dest_elt;
 		for (i = 0; i < block_nelt; i++) {
 			src_elt = STRING_ELT(src, src_offset + i);
 			SET_STRING_ELT(dest, dest_offset + i, src_elt);
@@ -54,13 +64,19 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 			//SET_STRING_ELT(dest, dest_offset + i, dest_elt);
 			//UNPROTECT(1);
 		}
-		return new_dest_offset;
+	    }
+	    break;
 	    case RAWSXP:
-		dest_p = (void *) (RAW(dest) + dest_offset);
-		src_p = (const void *) (RAW(src) + src_offset);
-		elt_size = sizeof(Rbyte);
-		break;
+	    {
+		Rbyte *dest2 = RAW(dest) + dest_offset;
+		const Rbyte *src2 = RAW(src) + src_offset;
+		for (i = 0; i < block_nelt; i++)
+			dest2[i] = src2[i];
+	    }
+	    break;
 	    case VECSXP:
+	    {
+		SEXP src_elt;  // dest_elt;
 		for (i = 0; i < block_nelt; i++) {
 			src_elt = VECTOR_ELT(src, src_offset + i);
 			SET_VECTOR_ELT(dest, dest_offset + i, src_elt);
@@ -68,12 +84,12 @@ long long int _copy_vector_block(SEXP dest, long long int dest_offset,
 			//SET_VECTOR_ELT(dest, dest_offset + i, dest_elt);
 			//UNPROTECT(1);
 		}
-		return new_dest_offset;
+	    }
+	    break;
 	    default:
 		error("S4Vectors internal error in _copy_vector_block(): "
 		      "%s type not supported", CHAR(type2str(TYPEOF(dest))));
 	}
-	memcpy(dest_p, src_p, elt_size * block_nelt);
 	return new_dest_offset;
 }
 
