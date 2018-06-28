@@ -115,8 +115,13 @@ lowestListElementClass <- function(x)
 
     x_ndim <- length(dim(x))
     if (x_ndim == 0L) {
-        ## 'x' is an atomic vector, a factor, or a list.
-        ans <- unlist(all_objects, recursive=FALSE)
+        ## Use unlist() if 'x' is an atomic vector, a factor, or a list.
+        ## Otherwise use c().
+        if (is.vector(x) || is.factor(x)) {
+            ans <- unlist(all_objects, recursive=FALSE)
+        } else {
+            ans <- do.call(c, all_objects)
+        }
         if (!use.names)
             names(ans) <- NULL
     } else if (x_ndim == 1L) {
@@ -153,7 +158,7 @@ lowestListElementClass <- function(x)
 ### on the bindROWS,vector method (this can be checked with
 ### selectMethod("bindROWS", "data.frame")) so we don't need to
 ### define a bindROWS,data.frame method.
-setMethod("bindROWS", "vector", .default_bindROWS)
+#setMethod("bindROWS", "vector", .default_bindROWS)
 
 ### Even though calling bindROWS() on an array would dispatch on the
 ### bindROWS,vector method (is(x, "vector") is TRUE) we still need to
@@ -162,7 +167,9 @@ setMethod("bindROWS", "vector", .default_bindROWS)
 ### the bindROWS,vector method.
 ### See https://stat.ethz.ch/pipermail/r-devel/2018-May/076205.html for
 ### the bug report.
-setMethod("bindROWS", "array", .default_bindROWS)
+#setMethod("bindROWS", "array", .default_bindROWS)
+
+setMethod("bindROWS", "ANY", .default_bindROWS)
 
 ### Assumes that 'x' is a list of length >= 1 with no names, and that the
 ### list elements in 'x' have the same type. This is NOT checked!

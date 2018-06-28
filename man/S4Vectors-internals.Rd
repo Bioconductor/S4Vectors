@@ -35,8 +35,7 @@
 \alias{fold}
 
 % Stuff from R/vector-utils.R:
-\alias{bindROWS,vector-method}
-\alias{bindROWS,array-method}
+\alias{bindROWS,ANY-method}
 
 \title{S4Vectors internals}
 
