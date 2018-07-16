@@ -51,11 +51,12 @@ expect that packages that apply \Biocpkg{S4Vectors} to a particular
 problem domain will provide vignettes with relevant, realistic examples.
 
 The \Biocpkg{S4Vectors} package is available at bioconductor.org and
-can be downloaded via \Rfunction{biocLite}:
+can be downloaded via \Rfunction{BiocManager::install}:
 
-<<biocLite, eval=FALSE>>=
-source("http://bioconductor.org/biocLite.R")
-biocLite("S4Vectors")
+<<install, eval=FALSE>>=
+if (!require("BiocManager")
+    install.pacakges("BiocManager")
+BiocManager::install("S4Vectors")
 @
 <<initialize, results=hide>>=
 library(S4Vectors)
