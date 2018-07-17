@@ -54,7 +54,7 @@ The \Biocpkg{S4Vectors} package is available at bioconductor.org and
 can be downloaded via \Rfunction{BiocManager::install}:
 
 <<install, eval=FALSE>>=
-if (!require("BiocManager")
+if (!require("BiocManager"))
     install.packages("BiocManager")
 BiocManager::install("S4Vectors")
 @
