@@ -289,9 +289,7 @@ setMethod("extractROWS", "DataFrame",
     {
         i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, allow.NAs=TRUE,
                                                    as.NSBS=TRUE)
-        slot(x, "listData", check=FALSE) <-
-            lapply(structure(seq_len(ncol(x)), names=names(x)),
-                   function(j) extractROWS(x[[j]], i))
+        slot(x, "listData", check=FALSE) <- lapply(as.list(x), extractROWS, i)
         slot(x, "nrows", check=FALSE) <- length(i)
         if (!is.null(rownames(x)))
             slot(x, "rownames", check=FALSE) <- extractROWS(rownames(x), i)
