@@ -822,7 +822,8 @@ SEXP Integer_sorted_merge(SEXP x, SEXP y)
 
 SEXP Integer_mseq(SEXP from, SEXP to)
 {
-	int i, j, n, ans_len, *from_elt, *to_elt, *ans_elt;
+        R_xlen_t i, n, ans_len;
+	int *from_elt, *to_elt, *ans_elt, j;
 	SEXP ans;
 
 	if (!IS_INTEGER(from) || !IS_INTEGER(to))
@@ -864,8 +865,8 @@ SEXP Integer_mseq(SEXP from, SEXP to)
 
 SEXP Integer_fancy_mseq(SEXP lengths, SEXP offset, SEXP rev)
 {
-	int lengths_len, offset_len, rev_len, ans_len,
-	    i, length, *ans_elt, i2, i3, offset_elt, rev_elt, j;
+	R_xlen_t lengths_len, offset_len, rev_len, ans_len, i, i2, i3;
+	int offset_elt, rev_elt, length, *ans_elt, j;
 	const int *lengths_elt;
 	SEXP ans;
 
