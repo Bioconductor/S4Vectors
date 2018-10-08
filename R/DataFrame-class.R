@@ -752,13 +752,6 @@ setAs("list", "DataFrame",
 
 setAs("NULL", "DataFrame", function(from) as(list(), "DataFrame"))
 
-### FIXME: only exists due to annoying S4 warning due to its caching of
-### coerce methods.
-setAs("integer", "DataFrame",
-      function(from) {
-        selectMethod("coerce", c("vector", "DataFrame"))(from)
-      })
-
 setAs("AsIs", "DataFrame",
       function(from) {
         new_DataFrame(setNames(list(drop_AsIs(from)), "X"))
