@@ -586,7 +586,7 @@ hasS3Method <- function(f, signature) {
 
 droplevels.DataFrame <- function(x, except=NULL) {
   canDropLevels <- function(xi) {
-    hasNonDefaultMethod(droplevels, class(xi)) ||
+    hasNonDefaultMethod(droplevels, class(xi)[1L]) ||
       hasS3Method("droplevels", class(xi))
   }
   drop.levels <- vapply(x, canDropLevels, NA)
