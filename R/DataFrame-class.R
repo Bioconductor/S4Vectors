@@ -189,7 +189,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
     for (i in seq_along(listData)) {
       element <- try(as(listData[[i]], "DataFrame"), silent = TRUE)
       if (inherits(element, "try-error"))
-        stop("cannot coerce class \"", class(listData[[i]]),
+        stop("cannot coerce class \"", class(listData[[i]])[1L],
              "\" to a DataFrame")
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
