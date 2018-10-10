@@ -51,6 +51,11 @@ DEFINE_CCALLABLE_STUB(int, safe_int_mult,
 	(    x,     y)
 )
 
+DEFINE_CCALLABLE_STUB(int, as_int,
+	(const char *val, int val_len),
+	(            val,     val_len)
+)
+
 /*
  * Stubs for callables defined in sort_utils.c
  */

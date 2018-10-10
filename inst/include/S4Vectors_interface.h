@@ -31,6 +31,11 @@ int safe_int_mult(
 	int y
 );
 
+int as_int(
+	const char *val,
+	int val_len
+);
+
 /*
  * Low-level sorting utilities.
  * (see sort_utils.c)

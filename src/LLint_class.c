@@ -40,10 +40,10 @@ SEXP make_RAW_from_NA_LLINT()
  * reaching the "deal-breaker character" or when this maximum has been
  * reached, whichever occurs first.
  * After parsing stops, sscan_llint() returns the number of characters that
- * got parsed, counting the "deal-breaker character" one was reached. Note
+ * got parsed, counting the "deal-breaker character" that was reached. Note
  * that when setting 'maxparse' to a negative value, this number will always
- * be >= 1 because sscan_llint() always sparses at least the first character
- * in the string (i.e. s[0]). Also im this case it's the responsibility of
+ * be >= 1 because sscan_llint() always parses at least the first character
+ * in the string (i.e. s[0]). Also in this case it's the responsibility of
  * the caller to make sure that the string contains a "deal-breaker character".
  * Note that caller can always safely access the last parsed character with
  * s[n - 1] (except when 'maxparse' is set to 0).

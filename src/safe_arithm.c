@@ -6,6 +6,7 @@
 #include "S4Vectors.h"
 
 #include <limits.h>  /* for INT_MAX, INT_MIN, LLONG_MAX, and LLONG_MIN */
+#include <ctype.h>   /* for isdigit() and isspace() */
 
 static int ovflow_flag;
 
@@ -86,6 +87,66 @@ int _safe_int_mult(int x, int y)
 		}
 	}
 	return x * y;
+}
+
+
+/****************************************************************************
+ * _as_int()
+ *
+ * Turn string pointed by 'val' into an int. The string has no terminating
+ * null byte ('\0') and must have the following format:
+ *     ^[[:space:]]*[+-]?[[:digit:]]+[[:space:]]*$
+ * Return NA_INTEGER if the string is malformed or if it represents an integer
+ * value that cannot be represented by an int (int overflow).
+ * TODO: Maybe implement this on top of strtol(). Would be much simpler but
+ * would it be equivalent? Also would it be as fast? See how as_double() in
+ * rtracklayer/src/readGFF.c is implemented on top of strtod().
+ */
+#define LEADING_SPACE 0
+#define NUMBER 1
+#define TRAILING_SPACE 2
+int _as_int(const char *val, int val_len)
+{
+	int n, ndigit, sign, state, i;
+	char c;
+
+	n = ndigit = 0;
+	sign = 1;
+	state = LEADING_SPACE;
+	for (i = 0; i < val_len; i++) {
+		c = val[i];
+		if (isdigit(c)) {
+			if (state == TRAILING_SPACE)
+				return NA_INTEGER;  /* malformed string */
+			state = NUMBER;
+			ndigit++;
+			n = _safe_int_mult(n, 10);
+			n = _safe_int_add(n, c - '0');
+			if (n == NA_INTEGER)
+				return NA_INTEGER;  /* int overflow */
+			continue;
+		}
+		if (c == '+' || c == '-') {
+			if (state != LEADING_SPACE)
+				return NA_INTEGER;  /* malformed string */
+			state = NUMBER;
+			if (c == '-')
+				sign = -1;
+			continue;
+		}
+		if (!isspace(c))
+			return NA_INTEGER;  /* malformed string */
+		if (state == NUMBER) {
+			if (ndigit == 0)
+				return NA_INTEGER;  /* malformed string */
+			state = TRAILING_SPACE;
+		}
+	}
+	if (ndigit == 0)
+		return NA_INTEGER;  /* malformed string */
+	if (sign == -1)
+		n = -n;
+	return n;
 }
 
 

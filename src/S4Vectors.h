@@ -29,6 +29,11 @@ int _safe_int_mult(
 	int y
 );
 
+int _as_int(
+	const char *val,
+	int val_len
+);
+
 long long int _safe_llint_add(
 	long long int x,
 	long long int y

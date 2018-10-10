@@ -114,6 +114,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_get_ovflow_flag);
 	REGISTER_CCALLABLE(_safe_int_add);
 	REGISTER_CCALLABLE(_safe_int_mult);
+	REGISTER_CCALLABLE(_as_int);
 
 /* sort_utils.c */
 	REGISTER_CCALLABLE(_sort_ints);
