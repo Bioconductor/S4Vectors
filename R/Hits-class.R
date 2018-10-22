@@ -309,8 +309,9 @@ setMethod("extractROWS", "SortedByQueryHits",
 ### Displaying
 ###
 
-setMethod("classNameForDisplay", "Hits", function(x) "Hits")
-setMethod("classNameForDisplay", "SelfHits", function(x) "SelfHits")
+setMethod("classNameForDisplay", "SortedByQueryHits",
+    function(x) sub("^SortedByQuery", "", class(x))
+)
 
 .make_naked_matrix_from_Hits <- function(x)
 {

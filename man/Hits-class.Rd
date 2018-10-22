@@ -51,11 +51,10 @@
 \alias{as.table,Hits-method}
 
 % subsetting
-\alias{extractROWS,classNameForDisplay,ANY-method}
+\alias{extractROWS,SortedByQueryHits,ANY-method}
 
 % displaying
-\alias{classNameForDisplay,Hits-method}
-\alias{classNameForDisplay,SelfHits-method}
+\alias{classNameForDisplay,SortedByQueryHits-method}
 \alias{show,Hits-method}
 
 % concatenation
