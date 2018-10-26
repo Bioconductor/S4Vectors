@@ -611,8 +611,10 @@ setAs("DataFrame", "data.frame",
         as.data.frame(from, optional=TRUE)
       })
 
-.as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
+.as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
+                                     stringsAsFactors=FALSE, ...)
 {
+    stopifnot(identical(stringsAsFactors, FALSE))
     if (length(list(...)))
         warning("Arguments in '...' ignored")
     if (is.null(row.names)) {
