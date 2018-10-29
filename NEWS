@@ -1,3 +1,57 @@
+CHANGES IN VERSION 0.20.0
+-------------------------
+
+NEW FEATURES
+
+    o rbind() now supports DataFrame objects with the same column names
+      but in different order, even when some of the column names are
+      duplicated. How rbind() re-aligns the columns of the various objects
+      to bind with those of the first object is consistent with what
+      base:::rbind.data.frame() does.
+
+    o Add isSequence() low-level helper.
+
+    o Add 'nodup' argument to selectHits().
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The rownames of a DataFrame are no more required to be unique.
+
+    o Change 'use.names' default from FALSE to TRUE in mcols() getter.
+
+    o Coercion to DataFrame now **always** propagates the names.
+
+    o Rename low-level generic concatenateObjects() -> bindROWS().
+
+    o replaceROWS() now dispatches on 'x' and 'i' instead of 'x' only.
+
+    o Speedup row subsetting of DataFrame with many columns.
+
+DEPRECATED AND DEFUNCT
+
+    o phead(), ptail(), and strsplitAsListOfIntegerVectors() are now defunct
+      (after being deprecated in BioC 3.7).
+
+BUG FIXES
+
+    o Fix window() on a DataFrame with data.frame columns.
+
+    o 2 fixes to "rbind" method for DataFrame objects:
+      - It now properly handles DataFrame objects with duplicated colnames.
+        Note that the new behavior is consistent with base::rbind.data.frame().
+      - It now properly handles DataFrame objects with columns that are 1D
+        arrays.
+
+    o Fix showAsCell() on nested data-frame-like objects.
+
+    o 2 fixes to "as.data.frame" method for DataFrame objects:
+      - It now works if the DataFrame object contains nested data-frame-like
+        objects or other complicated S4 objects (as long as these complicated
+        objects in turn support as.data.frame()).
+      - It now handles 'stringsAsFactors' argument properly. Originally
+        reported here: https://github.com/Bioconductor/GenomicRanges/issues/18
+
+
 CHANGES IN VERSION 0.18.0
 -------------------------
 
