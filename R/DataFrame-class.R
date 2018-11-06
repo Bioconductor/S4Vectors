@@ -490,7 +490,8 @@ setReplaceMethod("[", "DataFrame",
                               "existing columns")
                      }
                      if (useI) {
-                       if (length(newrn) == 0L && li > 0L && max(i) > nrow(x))
+                       if (length(newrn) == 0L && li > 0L && max(i) > nrow(x) &&
+                               !is.null(rownames(x)))
                          newrn <- as.character(seq.int(nrow(x) + 1L, max(i)))
                        if (length(x@listData[j][[1]]) == 0L)
                          x@listData[j] <- list(rep(NA, nrow(x)))
