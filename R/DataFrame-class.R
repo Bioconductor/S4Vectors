@@ -175,16 +175,11 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
         metadata <- metadata(listData[[1L]])
     dotnames <- names(listData)
     if (is.null(dotnames)) {
-      emptynames <- rep.int(TRUE, length(listData))
-    } else {
-      emptynames <- !nzchar(dotnames)
+        dotnames <- rep("", length(listData))
     }
-    if (any(emptynames)) {
-      qargs <- as.list(substitute(list(...)))[-1L]
-      dotvalues <- sapply(qargs[emptynames], function(arg) deparse(arg)[1L])
-      names(listData)[emptynames] <- dotvalues
-    }
-    varnames <- as.list(names(listData))
+    qargs <- as.list(substitute(list(...)))[-1L]
+    varnames <- as.list(dotnames)
+    varnames[dotnames == ""] <- list(NULL)
     nrows <- ncols <- integer(length(varnames))
     for (i in seq_along(listData)) {
       element <- try(as(listData[[i]], "DataFrame"), silent = TRUE)
@@ -200,11 +195,14 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
         if ((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
              is.list(listData[[i]]))
           {
-            if (emptynames[i])
+            if (is.null(varnames[[i]]))
               varnames[[i]] <- colnames(element)
             else
               varnames[[i]] <- paste(varnames[[i]], colnames(element), sep = ".")
           }
+      }
+      if (is.null(varnames[[i]])) {
+          varnames[[i]] <- deparse(qargs[[i]])[1L]
       }
       if (missing(row.names))
         row.names <- rownames(element)
