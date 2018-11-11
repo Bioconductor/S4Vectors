@@ -28,6 +28,7 @@
 \alias{zipup,Pairs,missing-method}
 \alias{coerce,Pairs,DataFrame-method}
 \alias{as.data.frame,Pairs-method}
+\alias{as.Pairs,list_OR_List-method}
 
 % displaying
 \alias{show,Pairs-method}
@@ -85,6 +86,9 @@
       \code{x}, a list where every element is of length 2, to a
       \code{Pairs} object, by assuming that each element of the list
       represents a pair.
+    }
+    \item{}{\code{as.Pairs(x)}: \code{x} is a list with each element
+      containing two items. The resuls is a \code{Pairs} object.
     }
   }
 }
