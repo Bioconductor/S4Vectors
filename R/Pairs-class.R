@@ -140,11 +140,10 @@ setMethod("as.data.frame", "Pairs",
                             row.names=row.names, ...)
           })
 
-setGeneric("as.Pairs", function(x, ...) standardGeneric("as.Pairs"))
-setMethod("as.Pairs", "list_OR_List",
+setAs("list_OR_List", "Pairs",
           function (x, ...) {
               zipdown(x, ...)
-          })
+     })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Utilities
