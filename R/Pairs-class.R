@@ -141,8 +141,8 @@ setMethod("as.data.frame", "Pairs",
           })
 
 setAs("list_OR_List", "Pairs",
-          function (x, ...) {
-              zipdown(x, ...)
+          function(from) {
+              zipdown(from)
      })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
