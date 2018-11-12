@@ -140,6 +140,11 @@ setMethod("as.data.frame", "Pairs",
                             row.names=row.names, ...)
           })
 
+setAs("list_OR_List", "Pairs",
+          function(from) {
+              zipdown(from)
+     })
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Utilities
 ###
