@@ -186,8 +186,8 @@ setMethod("coerce2", "SimpleList",
         ## often do the wrong thing and don't even bother to validate the
         ## object they return!
         ## One known problem with the automatic coercion method from SimpleList
-        ## to one of its subclass is that it sets the elementType slot to "ANY"
-        ## which is generally wrong. So we fix this.
+        ## to one of its subclass is that it will set the elementType slot to
+        ## "ANY" which will be wrong in general. So we fix this.
         ans@elementType <- to@elementType
         validObject(ans)
         ans

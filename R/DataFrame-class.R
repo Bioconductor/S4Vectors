@@ -763,17 +763,31 @@ setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
 setMethod("coerce2", "DataFrame",
     function(from, to)
     {
+        to_class <- class(to)
         if (class(from) == "list") {
             ## Turn an ordinary list into a DataFrame in the most possibly
             ## straightforward way.
-            return(new_DataFrame(from, what="list elements"))
+            ans <- new_DataFrame(from, what="list elements")
+            if (is(ans, to_class))
+                return(ans)
+            ans <- as(ans, to_class, strict=FALSE)
+            ## Even though coercion from DataFrame to 'class(to)' "worked", it
+            ## can return a broken object. This happens when an automatic
+            ## coercion method gets in the way. The problem with these methods
+            ## is that they often do the wrong thing and don't even bother to
+            ## validate the object they return!
+            ## One possible problem with an automatic coercion method from
+            ## DataFrame to a DataFrame subclass is that it will set the
+            ## elementType slot to "ANY" which could be wrong. So we fix this.
+            ans@elementType <- to@elementType
+            validObject(ans)
+            return(ans)
         }
         ## Some objects like SplitDataFrameList have a "dim" method that
         ## returns a non-MULL object (a matrix!) even though they don't have
         ## an array-like (or matrix-like) semantic.
         from_dim <- dim(from)
         if (length(from_dim) == 2L && !is.matrix(from_dim)) {
-            to_class <- class(to)
             if (is(from, to_class))
                 return(from)
             ans <- as(from, to_class, strict=FALSE)
