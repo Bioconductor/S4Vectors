@@ -18,21 +18,21 @@
 #include <Rdefines.h>
 #include <R_ext/Rdynload.h>
 
-#define	NA_LLINT	LLONG_MIN
+#define NA_LLINT	LLONG_MIN
 
 /* Get or set i-th element from int or long long int array 'x'.
    GET_INT_OR_LLINT() always returns a long long int.
    SET_INT_OR_LLINT() can take a value 'v' that is int or long long int but
    is not safe if 'is_llint' is 0 and 'v' is a long long int. */
-#define	GET_INT_OR_LLINT(x, is_llint, i)			\
+#define GET_INT_OR_LLINT(x, is_llint, i)			\
 	((is_llint) ? ((const long long int *)(x))[i]		\
 		    : (long long int) ((const int *)(x))[i])
-#define	SET_INT_OR_LLINT(x, is_llint, i, v)			\
+#define SET_INT_OR_LLINT(x, is_llint, i, v)			\
 {								\
-        if (is_llint)						\
-                ((long long int *)(x))[i] = (v);		\
-        else							\
-                ((int *)(x))[i] = (v);				\
+	if (is_llint)						\
+		((long long int *)(x))[i] = (v);		\
+	else							\
+		((int *)(x))[i] = (v);				\
 }
 
 /* Hash table -- modified from R_HOME/src/main/unique.c */
@@ -50,9 +50,11 @@ struct htab {
  *   o IntAE:       Auto-Extending buffer of ints;
  *   o IntAEAE:     Auto-Extending buffer of Auto-Extending buffers of ints;
  *   o IntPairAE:   Auto-Extending buffer of pairs of ints;
- *   o IntPairAEAE: Auto-Extending buffer of Auto-Extending buffers of pairs
- *                  of ints;
+ *   o IntPairAEAE: Auto-Extending buffer of Auto-Extending buffers of
+ *                  pairs of ints;
  *   o LLongAE:     Auto-Extending buffer of long long ints;
+ *   o LLongAEAE:   Auto-Extending buffer of Auto-Extending buffers of
+ *                  long long ints;
  *   o CharAE:      Auto-Extending buffer of chars;
  *   o CharAEAE:    Auto-Extending buffer of Auto-Extending buffers of chars.
  *
@@ -72,7 +74,7 @@ typedef struct int_aeae {
 	size_t _buflength;
 	size_t _nelt;
 	IntAE **elts;
-} IntAEAE; 
+} IntAEAE;
 
 typedef struct intpair_ae {
 	IntAE *a;
@@ -85,23 +87,29 @@ typedef struct intpair_aeae {
 	IntPairAE **elts;
 } IntPairAEAE;
 
-typedef struct longlong_ae {
+typedef struct llong_ae {
 	size_t _buflength;
 	size_t _nelt;
 	long long int *elts;
 } LLongAE;
 
+typedef struct llong_aeae {
+	size_t _buflength;
+	size_t _nelt;
+	LLongAE **elts;
+} LLongAEAE;
+
 typedef struct char_ae {
 	size_t _buflength;
 	size_t _nelt;
 	char *elts;
-} CharAE; 
+} CharAE;
 
 typedef struct char_aeae {
 	size_t _buflength;
 	size_t _nelt;
 	CharAE **elts;
-} CharAEAE; 
+} CharAEAE;
 
 
 /*

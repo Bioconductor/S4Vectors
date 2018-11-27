@@ -419,6 +419,29 @@ LLongAE *_new_LLongAE(
 	long long val
 );
 
+size_t _LLongAEAE_get_nelt(const LLongAEAE *aeae);
+
+size_t _LLongAEAE_set_nelt(
+	LLongAEAE *aeae,
+	size_t nelt
+);
+
+void _LLongAEAE_extend(
+	LLongAEAE *aeae,
+	size_t new_buflength
+);
+
+void _LLongAEAE_insert_at(
+	LLongAEAE *aeae,
+	size_t at,
+	LLongAE *ae
+);
+
+LLongAEAE *_new_LLongAEAE(
+	size_t buflength,
+	size_t nelt
+);
+
 size_t _CharAE_get_nelt(const CharAE *ae);
 
 size_t _CharAE_set_nelt(

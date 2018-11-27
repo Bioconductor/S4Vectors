@@ -1009,6 +1009,151 @@ static void flush_LLongAE_pool()
 	return;
 }
 
+static int remove_from_LLongAE_pool(const LLongAE *ae)
+{
+	int i;
+	LLongAE **ae1_p, **ae2_p;
+
+	i = LLongAE_pool_len;
+	while (--i >= 0 && LLongAE_pool[i] != ae) {;}
+	if (i < 0)
+		return -1;
+	ae1_p = LLongAE_pool + i;
+	ae2_p = ae1_p + 1;
+	for (i = i + 1; i < LLongAE_pool_len; i++)
+		*(ae1_p++) = *(ae2_p++);
+	LLongAE_pool_len--;
+	return 0;
+}
+
+
+/****************************************************************************
+ * LLongAEAE buffers
+ */
+
+#define	LLONGAEAE_POOL_MAXLEN 256
+static LLongAEAE *LLongAEAE_pool[LLONGAEAE_POOL_MAXLEN];
+static int LLongAEAE_pool_len = 0;
+
+size_t _LLongAEAE_get_nelt(const LLongAEAE *aeae)
+{
+	return aeae->_nelt;
+}
+
+size_t _LLongAEAE_set_nelt(LLongAEAE *aeae, size_t nelt)
+{
+	if (nelt > aeae->_buflength)
+		error("S4Vectors internal error in _LLongAEAE_set_nelt(): "
+		      "trying to set a nb of buffer elements that exceeds "
+		      "the buffer length");
+	return aeae->_nelt = nelt;
+}
+
+static LLongAEAE *new_empty_LLongAEAE()
+{
+	LLongAEAE *aeae;
+
+	if (use_malloc && LLongAEAE_pool_len >= LLONGAEAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_LLongAEAE(): "
+		      "LLongAEAE pool is full");
+	aeae = (LLongAEAE *) alloc2(1, sizeof(LLongAEAE));
+	aeae->_buflength = aeae->_nelt = 0;
+	if (use_malloc)
+		LLongAEAE_pool[LLongAEAE_pool_len++] = aeae;
+	return aeae;
+}
+
+void _LLongAEAE_extend(LLongAEAE *aeae, size_t new_buflength)
+{
+	size_t old_buflength, i;
+
+	old_buflength = aeae->_buflength;
+	aeae->elts = (LLongAE **) realloc2(aeae->elts, old_buflength,
+					 new_buflength, sizeof(LLongAE *));
+	for (i = old_buflength; i < new_buflength; i++)
+		aeae->elts[i] = NULL;
+	aeae->_buflength = new_buflength;
+	return;
+}
+
+static int LLongAEAE_extend_if_full(LLongAEAE *aeae)
+{
+	if (_LLongAEAE_get_nelt(aeae) < aeae->_buflength)
+		return 0;
+	_LLongAEAE_extend(aeae, _increase_buflength(aeae->_buflength));
+	return 1;
+}
+
+void _LLongAEAE_insert_at(LLongAEAE *aeae, size_t at, LLongAE *ae)
+{
+	size_t aeae_nelt, i;
+	LLongAE **ae1_p, **ae2_p;
+
+	aeae_nelt = _LLongAEAE_get_nelt(aeae);
+	if (at > aeae_nelt)
+		error("S4Vectors internal error in _LLongAEAE_insert_at(): "
+		      "trying to insert a buffer element at an invalid "
+		      "buffer position");
+	LLongAEAE_extend_if_full(aeae);
+	if (use_malloc && remove_from_LLongAE_pool(ae) == -1)
+		error("S4Vectors internal error in _LLongAEAE_insert_at(): "
+		      "LLongAE to insert cannot be found in pool for removal");
+	ae1_p = aeae->elts + aeae_nelt;
+	ae2_p = ae1_p - 1;
+	for (i = aeae_nelt; i > at; i--)
+		*(ae1_p--) = *(ae2_p--);
+	*ae1_p = ae;
+	_LLongAEAE_set_nelt(aeae, aeae_nelt + 1);
+	return;
+}
+
+LLongAEAE *_new_LLongAEAE(size_t buflength, size_t nelt)
+{
+	LLongAEAE *aeae;
+	size_t i;
+	LLongAE *ae;
+
+	aeae = new_empty_LLongAEAE();
+	if (buflength != 0) {
+		_LLongAEAE_extend(aeae, buflength);
+		for (i = 0; i < nelt; i++) {
+			ae = new_empty_LLongAE();
+			_LLongAEAE_insert_at(aeae, i, ae);
+		}
+	}
+	return aeae;
+}
+
+/* Must be used on a malloc-based LLongAEAE */
+static void LLongAEAE_free(LLongAEAE *aeae)
+{
+	size_t buflength, i;
+	LLongAE *ae;
+
+	buflength = aeae->_buflength;
+	for (i = 0; i < buflength; i++) {
+		ae = aeae->elts[i];
+		if (ae != NULL)
+			LLongAE_free(ae);
+	}
+	if (buflength != 0)
+		free(aeae->elts);
+	free(aeae);
+	return;
+}
+
+static void flush_LLongAEAE_pool()
+{
+	LLongAEAE *aeae;
+
+	while (LLongAEAE_pool_len > 0) {
+		LLongAEAE_pool_len--;
+		aeae = LLongAEAE_pool[LLongAEAE_pool_len];
+		LLongAEAE_free(aeae);
+	}
+	return;
+}
+
 
 /****************************************************************************
  * CharAE buffers
@@ -1391,6 +1536,7 @@ SEXP AEbufs_free()
 	flush_IntPairAE_pool();
 	flush_IntPairAEAE_pool();
 	flush_LLongAE_pool();
+	flush_LLongAEAE_pool();
 	flush_CharAE_pool();
 	flush_CharAEAE_pool();
 	return R_NilValue;
