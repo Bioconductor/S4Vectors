@@ -171,7 +171,14 @@ disableValidity <- function(disabled)
     disabled
 }
 
-setValidity2 <- function(Class, valid.func, where=topenv(parent.frame()))
+### A slightly modified version of wmsg() that is better suited for formatting
+### the problem description strings returned by validity methods.
+### NOT exported.
+wmsg2 <- function(...)
+    paste0("\n    ",
+           paste0(strwrap(paste0(c(...), collapse="")), collapse="\n    "))
+
+setValidity2 <- function(Class, method, where=topenv(parent.frame()))
 {
     setValidity(Class,
         function(object)
@@ -183,10 +190,10 @@ setValidity2 <- function(Class, valid.func, where=topenv(parent.frame()))
                 cat("[debugValidity] Entering ", whoami, "\n", sep="")
                 on.exit(cat("[debugValidity] Leaving ", whoami, "\n", sep=""))
             }
-            problems <- valid.func(object)
-            if (isTRUE(problems) || length(problems) == 0L)
+            msg <- method(object)
+            if (isTRUE(msg) || length(msg) == 0L)
                 return(TRUE)
-            problems
+            wmsg2(msg)
         },
         where=where
     )
@@ -201,9 +208,6 @@ new2 <- function(..., check=TRUE)
     disableValidity(!check)
     new(...)
 }
-
-stopIfProblems <- function(problems)
-    if (!is.null(problems)) stop(paste(problems, collapse="\n  "))
 
 ### 'signatures' must be a list of character vectors. To use when many methods
 ### share the same implementation.
@@ -225,6 +229,7 @@ setMethods <- function(f, signatures=list(), definition,
 ###
 
 ### Same interface as setAs() (but no 'replace' argument).
+### NOT exported.
 setReplaceAs <- function(from, to, def, where=topenv(parent.frame()))
 {
     ## Code below taken from setAs() and slightly adapted.
@@ -300,6 +305,7 @@ canonical_replace_as_2 <- function(from, to, value)
 ### typically used in the .onLoad() hook of a package when the DLL of the
 ### package needs to be loaded *before* the default value of a slot can be
 ### computed.
+### NOT exported.
 getDefaultSlotValue <- function(classname, slotname, where=.GlobalEnv)
 {
     classdef <- getClass(classname, where=where)
@@ -309,6 +315,7 @@ getDefaultSlotValue <- function(classname, slotname, where=.GlobalEnv)
     attr(classdef@prototype, slotname, exact=TRUE)
 }
 
+### NOT exported.
 setDefaultSlotValue <- function(classname, slotname, value, where=.GlobalEnv)
 {
     classdef <- getClass(classname, where=where)
@@ -322,6 +329,7 @@ setDefaultSlotValue <- function(classname, slotname, value, where=.GlobalEnv)
     resetClass(classname, classdef, where=where)
 }
 
+### NOT exported.
 setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
 {
     classdef <- getClass(classname, where=where)
@@ -338,6 +346,7 @@ setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
     ## does that after calling assignClassDef() so we do it too.
     resetClass(classname, classdef, where=where)
 }
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 ### allEqualsS4: just a hack that auomatically digs down
@@ -362,7 +371,9 @@ setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
   }
 }
 
+### NOT exported.
 allEqualS4 <- function(x, y) {
   eq <- .allEqualS4(x, y)
   setNames(eq$comparison, rownames(eq))[sapply(eq$comparison, Negate(isTRUE))]
 }
+
