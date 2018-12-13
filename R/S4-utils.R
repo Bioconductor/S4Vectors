@@ -190,10 +190,10 @@ setValidity2 <- function(Class, method, where=topenv(parent.frame()))
                 cat("[debugValidity] Entering ", whoami, "\n", sep="")
                 on.exit(cat("[debugValidity] Leaving ", whoami, "\n", sep=""))
             }
-            msg <- method(object)
-            if (isTRUE(msg) || length(msg) == 0L)
+            desc_strings <- method(object)
+            if (isTRUE(desc_strings) || length(desc_strings) == 0L)
                 return(TRUE)
-            wmsg2(msg)
+            vapply(desc_strings, wmsg2, character(1), USE.NAMES=FALSE)
         },
         where=where
     )
