@@ -142,8 +142,6 @@
       defined as an alias for \code{\link{elementNROWS}} (with addition
       of the \code{use.names} argument), so is equivalent to
       \code{sapply(x, NROW)}, not to \code{sapply(x, length)}.
-      See \code{?BiocGenerics::\link[BiocGenerics]{lengths}} in the
-      \pkg{BiocGenerics} package for more information about this.
     }
     \item{}{
       \code{NROW(x)}:
