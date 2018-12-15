@@ -103,6 +103,8 @@ S3method(tail, DataTable)
 S3method(tail, LLint)
 S3method(tail, Vector)
 
+S3method(transform, DataTable)
+
 S3method(union, Vector)
 
 S3method(unique, DataTable)
@@ -182,6 +184,8 @@ export(
     tail.LLint,
     tail.Vector,
 
+    transform.DataTable,
+    
     union.Vector,
 
     unique.DataTable,
