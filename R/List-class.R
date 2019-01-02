@@ -31,10 +31,7 @@ setGeneric("elementNROWS", function(x) standardGeneric("elementNROWS"))
 setMethod("elementNROWS", "ANY", sapply_NROW)
 
 ### Used in the SGSeq package!
-quick_togroup <- function(x)
-{
-    map_list_elements_to_groups(elementNROWS(x))
-}
+quick_togroup <- function(x) map_inner_ROW_to_list_element(elementNROWS(x))
 
 setMethod("elementNROWS", "List",
     function(x)

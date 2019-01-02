@@ -90,10 +90,10 @@ lowestListElementClass <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### map_list_elements_to_groups()
+### map_inner_ROW_to_list_element()
 ###
 
-map_list_elements_to_groups <- function(NROWS, as.factor=FALSE)
+map_inner_ROW_to_list_element <- function(NROWS, as.factor=FALSE)
 {
     stopifnot(is.integer(NROWS), isTRUEorFALSE(as.factor))
     groups <- seq_along(NROWS)
