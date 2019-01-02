@@ -33,8 +33,7 @@ setMethod("elementNROWS", "ANY", sapply_NROW)
 ### Used in the SGSeq package!
 quick_togroup <- function(x)
 {
-    x_eltNROWS <- elementNROWS(x)
-    rep.int(seq_along(x_eltNROWS), x_eltNROWS)
+    map_list_elements_to_groups(elementNROWS(x))
 }
 
 setMethod("elementNROWS", "List",

@@ -90,6 +90,21 @@ lowestListElementClass <- function(x)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### map_list_elements_to_groups()
+###
+
+map_list_elements_to_groups <- function(NROWS, as.factor=FALSE)
+{
+    stopifnot(is.integer(NROWS), isTRUEorFALSE(as.factor))
+    groups <- seq_along(NROWS)
+    ans <- rep.int(groups, NROWS)
+    if (as.factor)
+        ans <- structure(ans, levels=as.character(groups), class="factor")
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Concatenation along the ROWS
 ###
 
@@ -182,7 +197,7 @@ quick_unlist <- function(x)
     if (is.factor(x1)) {
         ## Fast unlisting of a list of factors that all have the same levels
         ## in the same order.
-        structure(unlist(x), class="factor", levels=levels(x1))
+        structure(unlist(x), levels=levels(x1), class="factor")
     } else {
         do.call(c, x)  # doesn't work on list of factors
     }
