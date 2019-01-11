@@ -7,18 +7,20 @@
 ###
 
 ### S3/S4 combo for union.Vector
-union.Vector <- function(x, y) unique(c(x, y))
-setMethod("union", c("Vector", "Vector"), union.Vector)
+setMethod("union", c("Vector", "Vector"), function(x, y) unique(c(x, y)))
+union.Vector <- union
 
 ### S3/S4 combo for intersect.Vector
-intersect.Vector <- function(x, y) unique(x[x %in% y])
-setMethod("intersect", c("Vector", "Vector"), intersect.Vector)
+setMethod("intersect", c("Vector", "Vector"),
+          function(x, y) unique(x[x %in% y]))
+intersect.Vector <- intersect
 
 ### S3/S4 combo for setdiff.Vector
-setdiff.Vector <- function(x, y) unique(x[!(x %in% y)])
-setMethod("setdiff", c("Vector", "Vector"), setdiff.Vector)
+setMethod("setdiff", c("Vector", "Vector"),
+          function(x, y) unique(x[!(x %in% y)]))
+setdiff.Vector <- setdiff
 
 ### S3/S4 combo for setequal.Vector
-setequal.Vector <- function(x, y) all(x %in% y) && all(y %in% x)
-setMethod("setequal", c("Vector", "Vector"), setequal.Vector)
-
+setMethod("setequal", c("Vector", "Vector"),
+          function(x, y) all(x %in% y) && all(y %in% x))
+setequal.Vector <- setequal
