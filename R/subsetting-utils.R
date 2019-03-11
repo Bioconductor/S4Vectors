@@ -110,6 +110,9 @@ setMethod("isStrictlySorted", "NSBS",
     function(x) isStrictlySorted(as.integer(x))
 )
 
+setMethod("max", "NSBS", function (x, ..., na.rm = FALSE) {
+    max(x@subscript, ..., na.rm=na.rm)
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### NativeNSBS objects.

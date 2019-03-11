@@ -450,8 +450,9 @@ setReplaceMethod("[", "Vector",
     {
         if (!missing(j) || length(list(...)) > 0L)
             stop("invalid subsetting")
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        li <- length(i)
+        nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE,
+                                                allow.append=TRUE)
+        li <- length(nsbs)
         if (li == 0L) {
             ## Surprisingly, in that case, `[<-` on standard vectors does not
             ## even look at 'value'. So neither do we...
@@ -467,7 +468,7 @@ setReplaceMethod("[", "Vector",
                         "of the number of values to be replaced")
             value <- extractROWS(value, rep(seq_len(lv), length.out=li))
         }
-        replaceROWS(x, i, value)
+        replaceROWS(x, if (missing(i)) nsbs else i, value)
     }
 )
 
@@ -476,8 +477,9 @@ setReplaceMethod("[", "Vector",
 setMethod("replaceROWS", c("Vector", "ANY"),
     function(x, i, value)
     {
-        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        stopifnot(length(i) == NROW(value))
+        nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE,
+                                                allow.append=is.character(i))
+        stopifnot(length(nsbs) == NROW(value))
 
         ## --<1>-- Concatenate 'x' and 'value' with bindROWS() -----
 
@@ -489,7 +491,10 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 
         ## --<2>-- Subset 'ans' with extractROWS() -----
 
-        idx <- replaceROWS(seq_along(x), i, seq_along(value) + NROW(x))
+        new_len <- max(nsbs, NROW(x))
+        idx <- replaceROWS(seq_len(new_len),
+                           initialize(nsbs, upper_bound=new_len),
+                           seq_along(value) + NROW(x))
         ## Because of how we constructed it, 'idx' is guaranteed to be a valid
         ## subscript to use in 'extractROWS(ans, idx)'. By wrapping it inside a
         ## NativeNSBS object, extractROWS() won't waste time checking it or
@@ -502,7 +507,7 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 
         ## --<3>-- Restore the original names -----
 
-        names(ans) <- names(x)
+        names(ans) <- replaceNames(x, nsbs, i, length(ans))
         ## Note that we want the elements coming from 'value' to bring their
         ## metadata columns into 'x' so we do NOT restore the original metadata
         ## columns. See this thread on bioc-devel:
@@ -513,6 +518,16 @@ setMethod("replaceROWS", c("Vector", "ANY"),
     }
 )
 
+replaceNames <- function(x, i, value, new_len) {
+    ans <- names(x)
+    if (is.character(value) && is.null(ans)) {
+        ans <- rep("", NROW(x))
+    }
+    if (new_len > NROW(x)) {
+        ans <- replaceROWS(ans, i, value)
+    }
+    ans
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Convenience wrappers for common subsetting operations
