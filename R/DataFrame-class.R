@@ -364,6 +364,9 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
     {
         i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
                                              as.NSBS=TRUE)
+        if (length(i) == 0L) {
+            return(x)
+        }
         x_ncol <- ncol(x)
         value_ncol <- ncol(value)
         if (value_ncol > x_ncol)
