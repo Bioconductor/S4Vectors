@@ -7,6 +7,14 @@
 		NAME ## _symbol = install(# NAME); \
 }
 
+static inline int translate_byte(char byte, const int *lkup, int lkup_length)
+{
+	int key;
+
+	key = (unsigned char) byte;
+	return key >= lkup_length ? NA_INTEGER : lkup[key];
+}
+
 
 /* safe_arithm.c */
 
@@ -837,6 +845,17 @@ SEXP unstrsplit_list(SEXP x, SEXP sep);
 SEXP safe_strexplode(SEXP s);
 
 SEXP svn_time();
+
+
+/* raw_utils.c */
+
+SEXP C_extract_raw_ranges_as_character(
+	SEXP x,
+	SEXP start,
+	SEXP width,
+	SEXP collapse,
+	SEXP lkup
+);
 
 
 /* eval_utils.c */
