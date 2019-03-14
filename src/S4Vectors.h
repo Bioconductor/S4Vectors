@@ -849,6 +849,13 @@ SEXP svn_time();
 
 /* raw_utils.c */
 
+SEXP C_extract_raw_positions_as_character(
+	SEXP x,
+	SEXP pos,
+	SEXP collapse,
+	SEXP lkup
+);
+
 SEXP C_extract_raw_ranges_as_character(
 	SEXP x,
 	SEXP start,

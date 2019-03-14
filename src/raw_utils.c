@@ -11,7 +11,7 @@ static size_t memcpy_with_translation(char *dest, const Rbyte *src, size_t n,
 		c = translate_byte(src[i], lkup, lkup_length);
 		if (c == NA_INTEGER)
 			break;
-		*(dest++) = c;
+		dest[i] = (char) c;
 	}
 	return i;
 }
@@ -22,9 +22,75 @@ static void invalid_byte_error(char byte, size_t at)
 	      (int) byte, byte, at);
 }
 
-static SEXP read_data_as_one_string(const Rbyte *x_dataptr,
-				    const int *start_p, const int *width_p,
-				    int nranges, int totalchars, SEXP lkup)
+/* Return a character vector of length 1 (single string). */
+static SEXP read_raw_positions_as_one_string(const Rbyte *x_dataptr,
+					     const int *pos_p, int npos,
+					     SEXP lkup)
+{
+	char *dest;
+	int i, c;
+	const Rbyte *src;
+	SEXP ans, ans_elt;
+
+	dest = (char *) malloc(npos);
+	if (dest == NULL)
+		error("memory allocation error in .Call entry point "
+		      "C_extract_raw_positions_as_character()");
+	for (i = 0; i < npos; i++) {
+		src = x_dataptr + pos_p[i] - 1;
+		if (lkup == R_NilValue) {
+			dest[i] = *src;
+		} else {
+			c = translate_byte(*src, INTEGER(lkup), LENGTH(lkup));
+			if (c == NA_INTEGER) {
+				free(dest);
+				invalid_byte_error(*src, pos_p[i]);
+			}
+			dest[i] = (char) c;
+		}
+	}
+	ans_elt = PROTECT(mkCharLen(dest, npos));
+	ans = PROTECT(ScalarString(ans_elt));
+	free(dest);
+	UNPROTECT(2);
+	return ans;
+}
+
+/* Return a character vector with one 1-letter string per position. */
+static SEXP read_raw_positions_as_strings(const Rbyte *x_dataptr,
+					  const int *pos_p, int npos,
+					  SEXP lkup)
+{
+	char dest[1];
+	int i, c;
+	const Rbyte *src;
+	SEXP ans, ans_elt;
+
+	ans = PROTECT(NEW_CHARACTER(npos));
+	for (i = 0; i < npos; i++) {
+		src = x_dataptr + pos_p[i] - 1;
+		if (lkup == R_NilValue) {
+			dest[0] = *src;
+		} else {
+			c = translate_byte(*src, INTEGER(lkup), LENGTH(lkup));
+			if (c == NA_INTEGER)
+				invalid_byte_error(*src, pos_p[i]);
+			dest[0] = (char) c;
+		}
+		ans_elt = PROTECT(mkCharLen(dest, 1));
+		SET_STRING_ELT(ans, i, ans_elt);
+		UNPROTECT(1);
+	}
+	UNPROTECT(1);
+	return ans;
+}
+
+/* Return a character vector of length 1 (single string). */
+static SEXP read_raw_ranges_as_one_string(const Rbyte *x_dataptr,
+					  const int *start_p,
+					  const int *width_p,
+					  int nranges,
+					  int totalchars, SEXP lkup)
 {
 	char *dest;
 	int i, width_i;
@@ -61,9 +127,10 @@ static SEXP read_data_as_one_string(const Rbyte *x_dataptr,
 	return ans;
 }
 
-static SEXP read_data_as_strings(const Rbyte *x_dataptr,
-				 const int *start_p, const int *width_p,
-				 int nranges, int maxwidth, SEXP lkup)
+/* Return a character vector with one string per range. */
+static SEXP read_raw_ranges_as_strings(const Rbyte *x_dataptr,
+				       const int *start_p, const int *width_p,
+				       int nranges, int maxwidth, SEXP lkup)
 {
 	char *dest = NULL;
 	int i, width_i;
@@ -83,7 +150,7 @@ static SEXP read_data_as_strings(const Rbyte *x_dataptr,
 		width_i = width_p[i];
 		if (lkup == R_NilValue) {
 			ans_elt = PROTECT(mkCharLen((const char *) src,
-					  width_i));
+					            width_i));
 		} else {
 			off = memcpy_with_translation(dest, src, width_i,
 						      INTEGER(lkup),
@@ -105,7 +172,49 @@ static SEXP read_data_as_strings(const Rbyte *x_dataptr,
 }
 
 /* --- .Call ENTRY POINT ---
- * Return a character vector with 1 string per range if 'collapse' is FALSE.
+ * Return a character vector with one 1-letter string per position if 'collapse'
+ * is FALSE. Otherwise return a character vector of length 1 (single string).
+ */
+SEXP C_extract_raw_positions_as_character(SEXP x, SEXP pos,
+					  SEXP collapse, SEXP lkup)
+{
+	int x_len, npos, collapse0, i, pos_i;
+	const Rbyte *x_dataptr;
+	const int *pos_p;
+
+	if (!IS_RAW(x))
+		error("'x' must be a raw vector");
+	x_len = LENGTH(x);
+	x_dataptr = RAW(x);
+
+	if (!IS_INTEGER(pos))
+		error("'pos' must be an integer vector");
+	npos = LENGTH(pos);
+	pos_p = INTEGER(pos);
+
+	if (!(IS_LOGICAL(collapse) && LENGTH(collapse) == 1))
+		error("'collapse' must be TRUE or FALSE");
+	collapse0 = INTEGER(collapse)[0];
+
+	if (!(lkup == R_NilValue || IS_INTEGER(lkup)))
+		error("'lkup' must an integer vector or NULL");
+
+	/* 1st pass: Check the positions. */
+	for (i = 0; i < npos; i++) {
+		pos_i = pos_p[i];
+		if (pos_i == NA_INTEGER || pos_i < 1 || pos_i > x_len)
+			error("'start[%d]' is NA or < 1 or > length(x)",
+			      i + 1);
+	}
+
+	/* 2nd pass: Read the data into a character string. */
+	return collapse0 ?
+		read_raw_positions_as_one_string(x_dataptr, pos_p, npos, lkup) :
+		read_raw_positions_as_strings(x_dataptr, pos_p, npos, lkup);
+}
+
+/* --- .Call ENTRY POINT ---
+ * Return a character vector with one string per range if 'collapse' is FALSE.
  * Otherwise return a character vector of length 1 (single string).
  */
 SEXP C_extract_raw_ranges_as_character(SEXP x, SEXP start, SEXP width,
@@ -120,17 +229,20 @@ SEXP C_extract_raw_ranges_as_character(SEXP x, SEXP start, SEXP width,
 		error("'x' must be a raw vector");
 	x_len = LENGTH(x);
 	x_dataptr = RAW(x);
+
 	nranges = _check_integer_pairs(start, width,
 				       &start_p, &width_p,
 				       "start", "width");
+
 	if (!(IS_LOGICAL(collapse) && LENGTH(collapse) == 1))
 		error("'collapse' must be TRUE or FALSE");
 	collapse0 = INTEGER(collapse)[0];
+
 	if (!(lkup == R_NilValue || IS_INTEGER(lkup)))
 		error("'lkup' must an integer vector or NULL");
 
 	/* 1st pass: Check the ranges and compute the total number of
-           characters to read or the width of the biggest range. */
+	   characters to read or the width of the biggest range. */
 	if (collapse0) {
 		totalchars = 0;
 	} else {
@@ -158,11 +270,11 @@ SEXP C_extract_raw_ranges_as_character(SEXP x, SEXP start, SEXP width,
 		}
 	}
 
-	/* 2nd pass: Read the data in the ranges into a character string. */
+	/* 2nd pass: Read the data into a character string. */
 	return collapse0 ?
-		read_data_as_one_string(x_dataptr, start_p, width_p,
+		read_raw_ranges_as_one_string(x_dataptr, start_p, width_p,
 					nranges, (int) totalchars, lkup) :
-		read_data_as_strings(x_dataptr, start_p, width_p,
+		read_raw_ranges_as_strings(x_dataptr, start_p, width_p,
 					nranges, maxwidth, lkup);
 }
 
