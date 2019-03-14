@@ -7,18 +7,18 @@
 ###
 
 
-extract_raw_positions_as_character <- function(x, pos,
-                                               collapse=FALSE, lkup=NULL)
+extract_character_from_raw_by_positions <- function(x, pos,
+                                                    collapse=FALSE, lkup=NULL)
 {
-    .Call("C_extract_raw_positions_as_character",
+    .Call("C_extract_character_from_raw_by_positions",
           x, pos, collapse, lkup,
           PACKAGE="S4Vectors")
 }
 
-extract_raw_ranges_as_character <- function(x, start, width,
-                                            collapse=FALSE, lkup=NULL)
+extract_character_from_raw_by_ranges <- function(x, start, width,
+                                                 collapse=FALSE, lkup=NULL)
 {
-    .Call("C_extract_raw_ranges_as_character",
+    .Call("C_extract_character_from_raw_by_ranges",
           x, start, width, collapse, lkup,
           PACKAGE="S4Vectors")
 }

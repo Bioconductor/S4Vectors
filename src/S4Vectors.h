@@ -860,14 +860,14 @@ SEXP _extract_bytes_by_ranges(
 	SEXP lkup
 );
 
-SEXP C_extract_raw_positions_as_character(
+SEXP C_extract_character_from_raw_by_positions(
 	SEXP x,
 	SEXP pos,
 	SEXP collapse,
 	SEXP lkup
 );
 
-SEXP C_extract_raw_ranges_as_character(
+SEXP C_extract_character_from_raw_by_ranges(
 	SEXP x,
 	SEXP start,
 	SEXP width,

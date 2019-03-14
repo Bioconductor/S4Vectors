@@ -1,21 +1,23 @@
-test_extract_raw_positions_as_character <- function()
+test_extract_character_from_raw_by_positions <- function()
 {
-    extract_raw_positions_as_character <-
-        S4Vectors:::extract_raw_positions_as_character
+    extract_character_from_raw_by_positions <-
+        S4Vectors:::extract_character_from_raw_by_positions
 
     do_tests <- function(x, pos, target0, lkup, target1) {
-        current <- extract_raw_positions_as_character(x, pos)
+        current <- extract_character_from_raw_by_positions(x, pos)
         checkIdentical(target0, current)
 
-        current <- extract_raw_positions_as_character(x, pos, collapse=TRUE)
+        current <- extract_character_from_raw_by_positions(x, pos,
+                                                           collapse=TRUE)
         target <- paste0(target0, collapse="")
         checkIdentical(target, current)
 
-        current <- extract_raw_positions_as_character(x, pos, lkup=lkup)
+        current <- extract_character_from_raw_by_positions(x, pos, lkup=lkup)
         checkIdentical(target1, current)
 
-        current <- extract_raw_positions_as_character(x, pos, collapse=TRUE,
-                                                              lkup=lkup)
+        current <- extract_character_from_raw_by_positions(x, pos,
+                                                           collapse=TRUE,
+                                                           lkup=lkup)
         target <- paste0(target1, collapse="")
         checkIdentical(target, current)
     }
@@ -40,9 +42,10 @@ test_extract_raw_positions_as_character <- function()
     ## With byte not in lookup table.
     x <- charToRaw("ABCDEFAAAGF")  # 'G' is not represented in 'lkup'
     pos <- seq_along(x)
-    checkException(extract_raw_positions_as_character(x, pos, lkup=lkup))
-    checkException(extract_raw_positions_as_character(x, pos, collapse=TRUE,
-                                                              lkup=lkup))
+    checkException(extract_character_from_raw_by_positions(x, pos, lkup=lkup))
+    checkException(extract_character_from_raw_by_positions(x, pos,
+                                                           collapse=TRUE,
+                                                           lkup=lkup))
     pos <- 1:9
     target0 <- substring(rawToChar(x), pos, pos)
     target1 <- c("z", "y", "x", "w", "v", "u", "z", "z", "z")
@@ -50,34 +53,37 @@ test_extract_raw_positions_as_character <- function()
 
     x <- charToRaw("ABCDEFAAA8F")  # '8' is not represented in 'lkup'
     pos <- seq_along(x)
-    checkException(extract_raw_positions_as_character(x, pos, lkup=lkup))
-    checkException(extract_raw_positions_as_character(x, pos, collapse=TRUE,
-                                                              lkup=lkup))
+    checkException(extract_character_from_raw_by_positions(x, pos, lkup=lkup))
+    checkException(extract_character_from_raw_by_positions(x, pos,
+                                                           collapse=TRUE,
+                                                           lkup=lkup))
     pos <- 1:9
     target0 <- substring(rawToChar(x), pos, pos)
     target1 <- c("z", "y", "x", "w", "v", "u", "z", "z", "z")
     do_tests(x, pos, target0, lkup, target1)
 }
 
-test_extract_raw_ranges_as_character <- function()
+test_extract_character_from_raw_by_ranges <- function()
 {
-    extract_raw_ranges_as_character <-
-        S4Vectors:::extract_raw_ranges_as_character
+    extract_character_from_raw_by_ranges <-
+        S4Vectors:::extract_character_from_raw_by_ranges
 
     do_tests <- function(x, start, width, target0, lkup, target1) {
-        current <- extract_raw_ranges_as_character(x, start, width)
+        current <- extract_character_from_raw_by_ranges(x, start, width)
         checkIdentical(target0, current)
 
-        current <- extract_raw_ranges_as_character(x, start, width,
-                                                   collapse=TRUE)
+        current <- extract_character_from_raw_by_ranges(x, start, width,
+                                                        collapse=TRUE)
         target <- paste0(target0, collapse="")
         checkIdentical(target, current)
 
-        current <- extract_raw_ranges_as_character(x, start, width, lkup=lkup)
+        current <- extract_character_from_raw_by_ranges(x, start, width,
+                                                        lkup=lkup)
         checkIdentical(target1, current)
 
-        current <- extract_raw_ranges_as_character(x, start, width,
-                                                   collapse=TRUE, lkup=lkup)
+        current <- extract_character_from_raw_by_ranges(x, start, width,
+                                                        collapse=TRUE,
+                                                        lkup=lkup)
         target <- paste0(target1, collapse="")
         checkIdentical(target, current)
     }
@@ -105,17 +111,18 @@ test_extract_raw_ranges_as_character <- function()
     xx <- rep.int(x, 1e6)
     start <- rep.int(1L, 239)
     width <- rep.int(length(xx), 239)
-    checkException(extract_raw_ranges_as_character(xx, start, width,
-                                                   collapse=TRUE))
+    checkException(extract_character_from_raw_by_ranges(xx, start, width,
+                                                        collapse=TRUE))
 
     ## With byte not in lookup table.
     x <- charToRaw("ABCDEFAAAGF")  # 'G' is not represented in 'lkup'
     start <- c(6L, 10L, 9L)
     width <- c(2L,  0L, 3L)
-    checkException(extract_raw_ranges_as_character(x, start, width,
-                                                   lkup=lkup))
-    checkException(extract_raw_ranges_as_character(x, start, width,
-                                                   collapse=TRUE, lkup=lkup))
+    checkException(extract_character_from_raw_by_ranges(x, start, width,
+                                                        lkup=lkup))
+    checkException(extract_character_from_raw_by_ranges(x, start, width,
+                                                        collapse=TRUE,
+                                                        lkup=lkup))
     start <- c(6L, 10L, 11L)
     width <- c(2L,  0L,  1L)
     target0 <- substring(rawToChar(x), start, start + width - 1L)
@@ -125,10 +132,11 @@ test_extract_raw_ranges_as_character <- function()
     x <- charToRaw("ABCDEFAAA8F")  # '8' is not represented in 'lkup'
     start <- c(6L, 10L, 9L)
     width <- c(2L,  0L, 3L)
-    checkException(extract_raw_ranges_as_character(x, start, width,
-                                                   lkup=lkup))
-    checkException(extract_raw_ranges_as_character(x, start, width,
-                                                   collapse=TRUE, lkup=lkup))
+    checkException(extract_character_from_raw_by_ranges(x, start, width,
+                                                        lkup=lkup))
+    checkException(extract_character_from_raw_by_ranges(x, start, width,
+                                                        collapse=TRUE,
+                                                        lkup=lkup))
     start <- c(6L, 10L, 11L)
     width <- c(2L,  0L,  1L)
     target0 <- substring(rawToChar(x), start, start + width - 1L)

@@ -35,7 +35,7 @@ static SEXP extract_bytes_by_positions_as_one_string(const char *x,
 	dest = (char *) malloc(npos);
 	if (dest == NULL)
 		error("memory allocation error in .Call entry point "
-		      "C_extract_raw_positions_as_character()");
+		      "C_extract_character_from_raw_by_positions()");
 	for (i = 0; i < npos; i++) {
 		src = x + pos[i] - 1;
 		if (lkup == R_NilValue) {
@@ -98,7 +98,7 @@ static SEXP extract_bytes_by_ranges_as_one_string(const char *x,
 	dest = (char *) malloc(totalchars);
 	if (dest == NULL)
 		error("memory allocation error in .Call entry point "
-		      "C_extract_raw_ranges_as_character()");
+		      "C_extract_character_from_raw_by_ranges()");
 	totalchars = 0;
 	for (i = 0; i < nranges; i++) {
 		src = x + start[i] - 1;
@@ -138,7 +138,7 @@ static SEXP extract_bytes_by_ranges_as_strings(const char *x,
 		dest = (char *) malloc(maxwidth);
 		if (dest == NULL)
 			error("memory allocation error in "
-			      "C_extract_raw_ranges_as_character()");
+			      "C_extract_character_from_raw_by_ranges()");
 	}
 	ans = PROTECT(NEW_CHARACTER(nranges));
 	for (i = 0; i < nranges; i++) {
@@ -244,8 +244,8 @@ SEXP _extract_bytes_by_ranges(const char *x, int x_len,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP C_extract_raw_positions_as_character(SEXP x, SEXP pos,
-					  SEXP collapse, SEXP lkup)
+SEXP C_extract_character_from_raw_by_positions(SEXP x, SEXP pos,
+					       SEXP collapse, SEXP lkup)
 {
 	if (!IS_RAW(x))
 		error("'x' must be a raw vector");
@@ -262,8 +262,8 @@ SEXP C_extract_raw_positions_as_character(SEXP x, SEXP pos,
 }
 
 /* --- .Call ENTRY POINT --- */
-SEXP C_extract_raw_ranges_as_character(SEXP x, SEXP start, SEXP width,
-				       SEXP collapse, SEXP lkup)
+SEXP C_extract_character_from_raw_by_ranges(SEXP x, SEXP start, SEXP width,
+					    SEXP collapse, SEXP lkup)
 {
 	int nranges;
 	const int *start_p, *width_p;

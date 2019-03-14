@@ -72,8 +72,8 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(svn_time, 0),
 
 /* raw_utils.c */
-	CALLMETHOD_DEF(C_extract_raw_positions_as_character, 4),
-	CALLMETHOD_DEF(C_extract_raw_ranges_as_character, 5),
+	CALLMETHOD_DEF(C_extract_character_from_raw_by_positions, 4),
+	CALLMETHOD_DEF(C_extract_character_from_raw_by_ranges, 5),
 
 /* eval_utils.c */
 	CALLMETHOD_DEF(top_prenv, 2),
