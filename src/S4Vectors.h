@@ -7,14 +7,6 @@
 		NAME ## _symbol = install(# NAME); \
 }
 
-static inline int translate_byte(char byte, const int *lkup, int lkup_len)
-{
-	int key;
-
-	key = (unsigned char) byte;
-	return key >= lkup_len ? NA_INTEGER : lkup[key];
-}
-
 
 /* safe_arithm.c */
 

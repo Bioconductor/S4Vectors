@@ -35,6 +35,14 @@
 		((int *)(x))[i] = (v);				\
 }
 
+static inline int translate_byte(char byte, const int *lkup, int lkup_len)
+{
+	int key;
+
+	key = (unsigned char) byte;
+	return key >= lkup_len ? NA_INTEGER : lkup[key];
+}
+
 /* Hash table -- modified from R_HOME/src/main/unique.c */
 struct htab {
 	int K, M;
