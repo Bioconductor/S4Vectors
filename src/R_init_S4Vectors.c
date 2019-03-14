@@ -225,6 +225,10 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_check_integer_pairs);
 	REGISTER_CCALLABLE(_find_interv_and_start_from_width);
 
+/* raw_utils.c */
+	REGISTER_CCALLABLE(_extract_bytes_by_positions);
+	REGISTER_CCALLABLE(_extract_bytes_by_ranges);
+
 /* Hits_class.c */
 	REGISTER_CCALLABLE(_new_Hits);
 	REGISTER_CCALLABLE(_get_select_mode);

@@ -552,6 +552,29 @@ SEXP find_interv_and_start_from_width(
 );
 
 /*
+ * raw_utils.c
+ */
+
+SEXP extract_bytes_by_positions(
+	const char *x,
+	int x_len,
+	const int *pos,
+	int npos,
+	int collapse,
+	SEXP lkup
+);
+
+SEXP extract_bytes_by_ranges(
+	const char *x,
+	int x_len,
+	const int *start,
+	const int *width,
+	int nranges,
+	int collapse,
+	SEXP lkup
+);
+
+/*
  * Low-level manipulation of Hits objects.
  * (see Hits_class.c)
  */

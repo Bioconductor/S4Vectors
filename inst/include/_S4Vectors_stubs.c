@@ -539,6 +539,20 @@ DEFINE_CCALLABLE_STUB(SEXP, find_interv_and_start_from_width,
 )
 
 /*
+ * Stubs for callables defined in raw_utils.c
+ */
+
+DEFINE_CCALLABLE_STUB(SEXP, extract_bytes_by_positions,
+	(const char *x, int x_len, const int *pos, int npos, int collapse, SEXP lkup),
+	(            x,     x_len,            pos,     npos,     collapse,      lkup)
+)
+
+DEFINE_CCALLABLE_STUB(SEXP, extract_bytes_by_ranges,
+	(const char *x, int x_len, const int *start, const int *width, int nranges, int collapse, SEXP lkup),
+	(            x,     x_len,            start,            width,     nranges,     collapse,      lkup)
+)
+
+/*
  * Stubs for callables defined in Hits_class.c
  */
 

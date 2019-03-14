@@ -849,6 +849,25 @@ SEXP svn_time();
 
 /* raw_utils.c */
 
+SEXP _extract_bytes_by_positions(
+	const char *x,
+	int x_len,
+	const int *pos,
+	int npos,
+	int collapse,
+	SEXP lkup
+);
+
+SEXP _extract_bytes_by_ranges(
+	const char *x,
+	int x_len,
+	const int *start,
+	const int *width,
+	int nranges,
+	int collapse,
+	SEXP lkup
+);
+
 SEXP C_extract_raw_positions_as_character(
 	SEXP x,
 	SEXP pos,
