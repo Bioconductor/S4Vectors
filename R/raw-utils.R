@@ -7,6 +7,9 @@
 ###
 
 
+TOUPPER_LOOKUP <- c(0:96, 65:90, 123:255)
+TOLOWER_LOOKUP <- c(0:64, 97:122, 91:255)
+
 extract_character_from_raw_by_positions <- function(x, pos,
                                                     collapse=FALSE, lkup=NULL)
 {
