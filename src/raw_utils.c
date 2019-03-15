@@ -42,8 +42,8 @@ static SEXP extract_bytes_by_positions_as_one_string(
 	//double dt = (1.0 * clock() - t0) / CLOCKS_PER_SEC;
 	//printf("time for malloc(): %e\n", dt);
 
-	x--;  /* so we can just do 'x[pos_i]' instead of 'x[pos_i - 1]' in
-	         the loop below */
+	x--;  /* so we can just do 'x[pos_i]' instead of 'x[pos_i - 1]'
+	         in the loop below */
 
 	//Surprisingly my timings show that the for loop below is faster
 	//when 'lkup' is not NULL (i.e. when bytes are translated) than
@@ -94,8 +94,8 @@ static SEXP extract_bytes_by_positions_as_strings(
 	SEXP ans, ans_elt;
 
 	ans = PROTECT(NEW_CHARACTER(npos));
-	x--;  /* so we can just do 'x[pos_i]' instead of 'x[pos_i - 1]' in
-	         the loop below */
+	x--;  /* so we can just do 'x[pos_i]' instead of 'x[pos_i - 1]'
+	         in the loop below */
 	for (i = 0; i < npos; i++) {
 		pos_i = pos[i];
 		if (pos_i == NA_INTEGER || pos_i < 1 || pos_i > x_len) {
@@ -135,8 +135,10 @@ static SEXP extract_bytes_by_ranges_as_one_string(const char *x,
 		error("memory allocation error in .Call entry point "
 		      "C_extract_character_from_raw_by_ranges()");
 	totalchars = 0;
+	x--;  /* so we can just do 'x + start[i]' instead of 'x + start[i] - 1'
+	         in the loop below */
 	for (i = 0; i < nranges; i++) {
-		src = x + start[i] - 1;
+		src = x + start[i];
 		width_i = width[i];
 		if (lkup == NULL) {
 			memcpy(dest + totalchars, src, width_i);
@@ -177,8 +179,10 @@ static SEXP extract_bytes_by_ranges_as_strings(const char *x,
 			      "C_extract_character_from_raw_by_ranges()");
 	}
 	ans = PROTECT(NEW_CHARACTER(nranges));
+	x--;  /* so we can just do 'x + start[i]' instead of 'x + start[i] - 1'
+	         in the loop below */
 	for (i = 0; i < nranges; i++) {
-		src = x + start[i] - 1;
+		src = x + start[i];
 		width_i = width[i];
 		if (lkup == NULL) {
 			ans_elt = PROTECT(mkCharLen(src, width_i));
