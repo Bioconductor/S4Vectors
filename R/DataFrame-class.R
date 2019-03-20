@@ -343,32 +343,36 @@ setMethod("[", "DataFrame",
     }
 )
 
-.make_rownames <- function(x, i, value)
+.make_rownames <- function(x, i, nsbs, value)
 {
     x_nrow <- nrow(x)
-    i_max <- max(i)
     x_rownames <- rownames(x)
-    value_rownames <- rownames(value)
+    if (!missing(i) && is.character(i)) {
+        value_rownames <- i
+    } else {
+        value_rownames <- rownames(value)
+    }
+    nsbs <- as.integer(nsbs)
+    i_max <- max(nsbs)
     if (i_max <= x_nrow || is.null(x_rownames) && is.null(value_rownames))
         return(x_rownames)
-    ans_rownames <- as.character(seq_len(max(x_nrow, i_max)))
-    if (!is.null(value_rownames))
-        ans_rownames <- replaceROWS(ans_rownames, i, value_rownames)
+    if (is.null(value_rownames))
+        value_rownames <- as.character(nsbs)
     if (is.null(x_rownames))
         x_rownames <- as.character(seq_len(x_nrow))
-    replaceROWS(ans_rownames, seq_len(x_nrow), x_rownames)
+    replaceROWS(x_rownames, nsbs[nsbs > x_nrow], value_rownames[nsbs > x_nrow])
 }
 
 setMethod("replaceROWS", c("DataFrame", "ANY"),
     function(x, i, value)
     {
-        i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
-                                             as.NSBS=TRUE)
-        if (length(i) == 0L) {
+        nsbs <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
+                                                as.NSBS=TRUE)
+        if (length(nsbs) == 0L) {
             return(x)
         }
         x_ncol <- ncol(x)
-        value_ncol <- ncol(value)
+        value_ncol <- length(value)
         if (value_ncol > x_ncol)
             stop("provided ", value_ncol, " variables ",
                  "to replace ", x_ncol, " variables")
@@ -378,205 +382,101 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
             new_listData <-
                 lapply(structure(seq_len(ncol(x)), names=names(x)),
                        function(j)
-                           replaceROWS(x[[j]], i,
+                           replaceROWS(x[[j]], nsbs,
                                        value[[((j - 1L) %% value_ncol) + 1L]]))
             slot(x, "listData", check=FALSE) <- new_listData
         }
-        i <- as.integer(i)
-        i_max <- max(i)
+        i_max <- max(as.integer(nsbs))
         x_nrow <- nrow(x)
         if (i_max > x_nrow) {
-            x@rownames <- .make_rownames(x, i, value)
+            x@rownames <- .make_rownames(x, i, nsbs, value)
             x@nrows <- i_max
         }
         x
     }
 )
 
-### TODO: Refactor this to use one of the two following 3-step approaches:
-###
-###  (1) Linear `[` + replaceROWS() + linear `[<-`, i.e. something like:
-###        `[<-`(x, j, value=replaceROWS(x[j], i, value))
-###
-###  (2) extractROWS() + linear `[<-` + replaceROWS(), i.e. something like:
-###        replaceROWS(x, i, `[<-`(extractROWS(x, i), j, value=value))
-###
-### (Not sure which one is better, need to figure this out.)
-###
-### Current implementation is a 157-line monolithic function. Doing (1)
-### or (2) means implementing linear `[<-` in a separate helper (e.g.
-### replaceCOLS()) and simplify and reduce the size of the whole thing.
-### Would also make it easier to fix some of the long standing bugs (some
-### of them would just vanish):
-###
-###   `[<-`(DataFrame(aa=1:3), 4, , value=DataFrame(aa=11))  # broken object
-###   DF <- DataFrame(aa=1:3, row.names=LETTERS[1:3])
-###   `[<-`(DF[0], 4, , value=DataFrame(aa=11)[0])  # wrong nrow
-###   `[<-`(DF[0], 2, value=DataFrame(bb=1:3))  # wrong nrow & ncol
-###   etc...
-###
+.make_colnames <- function(x, i, x_len, value) {
+    if (!missing(i) && is.numeric(i) && length(i) > 0L) {
+        appended <- i > x_len
+        if (is(value, "DataFrame")) {
+            newcn <- names(value)[appended]
+        } else {
+            newcn <- paste0("V", i[appended])
+        }
+        names(x)[i[appended]] <- newcn
+        names(x) <- make.unique(names(x))
+    }
+    names(x)
+}
+
+.fill_short_columns <- function(x, max_len) {
+    short <- lengths(x) < max_len
+    x[short] <- lapply(x[short], function(xi) {
+        length(xi) <- max_len
+        xi
+    })
+    x
+}
+
+setGeneric("replaceCOLS", function(x, i, value) standardGeneric("replaceCOLS"),
+           signature=c("x", "i"))
+
+setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
+    sl <- as(x, "SimpleList")
+    sl[i] <- as.list(value)
+    max_len <- max(lengths(sl), nrow(x))
+    sl <- .fill_short_columns(sl, max_len)
+    names(sl) <- .make_colnames(sl, i, length(x), value)
+    ri <- seq_len(max_len)
+    initialize(x, sl, rownames=.make_rownames(x, ri, ri, value), nrows=max_len)
+})
+
+setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
+          function(value, x, i)
+          {
+              if (is.null(value))
+                  return(NULL)
+              singleColumn <- !is(value, "DataFrame")
+              if (singleColumn) {
+                  value <- list(value)
+              }
+              recycled <- lapply(value, recycleVector,
+                                 if (missing(i)) nrow(x) else length(i))
+              if (!singleColumn) {
+                  recycled <- as(recycled, "DataFrame")
+              }
+              recycled
+          })
+
+.add_missing_columns <- function(x, j) {
+    if (!missing(j)) {
+        j2 <- normalizeSingleBracketSubscript(j, as.list(x),
+                                              allow.append=TRUE)
+        x[j[j2 > ncol(x)]] <- NA
+    }
+    x
+}
+
 setReplaceMethod("[", "DataFrame",
                  function(x, i, j, ..., value)
-                 {
-                   if (length(list(...)) > 0)
-                     warning("parameters in '...' not supported")
-                   useI <- FALSE
-                   newrn <- newcn <- NULL
-                   if (nargs() < 4) {
-                     if (missing(i)) {
-                       j2 <- seq_len(ncol(x))
-                     } else {
-                       if (length(i) == 1) {
-                         if (is.logical(i) == 1 && i)
-                             i <- rep(i, ncol(x))
-                       }
-                       xstub <- setNames(seq_along(x), names(x))
-                       j2 <- normalizeSingleBracketSubscript(i, xstub,
-                                                             allow.append=TRUE)
-                       if (is.character(i))
-                           newcn <- i[j2 > ncol(x)]
-                     }
-                   } else {
-                     if (missing(i)) {
-                       i2 <- seq_len(nrow(x))
-                     } else {
-                       useI <- TRUE
-                       i2 <- normalizeSingleBracketSubscript(i, x,
-                                                             allow.append=TRUE)
-                       if (is.character(i))
-                           newrn <- i[i2 > nrow(x)]
-                     }
-                     if (missing(j)) {
-                       j2 <- seq_len(ncol(x))
-                     } else {
-                       xstub <- setNames(seq_along(x), names(x))
-                       j2 <- normalizeSingleBracketSubscript(j, xstub,
-                                                             allow.append=TRUE)
-                       if (is.character(j))
-                           newcn <- j[j2 > ncol(x)]
-                     }
-                     i <- i2
-                   }
-                   j <- j2
-                   if (!length(j)) # nothing to replace
-                     return(x)
-                   if (is(value, "list_OR_List") &&
-                       pcompareRecursively(value))
-                   {
-                     if (is(value, "List") && is(NULL, elementType(value))) {
-                       null <- sapply_isNULL(value)
-                       if (any(null)) { ### FIXME: data.frame handles gracefully
-                         stop("NULL elements not allowed in list value")
-                       }
-                     }
-                     value <- as(value, "DataFrame")
-                   }
-                   if (!is(value, "DataFrame")) {
-                     if (useI)
-                       li <- length(i)
-                     else
-                       li <- nrow(x)
-                     lv <- length(value)
-                     if (lv > 0L && li != lv) {
-                       if (li %% lv != 0)
-                         stop(paste(lv, "rows in value to replace",
-                                    li, " rows"))
-                       else
-                         value <- rep(value, length.out = li)
-                     }
-                     ## come up with some default row and col names
-                     if (!length(newcn) && max(j) > length(x)) {
-                       newcn <- paste("V", seq.int(length(x) + 1L, max(j)),
-                                      sep = "")
-                       if (length(newcn) != sum(j > length(x)))
-                         stop("new columns would leave holes after ",
-                              "existing columns")
-                     }
-                     if (useI) {
-                       if (length(newrn) == 0L && li > 0L && max(i) > nrow(x) &&
-                               !is.null(rownames(x)))
-                         newrn <- as.character(seq.int(nrow(x) + 1L, max(i)))
-                       if (length(x@listData[j][[1]]) == 0L)
-                         x@listData[j] <- list(rep(NA, nrow(x)))
-                       x@listData[j] <-
-                         lapply(x@listData[j], function(y) {y[i] <- value; y})
-                     } else {
-                       if (is.null(value))
-                         x@listData[j] <- NULL
-                       else x@listData[j] <- list(value)
-                     }
-                   } else {
-                     vc <- seq_len(ncol(value))
-                     if (ncol(value) > length(j))
-                       stop("ncol(x[j]) < ncol(value)")
-                     if (ncol(value) < length(j))
-                       vc <- rep(vc, length.out = length(j))
-                     if (useI)
-                       li <- length(i)
-                     else
-                       li <- nrow(x)
-                     nrv <- nrow(value)
-                     if (li != nrv) {
-                       if ((li == 0) || (li %% nrv != 0))
-                         stop(paste(nrv, "rows in value to replace",
-                                    li, " rows"))
-                       else
-                         value <-
-                           value[rep(seq_len(nrv), length.out = li), ,
-                                 drop=FALSE]
-                     }
-                     ## attempt to derive new row and col names from value
-                     if (!length(newcn) && max(j) > length(x)) {
-                       newcn <- rep(names(value), length.out = length(j))
-                       newcn <- newcn[j > length(x)]
-                     }
-                     if (useI) {
-                       if (length(newrn) == 0L && li > 0L && max(i) > nrow(x)) {
-                         if (!is.null(rownames(value))) {
-                           newrn <- rep(rownames(value), length.out = length(i))
-                           newrn <- newrn[i > nrow(x)]
-                         } else newrn <-
-                           as.character(seq.int(nrow(x) + 1L, max(i)))
-                       }
-                       for (k in seq_len(length(j))) {
-                         if (j[k] > length(x))
-                           v <- NULL
-                         else v <- x@listData[[j[k]]]
-                         rv <- value[[vc[k]]]
-                         if (length(dim(rv)) == 2)
-                           v[i,] <- rv
-                         else v[i] <- if (is.null(v)) rv else as(rv, class(v))
-                         x@listData[[j[k]]] <- v
-                       }
-                     } else {
-                       if (is.logical(j)) {
-                         for (k in seq_len(length(j)))
-                           x@listData[[k]] <- value[[vc[k]]]
-                       } else {
-                         for (k in seq_len(length(j)))
-                           x@listData[[j[k]]] <- value[[vc[k]]]
-                       }
-                     }
-                   }
-                   ## update row and col names, making them unique
-                   if (length(newcn)) {
-                     oldcn <- head(colnames(x), length(x) - length(newcn))
-                     colnames(x) <- make.unique(c(oldcn, newcn))
-                     if (!is.null(mcols(x, use.names=FALSE)))
-                       mcols(x) <- replaceROWS(mcols(x, use.names=FALSE),
-                                               tail(names(x), length(newcn)),
-                                               DataFrame(NA))
-                   }
-                   if (length(newrn)) {
-                     notj <- setdiff(seq_len(ncol(x)), j)
-                     x@listData[notj] <-
-                       lapply(x@listData[notj],
-                              function(y) c(y, rep(NA, length(newrn))))
-                     x@rownames <- c(rownames(x), newrn)
-                   }
-                   x@nrows <- NROW(x[[1]]) # we should always have a column
-                   x
-                 })
+{
+    if (length(list(...)) > 0)
+        warning("parameters in '...' not supported")
+    if (nargs() < 4) {
+        value <- normalizeSingleBracketReplacementValue(value, x)
+        replaceCOLS(x, i, value)
+    } else {
+        value <- normalizeSingleBracketReplacementValue(value, x, i)
+        if (!missing(i)) {
+            x <- .add_missing_columns(x, j)
+            ## FIXME: sometimes 'j' cannot be missing in 'x[j]' -- why?
+            ##        guess: byte code compiler
+            value <- replaceROWS(if (missing(j)) x else x[j], i, value)
+        }
+        replaceCOLS(x, j, value)
+    }
+})
 
 hasNonDefaultMethod <- function(f, signature) {
   any(selectMethod(f, signature)@defined != "ANY")

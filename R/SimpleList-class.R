@@ -73,7 +73,7 @@ SimpleList <- function(...)
     args <- list(...)
     ## The extends(class(x), "list") test is NOT equivalent to is.list(x) or
     ## to is(x, "list") or to inherits(x, "list"). Try for example with
-    ## x <- data.frame() or x <- matrix(list()). We use the former below
+    ## x <- matrix(list()). We use the former below
     ## because it seems to closely mimic what the methods package uses for
     ## checking the "listData" slot of the SimpleList object that we try to
     ## create later with new(). For example if we were using is.list() instead
@@ -206,7 +206,7 @@ setMethod("coerce2", "SimpleList",
 setMethod("as.list", "SimpleList", .as.list.SimpleList)
 
 setAs("ANY", "SimpleList", function(from) {
-  coerceToSimpleList(from)
+    SimpleList(as.list(from))
 })
 
 setAs("list", "List", function(from) {

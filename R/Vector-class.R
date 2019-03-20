@@ -478,7 +478,7 @@ setMethod("replaceROWS", c("Vector", "ANY"),
     function(x, i, value)
     {
         nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE,
-                                                allow.append=is.character(i))
+                                                allow.append=TRUE)
         stopifnot(length(nsbs) == NROW(value))
 
         ## --<1>-- Concatenate 'x' and 'value' with bindROWS() -----
@@ -492,6 +492,9 @@ setMethod("replaceROWS", c("Vector", "ANY"),
         ## --<2>-- Subset 'ans' with extractROWS() -----
 
         new_len <- max(nsbs, NROW(x))
+        if (new_len > NROW(x) && any(diff(sort(as.integer(nsbs)) > 1L))) {
+            stop("appending gaps is not supported")
+        }
         idx <- replaceROWS(seq_len(new_len),
                            initialize(nsbs, upper_bound=new_len),
                            seq_along(value) + NROW(x))
@@ -520,11 +523,15 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 
 replaceNames <- function(x, i, value, new_len) {
     ans <- names(x)
-    if (is.character(value) && is.null(ans)) {
-        ans <- rep("", NROW(x))
-    }
-    if (new_len > NROW(x)) {
-        ans <- replaceROWS(ans, i, value)
+    if (is.character(value)) {
+        if (is.null(ans)) {
+            ans <- rep("", NROW(x))
+        }
+        if (new_len > NROW(x)) {
+            ans <- replaceROWS(ans, i, value)
+        }
+    } else if (!is.null(ans)) {
+        ans <- c(ans, rep("", max(0L, length(value) - NROW(x))))
     }
     ans
 }
