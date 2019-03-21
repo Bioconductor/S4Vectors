@@ -295,6 +295,20 @@ setMethod("extractROWS", "DataFrame",
     }
 )
 
+setMethod("extractCOLS", "DataFrame", function(x, i) {
+    if (!is(i, "IntegerRanges")) {
+        xstub <- setNames(seq_along(x), names(x))
+        i <- normalizeSingleBracketSubscript(i, xstub)
+    }
+    new_listData <- extractROWS(x@listData, i)
+    new_mcols <- extractROWS(mcols(x, use.names=FALSE), i)
+    x <- initialize(x, listData=new_listData,
+                    elementMetadata=new_mcols)
+    if (anyDuplicated(names(x)))
+        names(x) <- make.unique(names(x))
+    x
+})
+
 setMethod("[", "DataFrame",
     function(x, i, j, ..., drop=TRUE)
     {
@@ -314,16 +328,7 @@ setMethod("[", "DataFrame",
                     return(x)
                 j <- i
             }
-            if (!is(j, "IntegerRanges")) {
-                xstub <- setNames(seq_along(x), names(x))
-                j <- normalizeSingleBracketSubscript(j, xstub)
-            }
-            new_listData <- extractROWS(x@listData, j)
-            new_mcols <- extractROWS(mcols(x, use.names=FALSE), j)
-            x <- initialize(x, listData=new_listData,
-                               elementMetadata=new_mcols)
-            if (anyDuplicated(names(x)))
-                names(x) <- make.unique(names(x))
+            x <- extractCOLS(x, j)
             if (list_style_subsetting)
                 return(x)
         }

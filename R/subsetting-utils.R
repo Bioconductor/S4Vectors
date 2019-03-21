@@ -430,7 +430,7 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### extractROWS(), replaceROWS(), replaceCOLS()
+### extractROWS(), replaceROWS(), extractCOLS(), replaceCOLS()
 ###
 ### 3 internal generics to ease implementation of [ and [<- subsetting for
 ### Vector and DataFrame subclasses.
@@ -451,6 +451,10 @@ setGeneric("extractROWS", signature=c("x", "i"),
 
 setGeneric("replaceROWS", signature=c("x", "i"),
     function(x, i, value) standardGeneric("replaceROWS")
+)
+
+setGeneric("extractCOLS", signature=c("x", "i"),
+    function(x, i) standardGeneric("extractCOLS")
 )
 
 setGeneric("replaceCOLS", signature=c("x", "i"),

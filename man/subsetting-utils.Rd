@@ -39,6 +39,7 @@
 \alias{extractROWS,data.frame,RangeNSBS-method}
 \alias{replaceROWS}
 \alias{replaceROWS,ANY,ANY-method}
+\alias{extractCOLS}
 \alias{replaceCOLS}
 
 \alias{normalizeDoubleBracketSubscript}
