@@ -430,10 +430,10 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### extractROWS(), replaceROWS()
+### extractROWS(), replaceROWS(), replaceCOLS()
 ###
-### 2 internal generics to ease implementation of [ and [<- subsetting for
-### Vector subclasses.
+### 3 internal generics to ease implementation of [ and [<- subsetting for
+### Vector and DataFrame subclasses.
 ###
 ### A Vector subclass Foo should only need to implement an "extractROWS" and
 ### "replaceROWS" method to make "[" and "[<-" work out-of-the-box.
@@ -451,6 +451,10 @@ setGeneric("extractROWS", signature=c("x", "i"),
 
 setGeneric("replaceROWS", signature=c("x", "i"),
     function(x, i, value) standardGeneric("replaceROWS")
+)
+
+setGeneric("replaceCOLS", signature=c("x", "i"),
+    function(x, i, value) standardGeneric("replaceCOLS")
 )
 
 default_extractROWS <- function(x, i)

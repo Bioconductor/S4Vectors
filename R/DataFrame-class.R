@@ -419,9 +419,6 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
     x
 }
 
-setGeneric("replaceCOLS", function(x, i, value) standardGeneric("replaceCOLS"),
-           signature=c("x", "i"))
-
 setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
     sl <- as(x, "SimpleList")
     sl[i] <- as.list(value)
