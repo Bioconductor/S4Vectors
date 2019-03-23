@@ -296,6 +296,8 @@ setMethod("extractROWS", "DataFrame",
 )
 
 setMethod("extractCOLS", "DataFrame", function(x, i) {
+    if (missing(i))
+        return(x)
     if (!is(i, "IntegerRanges")) {
         xstub <- setNames(seq_along(x), names(x))
         i <- normalizeSingleBracketSubscript(i, xstub)
@@ -317,7 +319,6 @@ setMethod("[", "DataFrame",
         if (length(list(...)) > 0L)
             warning("parameters in '...' not supported")
 
-        ## We do list-style subsetting when [ was called with no ','.
         ## NOTE: matrix-style subsetting by logical matrix not supported.
         list_style_subsetting <- (nargs() - !missing(drop)) < 3L
         if (list_style_subsetting || !missing(j)) {
@@ -404,7 +405,7 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
 .make_colnames <- function(x, i, x_len, value) {
     if (!missing(i) && is.numeric(i) && length(i) > 0L) {
         appended <- i > x_len
-        if (is(value, "DataFrame")) {
+        if (!is.null(names(value))) {
             newcn <- names(value)[appended]
         } else {
             newcn <- paste0("V", i[appended])
@@ -426,7 +427,10 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
 
 setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
     sl <- as(x, "SimpleList")
-    sl[i] <- as.list(value)
+    cols <- as.list(value)
+    if (missing(i))
+        sl[] <- cols
+    else sl[i] <- cols
     max_len <- max(lengths(sl), nrow(x))
     sl <- .fill_short_columns(sl, max_len)
     names(sl) <- .make_colnames(sl, i, length(x), value)
@@ -435,20 +439,16 @@ setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
 })
 
 setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
-          function(value, x, i)
+          function(value, x)
           {
               if (is.null(value))
                   return(NULL)
-              singleColumn <- !is(value, "DataFrame")
-              if (singleColumn) {
-                  value <- list(value)
+              hasMeaningfulNames <- is(value, "DataFrame") || is.list(value)
+              value <- as(value, "DataFrame", strict=FALSE)
+              if (!hasMeaningfulNames) {
+                  names(value) <- NULL # don't try this at home
               }
-              recycled <- lapply(value, recycleVector,
-                                 if (missing(i)) nrow(x) else length(i))
-              if (!singleColumn) {
-                  recycled <- as(recycled, "DataFrame")
-              }
-              recycled
+              value
           })
 
 .add_missing_columns <- function(x, j) {
@@ -465,16 +465,15 @@ setReplaceMethod("[", "DataFrame",
 {
     if (length(list(...)) > 0)
         warning("parameters in '...' not supported")
+    value <- normalizeSingleBracketReplacementValue(value, x)
     if (nargs() < 4) {
-        value <- normalizeSingleBracketReplacementValue(value, x)
+        value <- recycleSingleBracketReplacementValue(value, x)
         replaceCOLS(x, i, value)
     } else {
-        value <- normalizeSingleBracketReplacementValue(value, x, i)
+        value <- recycleSingleBracketReplacementValue(value, x, i)
         if (!missing(i)) {
             x <- .add_missing_columns(x, j)
-            ## FIXME: sometimes 'j' cannot be missing in 'x[j]' -- why?
-            ##        guess: byte code compiler
-            value <- replaceROWS(if (missing(j)) x else x[j], i, value)
+            value <- replaceROWS(extractCOLS(x, j), i, value)
         }
         replaceCOLS(x, j, value)
     }

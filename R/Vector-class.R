@@ -458,17 +458,33 @@ setReplaceMethod("[", "Vector",
             ## even look at 'value'. So neither do we...
             return(x)
         }
-        lv <- NROW(value)
-        if (lv == 0L)
-            stop("replacement has length zero")
         value <- normalizeSingleBracketReplacementValue(value, x)
-        if (li != lv) {
-            if (li %% lv != 0L)
-                warning("number of values supplied is not a sub-multiple ",
-                        "of the number of values to be replaced")
-            value <- extractROWS(value, rep(seq_len(lv), length.out=li))
+        value <- recycleSingleBracketReplacementValue(value, x, nsbs)
+        mergeROWS(x, i, value)
+    }
+)
+
+setMethod("mergeROWS", c("Vector", "ANY"),
+    function(x, i, value)
+    {
+        nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE,
+                                                allow.append=TRUE)
+        if (max(nsbs) <= NROW(x)) {
+            nsbs@upper_bound_is_strict <- TRUE
+            return(replaceROWS(x, nsbs, value))
         }
-        replaceROWS(x, if (missing(i)) nsbs else i, value)
+        idx <- as.integer(nsbs)
+        oob <- idx > NROW(x)
+        value_idx <- integer(max(nsbs) - NROW(x))
+        ## handles replacement in the appended region
+        value_idx[idx[oob] - NROW(x)] <- seq_along(value)[oob]
+        if (any(value_idx == 0L)) {
+            stop("appending gaps is not supported")
+        }
+        new_values <- extractROWS(value, value_idx)
+        names(new_values) <- if (is.character(i)) i else NULL
+        x <- bindROWS(x, list(new_values), check=FALSE)
+        replaceROWS(x, idx[!oob], extractROWS(value, !oob))
     }
 )
 
@@ -477,9 +493,8 @@ setReplaceMethod("[", "Vector",
 setMethod("replaceROWS", c("Vector", "ANY"),
     function(x, i, value)
     {
-        nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE,
-                                                allow.append=TRUE)
-        stopifnot(length(nsbs) == NROW(value))
+        i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+        stopifnot(length(i) == NROW(value))
 
         ## --<1>-- Concatenate 'x' and 'value' with bindROWS() -----
 
@@ -491,13 +506,7 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 
         ## --<2>-- Subset 'ans' with extractROWS() -----
 
-        new_len <- max(nsbs, NROW(x))
-        if (new_len > NROW(x) && any(diff(sort(as.integer(nsbs)) > 1L))) {
-            stop("appending gaps is not supported")
-        }
-        idx <- replaceROWS(seq_len(new_len),
-                           initialize(nsbs, upper_bound=new_len),
-                           seq_along(value) + NROW(x))
+        idx <- replaceROWS(seq_along(x), i, seq_along(value) + NROW(x))
         ## Because of how we constructed it, 'idx' is guaranteed to be a valid
         ## subscript to use in 'extractROWS(ans, idx)'. By wrapping it inside a
         ## NativeNSBS object, extractROWS() won't waste time checking it or
@@ -510,7 +519,7 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 
         ## --<3>-- Restore the original names -----
 
-        names(ans) <- replaceNames(x, nsbs, i, length(ans))
+        names(ans) <- names(x)
         ## Note that we want the elements coming from 'value' to bring their
         ## metadata columns into 'x' so we do NOT restore the original metadata
         ## columns. See this thread on bioc-devel:
@@ -520,21 +529,6 @@ setMethod("replaceROWS", c("Vector", "ANY"),
         ans
     }
 )
-
-replaceNames <- function(x, i, value, new_len) {
-    ans <- names(x)
-    if (is.character(value)) {
-        if (is.null(ans)) {
-            ans <- rep("", NROW(x))
-        }
-        if (new_len > NROW(x)) {
-            ans <- replaceROWS(ans, i, value)
-        }
-    } else if (!is.null(ans)) {
-        ans <- c(ans, rep("", max(0L, length(value) - NROW(x))))
-    }
-    ans
-}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Convenience wrappers for common subsetting operations
@@ -618,7 +612,7 @@ rbind_mcols <- function(...)
     all_colnames <- unique(unlist(colnames_list, use.names=FALSE))
     fillCols <- function(df) {
         if (nrow(df))
-            df[setdiff(all_colnames, colnames(df))] <- DataFrame(NA)
+            df[setdiff(all_colnames, colnames(df))] <- NA
         df
     }
     do.call(rbind, lapply(mcols_list, fillCols))

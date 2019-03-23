@@ -363,7 +363,7 @@ export(
     ## subsetting-utils.R:
     NSBS,
     normalizeSingleBracketReplacementValue,
-    extractROWS, replaceROWS, extractCOLS, replaceCOLS,
+    extractROWS, replaceROWS, mergeROWS, extractCOLS, replaceCOLS,
     getListElement, setListElement,
 
     ## character-utils.R:

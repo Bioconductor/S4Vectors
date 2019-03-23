@@ -428,11 +428,31 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### recycleSingleBracketReplacementValue()
+###
+
+recycleSingleBracketReplacementValue <- function(value, x, i) {
+    i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE, as.NSBS=TRUE)
+    li <- length(i)
+    if (li == 0L)
+        return(value)
+    lv <- NROW(value)
+    if (lv == 0L)
+        stop("replacement has length zero")
+    if (li != lv) {
+        if (li %% lv != 0L)
+            warning("number of values supplied is not a sub-multiple ",
+                    "of the number of values to be replaced")
+        value <- extractROWS(value, rep(seq_len(lv), length.out=li))
+    }
+    value
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### extractROWS(), replaceROWS(), extractCOLS(), replaceCOLS()
+### extractROWS(), replaceROWS(), mergeROWS(), extractCOLS(), replaceCOLS()
 ###
-### 3 internal generics to ease implementation of [ and [<- subsetting for
+### 5 internal generics to ease implementation of [ and [<- subsetting for
 ### Vector and DataFrame subclasses.
 ###
 ### A Vector subclass Foo should only need to implement an "extractROWS" and
@@ -444,6 +464,11 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
 ### See "extractROWS" and "replaceROWS" methods for Hits objects for an
 ### example.
 ###
+### mergeROWS() is a composition of replaceROWS() and bindROWS() to
+### support appending in [<-(). Vector subclasses never need to
+### implement mergeROWS(), but a custom method may be useful for
+### e.g. optimization.
+###
 
 setGeneric("extractROWS", signature=c("x", "i"),
     function(x, i) standardGeneric("extractROWS")
@@ -451,6 +476,10 @@ setGeneric("extractROWS", signature=c("x", "i"),
 
 setGeneric("replaceROWS", signature=c("x", "i"),
     function(x, i, value) standardGeneric("replaceROWS")
+)
+
+setGeneric("mergeROWS", signature=c("x", "i"),
+    function(x, i, value) standardGeneric("mergeROWS")
 )
 
 setGeneric("extractCOLS", signature=c("x", "i"),
@@ -560,6 +589,8 @@ setMethod("[", "LLint", subset_along_ROWS)
 
 setMethod("replaceROWS", c("ANY", "ANY"), default_replaceROWS)
 
+### Just call default_replaceROWS() since it supports merging already
+setMethod("mergeROWS", c("ANY", "ANY"), default_replaceROWS)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
