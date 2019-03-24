@@ -402,7 +402,7 @@ normalizeSingleBracketSubscript <- function(i, x, exact=TRUE,
 
 ### Dispatch on the 2nd argument!
 setGeneric("normalizeSingleBracketReplacementValue", signature="x",
-    function(value, x, i)
+    function(value, x)
         standardGeneric("normalizeSingleBracketReplacementValue")
 )
 
@@ -428,6 +428,7 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### recycleSingleBracketReplacementValue()
 ###
@@ -448,6 +449,7 @@ recycleSingleBracketReplacementValue <- function(value, x, i) {
     }
     value
 }
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### extractROWS(), replaceROWS(), mergeROWS(), extractCOLS(), replaceCOLS()
