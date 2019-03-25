@@ -459,6 +459,9 @@ setReplaceMethod("[", "Vector",
             return(x)
         }
         value <- normalizeSingleBracketReplacementValue(value, x)
+        if (is.null(value)) {
+            return(extractROWS(x, complement(nsbs)))
+        }
         value <- recycleSingleBracketReplacementValue(value, x, nsbs)
         mergeROWS(x, i, value)
     }

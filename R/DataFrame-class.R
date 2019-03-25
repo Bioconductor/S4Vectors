@@ -286,7 +286,7 @@ setMethod("extractROWS", "DataFrame",
     function(x, i)
     {
         i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, allow.NAs=TRUE,
-                                                   as.NSBS=TRUE)
+                                             as.NSBS=TRUE)
         slot(x, "listData", check=FALSE) <- lapply(as.list(x), extractROWS, i)
         slot(x, "nrows", check=FALSE) <- length(i)
         if (!is.null(rownames(x)))
@@ -441,11 +441,11 @@ setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
 setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
           function(value, x)
           {
-              if (is.null(value))
+              isColumnList <- is(value, "DataFrame") || is.list(value)
+              if (is.null(value) || (isColumnList && length(value) == 0L))
                   return(NULL)
-              hasMeaningfulNames <- is(value, "DataFrame") || is.list(value)
               value <- as(value, "DataFrame", strict=FALSE)
-              if (!hasMeaningfulNames) {
+              if (!isColumnList) {
                   names(value) <- NULL # don't try this at home
               }
               value

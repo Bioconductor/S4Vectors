@@ -114,6 +114,13 @@ setMethod("max", "NSBS", function (x, ..., na.rm = FALSE) {
     max(x@subscript, ..., na.rm=na.rm)
 })
 
+setGeneric("complement", function(x) standardGeneric("complement"))
+
+setMethod("complement", "NSBS", function(x) {
+    subscript <- which(tabulate(as.integer(x), x@upper_bound) == 0L)
+    NativeNSBS(subscript, x@upper_bound, TRUE, FALSE)
+})
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### NativeNSBS objects.
 ###
@@ -428,12 +435,22 @@ setMethod("normalizeSingleBracketReplacementValue", "ANY",
     }
 )
 
+setMethod("normalizeSingleBracketReplacementValue", "List",
+          function(value, x)
+          {
+              if (is.null(value))
+                  return(NULL)
+              callNextMethod()
+          }
+)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### recycleSingleBracketReplacementValue()
 ###
 
 recycleSingleBracketReplacementValue <- function(value, x, i) {
+    if (is.null(value))
+        return(NULL)
     i <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE, as.NSBS=TRUE)
     li <- length(i)
     if (li == 0L)
@@ -498,7 +515,7 @@ default_extractROWS <- function(x, i)
     return(x)
   ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
   ndim <- max(length(dim(x)), 1L)
-  i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE)
+  i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE, allow.append=TRUE)
   args <- rep.int(list(quote(expr=)), ndim)
   args[[1]] <- i
   args <- c(list(x), args, list(drop=FALSE))
