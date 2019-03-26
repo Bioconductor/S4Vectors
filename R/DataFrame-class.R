@@ -359,7 +359,7 @@ setMethod("[", "DataFrame",
         value_rownames <- rownames(value)
     }
     nsbs <- as.integer(nsbs)
-    i_max <- max(nsbs)
+    i_max <- max(nsbs, x_nrow)
     if (i_max <= x_nrow || is.null(x_rownames) && is.null(value_rownames))
         return(x_rownames)
     if (is.null(value_rownames))
@@ -418,19 +418,20 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
 
 .fill_short_columns <- function(x, max_len) {
     short <- lengths(x) < max_len
-    x[short] <- lapply(x[short], function(xi) {
+    x[short] <- SimpleList(lapply(x[short], function(xi) {
         length(xi) <- max_len
         xi
-    })
+    }))
     x
 }
 
 setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
+    stopifnot(is(value, "DataFrame"))
     sl <- as(x, "SimpleList")
-    cols <- as.list(value)
+    value_sl <- as(value, "SimpleList")
     if (missing(i))
-        sl[] <- cols
-    else sl[i] <- cols
+        sl[] <- value_sl
+    else sl[i] <- value_sl
     max_len <- max(lengths(sl), nrow(x))
     sl <- .fill_short_columns(sl, max_len)
     names(sl) <- .make_colnames(sl, i, length(x), value)
