@@ -426,9 +426,9 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
 }
 
 setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
-    stopifnot(is(value, "DataFrame"))
+    stopifnot(is.null(value) || is(value, "DataFrame"))
     sl <- as(x, "SimpleList")
-    value_sl <- as(value, "SimpleList")
+    value_sl <- if (!is.null(value)) as(value, "SimpleList")
     if (missing(i))
         sl[] <- value_sl
     else sl[i] <- value_sl

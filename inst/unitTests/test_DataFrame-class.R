@@ -283,6 +283,16 @@ test_DataFrame_replace <- function() {
   swiss1["NewCity","NewCol"] <- data.frame(0)
   checkIdentical(as.data.frame(sw1), swiss1)
 
+  sw1 <- sw; swiss1 <- swiss
+  sw1[FALSE] <- list()
+  checkIdentical(sw1, sw)
+  sw1[1L] <- list()
+  swiss1[1L] <- list()
+  checkIdentical(as.data.frame(sw1), swiss1)
+  sw1[1L] <- NULL
+  swiss1[1L] <- NULL
+  checkIdentical(as.data.frame(sw1), swiss1)
+
   sw1 <- sw
   mcols(sw1) <- DataFrame(id = seq_len(ncol(sw1)))
   sw1["NewCol"] <- DataFrame(seq(nrow(sw1)))
