@@ -206,7 +206,7 @@ setMethod("coerce2", "SimpleList",
 setMethod("as.list", "SimpleList", .as.list.SimpleList)
 
 setAs("ANY", "SimpleList", function(from) {
-    SimpleList(as.list(from))
+  coerceToSimpleList(from)
 })
 
 setAs("list", "List", function(from) {
