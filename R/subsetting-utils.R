@@ -608,8 +608,8 @@ setMethod("[", "LLint", subset_along_ROWS)
 
 setMethod("replaceROWS", c("ANY", "ANY"), default_replaceROWS)
 
-### Just call default_replaceROWS() since it supports merging already
-setMethod("mergeROWS", c("ANY", "ANY"), default_replaceROWS)
+### Just call replaceROWS() hoping that it supports appending
+setMethod("mergeROWS", c("ANY", "ANY"), replaceROWS)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
