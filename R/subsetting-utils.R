@@ -524,6 +524,11 @@ default_extractROWS <- function(x, i)
 
 default_replaceROWS <- function(x, i, value)
 {
+    mergeROWS(x, i, value)
+}
+
+default_mergeROWS <- function(x, i, value)
+{
   if (is.null(x))
     return(x)
   ndim <- max(length(dim(x)), 1L)
@@ -608,8 +613,7 @@ setMethod("[", "LLint", subset_along_ROWS)
 
 setMethod("replaceROWS", c("ANY", "ANY"), default_replaceROWS)
 
-### Just call replaceROWS() hoping that it supports appending
-setMethod("mergeROWS", c("ANY", "ANY"), replaceROWS)
+setMethod("mergeROWS", c("ANY", "ANY"), default_mergeROWS)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()
