@@ -369,7 +369,37 @@ setMethod("[", "DataFrame",
     replaceROWS(x_rownames, nsbs[nsbs > x_nrow], value_rownames[nsbs > x_nrow])
 }
 
+.subassign_columns <- function(x, nsbs, value) {
+    x_ncol <- ncol(x)
+    value_ncol <- length(value)
+    if (value_ncol > x_ncol)
+        stop("provided ", value_ncol, " variables ",
+             "to replace ", x_ncol, " variables")
+    if (x_ncol != 0L) {
+        if (value_ncol == 0L)
+            stop("replacement has length zero")
+        FUN <- if (nsbs@upper_bound_is_strict) replaceROWS else mergeROWS
+        new_listData <-
+            lapply(structure(seq_len(ncol(x)), names=names(x)),
+                   function(j)
+                       FUN(x[[j]], nsbs,
+                           value[[((j - 1L) %% value_ncol) + 1L]]))
+        slot(x, "listData", check=FALSE) <- new_listData
+    }
+    x
+}
+
 setMethod("replaceROWS", c("DataFrame", "ANY"),
+          function(x, i, value)
+          {
+              nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
+              if (length(nsbs) == 0L) {
+                  return(x)
+              }
+              .subassign_columns(x, nsbs, value)
+          })
+
+setMethod("mergeROWS", c("DataFrame", "ANY"),
     function(x, i, value)
     {
         nsbs <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
@@ -377,21 +407,7 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
         if (length(nsbs) == 0L) {
             return(x)
         }
-        x_ncol <- ncol(x)
-        value_ncol <- length(value)
-        if (value_ncol > x_ncol)
-            stop("provided ", value_ncol, " variables ",
-                 "to replace ", x_ncol, " variables")
-        if (x_ncol != 0L) {
-            if (value_ncol == 0L)
-                stop("replacement has length zero")
-            new_listData <-
-                lapply(structure(seq_len(ncol(x)), names=names(x)),
-                       function(j)
-                           replaceROWS(x[[j]], nsbs,
-                                       value[[((j - 1L) %% value_ncol) + 1L]]))
-            slot(x, "listData", check=FALSE) <- new_listData
-        }
+        x <- .subassign_columns(x, nsbs, value)
         i_max <- max(as.integer(nsbs))
         x_nrow <- nrow(x)
         if (i_max > x_nrow) {
@@ -474,7 +490,7 @@ setReplaceMethod("[", "DataFrame",
         value <- recycleSingleBracketReplacementValue(value, x, i)
         if (!missing(i)) {
             x <- .add_missing_columns(x, j)
-            value <- replaceROWS(extractCOLS(x, j), i, value)
+            value <- mergeROWS(extractCOLS(x, j), i, value)
         }
         replaceCOLS(x, j, value)
     }
