@@ -282,7 +282,11 @@ test_DataFrame_replace <- function() {
   sw1["NewCity","NewCol"] <- DataFrame(0)
   swiss1["NewCity","NewCol"] <- data.frame(0)
   checkIdentical(as.data.frame(sw1), swiss1)
-
+  sw1 <- sw[,1:2]; swiss1 <- swiss[,1:2]
+  sw1[,colnames(sw)[2:3]] <- sw[,2:3]
+  swiss1[,colnames(swiss)[2:3]] <- swiss[,2:3]
+  checkIdentical(as.data.frame(sw1), swiss1)
+  
   sw1 <- sw; swiss1 <- swiss
   sw1[FALSE] <- list()
   checkIdentical(sw1, sw)

@@ -485,7 +485,7 @@ setMethod("mergeROWS", c("Vector", "ANY"),
             stop("appending gaps is not supported")
         }
         new_values <- extractROWS(value, value_idx)
-        names(new_values) <- if (is.character(i)) i else NULL
+        names(new_values) <- if (is.character(i)) i[oob] else NULL
         x <- bindROWS(x, list(new_values), check=FALSE)
         replaceROWS(x, idx[!oob], extractROWS(value, !oob))
     }
