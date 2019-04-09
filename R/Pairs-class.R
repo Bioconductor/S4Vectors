@@ -59,12 +59,12 @@ Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
         first <- first[queryHits(hits)]
         second <- second[subjectHits(hits)]
     }
-    stopifnot(length(first) == length(second),
-              is.null(names) || length(names) == length(first))
+    stopifnot(NROW(first) == NROW(second),
+              is.null(names) || length(names) == NROW(first))
     if (!missing(...)) {
         elementMetadata <- DataFrame(...)
     } else {
-        elementMetadata <- make_zero_col_DataFrame(length(first))
+        elementMetadata <- make_zero_col_DataFrame(NROW(first))
     }
     new("Pairs", first=first, second=second, NAMES=names,
                  elementMetadata=elementMetadata)
@@ -96,12 +96,12 @@ setMethod("match", c("Pairs", "Pairs"),
 setGeneric("zipup", function(x, y, ...) standardGeneric("zipup"))
 
 setMethod("zipup", c("ANY", "ANY"), function(x, y) {
-              stopifnot(length(x) == length(y))
-              linear <- append(x, y)
-              collate_subscript <- make_XYZxyz_to_XxYyZz_subscript(length(x))
-              linear <- linear[collate_subscript]
-              names <- if (!is.null(names(x))) names(x) else names(y)
-              p <- IRanges::PartitioningByWidth(rep(2L, length(x)), names=names)
+              stopifnot(NROW(x) == NROW(y))
+              linear <- bindROWS(x, list(y))
+              collate_subscript <- make_XYZxyz_to_XxYyZz_subscript(NROW(x))
+              linear <- extractROWS(linear, collate_subscript)
+              names <- if (!is.null(ROWNAMES(x))) ROWNAMES(x) else ROWNAMES(y)
+              p <- IRanges::PartitioningByWidth(rep(2L, NROW(x)), names=names)
               relist(linear, p)
           })
 
@@ -118,7 +118,8 @@ setMethod("zipdown", "ANY", function(x) {
               stopifnot(all(lengths(x) == 2L))
               p <- IRanges::PartitioningByEnd(x)
               v <- unlist(x, use.names=FALSE)
-              Pairs(v[start(p)], v[end(p)], names=names(x))
+              Pairs(extractROWS(v, start(p)), extractROWS(v, end(p)),
+                    names=names(x))
           })
 
 setMethod("zipdown", "List", function(x) {

@@ -8,6 +8,6 @@ test_Pairs <- function() {
                    data.frame(first=first(p), second=second(p), score,
                               names=names(p), stringsAsFactors=FALSE))
     z <- zipup(p)
-    first(p) <- Rle(1:10)
+    second(p) <- as.integer(second(p))
     checkIdentical(zipdown(z), p)
 }
