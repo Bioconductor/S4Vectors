@@ -1,5 +1,5 @@
 Package: S4Vectors
-Title: S4 implementation of vector-like and list-like objects
+Title: Foundation of vector-like and list-like containers in Bioconductor
 Description: The S4Vectors package defines the Vector and List virtual classes
 	and a set of generic functions that extend the semantic of ordinary
 	vectors and lists in R. Package developers can easily implement
