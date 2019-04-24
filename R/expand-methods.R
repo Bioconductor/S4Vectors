@@ -9,29 +9,38 @@ setGeneric("expand", signature="x",
 )
 
 ## A helper function to do the work
-.expandOneCol <- function(x, colname, keepEmptyRows)
+.expandCols <- function(x, colnames, keepEmptyRows)
 {
     if (!is(x, "DataFrame"))
         stop("'x' must be a DataFrame object")
-    if (!isSingleString(colname) && !isSingleNumber(colname))
-        stop("'colname' must be a single string or number")
-    col <- x[[colname]]
-    if (is.null(col))
-        stop("'colname' must be a valid colname name or index")
-    if(keepEmptyRows){
-        col[elementNROWS(col)==0] <- NA
+    if (anyNA(colnames) || length(colnames) == 0L)
+        stop("'colnames' must contain at least one element, but without NAs")
+    cols <- x[colnames]
+    if (length(unique(lapply(cols, elementNROWS))) > 1L) {
+        stop("columns to expand must all have the same skeleton")
     }
-    idx <- rep(seq_len(nrow(x)), elementNROWS(col))
-    ans <- x[idx, ]
-    ans[[colname]] <- unlist(col, use.names=FALSE)
-    ans
+    enr <- elementNROWS(cols[[1L]])
+    if(keepEmptyRows){
+        cols <- lapply(cols, function(col) {
+            col[enr == 0L] <- NA
+            col
+        })
+    }
+    idx <- rep(seq_len(nrow(x)), elementNROWS(cols[[1L]]))
+    ans <- x[idx, setdiff(colnames(x), colnames)]
+    ans[colnames] <- lapply(cols, unlist, use.names=FALSE)
+    ans[colnames(x)]
 }
 
 ## A better helper
-.expand <- function(x, colnames, keepEmptyRows){
-  for(colname in colnames) {
-    x <- .expandOneCol(x, colname, keepEmptyRows)
-  }
+.expand <- function(x, colnames, keepEmptyRows, recursive) {
+    if (recursive) {
+        for(colname in colnames) {
+            x <- .expandCols(x, colname, keepEmptyRows)
+        }
+    } else {
+        x <- .expandCols(x, colnames, keepEmptyRows)
+    }
   x
 }
 
@@ -43,24 +52,24 @@ defaultIndices <- function(x) {
 }
 
 setMethod("expand", "DataFrame",
-          function(x, colnames, keepEmptyRows = FALSE){
-              stopifnot(isTRUEorFALSE(keepEmptyRows))
+          function(x, colnames, keepEmptyRows = FALSE, recursive = TRUE) {
+              stopifnot(isTRUEorFALSE(keepEmptyRows), isTRUEorFALSE(recursive))
               if (missing(colnames)) {
                   colnames <- defaultIndices(x)
               }
-              .expand(x, colnames, keepEmptyRows)
+              .expand(x, colnames, keepEmptyRows, recursive)
           }
           )
 
 setMethod("expand", "Vector",
-          function(x, colnames, keepEmptyRows = FALSE){
-              stopifnot(isTRUEorFALSE(keepEmptyRows))
+          function(x, colnames, keepEmptyRows = FALSE, recursive = TRUE) {
+              stopifnot(isTRUEorFALSE(keepEmptyRows), isTRUEorFALSE(recursive))
               if (missing(colnames)) {
                   colnames <- defaultIndices(mcols(x, use.names=FALSE))
               }
               df <- mcols(x, use.names=FALSE)
               df[["__index__"]] <- seq_along(x)
-              ex <- .expand(df, colnames, keepEmptyRows)
+              ex <- .expand(df, colnames, keepEmptyRows, recursive)
               mcols(x) <- NULL
               ans <- x[ex[["__index__"]]]
               ex[["__index__"]] <- NULL

@@ -13,7 +13,7 @@
 }
 
 \usage{
-\S4method{expand}{DataFrame}(x, colnames, keepEmptyRows = FALSE)
+\S4method{expand}{DataFrame}(x, colnames, keepEmptyRows = FALSE, recursive = TRUE)
 }
 
 \arguments{
@@ -34,6 +34,12 @@
     list elements are replaced with NA and all rows are kept. When
     \code{FALSE}, rows with empty list elements in the \code{colnames}
     columns are dropped.
+  }
+  \item{recursive}{
+    If \code{TRUE}, expand each column recursively, with the result
+    representing their cartesian product. If \code{FALSE}, expand all of
+    the columns in parallel, which requires that they all share the same
+    skeleton.
   }
 }
 
@@ -65,6 +71,10 @@ expand(df, colnames="aa", keepEmptyRows=FALSE)
 ## Expand the aa and then the bb column:
 expand(df, colnames=c("aa","bb"), keepEmptyRows=TRUE)
 expand(df, colnames=c("aa","bb"), keepEmptyRows=FALSE)
+
+## Expand the aa and dd column in parallel:
+df$dd <- relist(seq_along(unlist(aa)), aa)
+expand(df, colnames=c("aa","dd"), recursive=FALSE)
 }
 
 \keyword{methods}
