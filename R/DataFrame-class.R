@@ -456,18 +456,11 @@ setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
 })
 
 setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
-          function(value, x, listStyle = FALSE, j)
+          function(value, x)
           {
               isColumnList <- is(value, "DataFrame") || is.list(value)
               if (is.null(value) || (isColumnList && length(value) == 0L))
                   return(NULL)
-              if (!isColumnList && !listStyle) {
-                  j <- normalizeSingleBracketSubscript(j, as.list(x),
-                                                       allow.append=TRUE)
-                  if (length(j) > 1L) {
-                      value <- matrix(value, nrow(x), ncol(x))
-                  }
-              }
               value <- as(value, "DataFrame", strict=FALSE)
               if (!isColumnList) {
                   names(value) <- NULL # don't try this at home
@@ -489,9 +482,8 @@ setReplaceMethod("[", "DataFrame",
 {
     if (length(list(...)) > 0)
         warning("parameters in '...' not supported")
-    listStyle <- nargs() < 4
-    value <- normalizeSingleBracketReplacementValue(value, x, listStyle, j)
-    if (listStyle) {
+    value <- normalizeSingleBracketReplacementValue(value, x)
+    if (nargs() < 4) {
         value <- recycleSingleBracketReplacementValue(value, x)
         replaceCOLS(x, i, value)
     } else {
