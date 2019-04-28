@@ -46,6 +46,7 @@ Collate: S4-utils.R
 	SimpleList-class.R
 	HitsList-class.R
 	DataFrame-class.R
+    DataFrame-comparison.R
 	Pairs-class.R
 	expand-methods.R
 	FilterRules-class.R
