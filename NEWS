@@ -1,3 +1,23 @@
+CHANGES IN VERSION 0.22.0
+-------------------------
+
+NEW FEATURES
+
+    o Add recursive argument to expand() methods
+
+    o Support DataFrame (or any tabular object) in Pairs
+
+    o List derivatives now support x[i] <- NULL
+
+    o Some Vector derivatives now support appending with [<-
+
+BUG FIXES
+
+    o [<-,DataFrame only makes rownames for new rows when rownames present
+
+    o DataFrame() lazily deparses arguments
+
+
 CHANGES IN VERSION 0.20.0
 -------------------------
 
