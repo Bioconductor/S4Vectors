@@ -60,6 +60,61 @@ setMethods("<", .OP2_SIGNATURES, function(e1, e2) { !(e2 <= e1) })
 
 setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Comparisons along the ROWS
+###
+### Provides a basic implementation of what is different between ROWS.
+###
+
+setGeneric("sameAsLastROW", function(x) standardGeneric("sameAsLastROW"))
+
+setMethod("sameAsLastROW", "ANY", function(x) {
+    if (length(x)==0) {
+        logical(0)
+    } else {
+        c(FALSE, extractROWS(x, -1L)==extractROWS(x, -NROW(x)))
+    }
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### match()
+###
+### The default "match" method below is implemented on top of 
+### sameAsLastROWS() and order().
+###
+
+setMethod("match", c("DataFrame", "DataFrame"), 
+    function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) 
+{
+    # table first, so stable ordering means that, of matched entries,
+    # the one from 'table' gets sorted before that from 'x'.
+    combined <- bindROWS(table, list(x))
+    origins <- c(seq_len(NROW(table)), rep(NA_integer_, NROW(x))) 
+
+    if (nrow(table)==0L) {
+        return(origins)
+    } else if (nrow(x)==0L) {
+        return(integer(0))
+    }
+
+    o <- order(combined)
+    combined <- extractROWS(combined, o)
+    origins <- origins[o]
+
+    is.unique <- !sameAsLastROW(combined)
+    m <- cumsum(is.unique)
+
+    origins <- origins[is.unique][m]
+    origins[o] <- origins
+    origins <- tail(origins, NROW(x))
+
+    origins[is.na(origins)] <- nomatch
+    if (!is.null(incomparables)) {
+        origins[x %in% incomparables] <- nomatch
+    }
+
+    origins
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selfmatch()
@@ -80,6 +135,25 @@ setMethod("selfmatch", "factor", function(x, ..., incomparables = NULL) {
           is.unsorted(x))
         callNextMethod()
     else as.integer(x)
+})
+
+### Vector-based "selfmatch" method, slightly more efficient than match(x, x).
+setMethod("selfmatch", "ANY", function(x, nomatch = NA_integer_, incomparables = NULL, ...) {
+    o <- order(x)
+    y <- extractROWS(x, o)
+
+    is.unique <- !sameAsLastROW(y)
+    m <- cumsum(is.unique)
+
+    origins <- o[is.unique][m]
+    origins[o] <- origins
+
+    origins[is.na(origins)] <- nomatch
+    if (!is.null(incomparables)) {
+        origins[x %in% incomparables] <- nomatch
+    }
+
+    origins
 })
 
 ### 'selfmatch_mapping' must be an integer vector like one returned by
@@ -317,6 +391,21 @@ setMethod("rank", "Vector",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### xtfrm()
+###
+### The method below is implemented on top of order(), extractROWS and 
+### sameAsLastROW().
+###
+
+setMethod("xtfrm", "DataFrame", function(x) {
+    o <- order(x)
+    y <- extractROWS(x, o)
+    is.unique <- !sameAsLastROW(y)
+    out.rank <- cumsum(is.unique)
+    out.rank[o] <- out.rank
+    out.rank
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### table()
