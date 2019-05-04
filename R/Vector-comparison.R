@@ -83,7 +83,7 @@ setMethod("sameAsLastROW", "ANY", function(x) {
 ### sameAsLastROWS() and order().
 ###
 
-setMethod("match", c("DataFrame", "DataFrame"), 
+setMethod("match", c("Vector", "Vector"), 
     function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) 
 {
     # table first, so stable ordering means that, of matched entries,
@@ -398,7 +398,7 @@ setMethod("rank", "Vector",
 ### sameAsLastROW().
 ###
 
-setMethod("xtfrm", "DataFrame", function(x) {
+setMethod("xtfrm", "Vector", function(x) {
     o <- order(x)
     y <- extractROWS(x, o)
     is.unique <- !sameAsLastROW(y)
