@@ -139,21 +139,21 @@ setMethod("selfmatch", "factor", function(x, ..., incomparables = NULL) {
 
 ### Vector-based "selfmatch" method, slightly more efficient than match(x, x).
 setMethod("selfmatch", "ANY", function(x, nomatch = NA_integer_, incomparables = NULL, ...) {
-    o <- order(x)
-    y <- extractROWS(x, o)
+    if (length(x)==0L) return(integer(0))
 
-    is.unique <- !sameAsLastROW(y)
-    m <- cumsum(is.unique)
+    g <- grouping(x)
+    ends <- attr(g, "ends")
+    starts <- c(1L, head(ends, -1L) + 1L)
+    first.of.kind <- g[starts]
 
-    origins <- o[is.unique][m]
-    origins[o] <- origins
-
-    origins[is.na(origins)] <- nomatch
     if (!is.null(incomparables)) {
-        origins[x %in% incomparables] <- nomatch
+        first.x <- extractROWS(x, first.of.kind)
+        first.of.kind[first.x %in% incomparables] <- nomatch
     }
 
-    origins
+    ans <- integer(NROW(x))
+    ans[g] <- rep(first.of.kind, ends - starts + 1L)
+    ans
 })
 
 ### 'selfmatch_mapping' must be an integer vector like one returned by
@@ -394,17 +394,14 @@ setMethod("rank", "Vector",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### xtfrm()
 ###
-### The method below is implemented on top of order(), extractROWS and 
-### sameAsLastROW().
+### The method below is implemented on top of order().
 ###
 
 setMethod("xtfrm", "Vector", function(x) {
     o <- order(x)
-    y <- extractROWS(x, o)
-    is.unique <- !sameAsLastROW(y)
-    out.rank <- cumsum(is.unique)
-    out.rank[o] <- out.rank
-    out.rank
+    ans <- integer(NROW(x))
+    ans[o] <- seq_along(ans)
+    ans
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
