@@ -69,7 +69,7 @@ setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 setGeneric("sameAsLastROW", function(x) standardGeneric("sameAsLastROW"))
 
 setMethod("sameAsLastROW", "ANY", function(x) {
-    if (length(x)==0) {
+    if (NROW(x)==0) {
         logical(0)
     } else {
         c(FALSE, extractROWS(x, -1L)==extractROWS(x, -NROW(x)))
@@ -86,34 +86,33 @@ setMethod("sameAsLastROW", "ANY", function(x) {
 setMethod("match", c("Vector", "Vector"), 
     function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) 
 {
-    # table first, so stable ordering means that, of matched entries,
-    # the one from 'table' gets sorted before that from 'x'.
+    # table first, so stable grouping() means that, of matched entries,
+    # the one from 'table' gets put before that from 'x'.
     combined <- bindROWS(table, list(x))
-    origins <- c(seq_len(NROW(table)), rep(NA_integer_, NROW(x))) 
+    origins <- c(seq_len(NROW(table)), rep(nomatch, NROW(x))) 
 
-    if (nrow(table)==0L) {
+    if (NROW(table)==0L) {
         return(origins)
-    } else if (nrow(x)==0L) {
+    } else if (NROW(x)==0L) {
         return(integer(0))
     }
 
-    o <- order(combined)
-    combined <- extractROWS(combined, o)
-    origins <- origins[o]
+    g <- grouping(combined)
+    ends <- attr(g, "ends")
+    starts <- c(1L, head(ends, -1L) + 1L)
+    first.of.kind <- g[starts]
+    first.origin <- origins[first.of.kind]
 
-    is.unique <- !sameAsLastROW(combined)
-    m <- cumsum(is.unique)
-
-    origins <- origins[is.unique][m]
-    origins[o] <- origins
-    origins <- tail(origins, NROW(x))
-
-    origins[is.na(origins)] <- nomatch
     if (!is.null(incomparables)) {
-        origins[x %in% incomparables] <- nomatch
+        # %in% should call match() with incomparables=NULL,
+        # otherwise we get an infinite loop of S4 dispatch!
+        first.entry <- extractROWS(combined, first.of.kind)
+        first.origin[first.entry %in% incomparables] <- nomatch
     }
 
-    origins
+    ans <- integer(NROW(combined))
+    ans[g] <- rep(first.origin, ends - starts + 1L)
+    tail(ans, NROW(x))
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -139,7 +138,7 @@ setMethod("selfmatch", "factor", function(x, ..., incomparables = NULL) {
 
 ### Vector-based "selfmatch" method, slightly more efficient than match(x, x).
 setMethod("selfmatch", "ANY", function(x, nomatch = NA_integer_, incomparables = NULL, ...) {
-    if (length(x)==0L) return(integer(0))
+    if (NROW(x)==0L) return(integer(0))
 
     g <- grouping(x)
     ends <- attr(g, "ends")
@@ -399,9 +398,11 @@ setMethod("rank", "Vector",
 
 setMethod("xtfrm", "Vector", function(x) {
     o <- order(x)
-    ans <- integer(NROW(x))
-    ans[o] <- seq_along(ans)
-    ans
+    y <- extractROWS(x, o)
+    is.unique <- !sameAsLastROW(y)
+    out.rank <- cumsum(is.unique)
+    out.rank[o] <- out.rank
+    out.rank
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
