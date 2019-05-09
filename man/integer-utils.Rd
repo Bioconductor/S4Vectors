@@ -3,7 +3,6 @@
 \alias{isSequence}
 
 \alias{toListOfIntegerVectors}
-\alias{strsplitAsListOfIntegerVectors}
 
 \alias{orderIntegerPairs}
 \alias{matchIntegerPairs}

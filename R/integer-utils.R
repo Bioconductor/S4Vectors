@@ -109,13 +109,6 @@ toListOfIntegerVectors <- function(x, sep=",")
     ans
 }
 
-### Exported!
-strsplitAsListOfIntegerVectors <- function(x, sep=",")
-{
-    .Defunct("toListOfIntegerVectors")
-    toListOfIntegerVectors(x, sep=sep)
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Fast ordering/comparing of integer pairs.

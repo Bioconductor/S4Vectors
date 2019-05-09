@@ -291,7 +291,7 @@ export(
 
     ## integer-utils.R:
     isSequence,
-    toListOfIntegerVectors, strsplitAsListOfIntegerVectors,
+    toListOfIntegerVectors,
     orderIntegerPairs,
     matchIntegerPairs, selfmatchIntegerPairs, duplicatedIntegerPairs,
     orderIntegerQuads,
@@ -313,7 +313,7 @@ export(
     isRedundantHit,
 
     ## List-class.R:
-    List, phead, ptail, pc,
+    List, pc,
 
     ## List-utils.R:
     endoapply, mendoapply,

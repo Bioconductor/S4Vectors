@@ -590,22 +590,6 @@ setMethod("setListElement", "List", setListElement_default)
 setMethod("getListElement", "List",
           function(x, i) getListElement(as.list(x), i))
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Simple helper functions for some common subsetting operations.
-###
-
-phead <- function(x, n=6L)
-{
-    .Defunct("IRanges::heads")
-    IRanges::heads(x, n=n)
-}
-
-ptail <- function(x, n=6L)
-{
-    .Defunct("IRanges::tails")
-    IRanges::tails(x, n=n)
-}
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion.
