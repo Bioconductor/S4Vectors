@@ -291,7 +291,7 @@ export(
 
     ## integer-utils.R:
     isSequence,
-    toListOfIntegerVectors, strsplitAsListOfIntegerVectors,
+    toListOfIntegerVectors,
     orderIntegerPairs,
     matchIntegerPairs, selfmatchIntegerPairs, duplicatedIntegerPairs,
     orderIntegerQuads,
@@ -313,7 +313,7 @@ export(
     isRedundantHit,
 
     ## List-class.R:
-    List, phead, ptail, pc,
+    List, pc,
 
     ## List-utils.R:
     endoapply, mendoapply,
@@ -332,17 +332,6 @@ export(
 
     ## FilterRules-class.R:
     FilterRules, FilterMatrix
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Export S4 generics obtained by explicit promotion of functions not
-### defined in S4Vectors to S4 generics
-###
-
-export(
-    ## DataTable-class.R:
-    rowSums, colSums, rowMeans, colMeans
 )
 
 
