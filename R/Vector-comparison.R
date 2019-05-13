@@ -86,33 +86,14 @@ setMethod("sameAsLastROW", "ANY", function(x) {
 setMethod("match", c("Vector", "Vector"), 
     function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) 
 {
-    # table first, so stable grouping() means that, of matched entries,
-    # the one from 'table' gets put before that from 'x'.
+    # table goes first so it gets picked up by 'selfmatch'.
     combined <- bindROWS(table, list(x))
-    origins <- c(seq_len(NROW(table)), rep(nomatch, NROW(x))) 
 
-    if (NROW(table)==0L) {
-        return(origins)
-    } else if (NROW(x)==0L) {
-        return(integer(0))
-    }
-
-    g <- grouping(combined)
-    ends <- attr(g, "ends")
-    starts <- c(1L, head(ends, -1L) + 1L)
-    first.of.kind <- g[starts]
-    first.origin <- origins[first.of.kind]
-
-    if (!is.null(incomparables)) {
-        # %in% should call match() with incomparables=NULL,
-        # otherwise we get an infinite loop of S4 dispatch!
-        first.entry <- extractROWS(combined, first.of.kind)
-        first.origin[first.entry %in% incomparables] <- nomatch
-    }
-
-    ans <- integer(NROW(combined))
-    ans[g] <- rep(first.origin, ends - starts + 1L)
-    tail(ans, NROW(x))
+    # Do NOT use nomatch=nomatch here, we need the NAs as a marker.
+    ans <- selfmatch(combined, nomatch=NA_integer_, incomparables=incomparables)
+    ans <- tail(ans, NROW(x))
+    ans[is.na(ans) | ans > NROW(table)] <- nomatch
+    ans
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,7 +118,7 @@ setMethod("selfmatch", "factor", function(x, ..., incomparables = NULL) {
 })
 
 ### Vector-based "selfmatch" method, slightly more efficient than match(x, x).
-setMethod("selfmatch", "ANY", function(x, nomatch = NA_integer_, incomparables = NULL, ...) {
+setMethod("selfmatch", "Vector", function(x, nomatch = NA_integer_, incomparables = NULL, ...) {
     if (NROW(x)==0L) return(integer(0))
 
     g <- grouping(x)
@@ -146,6 +127,8 @@ setMethod("selfmatch", "ANY", function(x, nomatch = NA_integer_, incomparables =
     first.of.kind <- g[starts]
 
     if (!is.null(incomparables)) {
+        # %in% should call match() with incomparables=NULL,
+        # otherwise we get an infinite loop of S4 dispatch!
         first.x <- extractROWS(x, first.of.kind)
         first.of.kind[first.x %in% incomparables] <- nomatch
     }
