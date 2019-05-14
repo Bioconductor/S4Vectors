@@ -225,9 +225,9 @@ setMethod("order", "List",
     }
 )
 
-.sort.List <- function(x, decreasing=FALSE, na.last=NA)
+.sort.List <- function(x, decreasing=FALSE, na.last=NA, by)
 {
-    if (!pcompareRecursively(x)) {
+    if (!missing(by) || !pcompareRecursively(x)) {
         return(callNextMethod())
     }
     i <- order(x, na.last=na.last, decreasing=decreasing)  # IntegerList
