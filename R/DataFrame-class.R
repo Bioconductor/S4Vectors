@@ -693,7 +693,7 @@ setAs("xtabs", "DFrame",
 
 .defaultAsDataFrame <- function(from) {
   if (length(dim(from)) == 2L) {
-    df <- as.data.frame(from)
+    df <- as.data.frame(from, stringsAsFactors=FALSE)
     if (0L == ncol(from))
       ## colnames on matrix with 0 columns are 'NULL'
       names(df) <- character()
