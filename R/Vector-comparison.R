@@ -60,6 +60,30 @@ setMethods("<", .OP2_SIGNATURES, function(e1, e2) { !(e2 <= e1) })
 
 setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 
+### Methods for common base types.
+
+setMethod("pcompare", c("numeric", "numeric"), function(x, y) {
+    as.integer(sign(x - y))
+})
+
+setMethod("pcompare", c("ANY", "ANY"), function(x, y) {
+    combined <- bindROWS(x, list(y))
+    original <- c(seq_len(NROW(x)), seq_len(NROW(y)))
+    is.x <- rep(c(TRUE, FALSE), c(NROW(x), NROW(y)))
+
+    o <- order(combined)
+    original <- original[o]
+    is.x <- is.x[o]
+
+    grouping <- cumsum(!sameAsLastROW(extractROWS(combined, o)))
+    x.groups <- integer(NROW(x))
+    x.groups[original[is.x]] <- grouping[is.x]
+    y.groups <- integer(NROW(y))
+    y.groups[original[!is.x]] <- grouping[!is.x]
+
+    pcompare(x.groups, y.groups)
+})
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Comparisons along the ROWS
 ###
