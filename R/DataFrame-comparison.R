@@ -15,3 +15,21 @@ setMethod("order", "DataFrame", function(..., na.last = TRUE, decreasing = FALSE
     contents <- as.list(cbind(...))
     do.call(order, c(contents, list(na.last=na.last, decreasing=decreasing, method=method)))
 })
+
+setMethod("pcompare", c("DataFrame", "DataFrame"), function(x, y) {
+    fields <- colnames(x)
+    N <- max(NROW(x), NROW(y))
+    if (!identical(sort(fields), sort(colnames(y)))) {
+        return(logical(N))
+    }
+
+    compared <- integer(N)
+    for (f in fields) {
+        current <- pcompare(x[[f]], y[[f]])
+        keep <- compared==0L
+        compared[keep] <- current[keep]
+    }
+
+    compared
+})
+
