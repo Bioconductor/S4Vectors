@@ -28,9 +28,13 @@
 \alias{>,Vector,ANY-method}
 \alias{>,ANY,Vector-method}
 
+\alias{match}
+\alias{match,Vector,Vector-method}
+
 \alias{selfmatch}
 \alias{selfmatch,ANY-method}
 \alias{selfmatch,factor-method}
+\alias{selfmatch,Vector-method}
 
 \alias{duplicated,Vector-method}
 \alias{duplicated.Vector}
@@ -50,8 +54,12 @@
 \alias{sort,Vector-method}
 \alias{sort.Vector}
 \alias{rank,Vector-method}
+\alias{xtfrm,Vector-method}
 
 \alias{table,Vector-method}
+
+\alias{sameAsLastROW}
+\alias{sameAsLastROW,ANY-method}
 
 \title{Compare, order, tabulate vector-like objects}
 
@@ -90,10 +98,21 @@ pcompare(x, y)
 \S4method{>}{Vector,ANY}(e1, e2)
 \S4method{>}{ANY,Vector}(e1, e2)
 
+## match()
+## -----------
+
+\S4method{match}{Vector,Vector}(x, table, nomatch = NA_integer_, 
+    incomparables = NULL, ...) 
+
 ## selfmatch()
 ## -----------
 
 selfmatch(x, ...)
+
+## sameAsLastROW()
+## -----------
+
+sameAsLastROW(x)
 
 ## duplicated() & unique()
 ## -----------------------
@@ -126,6 +145,11 @@ countMatches(x, table, ...)
 
 \S4method{sort}{Vector}(x, decreasing=FALSE, na.last=NA, by)
 
+## xtfrm()
+## ------
+
+\S4method{xtfrm}{Vector}(x)
+
 ## table()
 ## -------
 
@@ -135,6 +159,9 @@ countMatches(x, table, ...)
 \arguments{
   \item{x, y, e1, e2, table}{
     Vector-like objects.
+  }
+  \item{nomatch}{
+    See \code{?base::\link[base]{match}}.
   }
   \item{incomparables}{
     The \code{duplicated} method for \link{Vector} objects does NOT
@@ -146,7 +173,10 @@ countMatches(x, table, ...)
 
     See \code{?base::\link[base]{duplicated}} and
     \code{?base::\link[base]{unique}} for more information about this
-    argument.
+    argument for these generics.
+
+    The \code{match} method for \link{Vector} objects does support
+    this argument, see \code{?base::\link[base]{match}} for details.
   }
   \item{select}{
     Only \code{select="all"} is supported at the moment.
@@ -212,10 +242,10 @@ countMatches(x, table, ...)
   vector then \code{pcompare(x, y)} returns a zero-length integer vector.
 
   \code{selfmatch(x, ...)} is equivalent to \code{match(x, x, ...)}. This
-  is actually how the default method is implemented. However note that
-  \code{selfmatch(x, ...)} will typically be more efficient than
-  \code{match(x, x, ...)} on vector-like objects for which a specific
-  \code{selfmatch} method is implemented.
+  is actually how the default \code{ANY} method is implemented. However note that
+  the default \code{selfmatch(x, ...)} for \link{Vector} \code{x} will typically 
+  be more efficient than \code{match(x, x, ...)}, and can be made even more so
+  if a specific \code{selfmatch} method is implemented for a given subclass.
 
   \code{findMatches} is an enhanced version of \code{match} which, by default
   (i.e. if \code{select="all"}), returns all the matches in a \link{Hits}
@@ -229,7 +259,8 @@ countMatches(x, table, ...)
 \value{
   For \code{pcompare}: see Details section above.
 
-  For \code{selfmatch}: an integer vector of the same length as \code{x}.
+  For \code{match} and \code{selfmatch}: an integer vector of the 
+  same length as \code{x}.
 
   For \code{duplicated}, \code{unique}, and \code{\%in\%}: see
   \code{?BiocGenerics::\link[BiocGenerics]{duplicated}},
@@ -244,6 +275,12 @@ countMatches(x, table, ...)
   in \code{x}.
 
   For \code{sort}: see \code{?BiocGenerics::\link[BiocGenerics]{sort}}.
+
+  For \code{xtfrm}: see \code{?base::\link[base]{xtfrm}}.
+
+  For \code{sameAsLastROW}: a logical vector of length equal to \code{x},
+  indicating whether each entry of \code{x} is equal to the previous entry. 
+  The first entry is always \code{FALSE} for a non-zero-length \code{x}.
 
   For \code{table}: a 1D array of integer values promoted to the
   \code{"table"} class. See \code{?BiocGeneric::\link[BiocGenerics]{table}}
@@ -293,6 +330,22 @@ setMethod(">", c("Vector", "Vector"),
           specific methods must obey the rules described in the Details
           section above.
 
+    \item The \code{match} methods for \linkS4class{Vector} objects are 
+          implemented on top of \code{selfmatch}, so they work out-of-the-box 
+          on \link{Vector} objects for which \code{selfmatch} works as expected.
+
+    \item \code{selfmatch} is itself implemented on top of \code{xtfrm},
+          (indirectly, via \code{\link{grouping}}) so it will work out-of-the-box 
+          on \link{Vector} objects for which \code{xtfrm} works as expected.
+
+    \item \code{xtfrm} is, in turn, implemented on top of \code{order} and
+          \code{sameAsLastROW}, so it will work out-of-the-box on \link{Vector} 
+          objects for which \code{order} and \code{sameAsLastROW} work as expected.
+
+    \item \code{sameAsLastROW} is implemented on top of the \code{==} method,
+          so will work out-of-the-box on \link{Vector} objects for which 
+          \code{==} works as expected.
+
     \item The \code{duplicated}, \code{unique}, and \code{\%in\%} methods for
           \link{Vector} objects are implemented on top of \code{selfmatch},
           \code{duplicated}, and \code{match}, respectively, so they work
@@ -304,12 +357,6 @@ setMethod(">", c("Vector", "Vector"),
           work out-of-the-box on \link{Vector} objects for which those things
           work the expected way.
 
-    \item However, since \code{selfmatch} itself is also implemented on top of
-          \code{match}, then having \code{match} work the expected way is
-          actually enough to get \code{selfmatch}, \code{duplicated},
-          \code{unique}, \code{\%in\%}, \code{findMatches}, and
-          \code{countMatches} work out-of-the-box on \link{Vector} objects.
-
     \item The \code{sort} method for \link{Vector} objects is implemented on
           top of \code{order}, so it works out-of-the-box on \link{Vector}
           objects for which \code{order} works the expected way.
@@ -319,7 +366,7 @@ setMethod(">", c("Vector", "Vector"),
           it works out-of-the-box on a \link{Vector} object for which those
           things work the expected way.
 
-    \item The \pkg{S4Vectors} package provides no \code{match} or \code{order}
+    \item The \pkg{S4Vectors} package provides no \code{order}
           methods for \link{Vector} objects. Specific methods need to be
           implemented for specific \link{Vector} subclasses (e.g. for
           \link{Hits} and \link[IRanges]{IntegerRanges} objects).
