@@ -80,7 +80,7 @@ setMethod("sameAsLastROW", "ANY", function(x) {
 ### match()
 ###
 ### The default "match" method below is implemented on top of 
-### sameAsLastROWS() and order().
+### selfmatch().
 ###
 
 setMethod("match", c("Vector", "Vector"), 
