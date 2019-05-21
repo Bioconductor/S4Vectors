@@ -33,3 +33,7 @@ setMethod("pcompare", c("DataFrame", "DataFrame"), function(x, y) {
     compared
 })
 
+# Necessary to avoid using Ops for Lists.
+setMethod("==", c("DataFrame", "DataFrame"), function(e1, e2) pcompare(e1, e2) == 0L)
+
+setMethod("<=", c("DataFrame", "DataFrame"), function(e1, e2) pcompare(e1, e2) <= 0L)
