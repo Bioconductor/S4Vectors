@@ -5,6 +5,9 @@
 \alias{match,DataFrame,DataFrame-method}
 \alias{order,DataFrame-method}
 
+\alias{pcompare,DataFrame,DataFrame-method}
+\alias{==,DataFrame,DataFrame-method}
+\alias{<=,DataFrame,DataFrame-method}
 
 \title{DataFrame comparison methods}
 
@@ -30,7 +33,8 @@
   Note that a \code{match} method for \code{DataFrame} objects is 
   explicitly defined to avoid calling the corresponding method for 
   \code{\link{List}} objects, which would yield the (undesired) list-like
-  semantics.
+  semantics. The same rationale is behind the explicit definition of
+  \code{<=} and \code{==} despite the availability of \code{pcompare}.
 }
 
 \usage{
@@ -40,10 +44,16 @@
 
 \S4method{order}{DataFrame}(..., na.last = TRUE, decreasing = FALSE, method = c("auto", 
     "shell", "radix"))
+
+\S4method{pcompare}{DataFrame,DataFrame}(x, y)
+
+\S4method{==}{DataFrame,DataFrame}(e1, e2)
+
+\S4method{<=}{DataFrame,DataFrame}(e1, e2)
 }
 
 \arguments{
-  \item{x, table}{
+  \item{x, table, y, e1, e2}{
     A \code{\linkS4class{DataFrame}} object.
   }
   \item{nomatch, incomparables}{
@@ -65,6 +75,8 @@
   For \code{match}: see \code{\link[base]{match}}.
 
   For \code{order}: see \code{\link[base]{order}}.
+
+  For \code{pcompare}, \code{==} and \code{<=}: see \code{\link{pcompare}}.
 }
 
 \author{
@@ -86,6 +98,10 @@ unique(DF)
 # Ordering, alone and with other vectors:
 sort(DF)
 order(DF, runif(nrow(DF)))
+
+# Parallel comparison:
+DF==DF
+DF==DF[1,]
 }
 
 \keyword{methods}
