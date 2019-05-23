@@ -60,6 +60,65 @@ setMethods("<", .OP2_SIGNATURES, function(e1, e2) { !(e2 <= e1) })
 
 setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 
+### Methods for common base types.
+
+setMethod("pcompare", c("numeric", "numeric"), function(x, y) {
+    as.integer(sign(x - y))
+})
+
+setMethod("pcompare", c("ANY", "ANY"), function(x, y) {
+    combined <- bindROWS(x, list(y))
+    original <- c(seq_len(NROW(x)), seq_len(NROW(y)))
+    is.x <- rep(c(TRUE, FALSE), c(NROW(x), NROW(y)))
+
+    o <- order(combined)
+    original <- original[o]
+    is.x <- is.x[o]
+
+    grouping <- cumsum(!sameAsLastROW(extractROWS(combined, o)))
+    x.groups <- integer(NROW(x))
+    x.groups[original[is.x]] <- grouping[is.x]
+    y.groups <- integer(NROW(y))
+    y.groups[original[!is.x]] <- grouping[!is.x]
+
+    pcompare(x.groups, y.groups)
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Comparisons along the ROWS
+###
+### Provides a basic implementation of what is different between ROWS.
+###
+
+setGeneric("sameAsLastROW", function(x) standardGeneric("sameAsLastROW"))
+
+setMethod("sameAsLastROW", "ANY", function(x) {
+    if (NROW(x)==0) {
+        logical(0)
+    } else {
+        c(FALSE, extractROWS(x, -1L)==extractROWS(x, -NROW(x)))
+    }
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### match()
+###
+### The default "match" method below is implemented on top of 
+### selfmatch().
+###
+
+setMethod("match", c("Vector", "Vector"), 
+    function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) 
+{
+    # table goes first so it gets picked up by 'selfmatch'.
+    combined <- bindROWS(table, list(x))
+
+    # Do NOT use nomatch=nomatch here, we need the NAs as a marker.
+    ans <- selfmatch(combined, nomatch=NA_integer_, incomparables=incomparables)
+    ans <- tail(ans, NROW(x))
+    ans[is.na(ans) | ans > NROW(table)] <- nomatch
+    ans
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selfmatch()
@@ -80,6 +139,27 @@ setMethod("selfmatch", "factor", function(x, ..., incomparables = NULL) {
           is.unsorted(x))
         callNextMethod()
     else as.integer(x)
+})
+
+### Vector-based "selfmatch" method, slightly more efficient than match(x, x).
+setMethod("selfmatch", "Vector", function(x, nomatch = NA_integer_, incomparables = NULL, ...) {
+    if (NROW(x)==0L) return(integer(0))
+
+    g <- grouping(x)
+    ends <- attr(g, "ends")
+    starts <- c(1L, head(ends, -1L) + 1L)
+    first.of.kind <- g[starts]
+
+    if (!is.null(incomparables)) {
+        # %in% should call match() with incomparables=NULL,
+        # otherwise we get an infinite loop of S4 dispatch!
+        first.x <- extractROWS(x, first.of.kind)
+        first.of.kind[first.x %in% incomparables] <- nomatch
+    }
+
+    ans <- integer(NROW(x))
+    ans[g] <- rep(first.of.kind, ends - starts + 1L)
+    ans
 })
 
 ### 'selfmatch_mapping' must be an integer vector like one returned by
@@ -317,6 +397,20 @@ setMethod("rank", "Vector",
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### xtfrm()
+###
+### The method below is implemented on top of order().
+###
+
+setMethod("xtfrm", "Vector", function(x) {
+    o <- order(x)
+    y <- extractROWS(x, o)
+    is.unique <- !sameAsLastROW(y)
+    out.rank <- cumsum(is.unique)
+    out.rank[o] <- out.rank
+    out.rank
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### table()

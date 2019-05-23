@@ -732,7 +732,6 @@ setMethod("append", c("Vector", "Vector"),
     }
 )
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Evaluating
 ###
