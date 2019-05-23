@@ -366,10 +366,21 @@ setMethod(">", c("Vector", "Vector"),
           it works out-of-the-box on a \link{Vector} object for which those
           things work the expected way.
 
-    \item The \pkg{S4Vectors} package provides no \code{order}
-          methods for \link{Vector} objects. Specific methods need to be
+    \item The \pkg{S4Vectors} package provides no \code{order} 
+          methods for \link{Vector} objects. Calling \code{order} on a 
+          \link{Vector} object will use \code{base::order}, which calls
+          \code{xtfrm}, with in turn calls \code{order}, which calls 
+          \code{xtfrm}, and so on. This infinite recursion of S4 dispatch
+          eventually results in an error about reaching the stack limit.
+
+          To avoid this behavior, a specialized \code{order} method needs to be
           implemented for specific \link{Vector} subclasses (e.g. for
           \link{Hits} and \link[IRanges]{IntegerRanges} objects).
+          Alternatively, a specialized \code{xtfrm} can be implemented.
+
+          Only one of \code{order} or \code{xtfrm} needs to be supplied
+          to avoid the infinite loop. Of course, there are no problems
+          with implementing both if some efficiency gain is anticipated.
   }
 }
 
