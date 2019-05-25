@@ -375,6 +375,7 @@ export(
     pcompare,
     selfmatch,
     findMatches, countMatches,
+    sameAsLastROW,
 
     ## Hits-class.R:
     from, to, nLnode, nRnode, nnode, countLnodeHits, countRnodeHits,
