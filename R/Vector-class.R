@@ -541,6 +541,9 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 subset.Vector <- function(x, ...) subset(x, ...)
 subset_Vector <- function(x, subset, select, drop=FALSE, ...)
 {
+    ## Fix old objects on-the-fly (e.g. old GRanges, GRangesList, or
+    ## GAlignments instances).
+    x <- updateObject(x, check=FALSE)
     i <- evalqForSubset(subset, x, ...)
     x_mcols <- mcols(x, use.names=FALSE)
     if (!is.null(x_mcols)) {
