@@ -289,9 +289,68 @@ countMatches(x, table, ...)
 
 \note{
   The following notes are for developers who want to implement comparing,
-  ordering, and tabulating methods for their own \link{Vector} subclass:
+  ordering, and tabulating methods for their own \link{Vector} subclass.
 
-  \enumerate{
+  Subclass comparison methods can be split into various categories.
+  The first category \emph{must} be implemented for each subclass, as
+  these do not have sensible defaults for arbitrary \link{Vector} objects:
+  \itemize{
+    \item No default \code{order} method is provided for \link{Vector} objects. 
+          Calling \code{order} on a \link{Vector} object will use \code{base::order}, which calls
+          \code{xtfrm}, with in turn calls \code{order}, which calls 
+          \code{xtfrm}, and so on. This infinite recursion of S4 dispatch
+          eventually results in an error about reaching the stack limit.
+
+          To avoid this behavior, a specialized \code{order} method needs to be
+          implemented for specific \link{Vector} subclasses (e.g. for
+          \link{Hits} and \link[IRanges]{IntegerRanges} objects).
+
+    \item \code{sameAsLastROW} is default implemented on top of the \code{==} method,
+          so will work out-of-the-box on \link{Vector} objects for which 
+          \code{==} works as expected. However, \code{==} is default implemented
+          on top of \code{pcompare}, which itself has a default implementation
+          that relies on \code{sameAsLastROW}! This again leads 
+          to infinite recursion and an error about the stack limit.
+
+          To avoid this behavior, a specialized \code{sameAsLastROW} method
+          must be implemented for specific \link{Vector} subclasses. 
+  }
+
+  The second category contains methods that have default implementations
+  provided for all \link{Vector} objects and their derivatives. These
+  methods rely on the first category to provide sensible default behaviour
+  without further work from the developer. However, it is often the case
+  that greater efficiency can be achieved for a specific data structure 
+  by writing a subclass-specific version of these methods.
+  \itemize{
+    \item The \code{pcompare} method for \link{Vector} objects is implemented 
+          on top of \code{order} and \code{sameAsLastROW}, and so will work 
+          out-of-the-box on \link{Vector} objects for which \code{sameAsLastROW}
+          and \code{order} works as expected.
+
+    \item \code{xtfrm} is implemented on top of \code{order} and
+          \code{sameAsLastROW}, so it will work out-of-the-box on \link{Vector} 
+          objects for which \code{order} and \code{sameAsLastROW} work as expected.
+
+    \item \code{selfmatch} is itself implemented on top of \code{xtfrm}
+          (indirectly, via \code{\link{grouping}}) so it will work out-of-the-box 
+          on \link{Vector} objects for which \code{xtfrm} works as expected.
+
+    \item The \code{match} method for \linkS4class{Vector} objects is 
+          implemented on top of \code{selfmatch}, so works out-of-the-box 
+          on \link{Vector} objects for which \code{selfmatch} works as expected.
+  }
+
+  (A careful reader may notice that \code{xtfrm} and \code{order} could be
+  swapped between categories to achieve the same effect. Similarly, 
+  \code{sameAsLastROW} and \code{pcompare} could also be swapped. The exact
+  categorization of these methods is left to the discretion of the developer,
+  though this is mostly academic if both choices are specialized.)
+
+  The third category also contains methods that have default implementations,
+  but unlike the second category, these defaults are straightforward and generally 
+  do not require any specialization for efficiency purposes.
+  \itemize{
     \item The 6 traditional binary comparison operators are: \code{==},
           \code{!=}, \code{<=}, \code{>=}, \code{<}, and \code{>}.
           The \pkg{S4Vectors} package provides the following methods for
@@ -323,29 +382,6 @@ setMethod(">", c("Vector", "Vector"),
           4 remaining operators (\code{!=}, \code{>=}, \code{<}, and
           \code{>}) work out-of-the-box.
 
-    \item The \pkg{S4Vectors} package provides no \code{pcompare} method for
-          \link{Vector} objects. Specific \code{pcompare} methods need to be
-          implemented for specific \link{Vector} subclasses (e.g. for
-          \link{Hits} and \link[IRanges]{IntegerRanges} objects). These
-          specific methods must obey the rules described in the Details
-          section above.
-
-    \item The \code{match} methods for \linkS4class{Vector} objects are 
-          implemented on top of \code{selfmatch}, so they work out-of-the-box 
-          on \link{Vector} objects for which \code{selfmatch} works as expected.
-
-    \item \code{selfmatch} is itself implemented on top of \code{xtfrm},
-          (indirectly, via \code{\link{grouping}}) so it will work out-of-the-box 
-          on \link{Vector} objects for which \code{xtfrm} works as expected.
-
-    \item \code{xtfrm} is, in turn, implemented on top of \code{order} and
-          \code{sameAsLastROW}, so it will work out-of-the-box on \link{Vector} 
-          objects for which \code{order} and \code{sameAsLastROW} work as expected.
-
-    \item \code{sameAsLastROW} is implemented on top of the \code{==} method,
-          so will work out-of-the-box on \link{Vector} objects for which 
-          \code{==} works as expected.
-
     \item The \code{duplicated}, \code{unique}, and \code{\%in\%} methods for
           \link{Vector} objects are implemented on top of \code{selfmatch},
           \code{duplicated}, and \code{match}, respectively, so they work
@@ -365,22 +401,6 @@ setMethod(">", c("Vector", "Vector"),
           top of \code{selfmatch}, \code{order}, and \code{as.character}, so
           it works out-of-the-box on a \link{Vector} object for which those
           things work the expected way.
-
-    \item The \pkg{S4Vectors} package provides no \code{order} 
-          methods for \link{Vector} objects. Calling \code{order} on a 
-          \link{Vector} object will use \code{base::order}, which calls
-          \code{xtfrm}, with in turn calls \code{order}, which calls 
-          \code{xtfrm}, and so on. This infinite recursion of S4 dispatch
-          eventually results in an error about reaching the stack limit.
-
-          To avoid this behavior, a specialized \code{order} method needs to be
-          implemented for specific \link{Vector} subclasses (e.g. for
-          \link{Hits} and \link[IRanges]{IntegerRanges} objects).
-          Alternatively, a specialized \code{xtfrm} can be implemented.
-
-          Only one of \code{order} or \code{xtfrm} needs to be supplied
-          to avoid the infinite loop. Of course, there are no problems
-          with implementing both if some efficiency gain is anticipated.
   }
 }
 
