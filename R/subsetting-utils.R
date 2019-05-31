@@ -307,7 +307,7 @@ RangeNSBS <- function(x, start=NA, end=NA, width=NA)
         if (width != end - start + 1L)
             stop("the supplied 'start', 'end', and 'width' are incompatible")
     }
-    if (!(start >= 1L && start <= x_NROW + 1L && end <= x_NROW && end >= 0L))
+    if (!(start >= 1L && start - 1L <= x_NROW && end <= x_NROW && end >= 0L))
         stop("the specified range is out-of-bounds")
     if (end < start - 1L)
         stop("the specified range has a negative width")
