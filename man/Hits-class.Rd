@@ -60,10 +60,15 @@
 % concatenation
 \alias{bindROWS,Hits-method}
 
+% sorting
+\alias{sort,SortedByQueryHits-method}
+
 % other transformations
+\alias{selectHits}
+\alias{breakTies}
+\alias{t.Hits}
 \alias{t,Hits-method}
 \alias{remapHits}
-\alias{breakTies}
 
 % SelfHits
 \alias{isSelfHit}

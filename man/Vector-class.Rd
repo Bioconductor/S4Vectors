@@ -13,6 +13,8 @@
 \alias{parallelSlotNames}
 \alias{parallelSlotNames,Vector-method}
 
+\alias{updateObject,Vector-method}
+
 \alias{length,Vector-method}
 \alias{lengths,Vector-method}
 \alias{NROW,Vector-method}
@@ -23,6 +25,8 @@
 \alias{mcols,Vector-method}
 \alias{values}
 \alias{values,Vector-method}
+\alias{anyNA,Vector-method}
+\alias{is.na,Vector-method}
 
 \alias{elementMetadata<-}
 \alias{elementMetadata<-,Vector-method}
@@ -63,6 +67,7 @@
 \alias{[,Vector-method}
 \alias{[<-,Vector-method}
 \alias{replaceROWS,Vector,ANY-method}
+\alias{mergeROWS,Vector,ANY-method}
 
 \alias{subset}
 \alias{subset.Vector}
@@ -95,9 +100,6 @@
 
 \alias{parallelVectorNames}
 \alias{parallelVectorNames,ANY-method}
-
-\alias{anyNA,Vector-method}
-\alias{is.na,Vector-method}
 
 \title{Vector objects}
 

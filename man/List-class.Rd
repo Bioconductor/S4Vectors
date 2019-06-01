@@ -6,6 +6,10 @@
 \alias{List-class}
 \alias{List}
 
+\alias{class:list_OR_List}
+\alias{list_OR_List-class}
+\alias{list_OR_List}
+
 \alias{elementType}
 \alias{elementType,List-method}
 \alias{elementType,vector-method}

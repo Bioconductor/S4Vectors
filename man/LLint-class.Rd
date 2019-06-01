@@ -4,6 +4,10 @@
 \alias{class:LLint}
 \alias{LLint-class}
 
+\alias{class:integer_OR_LLint}
+\alias{integer_OR_LLint-class}
+\alias{integer_OR_LLint}
+
 \alias{is.LLint}
 \alias{length,LLint-method}
 

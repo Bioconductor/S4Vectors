@@ -3,6 +3,8 @@
 \alias{Vector-comparison}
 
 \alias{pcompare}
+\alias{pcompare,numeric,numeric-method}
+\alias{pcompare,ANY,ANY-method}
 
 \alias{==,Vector,Vector-method}
 \alias{==,Vector,ANY-method}
@@ -28,6 +30,9 @@
 \alias{>,Vector,ANY-method}
 \alias{>,ANY,Vector-method}
 
+\alias{sameAsPreviousROW}
+\alias{sameAsPreviousROW,ANY-method}
+
 \alias{match}
 \alias{match,Vector,Vector-method}
 
@@ -36,10 +41,12 @@
 \alias{selfmatch,factor-method}
 \alias{selfmatch,Vector-method}
 
-\alias{duplicated,Vector-method}
 \alias{duplicated.Vector}
-\alias{unique,Vector-method}
+\alias{duplicated,Vector-method}
+\alias{anyDuplicated.Vector}
+\alias{anyDuplicated,Vector-method}
 \alias{unique.Vector}
+\alias{unique,Vector-method}
 
 \alias{\%in\%,Vector,Vector-method}
 \alias{\%in\%,Vector,ANY-method}
@@ -57,9 +64,6 @@
 \alias{xtfrm,Vector-method}
 
 \alias{table,Vector-method}
-
-\alias{sameAsLastROW}
-\alias{sameAsLastROW,ANY-method}
 
 \title{Compare, order, tabulate vector-like objects}
 
@@ -98,21 +102,21 @@ pcompare(x, y)
 \S4method{>}{Vector,ANY}(e1, e2)
 \S4method{>}{ANY,Vector}(e1, e2)
 
-## match()
-## -----------
+## sameAsPreviousROW()
+## -------------------
 
-\S4method{match}{Vector,Vector}(x, table, nomatch = NA_integer_, 
-    incomparables = NULL, ...) 
+sameAsPreviousROW(x)
+
+## match()
+## -------
+
+\S4method{match}{Vector,Vector}(x, table, nomatch = NA_integer_,
+    incomparables = NULL, ...)
 
 ## selfmatch()
 ## -----------
 
 selfmatch(x, ...)
-
-## sameAsLastROW()
-## -----------
-
-sameAsLastROW(x)
 
 ## duplicated() & unique()
 ## -----------------------
@@ -137,7 +141,7 @@ countMatches(x, table, ...)
 ## rank()
 ## ------
 
-\S4method{rank}{Vector}(x, na.last = TRUE, ties.method = c("average", 
+\S4method{rank}{Vector}(x, na.last = TRUE, ties.method = c("average",
         "first", "last", "random", "max", "min"), by)
 
 ## sort()
@@ -146,7 +150,7 @@ countMatches(x, table, ...)
 \S4method{sort}{Vector}(x, decreasing=FALSE, na.last=NA, by)
 
 ## xtfrm()
-## ------
+## -------
 
 \S4method{xtfrm}{Vector}(x)
 
@@ -242,10 +246,11 @@ countMatches(x, table, ...)
   vector then \code{pcompare(x, y)} returns a zero-length integer vector.
 
   \code{selfmatch(x, ...)} is equivalent to \code{match(x, x, ...)}. This
-  is actually how the default \code{ANY} method is implemented. However note that
-  the default \code{selfmatch(x, ...)} for \link{Vector} \code{x} will typically 
-  be more efficient than \code{match(x, x, ...)}, and can be made even more so
-  if a specific \code{selfmatch} method is implemented for a given subclass.
+  is actually how the default \code{ANY} method is implemented. However note
+  that the default \code{selfmatch(x, ...)} for \link{Vector} \code{x} will
+  typically be more efficient than \code{match(x, x, ...)}, and can be made
+  even more so if a specific \code{selfmatch} method is implemented for a
+  given subclass.
 
   \code{findMatches} is an enhanced version of \code{match} which, by default
   (i.e. if \code{select="all"}), returns all the matches in a \link{Hits}
@@ -259,7 +264,11 @@ countMatches(x, table, ...)
 \value{
   For \code{pcompare}: see Details section above.
 
-  For \code{match} and \code{selfmatch}: an integer vector of the 
+  For \code{sameAsPreviousROW}: a logical vector of length equal to \code{x},
+  indicating whether each entry of \code{x} is equal to the previous entry.
+  The first entry is always \code{FALSE} for a non-zero-length \code{x}.
+
+  For \code{match} and \code{selfmatch}: an integer vector of the
   same length as \code{x}.
 
   For \code{duplicated}, \code{unique}, and \code{\%in\%}: see
@@ -278,10 +287,6 @@ countMatches(x, table, ...)
 
   For \code{xtfrm}: see \code{?base::\link[base]{xtfrm}}.
 
-  For \code{sameAsLastROW}: a logical vector of length equal to \code{x},
-  indicating whether each entry of \code{x} is equal to the previous entry. 
-  The first entry is always \code{FALSE} for a non-zero-length \code{x}.
-
   For \code{table}: a 1D array of integer values promoted to the
   \code{"table"} class. See \code{?BiocGeneric::\link[BiocGenerics]{table}}
   for more information.
@@ -295,61 +300,66 @@ countMatches(x, table, ...)
   The first category \emph{must} be implemented for each subclass, as
   these do not have sensible defaults for arbitrary \link{Vector} objects:
   \itemize{
-    \item No default \code{order} method is provided for \link{Vector} objects. 
-          Calling \code{order} on a \link{Vector} object will use \code{base::order}, which calls
-          \code{xtfrm}, with in turn calls \code{order}, which calls 
-          \code{xtfrm}, and so on. This infinite recursion of S4 dispatch
-          eventually results in an error about reaching the stack limit.
+    \item The \pkg{S4Vectors} package provides no \code{order} method for
+          \link{Vector} objects. So calling \code{order} on a \link{Vector}
+          derivative for which no specific \code{order} method is defined
+          will use \code{base::order}, which calls \code{xtfrm}, with in
+          turn calls \code{order}, which calls \code{xtfrm}, and so on.
+          This infinite recursion of S4 dispatch eventually results in an
+          error about reaching the stack limit.
 
-          To avoid this behavior, a specialized \code{order} method needs to be
-          implemented for specific \link{Vector} subclasses (e.g. for
-          \link{Hits} and \link[IRanges]{IntegerRanges} objects).
+          To avoid this behavior, a specialized \code{order} method needs
+          to be implemented for specific \link{Vector} subclasses (e.g.
+          for \link{Hits} and \link[IRanges]{IntegerRanges} objects).
 
-    \item \code{sameAsLastROW} is default implemented on top of the \code{==} method,
-          so will work out-of-the-box on \link{Vector} objects for which 
-          \code{==} works as expected. However, \code{==} is default implemented
-          on top of \code{pcompare}, which itself has a default implementation
-          that relies on \code{sameAsLastROW}! This again leads 
-          to infinite recursion and an error about the stack limit.
+    \item \code{sameAsPreviousROW} is default implemented on top of the
+          \code{==} method, so will work out-of-the-box on \link{Vector}
+          objects for which \code{==} works as expected. However, \code{==}
+          is default implemented on top of \code{pcompare}, which itself has
+          a default implementation that relies on \code{sameAsPreviousROW}!
+          This again leads to infinite recursion and an error about the stack
+          limit.
 
-          To avoid this behavior, a specialized \code{sameAsLastROW} method
-          must be implemented for specific \link{Vector} subclasses. 
+          To avoid this behavior, a specialized \code{sameAsPreviousROW} method
+          must be implemented for specific \link{Vector} subclasses.
   }
 
   The second category contains methods that have default implementations
   provided for all \link{Vector} objects and their derivatives. These
   methods rely on the first category to provide sensible default behaviour
   without further work from the developer. However, it is often the case
-  that greater efficiency can be achieved for a specific data structure 
+  that greater efficiency can be achieved for a specific data structure
   by writing a subclass-specific version of these methods.
   \itemize{
-    \item The \code{pcompare} method for \link{Vector} objects is implemented 
-          on top of \code{order} and \code{sameAsLastROW}, and so will work 
-          out-of-the-box on \link{Vector} objects for which \code{sameAsLastROW}
-          and \code{order} works as expected.
+    \item The \code{pcompare} method for \link{Vector} objects is implemented
+          on top of \code{order} and \code{sameAsPreviousROW}, and so will
+          work out-of-the-box on \link{Vector} derivatives for which
+          \code{order} and \code{sameAsPreviousROW} work as expected.
 
-    \item \code{xtfrm} is implemented on top of \code{order} and
-          \code{sameAsLastROW}, so it will work out-of-the-box on \link{Vector} 
-          objects for which \code{order} and \code{sameAsLastROW} work as expected.
+    \item The \code{xtfrm} method for \link{Vector} objects is also implemented
+          on top of \code{order} and \code{sameAsPreviousROW}, and so will
+          also work out-of-the-box on \link{Vector} derivatives for which
+          \code{order} and \code{sameAsPreviousROW} work as expected.
 
     \item \code{selfmatch} is itself implemented on top of \code{xtfrm}
-          (indirectly, via \code{\link{grouping}}) so it will work out-of-the-box 
-          on \link{Vector} objects for which \code{xtfrm} works as expected.
+          (indirectly, via \code{\link{grouping}}) so it will work
+          out-of-the-box on \link{Vector} objects for which \code{xtfrm}
+          works as expected.
 
-    \item The \code{match} method for \linkS4class{Vector} objects is 
-          implemented on top of \code{selfmatch}, so works out-of-the-box 
+    \item The \code{match} method for \linkS4class{Vector} objects is
+          implemented on top of \code{selfmatch}, so works out-of-the-box
           on \link{Vector} objects for which \code{selfmatch} works as expected.
   }
 
   (A careful reader may notice that \code{xtfrm} and \code{order} could be
-  swapped between categories to achieve the same effect. Similarly, 
-  \code{sameAsLastROW} and \code{pcompare} could also be swapped. The exact
+  swapped between categories to achieve the same effect. Similarly,
+  \code{sameAsPreviousROW} and \code{pcompare} could also be swapped. The exact
   categorization of these methods is left to the discretion of the developer,
   though this is mostly academic if both choices are specialized.)
 
   The third category also contains methods that have default implementations,
-  but unlike the second category, these defaults are straightforward and generally 
-  do not require any specialization for efficiency purposes.
+  but unlike the second category, these defaults are straightforward and
+  generally  do not require any specialization for efficiency purposes.
   \itemize{
     \item The 6 traditional binary comparison operators are: \code{==},
           \code{!=}, \code{<=}, \code{>=}, \code{<}, and \code{>}.
@@ -404,7 +414,7 @@ setMethod(">", c("Vector", "Vector"),
   }
 }
 
-\author{Hervé Pagès}
+\author{Hervé Pagès, with contributions from Aaron Lun}
 
 \seealso{
   \itemize{

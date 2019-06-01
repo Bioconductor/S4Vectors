@@ -44,9 +44,17 @@
 \alias{decode,Rle-method}
 
 \alias{extractROWS,Rle,ANY-method}
-\alias{[,Rle-method}
-\alias{[<-,Rle-method}
 \alias{extractROWS,Rle,RangeNSBS-method}
+\alias{extractROWS,Rle,NSBS-method}
+\alias{[,Rle-method}
+\alias{replaceROWS,Rle,ANY-method}
+\alias{[<-,Rle,ANY-method}
+\alias{NSBS,Rle-method}
+\alias{as.integer,RleNSBS-method}
+\alias{length,RleNSBS-method}
+\alias{anyDuplicated,RleNSBS-method}
+\alias{isStrictlySorted,RleNSBS-method}
+\alias{extractROWS,Rle,RleNSBS-method}
 
 \alias{rev.Rle}
 \alias{rev,Rle-method}
@@ -60,25 +68,36 @@
 \alias{findRun}
 \alias{findRun,Rle-method}
 \alias{is.na,Rle-method}
-\alias{is.unsorted,Rle-method}
+\alias{anyNA,Rle-method}
+
+\alias{match,ANY,Rle-method}
 \alias{match,Rle,ANY-method}
-\alias{show,Rle-method}
-\alias{showAsCell,Rle-method}
+\alias{match,Rle,Rle-method}
+\alias{duplicated,Rle-method}
+\alias{anyDuplicated.Rle}
+\alias{anyDuplicated,Rle-method}
+\alias{unique,Rle-method}
+\alias{order,Rle-method}
+\alias{is.unsorted,Rle-method}
+\alias{isStrictlySorted,Rle-method}
 \alias{sort,Rle-method}
+\alias{rank,Rle-method}
+\alias{xtfrm,Rle-method}
 \alias{table,Rle-method}
 \alias{tabulate,Rle-method}
-\alias{unique,Rle-method}
-\alias{duplicated,Rle-method}
 
-\alias{setdiff,Rle,Rle-method}
-\alias{setdiff,ANY,Rle-method}
-\alias{setdiff,Rle,ANY-method}
-\alias{intersect,Rle,Rle-method}
-\alias{intersect,ANY,Rle-method}
-\alias{intersect,Rle,ANY-method}
 \alias{union,Rle,Rle-method}
 \alias{union,ANY,Rle-method}
 \alias{union,Rle,ANY-method}
+\alias{intersect,Rle,Rle-method}
+\alias{intersect,ANY,Rle-method}
+\alias{intersect,Rle,ANY-method}
+\alias{setdiff,Rle,Rle-method}
+\alias{setdiff,ANY,Rle-method}
+\alias{setdiff,Rle,ANY-method}
+
+\alias{show,Rle-method}
+\alias{showAsCell,Rle-method}
 
 \title{Rle objects}
 

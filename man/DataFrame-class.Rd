@@ -17,6 +17,8 @@
 
 % subsetting
 \alias{[,DataFrame-method}
+\alias{replaceROWS,DataFrame,ANY-method}
+\alias{mergeROWS,DataFrame,ANY-method}
 \alias{[<-,DataFrame-method}
 \alias{[[<-,DataFrame-method}
 \alias{[[,DataFrame-method}
@@ -41,8 +43,10 @@
 
 % combining
 \alias{bindROWS,DataFrame-method}
+\alias{rbind.DataFrame}
 \alias{rbind,DataFrame-method}
 \alias{c,DataFrame-method}
+\alias{cbind.DataFrame}
 \alias{cbind,DataFrame-method}
 
 \title{DataFrame objects}

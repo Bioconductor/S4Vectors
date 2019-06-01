@@ -53,6 +53,21 @@ setMethod("parallelVectorNames", "ANY",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+### The default method (defined in BiocGenerics) does complicated, costly,
+### and dangerous things, and sometimes it actually breaks valid objects
+### (e.g. it breaks valid OverlapEncodings objects). So we overwrite it with
+### a method for Vector objects that does nothing! That way it's simple,
+### cheap, and safe ;-). And that's really all it needs to do at the moment.
+###
+
+setMethod("updateObject", "Vector",
+    function(object, ..., verbose=FALSE) object
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters
 ###
 
@@ -107,9 +122,9 @@ setGeneric("values", function(x, ...) standardGeneric("values"))
 
 setMethod("values", "Vector", function(x, ...) elementMetadata(x, ...))
 
-setMethod("anyNA", "Vector", function(x, recursive=FALSE) any(is.na(x)))
+setMethod("anyNA", "Vector", function(x, recursive=FALSE) FALSE)
 
-setMethod("is.na", "Vector", function(x) rep(FALSE, length(x)))
+setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -204,18 +219,79 @@ setValidity2("Vector", .valid.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### updateObject()
-###
-### The default method (defined in BiocGenerics) does complicated, costly,
-### and dangerous things, and sometimes it actually breaks valid objects
-### (e.g. it breaks valid OverlapEncodings objects). So we overwrite it with
-### a method for Vector objects that does nothing! That way it's simple,
-### cheap, and safe ;-). And that's really all it needs to do at the moment.
+### Setters
 ###
 
-setMethod("updateObject", "Vector",
-    function(object, ..., verbose=FALSE) object
+setGeneric("elementMetadata<-",
+           function(x, ..., value) standardGeneric("elementMetadata<-"))
+
+### NOT exported but used in packages IRanges, GenomicRanges,
+### SummarizedExperiment, GenomicAlignments, and maybe more...
+### 3x faster than new("DataFrame", nrows=nrow).
+### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
+make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
+
+.normalize_mcols_replacement_value <- function(value, x)
+{
+    x_slots <- getSlots(class(x))
+    ## Should never happen because 'x' should always be a Vector object so
+    ## should always have the 'elementMetadata' slot.
+    if (!("elementMetadata" %in% names(x_slots)))
+        stop(wmsg("trying to set metadata columns on an object that does ",
+                  "not support them (i.e. with no 'elementMetadata' slot)"))
+    target_class <- x_slots[["elementMetadata"]]
+    if (is.null(value)) {
+        if (is(NULL, target_class))
+            return(NULL)
+        value <- make_zero_col_DataFrame(length(x))
+    }
+    if (!is(value, target_class))
+        value <- as(value, target_class)
+    ## From here 'value' is guaranteed to be a DataTable object.
+    if (!is.null(rownames(value)))
+        rownames(value) <- NULL
+    V_recycle(value, x, x_what="value", skeleton_what="x")
+}
+
+setReplaceMethod("elementMetadata", "Vector",
+    function(x, ..., value)
+    {
+        value <- .normalize_mcols_replacement_value(value, x)
+        BiocGenerics:::replaceSlots(x, elementMetadata=value, check=FALSE)
+    }
 )
+
+setGeneric("mcols<-", function(x, ..., value) standardGeneric("mcols<-"))
+
+setReplaceMethod("mcols", "Vector",
+    function(x, ..., value) `elementMetadata<-`(x, ..., value=value)
+)
+
+setGeneric("values<-", function(x, ..., value) standardGeneric("values<-"))
+
+setReplaceMethod("values", "Vector",
+                 function(x, value) {
+                     elementMetadata(x) <- value
+                     x
+                 })
+
+setGeneric("rename", function(x, ...) standardGeneric("rename"))
+
+.renameVector <- function(x, ...) {
+  newNames <- c(...)
+  if (!is.character(newNames) || any(is.na(newNames))) {
+      stop("arguments in '...' must be character and not NA")
+  }
+  badOldNames <- setdiff(names(newNames), names(x))
+  if (length(badOldNames))
+    stop("Some 'from' names in value not found on 'x': ",
+         paste(badOldNames, collapse = ", "))
+  names(x)[match(names(newNames), names(x))] <- newNames
+  x
+}
+
+setMethod("rename", "vector", .renameVector)
+setMethod("rename", "Vector", .renameVector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -310,82 +386,6 @@ setMethod("as.env", "Vector", function(x, enclos, tform = identity) {
 
 as.list.Vector <- function(x, ...) as.list(x, ...)
 setMethod("as.list", "Vector", function(x, ...) as.list(as(x, "List"), ...))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Setters
-###
-
-setGeneric("elementMetadata<-",
-           function(x, ..., value) standardGeneric("elementMetadata<-"))
-
-### NOT exported but used in packages IRanges, GenomicRanges,
-### SummarizedExperiment, GenomicAlignments, and maybe more...
-### 3x faster than new("DataFrame", nrows=nrow).
-### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
-make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
-
-.normalize_mcols_replacement_value <- function(value, x)
-{
-    x_slots <- getSlots(class(x))
-    ## Should never happen because 'x' should always be a Vector object so
-    ## should always have the 'elementMetadata' slot.
-    if (!("elementMetadata" %in% names(x_slots)))
-        stop(wmsg("trying to set metadata columns on an object that does ",
-                  "not support them (i.e. with no 'elementMetadata' slot)"))
-    target_class <- x_slots[["elementMetadata"]]
-    if (is.null(value)) {
-        if (is(NULL, target_class))
-            return(NULL)
-        value <- make_zero_col_DataFrame(length(x))
-    }
-    if (!is(value, target_class))
-        value <- as(value, target_class)
-    ## From here 'value' is guaranteed to be a DataTable object.
-    if (!is.null(rownames(value)))
-        rownames(value) <- NULL
-    V_recycle(value, x, x_what="value", skeleton_what="x")
-}
-
-setReplaceMethod("elementMetadata", "Vector",
-    function(x, ..., value)
-    {
-        value <- .normalize_mcols_replacement_value(value, x)
-        BiocGenerics:::replaceSlots(x, elementMetadata=value, check=FALSE)
-    }
-)
-
-setGeneric("mcols<-", function(x, ..., value) standardGeneric("mcols<-"))
-
-setReplaceMethod("mcols", "Vector",
-    function(x, ..., value) `elementMetadata<-`(x, ..., value=value)
-)
-
-setGeneric("values<-", function(x, ..., value) standardGeneric("values<-"))
-
-setReplaceMethod("values", "Vector",
-                 function(x, value) {
-                     elementMetadata(x) <- value
-                     x
-                 })
-
-setGeneric("rename", function(x, ...) standardGeneric("rename"))
-
-.renameVector <- function(x, ...) {
-  newNames <- c(...)
-  if (!is.character(newNames) || any(is.na(newNames))) {
-      stop("arguments in '...' must be character and not NA")
-  }
-  badOldNames <- setdiff(names(newNames), names(x))
-  if (length(badOldNames))
-    stop("Some 'from' names in value not found on 'x': ",
-         paste(badOldNames, collapse = ", "))
-  names(x)[match(names(newNames), names(x))] <- newNames
-  x
-}
-
-setMethod("rename", "vector", .renameVector)
-setMethod("rename", "Vector", .renameVector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

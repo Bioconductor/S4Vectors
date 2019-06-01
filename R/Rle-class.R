@@ -379,7 +379,7 @@ setMethod("replaceROWS", c("Rle", "ANY"),
     }
 )
 
-setReplaceMethod("[", "Rle",
+setReplaceMethod("[", c("Rle", "ANY"),
     function(x, i, j,..., value)
     {
         if (!missing(j) || length(list(...)) > 0L)
@@ -663,15 +663,6 @@ setMethod("anyNA", "Rle",
           function(x)
               anyNA(runValue(x)))
 
-setMethod("is.unsorted", "Rle",
-          function(x, na.rm = FALSE, strictly = FALSE)
-          {
-              ans <- is.unsorted(runValue(x), na.rm = na.rm, strictly = strictly)
-              if (strictly && !ans)
-                  ans <- any(runLength(x) > 1L)
-              ans
-          })
-
 setMethod("match", c("ANY", "Rle"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
     {
@@ -706,6 +697,19 @@ setMethod("match", c("Rle", "Rle"),
     }
 )
 
+.duplicated.Rle <- function(x, incomparables=FALSE, fromLast=FALSE)
+    stop("no \"duplicated\" method for Rle objects yet, sorry")
+setMethod("duplicated", "Rle", .duplicated.Rle)
+
+### S3/S4 combo for anyDuplicated.Rle
+anyDuplicated.Rle <- function(x, incomparables=FALSE, ...)
+    any(runLength(x) != 1L) || anyDuplicated(runValue(x))
+setMethod("anyDuplicated", "Rle", anyDuplicated.Rle)
+
+.unique.Rle <- function(x, incomparables=FALSE, ...)
+    unique(runValue(x), incomparables=incomparables, ...)
+setMethod("unique", "Rle", .unique.Rle)
+
 setMethod("order", "Rle",
           function(..., na.last=TRUE, decreasing=FALSE,
                    method=c("auto", "shell", "radix"))
@@ -724,6 +728,19 @@ setMethod("order", "Rle",
     }
 })
 
+setMethod("is.unsorted", "Rle",
+          function(x, na.rm = FALSE, strictly = FALSE)
+          {
+              ans <- is.unsorted(runValue(x), na.rm = na.rm, strictly = strictly)
+              if (strictly && !ans)
+                  ans <- any(runLength(x) > 1L)
+              ans
+          })
+
+setMethod("isStrictlySorted", "Rle",
+    function(x) all(runLength(x) == 1L) && isStrictlySorted(runValue(x))
+)
+
 .sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
 {
     if (is.na(na.last)) {
@@ -734,10 +751,6 @@ setMethod("order", "Rle",
     new_Rle(runValue(x)[ord], runLength(x)[ord])
 }
 setMethod("sort", "Rle", .sort.Rle)
-
-setMethod("xtfrm", "Rle", function(x) {
-    initialize(x, values=xtfrm(runValue(x)))
-})
 
 setMethod("rank", "Rle", function (x, na.last = TRUE,
                                    ties.method = c("average", "first", 
@@ -756,6 +769,10 @@ setMethod("rank", "Rle", function (x, na.last = TRUE,
                   }
               }
           })
+
+setMethod("xtfrm", "Rle", function(x) {
+    initialize(x, values=xtfrm(runValue(x)))
+})
 
 setMethod("table", "Rle", 
     function(...)
@@ -808,23 +825,6 @@ setMethod("tabulate", "Rle",
           function (bin, nbins = max(bin, 1L, na.rm = TRUE)) {
               tabulate2(runValue(bin), nbins, runLength(bin))
           })
-
-.duplicated.Rle <- function(x, incomparables=FALSE, fromLast=FALSE)
-    stop("no \"duplicated\" method for Rle objects yet, sorry")
-setMethod("duplicated", "Rle", .duplicated.Rle)
-
-.unique.Rle <- function(x, incomparables=FALSE, ...)
-    unique(runValue(x), incomparables=incomparables, ...)
-setMethod("unique", "Rle", .unique.Rle)
-
-### S3/S4 combo for anyDuplicated.Rle
-anyDuplicated.Rle <- function(x, incomparables=FALSE, ...)
-    all(runLength(x) == 1L) && anyDuplicated(runValue(x))
-setMethod("anyDuplicated", "Rle", anyDuplicated.Rle)
-
-setMethod("isStrictlySorted", "Rle",
-    function(x)  all(runLength(x) == 1L) && isStrictlySorted(runValue(x))
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

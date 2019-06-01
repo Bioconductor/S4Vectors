@@ -1,7 +1,7 @@
 # Slightly more efficient than relying on the Vector method,
 # which would need to invoke pcompare() and related checks.
-setMethod("sameAsLastROW", "DataFrame", function(x) {
-    is.diff <- lapply(x, FUN=sameAsLastROW)
+setMethod("sameAsPreviousROW", "DataFrame", function(x) {
+    is.diff <- lapply(x, FUN=sameAsPreviousROW)
     Reduce("&", is.diff)
 })
 

@@ -39,6 +39,8 @@ exportClasses(
 S3method(aggregate, Vector)
 
 S3method(anyDuplicated, NSBS)
+S3method(anyDuplicated, Vector)
+S3method(anyDuplicated, Rle)
 
 S3method(as.character, LLint)
 
@@ -121,6 +123,8 @@ export(
     aggregate.Vector,
 
     anyDuplicated.NSBS,
+    anyDuplicated.Vector,
+    anyDuplicated.Rle,
 
     as.character.LLint,
 
@@ -145,7 +149,7 @@ export(
 
     droplevels.Rle,
     droplevels.List,
-    
+
     duplicated.DataTable,
     duplicated.Vector,
 
@@ -187,7 +191,7 @@ export(
 
     transform.DataTable,
     transform.Vector,
-    
+
     union.Vector,
 
     unique.DataTable,
@@ -373,9 +377,9 @@ export(
 
     ## Vector-comparison.R:
     pcompare,
+    sameAsPreviousROW,
     selfmatch,
     findMatches, countMatches,
-    sameAsLastROW,
 
     ## Hits-class.R:
     from, to, nLnode, nRnode, nnode, countLnodeHits, countRnodeHits,
@@ -430,7 +434,8 @@ exportMethods(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
-    pcompare, 
+    pcompare,
+    sameAsPreviousROW,
     selfmatch,
     findMatches, countMatches,
     from, to, nLnode, nRnode, nnode, countLnodeHits, countRnodeHits,

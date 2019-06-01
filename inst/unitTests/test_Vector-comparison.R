@@ -1,11 +1,11 @@
 test_Vector_comparison <- function() {
-    # Creating a dummy Vector class, and implementing the 
+    # Creating a dummy Vector class, and implementing the
     # minimum operations required to get all comparison methods.
     setClass("AaronStuff", contains="Vector", slots=c(stuff="integer"))
     setMethod("parallelSlotNames", "AaronStuff", function(x) c("stuff", callNextMethod()))
-    
-    setMethod("sameAsLastROW", "AaronStuff", function(x) sameAsLastROW(x@stuff))
-    setMethod("order", "AaronStuff", 
+
+    setMethod("sameAsPreviousROW", "AaronStuff", function(x) sameAsPreviousROW(x@stuff))
+    setMethod("order", "AaronStuff",
         function(..., na.last = TRUE, decreasing = FALSE, method = c("auto", "shell", "radix")) {
             everything <- list(...)
             everything <- lapply(everything, slot, "stuff")
@@ -19,15 +19,15 @@ test_Vector_comparison <- function() {
     # Basic checks.
     checkIdentical(order(x), order(a))
 
-    checkIdentical(sameAsLastROW(x), c(FALSE, x[-1]==head(x, -1)))
-    checkIdentical(sameAsLastROW(x), sameAsLastROW(a))
+    checkIdentical(sameAsPreviousROW(x), c(FALSE, x[-1]==head(x, -1)))
+    checkIdentical(sameAsPreviousROW(x), sameAsPreviousROW(a))
 
     sx <- sort(x)
-    checkIdentical(sameAsLastROW(sx), c(FALSE, sx[-1]==head(sx, -1)))
-    checkIdentical(sameAsLastROW(sx), sameAsLastROW(sort(a)))
+    checkIdentical(sameAsPreviousROW(sx), c(FALSE, sx[-1]==head(sx, -1)))
+    checkIdentical(sameAsPreviousROW(sx), sameAsPreviousROW(sort(a)))
 
-    checkIdentical(sameAsLastROW(x[0]), logical(0)) # robust to empty inputs.
-    checkIdentical(sameAsLastROW(a[0]), logical(0)) 
+    checkIdentical(sameAsPreviousROW(x[0]), logical(0)) # robust to empty inputs.
+    checkIdentical(sameAsPreviousROW(a[0]), logical(0))
 
     # Checking selfmatch.
     checkIdentical(selfmatch(x), match(x, x))

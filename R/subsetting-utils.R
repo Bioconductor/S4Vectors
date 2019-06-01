@@ -121,6 +121,7 @@ setMethod("complement", "NSBS", function(x) {
     NativeNSBS(subscript, x@upper_bound, TRUE, FALSE)
 })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### NativeNSBS objects.
 ###
@@ -614,6 +615,7 @@ setMethod("[", "LLint", subset_along_ROWS)
 setMethod("replaceROWS", c("ANY", "ANY"), default_replaceROWS)
 
 setMethod("mergeROWS", c("ANY", "ANY"), default_mergeROWS)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### normalizeDoubleBracketSubscript()

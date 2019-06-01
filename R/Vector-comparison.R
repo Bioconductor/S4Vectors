@@ -13,9 +13,11 @@
 ###     >=
 ###     <
 ###     >
+###     sameAsPreviousROW
 ###     match
 ###     selfmatch
 ###     duplicated
+###     anyDuplicated
 ###     unique
 ###     %in%
 ###     findMatches
@@ -23,6 +25,7 @@
 ###     order
 ###     sort
 ###     rank
+###     xtfrm
 ###     table
 
 
@@ -39,6 +42,28 @@
 ###
 
 setGeneric("pcompare", function(x, y) standardGeneric("pcompare"))
+
+setMethod("pcompare", c("numeric", "numeric"), function(x, y) {
+    as.integer(sign(x - y))
+})
+
+setMethod("pcompare", c("ANY", "ANY"), function(x, y) {
+    combined <- bindROWS(x, list(y))
+    original <- c(seq_len(NROW(x)), seq_len(NROW(y)))
+    is.x <- rep(c(TRUE, FALSE), c(NROW(x), NROW(y)))
+
+    o <- order(combined)
+    original <- original[o]
+    is.x <- is.x[o]
+
+    grouping <- cumsum(!sameAsPreviousROW(extractROWS(combined, o)))
+    x.groups <- integer(NROW(x))
+    x.groups[original[is.x]] <- grouping[is.x]
+    y.groups <- integer(NROW(y))
+    y.groups[original[!is.x]] <- grouping[!is.x]
+
+    pcompare(x.groups, y.groups)
+})
 
 ### The methods below are implemented on top of pcompare().
 
@@ -60,54 +85,37 @@ setMethods("<", .OP2_SIGNATURES, function(e1, e2) { !(e2 <= e1) })
 
 setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 
-### Methods for common base types.
-
-setMethod("pcompare", c("numeric", "numeric"), function(x, y) {
-    as.integer(sign(x - y))
-})
-
-setMethod("pcompare", c("ANY", "ANY"), function(x, y) {
-    combined <- bindROWS(x, list(y))
-    original <- c(seq_len(NROW(x)), seq_len(NROW(y)))
-    is.x <- rep(c(TRUE, FALSE), c(NROW(x), NROW(y)))
-
-    o <- order(combined)
-    original <- original[o]
-    is.x <- is.x[o]
-
-    grouping <- cumsum(!sameAsLastROW(extractROWS(combined, o)))
-    x.groups <- integer(NROW(x))
-    x.groups[original[is.x]] <- grouping[is.x]
-    y.groups <- integer(NROW(y))
-    y.groups[original[!is.x]] <- grouping[!is.x]
-
-    pcompare(x.groups, y.groups)
-})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Comparisons along the ROWS
 ###
 ### Provides a basic implementation of what is different between ROWS.
 ###
+### The default "sameAsPreviousROW" method below in implemented on top
+### of ==.
+###
 
-setGeneric("sameAsLastROW", function(x) standardGeneric("sameAsLastROW"))
+setGeneric("sameAsPreviousROW",
+    function(x) standardGeneric("sameAsPreviousROW")
+)
 
-setMethod("sameAsLastROW", "ANY", function(x) {
+setMethod("sameAsPreviousROW", "ANY", function(x) {
     if (NROW(x)==0) {
         logical(0)
     } else {
-        c(FALSE, extractROWS(x, -1L)==extractROWS(x, -NROW(x)))
+        c(FALSE, tail(x, n=-1L) == head(x, n=-1L))
     }
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### match()
 ###
-### The default "match" method below is implemented on top of 
+### The default "match" method below is implemented on top of
 ### selfmatch().
 ###
 
-setMethod("match", c("Vector", "Vector"), 
+setMethod("match", c("Vector", "Vector"),
     function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) 
 {
     # table goes first so it gets picked up by 'selfmatch'.
@@ -119,6 +127,7 @@ setMethod("match", c("Vector", "Vector"),
     ans[is.na(ans) | ans > NROW(table)] <- nomatch
     ans
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### selfmatch()
@@ -189,10 +198,11 @@ reverseSelfmatchMapping <- function(selfmatch_mapping)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### duplicated() & unique()
+### duplicated() & anyDuplicated() & unique()
 ###
 ### The "duplicated" method below is implemented on top of selfmatch().
-### The "unique" method below is implemented on top of duplicated().
+### The "anyDuplicated" and "unique" methods below are implemented on top
+### of duplicated().
 ###
 
 ### S3/S4 combo for duplicated.Vector
@@ -201,13 +211,13 @@ duplicated.Vector <- function(x, incomparables=FALSE, ...)
 
 .duplicated.Vector <- function(x, incomparables=FALSE, ...)
 {
-    if (!identical(incomparables, FALSE)) 
-        stop("the \"duplicated\" method for Vector objects ", 
+    if (!identical(incomparables, FALSE))
+        stop("the \"duplicated\" method for Vector objects ",
              "only accepts 'incomparables=FALSE'")
     args <- list(...)
     if ("fromLast" %in% names(args)) {
         fromLast <- args$fromLast
-        if (!isTRUEorFALSE(fromLast)) 
+        if (!isTRUEorFALSE(fromLast))
             stop("'fromLast' must be TRUE or FALSE")
         args$fromLast <- NULL
         if (fromLast)
@@ -223,11 +233,26 @@ duplicated.Vector <- function(x, incomparables=FALSE, ...)
 }
 setMethod("duplicated", "Vector", .duplicated.Vector)
 
+### S3/S4 combo for anyDuplicated.Vector
+anyDuplicated.Vector <- function(x, incomparables=FALSE, ...)
+    anyDuplicated(x, incomparables=incomparables, ...)
+.anyDuplicated.Vector <- function(x, incomparables=FALSE, ...)
+{
+    if (!identical(incomparables, FALSE))
+        stop("the \"anyDuplicated\" method for Vector objects ",
+             "only accepts 'incomparables=FALSE'")
+    any(duplicated(x, incomparables=incomparables, ...))
+}
+setMethod("anyDuplicated", "Vector", .anyDuplicated.Vector)
+
 ### S3/S4 combo for unique.Vector
 unique.Vector <- function(x, incomparables=FALSE, ...)
     unique(x, incomparables=incomparables, ...)
 .unique.Vector <- function(x, incomparables=FALSE, ...)
 {
+    if (!identical(incomparables, FALSE))
+        stop("the \"unique\" method for Vector objects ",
+             "only accepts 'incomparables=FALSE'")
     i <- !duplicated(x, incomparables=incomparables, ...)
     extractROWS(x, i)
 }
@@ -271,11 +296,11 @@ setGeneric("countMatches", signature=c("x", "table"),
 ###   Hits of length 4
 ###   queryLength: 5
 ###   subjectLength: 6
-###     queryHits subjectHits 
-###      <integer>   <integer> 
-###    1         4           4 
-###    2         3           5 
-###    3         5           5 
+###     queryHits subjectHits
+###      <integer>   <integer>
+###    1         4           4
+###    2         3           5
+###    3         5           5
 ###    4         2           6
 ### and the cost of ordering them would probably defeat the purpose of the
 ### "put the smallest object on the right" optimization trick.
@@ -397,6 +422,7 @@ setMethod("rank", "Vector",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### xtfrm()
 ###
@@ -406,11 +432,12 @@ setMethod("rank", "Vector",
 setMethod("xtfrm", "Vector", function(x) {
     o <- order(x)
     y <- extractROWS(x, o)
-    is.unique <- !sameAsLastROW(y)
+    is.unique <- !sameAsPreviousROW(y)
     out.rank <- cumsum(is.unique)
     out.rank[o] <- out.rank
     out.rank
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### table()

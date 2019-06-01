@@ -1,7 +1,7 @@
 \name{DataFrame-comparison}
 \docType{methods}
 
-\alias{sameAsLastROW,DataFrame-method}
+\alias{sameAsPreviousROW,DataFrame-method}
 \alias{match,DataFrame,DataFrame-method}
 \alias{order,DataFrame-method}
 
@@ -38,7 +38,7 @@
 }
 
 \usage{
-\S4method{sameAsLastROW}{DataFrame}(x)
+\S4method{sameAsPreviousROW}{DataFrame}(x)
 
 \S4method{match}{DataFrame,DataFrame}(x, table, nomatch = NA_integer_, incomparables = NULL, ...)
 
@@ -70,7 +70,7 @@
 }
 
 \value{
-  For \code{sameAsLastROW}: see \code{\link{sameAsLastROW}}.
+  For \code{sameAsPreviousROW}: see \code{\link{sameAsPreviousROW}}.
 
   For \code{match}: see \code{\link[base]{match}}.
 
