@@ -23,6 +23,7 @@ exportClasses(
     DataTable_OR_NULL, Vector,
     Hits, SelfHits, SortedByQueryHits, SortedByQuerySelfHits,
     Rle,
+    Factor,
     List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
@@ -316,6 +317,9 @@ export(
     isSelfHit,
     isRedundantHit,
 
+    ## Factor-class.R:
+    Factor,
+
     ## List-class.R:
     List, pc,
 
@@ -392,6 +396,9 @@ export(
     ## Rle-utils.R:
     runsum, runmean, runwtsum, runq,
 
+    ## Factor-class.R:
+    unfactor,
+
     ## List-class.R:
     elementType, elementNROWS, isEmpty, relistToClass,
 
@@ -443,6 +450,7 @@ exportMethods(
     Rle,
     findRun,
     runsum, runmean, runwtsum, runq,
+    unfactor,
     elementType, elementNROWS, isEmpty, relistToClass,
     pcompareRecursively,
     revElements,

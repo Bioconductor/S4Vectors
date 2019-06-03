@@ -91,7 +91,7 @@ setMethods(">", .OP2_SIGNATURES, function(e1, e2) { !(e1 <= e2) })
 ###
 ### Provides a basic implementation of what is different between ROWS.
 ###
-### The default "sameAsPreviousROW" method below in implemented on top
+### The default "sameAsPreviousROW" method below is implemented on top
 ### of ==.
 ###
 
