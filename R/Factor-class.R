@@ -10,8 +10,8 @@
 setClass("Factor",
     contains="Vector",
     representation(
-        index="integer",
-        levels="Vector"
+        levels="Vector",
+        index="integer"
     )
 )
 
@@ -134,9 +134,16 @@ setMethod("unfactor", "Factor",
 {
     ans_levels <- unique(from)
     ans_index <- match(from, ans_levels)
+    from_names <- names(from)
+    if (!is.null(from_names))
+        names(ans_index) <- from_names
+    ans_mcols <- mcols(from, use.names=FALSE)
     ## Validation should not be necessary so we don't use the Factor()
     ## constructor function to avoid the cost of validation.
-    new2("Factor", index=ans_index, levels=ans_levels, check=FALSE)
+    new2("Factor", levels=ans_levels,
+                   index=ans_index,
+                   elementMetadata=ans_mcols,
+                   check=FALSE)
 }
 setAs("Vector", "Factor", .from_Vector_to_Factor)
 
@@ -166,34 +173,69 @@ setMethod("as.character", "Factor",
 ### Constructor
 ###
 
-### Creating an empty Factor object by calling Factor() with no arguments
-### is not supported.
-Factor <- function(index, levels, ...)
+.make_Factor_from_x_and_levels <- function(x, levels, mcols=NULL)
 {
-    mcols <- list(...)
     if (missing(levels)) {
-        if (!is(index, "Vector"))
-            stop(wmsg("'index' must be a Vector object ",
-                      "when the 'levels' argument is not supplied"))
-        if (length(mcols) != 0L)
-            stop(wmsg("the metadata columns in '...' are ignored ",
-                      "when the 'levels' argument is not supplied"))
-        return(as(index, "Factor"))
+        if (missing(x))
+            stop(wmsg("at least 'x' or 'levels' must be specified"))
+        ans <- as(x, "Factor")
+        if (!is.null(mcols))
+            mcols(ans) <- mcols
+        return(ans)
     }
-    if (missing(index)) {
+    if (!is(levels, "Vector"))
+        stop(wmsg("'levels' must be a Vector derivative"))
+    if (missing(x)) {
         index <- integer(0)
     } else {
-        if (!is.numeric(index))
-            stop(wmsg("'index' must be an integer vector"))
-        if (!is.integer(index))
-            index <- as.integer(index)
+        if (!is(x, "Vector"))
+            stop(wmsg("'x' must be a Vector derivative"))
+        index <- match(x, levels)
+        if (anyNA(index))
+            stop(wmsg("'levels' must be a subset of 'x'"))
+        x_names <- names(x)
+        if (!is.null(x_names))
+            names(index) <- x_names
+        if (is.null(mcols))
+            mcols <- mcols(x, use.names=FALSE)
     }
-    if (length(mcols) == 0L) {
+    new2("Factor", levels=levels, index=index, elementMetadata=mcols)
+}
+
+### Creating an empty Factor object by calling Factor() with no arguments
+### is not supported.
+Factor <- function(x, levels, index=NULL, ...)
+{
+    if (length(list(...)) == 0L) {
         mcols <- NULL
     } else {
         mcols <- DataFrame(..., check.names=FALSE)
     }
-    new2("Factor", index=index, levels=levels, elementMetadata=mcols)
+    if (is.null(index)) {
+        ## 'index' is not specified.
+        ans <- .make_Factor_from_x_and_levels(x, levels, mcols=mcols)
+        return(ans)
+    }
+    ## 'index' is specified.
+    if (missing(x)) {
+        if (missing(levels))
+            stop(wmsg("either 'x' or 'levels' must be specified ",
+                      "when 'index' is specified"))
+        if (!is(levels, "Vector"))
+            stop(wmsg("'levels' must be a Vector derivative"))
+    } else {
+        if (!missing(levels))
+            stop(wmsg("at most two out of the 'x', 'levels', and 'index' ",
+                      "arguments can be specified"))
+        if (!is(x, "Vector"))
+            stop(wmsg("'x' must be a Vector derivative"))
+        levels <- x
+    }
+    if (!is.numeric(index))
+        stop(wmsg("'index' must be an integer vector"))
+    if (!is.integer(index))
+        index <- as.integer(index)
+    new2("Factor", levels=levels, index=index, elementMetadata=mcols)
 }
 
 
@@ -275,9 +317,9 @@ setMethod("showAsCell", "Factor",
 {
     if (!isTRUEorFALSE(use.names))
         stop(wmsg("'use.names' must be TRUE or FALSE"))
-    if (!isTRUEorFALSE(ignore.mcols)) 
+    if (!isTRUEorFALSE(ignore.mcols))
         stop(wmsg("'ignore.mcols' must be TRUE or FALSE"))
-    if (!isTRUEorFALSE(check)) 
+    if (!isTRUEorFALSE(check))
         stop(wmsg("'check' must be TRUE or FALSE"))
 
     objects <- prepare_objects_to_bind(x, objects)
