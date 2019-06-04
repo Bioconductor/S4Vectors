@@ -64,16 +64,30 @@ setValidity2("Factor", .validate_Factor)
 ### Constructor
 ###
 
-.encode_Vector_as_Factor <- function(x, levels, mcols=NULL)
+### Kind of follows the naming style of the relistToClass() generic. Yes,
+### ugly names, I know :-/
+### TODO: Maybe rename these generics class_after_relist() and
+### class_after_Factor()? Or target_class_for_relist() and
+### target_class_for_Factor()? Or simply relist_as() and Factor_as()?
+setGeneric("FactorToClass", function(x) standardGeneric("FactorToClass"))
+
+setMethod("FactorToClass", "Vector", function(x) "Factor")
+
+.Factor_as <- function(x, levels)
 {
-    if (!is(x, "Vector"))
-        stop(wmsg("'x' must be a Vector derivative"))
+    if (!missing(levels))
+        return(FactorToClass(levels))
+    if (!missing(x))
+        return(FactorToClass(x))
+    stop(wmsg("at least 'x' or 'levels' must be specified"))
+}
+
+.encode_as_Factor <- function(x, levels, mcols=NULL, Class="Factor")
+{
     if (missing(levels)) {
         levels <- unique(x)
         check <- FALSE
     } else {
-        if (!is(levels, "Vector"))
-            stop(wmsg("'levels' must be a Vector derivative"))
         check <- TRUE
     }
     index <- match(x, levels)
@@ -83,48 +97,33 @@ setValidity2("Factor", .validate_Factor)
     if (!is.null(x_names))
         names(index) <- x_names
     if (is.null(mcols)) {
-        mcols <- mcols(x, use.names=FALSE)
+        if (is(x, "Vector"))
+            mcols <- mcols(x, use.names=FALSE)
     } else {
         if (nrow(mcols) != length(x))
             stop(wmsg("the supplied metadata columns must be parallel to 'x'"))
     }
-    new2("Factor", levels=levels, index=index, elementMetadata=mcols,
-                   check=check)
+    new2(Class, levels=levels, index=index, elementMetadata=mcols, check=check)
 }
 
-### Creating an empty Factor object by calling Factor() with no arguments
-### is not supported.
-Factor <- function(x, levels, index=NULL, ...)
+### One of 'x' or 'levels' can be missing, but not both.
+.new_Factor <- function(x, levels, index=NULL, mcols=NULL, Class="Factor")
 {
-    if (length(list(...)) == 0L) {
-        mcols <- NULL
-    } else {
-        mcols <- DataFrame(..., check.names=FALSE)
-    }
     if (is.null(index)) {
         ## 'index' is not specified.
-        if (!missing(x))
-            return(.encode_Vector_as_Factor(x, levels, mcols=mcols))
-        if (missing(levels))  # Factor()
-            stop(wmsg("at least 'x' or 'levels' must be specified"))
+        if (!missing(x)) {
+            ans <- .encode_as_Factor(x, levels, mcols=mcols, Class=Class)
+            return(ans)
+        }
         ## Factor(levels=levels)
         index <- integer(0)
     } else {
         ## 'index' is specified.
-        if (missing(x)) {
-            if (missing(levels))  # Factor(index=index)
-                stop(wmsg("either 'x' or 'levels' must be specified ",
-                          "when 'index' is specified"))
-            ## Factor(levels=levels, index=index)
-            if (!is(levels, "Vector"))
-                stop(wmsg("'levels' must be a Vector derivative"))
-        } else {
+        if (!missing(x)) {
             if (!missing(levels))  # Factor(x, levels, index)
                 stop(wmsg("at most two out of the 'x', 'levels', and 'index' ",
                           "arguments can be specified"))
             ## Factor(x, index=index)
-            if (!is(x, "Vector"))
-                stop(wmsg("'x' must be a Vector derivative"))
             levels <- x
         }
         if (!is.numeric(index))
@@ -132,7 +131,18 @@ Factor <- function(x, levels, index=NULL, ...)
         if (!is.integer(index))
             index <- as.integer(index)
     }
-    new2("Factor", levels=levels, index=index, elementMetadata=mcols)
+    new2(Class, levels=levels, index=index, elementMetadata=mcols)
+}
+
+Factor <- function(x, levels, index=NULL, ...)
+{
+    Class <- .Factor_as(x, levels)
+    if (length(list(...)) == 0L) {
+        mcols <- NULL
+    } else {
+        mcols <- DataFrame(..., check.names=FALSE)
+    }
+    .new_Factor(x, levels, index=index, mcols=mcols, Class=Class)
 }
 
 
@@ -206,7 +216,9 @@ setMethod("unfactor", "Factor",
 ### Coercion
 ###
 
-setAs("Vector", "Factor", function(from) .encode_Vector_as_Factor(from))
+setAs("Vector", "Factor",
+    function(from) .encode_as_Factor(from, Class=FactorToClass(from))
+)
 
 setMethod("as.integer", "Factor", function(x) x@index)
 

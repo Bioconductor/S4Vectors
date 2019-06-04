@@ -7,6 +7,9 @@
 
 \alias{parallelSlotNames,Factor-method}
 
+\alias{FactorToClass}
+\alias{FactorToClass,Vector-method}
+
 \alias{names,Factor-method}
 \alias{names<-,Factor-method}
 \alias{levels<-,Factor-method}
@@ -51,11 +54,19 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 
 \arguments{
   \item{x, levels}{
-    \link{Vector} derivatives.
-    \code{levels} cannot contain duplicates i.e. \code{anyDuplicated(levels)}
-    must be 0. When \code{x} and \code{levels} are both specified,
-    they should have the same class and all the elements in \code{x}
-    must be represented in \code{levels}. See Details section below.
+    At least \code{x} or \code{levels} must be specified. If \code{index}
+    is \code{NULL}, both can be specified.
+
+    When \code{levels} is specified, it must be a \link{Vector}
+    derivative with no duplicates (i.e. \code{anyDuplicated(levels)}
+    must return 0).
+
+    When \code{x} and \code{levels} are both specified, they should
+    typically have the same class (or, at least, \code{match(x, levels)}
+    must work on them), and all the elements in \code{x} must be
+    represented in \code{levels} (i.e. the integer vector returned
+    by \code{match(x, levels)} should contain no \code{NA}s).
+    See Details section below.
   }
   \item{index}{
     \code{NULL} or an integer (or numeric) vector of valid positive indices
@@ -87,8 +98,8 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 
     \item \code{Factor(levels=levels)} (i.e. \code{x} and \code{index} are
           missing): This is a convenient way to construct a 0-length Factor
-          object with the specified levels. In other words it's equivalent to
-          \code{Factor(levels=levels, index=integer(0))}.
+          object with the specified levels. In other words, it's equivalent
+          to \code{Factor(levels=levels, index=integer(0))}.
   }
 }
 
@@ -200,7 +211,7 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 showClass("Factor")  # shows the known subclasses
 
 ## ---------------------------------------------------------------------
-## CONSTRUCTION & ACCESSORS
+## CONSTRUCTOR & ACCESSORS
 ## ---------------------------------------------------------------------
 library(GenomicRanges)
 set.seed(123)

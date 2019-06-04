@@ -397,7 +397,7 @@ export(
     runsum, runmean, runwtsum, runq,
 
     ## Factor-class.R:
-    unfactor,
+    FactorToClass, unfactor,
 
     ## List-class.R:
     elementType, elementNROWS, isEmpty, relistToClass,
@@ -450,7 +450,7 @@ exportMethods(
     Rle,
     findRun,
     runsum, runmean, runwtsum, runq,
-    unfactor,
+    FactorToClass, unfactor,
     elementType, elementNROWS, isEmpty, relistToClass,
     pcompareRecursively,
     revElements,
