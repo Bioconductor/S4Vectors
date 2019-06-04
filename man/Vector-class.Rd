@@ -380,6 +380,9 @@
 
     \item \link{Vector-merge} for merging vector-like objects.
 
+    \item \link{Factor} for a direct Vector extension that serves a similar
+          role as \link[base]{factor} in base R.
+
     \item \link{List} for a direct Vector extension that serves a similar
           role as \link[base]{list} in base R.
 

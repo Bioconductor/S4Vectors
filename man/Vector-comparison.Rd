@@ -138,16 +138,16 @@ selfmatch(x, ...)
 findMatches(x, table, select=c("all", "first", "last"), ...)
 countMatches(x, table, ...)
 
+## sort()
+## ------
+
+\S4method{sort}{Vector}(x, decreasing=FALSE, na.last=NA, by)
+
 ## rank()
 ## ------
 
 \S4method{rank}{Vector}(x, na.last = TRUE, ties.method = c("average",
         "first", "last", "random", "max", "min"), by)
-
-## sort()
-## ------
-
-\S4method{sort}{Vector}(x, decreasing=FALSE, na.last=NA, by)
 
 ## xtfrm()
 ## -------

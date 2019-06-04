@@ -61,6 +61,82 @@ setValidity2("Factor", .validate_Factor)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Constructor
+###
+
+.encode_Vector_as_Factor <- function(x, levels, mcols=NULL)
+{
+    if (!is(x, "Vector"))
+        stop(wmsg("'x' must be a Vector derivative"))
+    if (missing(levels)) {
+        levels <- unique(x)
+        check <- FALSE
+    } else {
+        if (!is(levels, "Vector"))
+            stop(wmsg("'levels' must be a Vector derivative"))
+        check <- TRUE
+    }
+    index <- match(x, levels)
+    if (check && anyNA(index))
+        stop(wmsg("all the elements in 'x' must be represented in 'levels'"))
+    x_names <- names(x)
+    if (!is.null(x_names))
+        names(index) <- x_names
+    if (is.null(mcols)) {
+        mcols <- mcols(x, use.names=FALSE)
+    } else {
+        if (nrow(mcols) != length(x))
+            stop(wmsg("the supplied metadata columns must be parallel to 'x'"))
+    }
+    new2("Factor", levels=levels, index=index, elementMetadata=mcols,
+                   check=check)
+}
+
+### Creating an empty Factor object by calling Factor() with no arguments
+### is not supported.
+Factor <- function(x, levels, index=NULL, ...)
+{
+    if (length(list(...)) == 0L) {
+        mcols <- NULL
+    } else {
+        mcols <- DataFrame(..., check.names=FALSE)
+    }
+    if (is.null(index)) {
+        ## 'index' is not specified.
+        if (!missing(x))
+            return(.encode_Vector_as_Factor(x, levels, mcols=mcols))
+        if (missing(levels))  # Factor()
+            stop(wmsg("at least 'x' or 'levels' must be specified"))
+        ## Factor(levels=levels)
+        index <- integer(0)
+    } else {
+        ## 'index' is specified.
+        if (missing(x)) {
+            if (missing(levels))  # Factor(index=index)
+                stop(wmsg("either 'x' or 'levels' must be specified ",
+                          "when 'index' is specified"))
+            ## Factor(levels=levels, index=index)
+            if (!is(levels, "Vector"))
+                stop(wmsg("'levels' must be a Vector derivative"))
+        } else {
+            if (!missing(levels))  # Factor(x, levels, index)
+                stop(wmsg("at most two out of the 'x', 'levels', and 'index' ",
+                          "arguments can be specified"))
+            ## Factor(x, index=index)
+            if (!is(x, "Vector"))
+                stop(wmsg("'x' must be a Vector derivative"))
+            levels <- x
+        }
+        if (!is.numeric(index))
+            stop(wmsg("'index' must be an integer vector"))
+        if (!is.integer(index))
+            index <- as.integer(index)
+    }
+    new2("Factor", levels=levels, index=index, elementMetadata=mcols)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessors
 ###
 
@@ -130,22 +206,7 @@ setMethod("unfactor", "Factor",
 ### Coercion
 ###
 
-.from_Vector_to_Factor <- function(from)
-{
-    ans_levels <- unique(from)
-    ans_index <- match(from, ans_levels)
-    from_names <- names(from)
-    if (!is.null(from_names))
-        names(ans_index) <- from_names
-    ans_mcols <- mcols(from, use.names=FALSE)
-    ## Validation should not be necessary so we don't use the Factor()
-    ## constructor function to avoid the cost of validation.
-    new2("Factor", levels=ans_levels,
-                   index=ans_index,
-                   elementMetadata=ans_mcols,
-                   check=FALSE)
-}
-setAs("Vector", "Factor", .from_Vector_to_Factor)
+setAs("Vector", "Factor", function(from) .encode_Vector_as_Factor(from))
 
 setMethod("as.integer", "Factor", function(x) x@index)
 
@@ -167,76 +228,6 @@ setMethod("as.character", "Factor",
         }
     }
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor
-###
-
-.make_Factor_from_x_and_levels <- function(x, levels, mcols=NULL)
-{
-    if (missing(levels)) {
-        if (missing(x))
-            stop(wmsg("at least 'x' or 'levels' must be specified"))
-        ans <- as(x, "Factor")
-        if (!is.null(mcols))
-            mcols(ans) <- mcols
-        return(ans)
-    }
-    if (!is(levels, "Vector"))
-        stop(wmsg("'levels' must be a Vector derivative"))
-    if (missing(x)) {
-        index <- integer(0)
-    } else {
-        if (!is(x, "Vector"))
-            stop(wmsg("'x' must be a Vector derivative"))
-        index <- match(x, levels)
-        if (anyNA(index))
-            stop(wmsg("'levels' must be a subset of 'x'"))
-        x_names <- names(x)
-        if (!is.null(x_names))
-            names(index) <- x_names
-        if (is.null(mcols))
-            mcols <- mcols(x, use.names=FALSE)
-    }
-    new2("Factor", levels=levels, index=index, elementMetadata=mcols)
-}
-
-### Creating an empty Factor object by calling Factor() with no arguments
-### is not supported.
-Factor <- function(x, levels, index=NULL, ...)
-{
-    if (length(list(...)) == 0L) {
-        mcols <- NULL
-    } else {
-        mcols <- DataFrame(..., check.names=FALSE)
-    }
-    if (is.null(index)) {
-        ## 'index' is not specified.
-        ans <- .make_Factor_from_x_and_levels(x, levels, mcols=mcols)
-        return(ans)
-    }
-    ## 'index' is specified.
-    if (missing(x)) {
-        if (missing(levels))
-            stop(wmsg("either 'x' or 'levels' must be specified ",
-                      "when 'index' is specified"))
-        if (!is(levels, "Vector"))
-            stop(wmsg("'levels' must be a Vector derivative"))
-    } else {
-        if (!missing(levels))
-            stop(wmsg("at most two out of the 'x', 'levels', and 'index' ",
-                      "arguments can be specified"))
-        if (!is(x, "Vector"))
-            stop(wmsg("'x' must be a Vector derivative"))
-        levels <- x
-    }
-    if (!is.numeric(index))
-        stop(wmsg("'index' must be an integer vector"))
-    if (!is.integer(index))
-        index <- as.integer(index)
-    new2("Factor", levels=levels, index=index, elementMetadata=mcols)
-}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,12 +283,12 @@ setMethod("showAsCell", "Factor",
 
     ## Prepare 'ans_levels'.
     m <- match(y@levels, x@levels)
-    ans_levels <- c(x@levels, y@levels[is.na(m)])  # technically a union
+    na_idx <- which(is.na(m))
+    ans_levels <- c(x@levels, y@levels[na_idx])  # technically a union
 
     ## Prepare 'ans_index'.
+    m[na_idx] <- length(x@levels) + seq_along(na_idx)
     new_y_index <- m[y@index]
-    na_idx <- which(is.na(new_y_index))
-    new_y_index[na_idx] <- y@index[na_idx] + length(x@levels)
 
     x_index <- x@index
     if (use.names) {
@@ -333,4 +324,46 @@ setMethod("showAsCell", "Factor",
 }
 
 setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Comparing and ordering
+###
+
+setMethod("pcompare", c("Factor", "Factor"),
+    function(x, y)
+    {
+        if (!identical(x@levels, y@levels))
+            stop(wmsg("comparing Factor objects 'x' and 'y' is only ",
+                      "supported when 'levels(x)' and 'levels(y))' ",
+                      "are identical at the moment"))
+        x <- x@index
+        y <- y@index
+        callGeneric()
+    }
+)
+
+setMethod("match", c("Factor", "Factor"),
+    function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
+    {
+        if (!identical(x@levels, table@levels))
+            stop(wmsg("matching Factor object 'x' ",
+                      "against Factor object 'table' is only ",
+                      "supported when 'levels(x)' and 'levels(table))' ",
+                      "are identical at the moment"))
+        x <- x@index
+        table <- table@index
+        callGeneric()
+    }
+)
+
+setMethod("selfmatch", "Factor",
+    function(x, ...)
+    {
+        x <- x@index
+        callGeneric()
+    }
+)
+
+setMethod("xtfrm", "Factor", function(x) x@index)
 

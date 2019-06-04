@@ -37,7 +37,7 @@ setMethod("match", c("Hits", "Hits"),
                        method=c("auto", "quick", "hash"))
     {
         if (!.compatible_Hits(x, table))
-            stop("'x' and 'y' are incompatible Hits objects ",
+            stop("'x' and 'table' are incompatible Hits objects ",
                  "by number of left and/or right nodes")
         if (!is.null(incomparables))
             stop("\"match\" method for Hits objects ",
