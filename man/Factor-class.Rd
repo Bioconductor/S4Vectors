@@ -15,6 +15,8 @@
 \alias{levels}
 \alias{levels<-}
 \alias{levels<-,Factor-method}
+\alias{nlevels}
+\alias{nlevels,Factor-method}
 
 \alias{unfactor}
 \alias{unfactor,factor-method}

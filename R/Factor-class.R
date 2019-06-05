@@ -50,7 +50,7 @@ setMethod("parallelSlotNames", "Factor",
         if (is.na(index_min))
             return("'index' slot contains NAs")
         index_max <- max(x@index)
-        if (index_min < 1L || index_max > length(x@levels))
+        if (index_min < 1L || index_max > NROW(x@levels))
             return("'index' slot contains out-of-bounds indices")
     }
 
@@ -93,7 +93,7 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
     index <- match(x, levels)
     if (check && anyNA(index))
         stop(wmsg("all the elements in 'x' must be represented in 'levels'"))
-    x_names <- names(x)
+    x_names <- ROWNAMES(x)
     if (!is.null(x_names))
         names(index) <- x_names
     if (is.null(mcols)) {
@@ -171,6 +171,8 @@ setReplaceMethod("levels", "Factor",
     }
 )
 
+setMethod("nlevels", "Factor", function(x) NROW(x@levels))
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### unfactor()
@@ -195,6 +197,25 @@ setMethod("unfactor", "factor",
     }
 )
 
+### Use same logic as set_unlisted_names() (see R/List-class.R).
+.set_names_on_unfactor_ans <- function(ans, x_names)
+{
+    if (is.null(x_names))
+        return(ans)
+    if (length(dim(ans)) < 2L) {
+        res <- try(names(ans) <- x_names, silent=TRUE)
+        what <- "names"
+    } else {
+        res <- try(rownames(ans) <- x_names, silent=TRUE)
+        what <- "rownames"
+    }
+    if (is(res, "try-error"))
+        warning(wmsg("failed to set ", what, " on the result of unfactor() ",
+                     "(you can use unfactor(..., use.names=FALSE) to avoid ",
+                     "this warning)"))
+    ans
+}
+
 setMethod("unfactor", "Factor",
     function(x, use.names=TRUE, ignore.mcols=FALSE)
     {
@@ -202,10 +223,10 @@ setMethod("unfactor", "Factor",
             stop(wmsg("'use.names' must be TRUE or FALSE"))
         if (!isTRUEorFALSE(ignore.mcols))
             stop(wmsg("'ignore.mcols' must be TRUE or FALSE"))
-        ans <- x@levels[x@index]
+        ans <- extractROWS(x@levels, x@index)
         if (use.names)
-            names(ans) <- names(x)
-        if (!ignore.mcols)
+            ans <- .set_names_on_unfactor_ans(ans, names(x))
+        if (!ignore.mcols && is(ans, "Vector"))
             mcols(ans) <- mcols(x, use.names=FALSE)
         ans
     }
@@ -276,8 +297,14 @@ setMethod("as.character", "Factor",
         ifelse(x_nmc == 1L, "column", "columns"),
         "\n", sep="")
     x_levels <- levels(x)
-    cat("Levels: ", class(x_levels), " object of length ", length(x_levels),
-        "\n", sep="")
+    x_nlevels <- NROW(x_levels)
+    cat("Levels:", class(x_levels), "object ")
+    if (length(dim(x_levels)) < 2L) {
+        cat("of length", x_nlevels)
+    } else {
+        cat("with", x_nlevels, if (x_nlevels == 1L) "row" else "rows")
+    }
+    cat("\n")
 }
 
 setMethod("show", "Factor", function(object) .show_Factor(object))
@@ -292,17 +319,23 @@ setMethod("showAsCell", "Factor",
 ### Concatenation
 ###
 
-### Returns TRUE if Factor objects 'x' and 'y' have the same levels in the
-### same order.
+### Returns TRUE if Factor objects 'x' and 'y' have the same levels in
+### the same order.
 ### Note that using identical(x@levels, y@levels) for this would be too
 ### strigent and identical() is not reliable anyway (can produce false
 ### positives on objects that use external pointers internally like
 ### DNAStringSet objects).
-.have_same_levels <- function(x, y)
+.same_levels <- function(x_levels, y_levels)
 {
-    class(x@levels) == class(y@levels) &&
-        length(x@levels) == length(y@levels) &&
-            all(x@levels == y@levels)
+    if (class(x_levels) != class(y_levels))
+        return(FALSE)
+    x_levels_dim <- dim(x_levels)
+    y_levels_dim <- dim(y_levels)
+    if (!identical(x_levels_dim, y_levels_dim))
+        return(FALSE)
+    if (is.null(x_levels_dim) && length(x_levels) != length(y_levels))
+        return(FALSE)
+    all(x_levels == y_levels)
 }
 
 ### We trust that 'x' and 'y' are Factor objects. No need to check this.
@@ -322,16 +355,16 @@ setMethod("showAsCell", "Factor",
     ## 2. Take care of slot "levels"
 
     ## Expedite a common situation.
-    if (.have_same_levels(x, y))
+    if (.same_levels(x@levels, y@levels))
         return(ans)  # all indices in 'ans@index' are correct
 
     ## Prepare 'ans_levels'.
     m <- match(y@levels, x@levels)
     na_idx <- which(is.na(m))
-    ans_levels <- c(x@levels, y@levels[na_idx])  # technically a union
+    ans_levels <- bindROWS(x@levels, list(extractROWS(y@levels, na_idx)))
 
     ## Prepare 'ans_index'.
-    m[na_idx] <- length(x@levels) + seq_along(na_idx)
+    m[na_idx] <- NROW(x@levels) + seq_along(na_idx)
     new_y_index <- m[y@index]
 
     x_index <- x@index
@@ -377,7 +410,7 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        if (!.have_same_levels(x, y))
+        if (!.same_levels(x@levels, y@levels))
             stop(wmsg("comparing Factor objects ",
                       "is only supported when the objects to compare have ",
                       "the same levels in the same order at the moment"))
@@ -390,7 +423,7 @@ setMethod("pcompare", c("Factor", "Factor"),
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        if (!.have_same_levels(x, table))
+        if (!.same_levels(x@levels, table@levels))
             stop(wmsg("matching Factor object 'x' ",
                       "against Factor object 'table' ",
                       "is only supported when 'x' and 'table' have ",
