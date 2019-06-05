@@ -178,8 +178,7 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
     if (!is.integer(nRnode))
         nRnode <- as.integer(nRnode)
 
-    if (!(is.null(mcols) || is(mcols, "DataFrame")))
-        stop("'mcols' must be NULL or a DataFrame object")
+    mcols <- normarg_mcols(mcols, Class, length(from))
 
     if (!extends(Class, "SortedByQueryHits")) {
         ## No need to sort the hits by query.
@@ -196,12 +195,9 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
     ans <- .Call2("Hits_new", Class, from, to, nLnode, nRnode, revmap_envir,
                               PACKAGE="S4Vectors")
     if (!is.null(mcols)) {
-        if (nrow(mcols) != length(ans))
-            stop("length of supplied metadata columns ",
-                 "must equal number of hits")
         if (exists("revmap", envir=revmap_envir)) {
             revmap <- get("revmap", envir=revmap_envir)
-            mcols <- mcols[revmap, , drop=FALSE]
+            mcols <- extractROWS(mcols, revmap)
         }
         mcols(ans) <- mcols
     }

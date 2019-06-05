@@ -276,11 +276,11 @@ normarg_mcols <- function(mcols, x_class, x_len)
                   "metadata column", if (one) "" else "s", " ",
                   "of length ", mcols_nrow, " on an object of length ", x_len))
     if (x_len %% mcols_nrow != 0L)
-        warning(wmsg("you supplied ", if (one) "a " else "",
+        warning(wmsg("You supplied ", if (one) "a " else "",
                      "metadata column", if (one) "" else "s", " ",
                      "of length ", mcols_nrow, " to set on an object ",
-                     "of length ", x_len, " however note that the latter ",
-                     "is not a multiple of the former"))
+                     "of length ", x_len, ". However please note that ",
+                     "the latter is not a multiple of the former."))
     i <- rep(seq_len(mcols_nrow), length.out=x_len)
     extractROWS(mcols, i)
 }
