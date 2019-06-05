@@ -6,7 +6,6 @@
 ### sequence i.e. an ordered finite collection of elements.
 ###
 
-
 setClassUnion("DataTable_OR_NULL", c("DataTable", "NULL"))
 
 setClass("Vector",
@@ -16,6 +15,19 @@ setClass("Vector",
         elementMetadata="DataTable_OR_NULL"
     )
 )
+
+### Beware that:
+###   > is(factor(), "vector_OR_Vector")
+###   [1] TRUE
+### even though:
+###   > is(factor(), "vector")
+###   [1] FALSE
+###   > is(factor(), "Vector")
+###   [1] FALSE
+### See R/S4-utils.R for other examples of messed up inheritance with union
+### classes.
+### TODO: Should we explicitely add "factor" to this union?
+setClassUnion("vector_OR_Vector", c("vector", "Vector"))  # vector-like objects
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

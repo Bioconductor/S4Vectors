@@ -10,6 +10,10 @@
 \alias{Vector-class}
 \alias{Vector}
 
+\alias{class:vector_OR_Vector}
+\alias{vector_OR_Vector-class}
+\alias{vector_OR_Vector}
+
 \alias{parallelSlotNames}
 \alias{parallelSlotNames,Vector-method}
 

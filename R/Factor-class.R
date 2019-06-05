@@ -3,14 +3,14 @@
 ### -------------------------------------------------------------------------
 ###
 ### The Factor class serves a similar role as factor in base R except that
-### the levels of a Factor object can be any Vector derivative.
+### the levels of a Factor object can be any vector-like object.
 ###
-
 
 setClass("Factor",
     contains="Vector",
     representation(
-        levels="Vector",
+        levels="vector_OR_Vector",  # will also accept a factor! (see
+                                    # Vector-class.R)
         index="integer"
     )
 )
@@ -34,8 +34,8 @@ setMethod("parallelSlotNames", "Factor",
 .validate_Factor <- function(x)
 {
     ## 'levels' slot
-    if (!is(x@levels, "Vector"))
-        return("'levels' slot must be a Vector derivative")
+    if (!is(x@levels, "vector_OR_Vector"))
+        return("'levels' slot must be a vector_OR_Vector derivative")
     if (anyDuplicated(x@levels))
         return("'levels' slot contains duplicates")
 
@@ -71,7 +71,7 @@ setValidity2("Factor", .validate_Factor)
 ### target_class_for_Factor()? Or simply relist_as() and Factor_as()?
 setGeneric("FactorToClass", function(x) standardGeneric("FactorToClass"))
 
-setMethod("FactorToClass", "Vector", function(x) "Factor")
+setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
 
 .Factor_as <- function(x, levels)
 {
@@ -216,8 +216,27 @@ setMethod("unfactor", "Factor",
 ### Coercion
 ###
 
-setAs("Vector", "Factor",
+### 'as(x, "Factor")' is the same as 'Factor(x)' with 2 IMPORTANT EXCEPTIONS:
+###   (1) If 'x' is an ordinary factor, 'as(x, "Factor")' returns a Factor
+###       with the same levels, encoding, and names, as 'x'.
+###       Note that after coercing an ordinary factor to Factor, going back
+###       to factor again (with as.factor()) restores the original object
+###       with no loss.
+###   (2) If 'x' is a Factor object, 'as(x, "Factor")' is either a no-op
+###       (when 'x' is a Factor **instance**), or a demotion to Factor
+###       (when 'x' is a Factor derivative like GRangesFactor).
+setAs("vector_OR_Vector", "Factor",
     function(from) .encode_as_Factor(from, Class=FactorToClass(from))
+)
+
+### Implement exception (1) (see above).
+setAs("factor", "Factor",
+    function(from)
+        ## In order to be as fast as possible and skip validation, we
+        ## don't use 'Factor(levels=levels(from), index=as.integer(from))'.
+        new2("Factor", levels=levels(from),
+                       index=as.integer(from),
+                       check=FALSE)
 )
 
 setMethod("as.integer", "Factor", function(x) x@index)
@@ -273,6 +292,19 @@ setMethod("showAsCell", "Factor",
 ### Concatenation
 ###
 
+### Returns TRUE if Factor objects 'x' and 'y' have the same levels in the
+### same order.
+### Note that using identical(x@levels, y@levels) for this would be too
+### strigent and identical() is not reliable anyway (can produce false
+### positives on objects that use external pointers internally like
+### DNAStringSet objects).
+.have_same_levels <- function(x, y)
+{
+    class(x@levels) == class(y@levels) &&
+        length(x@levels) == length(y@levels) &&
+            all(x@levels == y@levels)
+}
+
 ### We trust that 'x' and 'y' are Factor objects. No need to check this.
 ### Does NOT validate the result.
 .concatenate_two_Factor_objects <- function(x, y, use.names=TRUE,
@@ -290,7 +322,7 @@ setMethod("showAsCell", "Factor",
     ## 2. Take care of slot "levels"
 
     ## Expedite a common situation.
-    if (identical(x@levels, y@levels))
+    if (.have_same_levels(x, y))
         return(ans)  # all indices in 'ans@index' are correct
 
     ## Prepare 'ans_levels'.
@@ -345,10 +377,10 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        if (!identical(x@levels, y@levels))
-            stop(wmsg("comparing Factor objects 'x' and 'y' is only ",
-                      "supported when 'levels(x)' and 'levels(y))' ",
-                      "are identical at the moment"))
+        if (!.have_same_levels(x, y))
+            stop(wmsg("comparing Factor objects ",
+                      "is only supported when the objects to compare have ",
+                      "the same levels in the same order at the moment"))
         x <- x@index
         y <- y@index
         callGeneric()
@@ -358,11 +390,11 @@ setMethod("pcompare", c("Factor", "Factor"),
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        if (!identical(x@levels, table@levels))
+        if (!.have_same_levels(x, table))
             stop(wmsg("matching Factor object 'x' ",
-                      "against Factor object 'table' is only ",
-                      "supported when 'levels(x)' and 'levels(table))' ",
-                      "are identical at the moment"))
+                      "against Factor object 'table' ",
+                      "is only supported when 'x' and 'table' have ",
+                      "the same levels in the same order at the moment"))
         x <- x@index
         table <- table@index
         callGeneric()

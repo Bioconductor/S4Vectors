@@ -20,7 +20,7 @@ exportClasses(
     DataTable,
     NSBS,
     Annotated,
-    DataTable_OR_NULL, Vector,
+    DataTable_OR_NULL, Vector, vector_OR_Vector,
     Hits, SelfHits, SortedByQueryHits, SortedByQuerySelfHits,
     Rle,
     Factor,

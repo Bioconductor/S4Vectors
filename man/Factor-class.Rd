@@ -8,17 +8,20 @@
 \alias{parallelSlotNames,Factor-method}
 
 \alias{FactorToClass}
-\alias{FactorToClass,Vector-method}
+\alias{FactorToClass,vector_OR_Vector-method}
 
 \alias{names,Factor-method}
 \alias{names<-,Factor-method}
+\alias{levels}
+\alias{levels<-}
 \alias{levels<-,Factor-method}
 
 \alias{unfactor}
 \alias{unfactor,factor-method}
 \alias{unfactor,Factor-method}
 
-\alias{coerce,Vector,Factor-method}
+\alias{coerce,vector_OR_Vector,Factor-method}
+\alias{coerce,factor,Factor-method}
 \alias{as.integer,Factor-method}
 \alias{as.factor,Factor-method}
 \alias{as.character,Factor-method}
@@ -41,8 +44,10 @@
 
 \description{
   The Factor class serves a similar role as \link{factor} in base R (a.k.a.
-  ordinary factor) except that the levels of a Factor object can be any
-  \link{Vector} derivative.
+  ordinary factor) except that the levels of a Factor object can be
+  \emph{any vector-like object}, that is, they can be an ordinary vector
+  or a \link{Vector} derivative, or even an ordinary factor or another
+  Factor object.
 
   A notable difference with ordinary factors is that Factor objects cannot
   contain \code{NA}s, at least for now.
@@ -54,12 +59,12 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 
 \arguments{
   \item{x, levels}{
-    At least \code{x} or \code{levels} must be specified. If \code{index}
-    is \code{NULL}, both can be specified.
+    At least one of \code{x} and \code{levels} must be specified.
+    If \code{index} is \code{NULL}, both can be specified.
 
-    When \code{levels} is specified, it must be a \link{Vector}
-    derivative with no duplicates (i.e. \code{anyDuplicated(levels)}
-    must return 0).
+    When \code{levels} is specified, it must be a \emph{vector-like object}
+    (see above) with no duplicates (i.e. \code{anyDuplicated(levels)} must
+    return 0).
 
     When \code{x} and \code{levels} are both specified, they should
     typically have the same class (or, at least, \code{match(x, levels)}
@@ -149,9 +154,21 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 }
 
 \section{Coercion}{
-  From Vector to Factor: coercion of a Vector derivative \code{x} to
-  Factor is supported via \code{as(x, "Factor")} and is equivalent to
-  \code{Factor(x)}.
+  From vector or Vector to Factor: coercion of a vector-like object \code{x}
+  to Factor is supported via \code{as(x, "Factor")} and is equivalent to
+  \code{Factor(x)}. There are 2 IMPORTANT EXCEPTIONS to this:
+  \enumerate{
+    \item If \code{x} is an ordinary factor, \code{as(x, "Factor")} returns
+          a Factor with the same levels, encoding, and names, as \code{x}.
+          Note that after coercing an ordinary factor to Factor, going back
+          to factor again (with \code{as.factor()}) restores the original
+          object with no loss.
+
+    \item If \code{x} is a Factor object, \code{as(x, "Factor")} is either
+          a no-op (when \code{x} is a Factor \emph{instance}), or a
+          demotion to Factor (when \code{x} is a Factor derivative like
+          \link[GenomicRanges]{GRangesFactor}).
+  }
 
   From Factor to integer: \code{as.integer(x)} is supported on Factor object
   \code{x} and returns its encoding (see Accessors section above).
@@ -172,7 +189,7 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 \section{Concatenation}{
   2 or more Factor objects can be concatenated with \code{c()}.
   Note that, unlike with ordinary factors, \code{c()} on Factor objects
-  preserves the class i.e. it returns a Factor object. In other words, 
+  preserves the class i.e. it returns a Factor object. In other words,
   \code{c()} acts as an \emph{endomorphism} on Factor objects.
 
   The levels of \code{c(x, y)} are obtained by appending to \code{levels(x)}
@@ -186,7 +203,8 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 \section{Comparing & ordering}{
   Comparing (with \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<},
   or \code{>}) or matching (with \code{match()}) 2 Factor objects is only
-  supported when the 2 objects have identical levels at the moment.
+  supported when the 2 objects have the same levels in the same order at
+  the moment.
 
   Comparison and ordering (e.g. \code{order()}, \code{sort()}, \code{rank()})
   operations on Factor objects are based on the encodings i.e. all these
@@ -200,6 +218,9 @@ Factor(x, levels, index=NULL, ...)  # constructor function
   \itemize{
     \item \link[base]{factor} in base R.
 
+    \item \link[GenomicRanges]{GRangesFactor} objects in the
+          \pkg{GenomicRanges} package.
+
     \item \link{Vector} objects for the parent class.
 
     \item \code{\link[BiocGenerics]{anyDuplicated}} in the \pkg{BiocGenerics}
@@ -208,7 +229,7 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 }
 
 \examples{
-showClass("Factor")  # shows the known subclasses
+showClass("Factor")  # Factor extends Vector
 
 ## ---------------------------------------------------------------------
 ## CONSTRUCTOR & ACCESSORS
@@ -260,6 +281,14 @@ as.factor(F1)
 as.character(F1)  # same as unfactor(as.factor(F1)),
                   # and also same as as.character(unfactor(F1))
 
+## On an ordinary factor 'f', 'as(f, "Factor")' and 'Factor(f)' are
+## NOT the same:
+f <- factor(sample(letters, 500, replace=TRUE), levels=letters)
+as(f, "Factor")  # same levels as 'f'
+Factor(f)        # levels **are** 'f'!
+
+stopifnot(identical(f, as.factor(as(f, "Factor"))))
+
 ## ---------------------------------------------------------------------
 ## CONCATENATION
 ## ---------------------------------------------------------------------
@@ -275,7 +304,7 @@ stopifnot(identical(c(unfactor(F1), unfactor(F3)), unfactor(F13)))
 ## COMPARING & ORDERING
 ## ---------------------------------------------------------------------
 \dontrun{
-  F1 == F2  # Error! (levels(F1) and levels(F2) are not identical)
+  F1 == F2  # Error! (F1 and F2 don't have the same levels)
 }
 
 order(F1)  # same as order(as.integer(F1))
