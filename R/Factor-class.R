@@ -96,12 +96,10 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
     x_names <- ROWNAMES(x)
     if (!is.null(x_names))
         names(index) <- x_names
-    if (is.null(mcols)) {
-        if (is(x, "Vector"))
-            mcols <- mcols(x, use.names=FALSE)
-    } else {
-        if (nrow(mcols) != length(x))
-            stop(wmsg("the supplied metadata columns must be parallel to 'x'"))
+    if (!is.null(mcols)) {
+        mcols <- normarg_mcols(mcols, Class, length(index))
+    } else if (is(x, "Vector")) {
+        mcols <- mcols(x, use.names=FALSE)
     }
     new2(Class, levels=levels, index=index, elementMetadata=mcols, check=check)
 }
@@ -131,13 +129,7 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
         if (!is.integer(index))
             index <- as.integer(index)
     }
-    if (is.null(mcols)) {
-        ## Use some of the logic used in
-        ## S4Vectors:::.normalize_mcols_replacement_value().
-        mcols_target_class <- getSlots(Class)[["elementMetadata"]]
-        if (extends(mcols_target_class, "DataFrame"))
-            mcols <- S4Vectors:::make_zero_col_DataFrame(length(index))
-    }
+    mcols <- normarg_mcols(mcols, Class, length(index))
     new2(Class, levels=levels, index=index, elementMetadata=mcols)
 }
 

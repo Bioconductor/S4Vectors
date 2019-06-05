@@ -243,35 +243,52 @@ setGeneric("elementMetadata<-",
 ### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
 make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
 
-.normalize_mcols_replacement_value <- function(value, x)
+normarg_mcols <- function(mcols, x_class, x_len)
 {
-    x_slots <- getSlots(class(x))
-    ## Should never happen because 'x' should always be a Vector object so
-    ## should always have the 'elementMetadata' slot.
-    if (!("elementMetadata" %in% names(x_slots)))
-        stop(wmsg("trying to set metadata columns on an object that does ",
-                  "not support them (i.e. with no 'elementMetadata' slot)"))
-    ## Note that 'target_class' could also be obtained with
-    ## 'getClassDef(class(x))@slots[["elementMetadata"]]', in which case
-    ## the class name would be returned with its "package" attribute.
-    target_class <- x_slots[["elementMetadata"]]
-    if (is.null(value)) {
-        if (is(NULL, target_class))
-            return(NULL)
-        value <- make_zero_col_DataFrame(length(x))
+    ## Note that 'mcols_target_class' could also be obtained with
+    ## 'getClassDef(x_class)@slots[["elementMetadata"]]', in which
+    ## case the class name would be returned with the "package" attribute.
+    mcols_target_class <- getSlots(x_class)[["elementMetadata"]]
+    ok <- is(mcols, mcols_target_class)
+    if (is.null(mcols)) {
+        if (ok)
+            return(mcols)  # NULL
+        mcols <- make_zero_col_DataFrame(x_len)
+        ok <- is(mcols, mcols_target_class)
     }
-    if (!is(value, target_class))
-        value <- as(value, target_class)
-    ## From here 'value' is guaranteed to be a DataTable object.
-    if (!is.null(rownames(value)))
-        rownames(value) <- NULL
-    V_recycle(value, x, x_what="value", skeleton_what="x")
+    if (!ok)
+        mcols <- as(mcols, mcols_target_class)
+
+    ## From now on 'mcols' is guaranteed to be a DataTable object.
+    if (!is.null(rownames(mcols)))
+        rownames(mcols) <- NULL
+
+    mcols_nrow <- nrow(mcols)
+    if (mcols_nrow == x_len)
+        return(mcols)
+    one <- ncol(mcols) == 1L
+    if (mcols_nrow == 0L)
+        stop(wmsg("trying to set ", if (one) "a " else "", "zero length ",
+                  "metadata column", if (one) "" else "s", " ",
+                  "on a non-zero length object "))
+    if (mcols_nrow > x_len)
+        stop(wmsg("trying to set ", if (one) "a " else "",
+                  "metadata column", if (one) "" else "s", " ",
+                  "of length ", mcols_nrow, " on an object of length ", x_len))
+    if (x_len %% mcols_nrow != 0L)
+        warning(wmsg("you supplied ", if (one) "a " else "",
+                     "metadata column", if (one) "" else "s", " ",
+                     "of length ", mcols_nrow, " to set on an object ",
+                     "of length ", x_len, " however note that the latter ",
+                     "is not a multiple of the former"))
+    i <- rep(seq_len(mcols_nrow), length.out=x_len)
+    extractROWS(mcols, i)
 }
 
 setReplaceMethod("elementMetadata", "Vector",
     function(x, ..., value)
     {
-        value <- .normalize_mcols_replacement_value(value, x)
+        value <- normarg_mcols(value, class(x), length(x))
         BiocGenerics:::replaceSlots(x, elementMetadata=value, check=FALSE)
     }
 )
