@@ -214,7 +214,7 @@ BUG FIXES
       List objects so that it behaves consistently with "unlist" method for
       CompressedList objects.
 
-    o Modify Mini radix C code to accomodate a bug in Apple LLVM version 6.1.0
+    o Modify Mini radix C code to accommodate a bug in Apple LLVM version 6.1.0
       optimizer.
       [commit 241150d2b043e8fcf6721005422891baff018586]
 
