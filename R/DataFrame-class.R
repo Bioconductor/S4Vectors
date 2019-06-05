@@ -778,8 +778,8 @@ setMethod("coerce2", "DataFrame",
 ###     is an Rle. The wrapper below **mitigate** this by decoding the Rle
 ###     columns first. Note that this is a mitigation process only. For
 ###     example it will help if Rle columns are mixed with atomic vectors
-###     or factors, but it won't help if the cols[[1]] is an Rle and the
-###     other columns are IntegerList objects.
+###     or factors, but it won't help if cols[[1]] is an Rle and the other
+###     columns are IntegerList objects.
 ###  2) When the columns to bind are a mix of atomic vectors and factors,
 ###     bindROWS() would **always** return an atomic vector (whatever
 ###     cols[[1]] is, i.e. atomic vector or factor). However we **always**

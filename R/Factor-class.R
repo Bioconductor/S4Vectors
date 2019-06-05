@@ -131,6 +131,13 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
         if (!is.integer(index))
             index <- as.integer(index)
     }
+    if (is.null(mcols)) {
+        ## Use some of the logic used in
+        ## S4Vectors:::.normalize_mcols_replacement_value().
+        mcols_target_class <- getSlots(Class)[["elementMetadata"]]
+        if (extends(mcols_target_class, "DataFrame"))
+            mcols <- S4Vectors:::make_zero_col_DataFrame(length(index))
+    }
     new2(Class, levels=levels, index=index, elementMetadata=mcols)
 }
 

@@ -251,6 +251,9 @@ make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
     if (!("elementMetadata" %in% names(x_slots)))
         stop(wmsg("trying to set metadata columns on an object that does ",
                   "not support them (i.e. with no 'elementMetadata' slot)"))
+    ## Note that 'target_class' could also be obtained with
+    ## 'getClassDef(class(x))@slots[["elementMetadata"]]', in which case
+    ## the class name would be returned with its "package" attribute.
     target_class <- x_slots[["elementMetadata"]]
     if (is.null(value)) {
         if (is(NULL, target_class))
