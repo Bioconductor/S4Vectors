@@ -23,12 +23,18 @@
 \alias{subjectHits,HitsList-method}
 \alias{queryHits,HitsList-method}
 
-\alias{relistToClass,Hits-method}
-\alias{relistToClass,SortedByQueryHits-method}
-
 % coercion
+\alias{coerce,HitsList,SortedByQueryHitsList-method}
+\alias{coerce,SortedByQueryHitsList,HitsList-method}
 \alias{as.matrix,HitsList-method}
 \alias{as.table,HitsList-method}
+
+% splitting
+\alias{relistToClass,Hits-method}
+\alias{relistToClass,SortedByQueryHits-method}
+\alias{splitAsList,SortedByQueryHits,ANY-method}
+
+% other
 \alias{t,HitsList-method}
 
 \title{List of Hits objects}
@@ -103,5 +109,31 @@
           \link[IRanges]{IntegerRangesList} objects.
   }
 }
+
+\examples{
+hits <- Hits(rep(1:20, each=5), 100:1, 20, 100)
+hlist <- splitAsList(hits, 1:5)
+hlist
+hlist[[1]]
+hlist[[2]]
+
+## Some sanity checks:
+
+hits1 <- Hits(c(4, 4, 15, 15), c(1, 2, 3, 4), 20, 4)
+hits2 <- Hits(c(4, 4, 15, 15), c(1, 2, 3, 4), 20, 4, sort.by.query=TRUE)
+
+fA <- c(1, 1, 2, 2)
+hlist1A <- split(hits1, fA)
+hlist2A <- split(hits2, fA)
+stopifnot(identical(as(hlist1A, "SortedByQueryHitsList"), hlist2A))
+stopifnot(identical(hlist1A, as(hlist2A, "HitsList")))
+
+fB <- c(1, 2, 1, 2)
+hlist1B <- split(hits1, fB)
+hlist2B <- split(hits2, fB)
+stopifnot(identical(as(hlist1B, "SortedByQueryHitsList"), hlist2B))
+stopifnot(identical(hlist1B, as(hlist2B, "HitsList")))
+}
+
 \keyword{methods}
 \keyword{classes}

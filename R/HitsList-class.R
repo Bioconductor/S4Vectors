@@ -2,6 +2,7 @@
 ### HitsList objects
 ### -------------------------------------------------------------------------
 
+
 ### FIXME: Rename this class SimpleHitsList and make HitsList a virtual
 ### class that SimpleHitsList (and possibly CompressedHitsList, defined in
 ### IRanges) extend directly.
@@ -74,19 +75,45 @@ HitsList <- function(list_of_hits, subject)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Going from Hits to HitsList with extractList() and family.
-###
-
-setMethod("relistToClass", "Hits",
-    function(x) "HitsList")
-
-setMethod("relistToClass", "SortedByQueryHits",
-    function(x) "SortedByQueryHitsList")
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
+
+.from_HitsList_SortedByQueryHitsList <- function(from)
+{
+    class(from) <- class(new("SortedByQueryHitsList"))  # temporarily broken
+                                                        # instance!
+    from@elementType <- "SortedByQueryHits"
+    from@listData <- lapply(from@listData, as, "SortedByQueryHits")
+    from  # now fixed :-)
+}
+setAs("HitsList", "SortedByQueryHitsList",.from_HitsList_SortedByQueryHitsList)
+
+### Of course we want 'as(SortedByQueryHitsList, "HitsList", strict=FALSE)'
+### to do the right thing (i.e. to be a no-op), but, unfortunately, as()
+### won't do that if the coerce,SortedByQueryHitsList,HitsList method
+### is defined, because, in this case, as() will **always** call the method,
+### EVEN WHEN strict=FALSE AND THE OBJECT TO COERCE ALREADY DERIVES
+### FROM THE TARGET CLASS! (This is a serious flaw in as() current
+### design/implementation but I wouldn't be surprised if someone argued
+### that this is a feature and working as intended.)
+### Anyway, a workaround is to support the 'strict=FALSE' case at the level
+### of the coerce() method itself. However setAs() doesn't let us do that
+### so this is why we use setMethod("coerce", ...) to define these methods.
+.from_SortedByQueryHitsList_to_HitsList <-
+    function(from, to="HitsList", strict=TRUE)
+{
+    if (!isTRUEorFALSE(strict))
+        stop("'strict' must be TRUE or FALSE")
+    if (!strict)
+        return(from)
+    class(from) <- class(new("HitsList"))  # temporarily broken instance!
+    from@elementType <- "Hits"
+    from@listData <- lapply(from@listData, as, "Hits")
+    from  # now fixed :-)
+}
+setMethod("coerce", c("SortedByQueryHitsList", "HitsList"),
+    .from_SortedByQueryHitsList_to_HitsList
+)
 
 ## return as.matrix as on Hits, with indices adjusted
 
@@ -104,6 +131,32 @@ setMethod("as.table", "HitsList", function(x, ...) {
   counts <- unlist(lapply(x, as.table))
   as.table(array(counts, length(counts), list(range = seq_along(counts))))
 })
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Going from Hits to HitsList with splitAsList() and family (i.e. relist()
+### and extractList())
+###
+
+setMethod("relistToClass", "Hits",
+    function(x) "HitsList")
+
+setMethod("relistToClass", "SortedByQueryHits",
+    function(x) "SortedByQueryHitsList")
+
+setMethod("splitAsList", c("SortedByQueryHits", "ANY"),
+    function(x, f, drop=FALSE)
+    {
+        ans_class <- relistToClass(x)
+        x <- as(x, "Hits")
+        as(callNextMethod(), ans_class)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Other methods
+###
 
 t.HitsList <- function(x) t(x)
 setMethod("t", "HitsList", function(x) {
