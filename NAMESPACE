@@ -400,10 +400,13 @@ export(
     FactorToClass, unfactor,
 
     ## List-class.R:
-    elementType, elementNROWS, isEmpty, relistToClass,
+    elementType, elementNROWS, isEmpty,
 
     ## List-comparison.R:
     pcompareRecursively,
+
+    ## splitAsList.R:
+    relistToClass, splitAsList,
 
     ## List-utils.R:
     revElements,
@@ -421,10 +424,7 @@ export(
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
 
     ## shiftApply-methods.R:
-    shiftApply,
-
-    ## split-methods.R:
-    splitAsList
+    shiftApply
 )
 
 ### Exactly the same list as above.
@@ -454,14 +454,14 @@ exportMethods(
     findRun,
     runsum, runmean, runwtsum, runq,
     FactorToClass, unfactor,
-    elementType, elementNROWS, isEmpty, relistToClass,
+    elementType, elementNROWS, isEmpty,
     pcompareRecursively,
+    relistToClass, splitAsList,
     revElements,
     space,
     first, "first<-", second, "second<-", zipup, zipdown,
     expand,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
-    shiftApply,
-    splitAsList
+    shiftApply
 )
 

@@ -43,6 +43,7 @@ Collate: S4-utils.R
 	Factor-class.R
 	List-class.R
 	List-comparison.R
+	splitAsList.R
 	List-utils.R
 	SimpleList-class.R
 	HitsList-class.R
@@ -53,5 +54,4 @@ Collate: S4-utils.R
 	FilterRules-class.R
 	aggregate-methods.R
 	shiftApply-methods.R
-	split-methods.R
 	zzz.R

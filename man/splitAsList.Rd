@@ -1,6 +1,7 @@
-\name{split-methods}
+\name{splitAsList}
 
-\alias{split-methods}
+\alias{relistToClass}
+\alias{relistToClass,ANY-method}
 
 \alias{splitAsList}
 \alias{splitAsList,ANY,ANY-method}
@@ -32,6 +33,8 @@
 \S4method{split}{list,Vector}(x, f, drop=FALSE, ...)
 
 splitAsList(x, f, drop=FALSE, ...)
+
+relistToClass(x)
 }
 
 \arguments{
@@ -56,24 +59,36 @@ splitAsList(x, f, drop=FALSE, ...)
 }
 
 \details{
-  \code{splitAsList()} is an S4 generic function. It is the workhorse
-  behind the first 3 \code{split()} methods above. It behaves like
-  \code{base::split()} except that it returns a \link{List} derivative
-  instead of an ordinary list. The exact class of this \link{List}
-  derivative depends only on the class of \code{x} and can be obtained
-  independently with \code{\link{relistToClass}(x)}.
-
   The first 3 \code{split()} methods just delegate to \code{splitAsList()}.
 
   The last \code{split()} method just does:
 \preformatted{    split(x, as.vector(f), drop=drop, ...)
 }
+  \code{splitAsList()} is an S4 generic function. It is the workhorse
+  behind the first 3 \code{split()} methods above. It behaves like
+  \code{base::split()} except that it returns a \link{List} derivative
+  instead of an ordinary list. The exact class of this \link{List}
+  derivative depends only on the class of \code{x} and can be obtained
+  independently with \code{relistToClass(x)}.
+
+  Note that \code{relistToClass(x)} is the opposite of \code{elementType(y)}
+  in the sense that the former returns the class of the result of relisting
+  (or splitting) \code{x} while the latter returns the class of the result
+  of unlisting (or unsplitting) \code{y}.
+  More formally, if \code{x} is an object that is relistable and \code{y}
+  a list-like object:
+\preformatted{    relistToClass(x) is class(relist(x, some_skeleton))
+    elementType(y) is class(unlist(y))
+}
+  Therefore, for any object \code{x} for which \code{relistToClass(x)}
+  is defined and returns a valid class,
+  \code{elementType(new(relistToClass(x)))} should return \code{class(x)}.
 }
 
 \value{
   \code{splitAsList()} and the first 3 \code{split()} methods behave like
   \code{base::\link[base]{split}()} except that they return a \link{List}
-  derivative (of class \code{\link{relistToClass}(x)}) instead of an
+  derivative (of class \code{relistToClass(x)}) instead of an
   ordinary list. Like with \code{base::\link[base]{split}()}, all the
   list elements in this object have the same class as \code{x}.
 }
