@@ -421,7 +421,10 @@ export(
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
 
     ## shiftApply-methods.R:
-    shiftApply
+    shiftApply,
+
+    ## split-methods.R:
+    splitAsList
 )
 
 ### Exactly the same list as above.
@@ -458,6 +461,7 @@ exportMethods(
     first, "first<-", second, "second<-", zipup, zipdown,
     expand,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
-    shiftApply
+    shiftApply,
+    splitAsList
 )
 

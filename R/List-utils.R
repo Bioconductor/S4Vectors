@@ -93,7 +93,7 @@ pc <- function(...)
         stop("all the objects to combine must have the same length")
 
     ans_as_List <- any(vapply(args, is, logical(1), "List", USE.NAMES=FALSE))
-    SPLIT.FUN <- if (ans_as_List) IRanges::splitAsList else split
+    SPLIT.FUN <- if (ans_as_List) splitAsList else split
     ans_unlisted <- do.call(c, lapply(args, unlist, use.names=FALSE))
     f <- structure(unlist(lapply(args, quick_togroup), use.names=FALSE),
                    levels=as.character(seq_along(args[[1L]])),
