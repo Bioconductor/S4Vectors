@@ -267,14 +267,14 @@ normarg_mcols <- function(mcols, x_class, x_len)
     if (mcols_nrow == x_len)
         return(mcols)
     one <- ncol(mcols) == 1L
+    if (mcols_nrow > x_len && mcols_nrow != 1L)
+        stop(wmsg("trying to set ", if (one) "a " else "",
+                  "metadata column", if (one) "" else "s", " ",
+                  "of length ", mcols_nrow, " on an object of length ", x_len))
     if (mcols_nrow == 0L)
         stop(wmsg("trying to set ", if (one) "a " else "", "zero length ",
                   "metadata column", if (one) "" else "s", " ",
                   "on a non-zero length object "))
-    if (mcols_nrow > x_len)
-        stop(wmsg("trying to set ", if (one) "a " else "",
-                  "metadata column", if (one) "" else "s", " ",
-                  "of length ", mcols_nrow, " on an object of length ", x_len))
     if (x_len %% mcols_nrow != 0L)
         warning(wmsg("You supplied ", if (one) "a " else "",
                      "metadata column", if (one) "" else "s", " ",
