@@ -234,26 +234,25 @@ recycleCharacterArg <- function(arg, argname, length.out)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Normalization of replacement values
+### normarg_names()
 ###
 
-### NOT exported.
-normalize_names_replacement_value <- function(value, x)
+### NOT exported but used in the IRanges package.
+normarg_names <- function(names, x_class, x_len)
 {
-    if (is.null(value))
+    if (is.null(names))
         return(NULL)
-    value <- as.character(value)
-    value_len <- length(value)
-    x_len <- length(x)
-    if (value_len > x_len)
-        stop(wmsg("attempt to set too many names (", value_len, ") ",
-                  "on ", class(x), " object of length ", x_len))
-    if (value_len < x_len) {
-        ## We pad with NA's to mimic what 'names(x) <- value' does on an
-        ## ordinary vector.
-        value <- c(value, rep.int(NA_character_, x_len - value_len))
+    names <- as.character(names)
+    names_len <- length(names)
+    if (names_len > x_len)
+        stop(wmsg("attempt to set too many names (", names_len, ") ",
+                  "on ", x_class, " object of length ", x_len))
+    if (names_len < x_len) {
+        ## We pad with NA's to mimic what 'names(x) <- names' does on
+        ## an ordinary vector.
+        names <- c(names, rep.int(NA_character_, x_len - names_len))
     }
-    value
+    names
 }
 
 
@@ -268,7 +267,7 @@ normalize_names_replacement_value <- function(value, x)
 ### usecase which is the calculation of "circular coverage vectors", that is,
 ### we use fold() on the "linear coverage vector" to turn it into a "circular
 ### coverage vector" of length 'circle.length' where 'circle.length' is the
-### length of the circular sequence.  
+### length of the circular sequence.
 fold <- function(x, circle.length, from=1)
 {
     if (typeof(x) != "S4" && !is.numeric(x) && !is.complex(x))
@@ -336,7 +335,7 @@ normargSingleEndOrNA <- function(end)
 {
     if (!isSingleNumberOrNA(end))
         stop("'end' must be a single integer or NA")
-    if (!is.integer(end)) 
+    if (!is.integer(end))
         end <- as.integer(end)
     end
 }

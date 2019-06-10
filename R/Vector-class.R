@@ -243,6 +243,7 @@ setGeneric("elementMetadata<-",
 ### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
 make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
 
+### NOT exported but used in the IRanges and GenomicRanges packages.
 normarg_mcols <- function(mcols, x_class, x_len)
 {
     ## Note that 'mcols_target_class' could also be obtained with
@@ -259,7 +260,7 @@ normarg_mcols <- function(mcols, x_class, x_len)
     if (!ok)
         mcols <- as(mcols, mcols_target_class)
 
-    ## From now on 'mcols' is guaranteed to be a DataTable object.
+    ## From now on, 'mcols' is guaranteed to be a DataTable object.
     if (!is.null(rownames(mcols)))
         rownames(mcols) <- NULL
 
