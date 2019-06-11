@@ -93,6 +93,9 @@
 \alias{rep.int}
 \alias{rep.int,Vector-method}
 
+\alias{summary.Vector}
+\alias{summary,Vector-method}
+
 \alias{bindROWS,Vector-method}
 \alias{c}
 \alias{c,Vector-method}

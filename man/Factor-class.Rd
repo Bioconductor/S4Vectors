@@ -140,10 +140,11 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 }
 
 \section{Decoding a Factor}{
-  \code{unfactor(x)} can be used to decode Factor object \code{x}. It returns
-  an object of the same class as \code{levels(x)}. Note that it is the
-  analog of \code{as.character()} on ordinary factors, with the notable
-  difference that \code{unfactor(x)} propagates the names on \code{x}.
+  \code{unfactor(x)} can be used to \emph{decode} Factor object \code{x}.
+  It returns an object of the same class as \code{levels(x)} and same length
+  as \code{x}. Note that it is the analog of \code{as.character()} on ordinary
+  factors, with the notable difference that \code{unfactor(x)} propagates the
+  names on \code{x}.
 
   For convenience, \code{unfactor(x)} also works on ordinary factor \code{x}.
 
@@ -151,8 +152,8 @@ Factor(x, levels, index=NULL, ...)  # constructor function
   \code{ignore.mcols} to control whether the names and metadata columns
   on the Factor object to decode should be propagated or not.
   By default they are propagated, that is, the default values for
-  \code{use.names} and \code{ignore.mcols} are \code{TRUE} and \code{FALSE},
-  respectively.
+  \code{use.names} and \code{ignore.mcols} are \code{TRUE} and
+  \code{FALSE}, respectively.
 }
 
 \section{Coercion}{
@@ -202,7 +203,7 @@ Factor(x, levels, index=NULL, ...)  # constructor function
   on Factor objects.
 }
 
-\section{Comparing & ordering}{
+\section{Comparing & Ordering}{
   Comparing (with \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<},
   or \code{>}) or matching (with \code{match()}) 2 Factor objects is only
   supported when the 2 objects have the same levels in the same order at
@@ -223,6 +224,8 @@ Factor(x, levels, index=NULL, ...)  # constructor function
     \item \link[GenomicRanges]{GRangesFactor} objects in the
           \pkg{GenomicRanges} package.
 
+    \item \link[IRanges]{IRanges} objects in the \pkg{IRanges} package.
+
     \item \link{Vector} objects for the parent class.
 
     \item \code{\link[BiocGenerics]{anyDuplicated}} in the \pkg{BiocGenerics}
@@ -236,27 +239,27 @@ showClass("Factor")  # Factor extends Vector
 ## ---------------------------------------------------------------------
 ## CONSTRUCTOR & ACCESSORS
 ## ---------------------------------------------------------------------
-library(GenomicRanges)
+library(IRanges)
 set.seed(123)
-ir0 <- IRanges(sample(5, 8, replace=TRUE), width=10, names=letters[1:8])
-gr0 <- GRanges("chrA", ir0, ID=paste0("ID", 1:8))
+ir0 <- IRanges(sample(5, 8, replace=TRUE), width=10,
+               names=letters[1:8], ID=paste0("ID", 1:8))
 
 ## Use explicit levels:
-gr1 <- GRanges("chrA", IRanges(1:6, width=10))
-F1 <- Factor(gr0, levels=gr1)
+ir1 <- IRanges(1:6, width=10)
+F1 <- Factor(ir0, levels=ir1)
 F1
 length(F1)
 names(F1)
-levels(F1)  # gr1
+levels(F1)  # ir1
 nlevels(F1)
 as.integer(F1)  # encoding
 
-## If we don't specify the levels, they'll be set to unique(gr0):
-F2 <- Factor(gr0)
+## If we don't specify the levels, they'll be set to unique(ir0):
+F2 <- Factor(ir0)
 F2
 length(F2)
 names(F2)
-levels(F2)  # unique(gr0)
+levels(F2)  # unique(ir0)
 nlevels(F2)
 as.integer(F2)
 
@@ -265,8 +268,8 @@ as.integer(F2)
 ## ---------------------------------------------------------------------
 unfactor(F1)
 
-stopifnot(identical(gr0, unfactor(F1)))
-stopifnot(identical(gr0, unfactor(F2)))
+stopifnot(identical(ir0, unfactor(F1)))
+stopifnot(identical(ir0, unfactor(F2)))
 
 unfactor(F1, use.names=FALSE)
 unfactor(F1, ignore.mcols=TRUE)
@@ -274,7 +277,7 @@ unfactor(F1, ignore.mcols=TRUE)
 ## ---------------------------------------------------------------------
 ## COERCION
 ## ---------------------------------------------------------------------
-F2b <- as(gr0, "Factor")  # same as Factor(gr0)
+F2b <- as(ir0, "Factor")  # same as Factor(ir0)
 stopifnot(identical(F2, F2b))
 
 as.factor(F2)
@@ -294,8 +297,8 @@ stopifnot(identical(f, as.factor(as(f, "Factor"))))
 ## ---------------------------------------------------------------------
 ## CONCATENATION
 ## ---------------------------------------------------------------------
-gr3 <- GRanges("chrA", IRanges(c(5, 2, 8:6), width=10))
-F3 <- Factor(levels=gr3, index=2:4)
+ir3 <- IRanges(c(5, 2, 8:6), width=10)
+F3 <- Factor(levels=ir3, index=2:4)
 F13 <- c(F1, F3)
 F13
 levels(F13)

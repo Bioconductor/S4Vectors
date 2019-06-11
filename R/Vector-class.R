@@ -620,6 +620,26 @@ setMethod("rep", "Vector", repROWS)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Displaying
+###
+
+.Vector_summary <- function(object)
+{
+    object_class <- class(object)
+    object_len <- length(object)
+    object_mcols <- mcols(object, use.names=FALSE)
+    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
+    paste0(object_class, " object of length ", object_len, " ",
+           "with ", object_nmc, " metadata ",
+           ifelse(object_nmc == 1L, "column", "columns"))
+}
+### S3/S4 combo for summary.Vector
+summary.Vector <- function(object, ...)
+    .Vector_summary(object, ...)
+setMethod("summary", "Vector", summary.Vector)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Concatenation along the ROWS
 ###
 ### Note that supporting "extractROWS" and "c" makes "replaceROWS" (and thus

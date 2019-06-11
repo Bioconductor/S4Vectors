@@ -97,6 +97,7 @@ S3method(sort, Vector)
 
 S3method(subset, Vector)
 
+S3method(summary, Vector)
 S3method(summary, Rle)
 
 S3method(t, Hits)
@@ -181,6 +182,7 @@ export(
 
     subset.Vector,
 
+    summary.Vector,
     summary.Rle,
 
     t.Hits,

@@ -287,14 +287,7 @@ setMethod("as.character", "Factor",
 
 .show_Factor <- function(x)
 {
-    x_class <- class(x)
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(x_class, " object of length ", x_len,
-        " and ", x_nmc, " metadata ",
-        ifelse(x_nmc == 1L, "column", "columns"),
-        "\n", sep="")
+    cat(summary(x), "\n", sep="")
     x_levels <- levels(x)
     x_nlevels <- NROW(x_levels)
     cat("Levels:", class(x_levels), "object ")
