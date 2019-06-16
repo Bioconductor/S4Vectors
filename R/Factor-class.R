@@ -402,12 +402,8 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        if (!.same_levels(x@levels, y@levels))
-            stop(wmsg("comparing Factor objects ",
-                      "is only supported when the objects to compare have ",
-                      "the same levels in the same order at the moment"))
-        x <- x@index
-        y <- y@index
+        x <- unfactor(x, use.names=FALSE, ignore.mcols=TRUE)
+        y <- unfactor(y, use.names=FALSE, ignore.mcols=TRUE)
         callGeneric()
     }
 )
@@ -415,13 +411,8 @@ setMethod("pcompare", c("Factor", "Factor"),
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        if (!.same_levels(x@levels, table@levels))
-            stop(wmsg("matching Factor object 'x' ",
-                      "against Factor object 'table' ",
-                      "is only supported when 'x' and 'table' have ",
-                      "the same levels in the same order at the moment"))
-        x <- x@index
-        table <- table@index
+        x <- unfactor(x, use.names=FALSE, ignore.mcols=TRUE)
+        table <- unfactor(table, use.names=FALSE, ignore.mcols=TRUE)
         callGeneric()
     }
 )

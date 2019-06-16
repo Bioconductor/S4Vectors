@@ -204,15 +204,14 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 }
 
 \section{Comparing & Ordering}{
-  Comparing (with \code{==}, \code{!=}, \code{<=}, \code{>=}, \code{<},
-  or \code{>}) or matching (with \code{match()}) 2 Factor objects is only
-  supported when the 2 objects have the same levels in the same order at
-  the moment.
+  Comparing (e.g. \code{==}, \code{!=}, \code{<=}, \code{<}, \code{match()})
+  and ordering (e.g. \code{order()}, \code{sort()}, \code{rank()}) Factor
+  objects is supported and behave like on the \emph{unfactored} objects.
 
-  Comparison and ordering (e.g. \code{order()}, \code{sort()}, \code{rank()})
-  operations on Factor objects are based on the encodings i.e. all these
-  operations behave as if the encoding of the Factor objects (obtained with
-  \code{as.integer()}) were passed to them.
+  For example \code{F1 <= F2}, \code{match(F1, F2)}, and \code{sort(F1)},
+  are equivalent to \code{unfactor(F1) <= unfactor(F2)},
+  \code{match(unfactor(F1), unfactor(F2))}, and \code{sort(unfactor(F1))},
+  respectively.
 }
 
 \author{Hervé Pagès}
@@ -308,12 +307,10 @@ stopifnot(identical(c(unfactor(F1), unfactor(F3)), unfactor(F13)))
 ## ---------------------------------------------------------------------
 ## COMPARING & ORDERING
 ## ---------------------------------------------------------------------
-\dontrun{
-  F1 == F2  # Error! (F1 and F2 don't have the same levels)
-}
+F1 == F2   # same as unfactor(F1) == unfactor(F2)
 
-order(F1)  # same as order(as.integer(F1))
-order(F2)  # same as order(as.integer(F2))
+order(F1)  # same as order(unfactor(F1))
+order(F2)  # same as order(unfactor(F2))
 
 ## The levels of the Factor influence the order of the table:
 table(F1)
