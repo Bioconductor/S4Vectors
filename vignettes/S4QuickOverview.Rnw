@@ -141,7 +141,7 @@ attached base packages:
             50 in \Rpackage{oligoClasses}, 45 in \Rpackage{flowUtils},
             and 40 in \Rpackage{BaseSpaceR}.
 
-      \item For the end-user: it's mostly transparent. But when something
+      \item For the end user: it's mostly transparent. But when something
             goes wrong, error messages issued by the S4 class system can
             be hard to understand. Also it can be hard to find the
             documentation for a specific method.
