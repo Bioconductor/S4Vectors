@@ -399,21 +399,31 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 ### Comparing and ordering
 ###
 
+.two_Factors_to_indices <- function(x, y) {
+    if (.same_levels(x@levels, y@levels)) {
+        x <- as.integer(x)
+        y <- as.integer(y)
+    } else {
+        combined <- as.integer(c(x, y))
+        x <- head(combined, length(x))
+        y <- tail(combined, length(y))
+    }
+    list(x, y)
+}
+
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        x <- unfactor(x, use.names=FALSE, ignore.mcols=TRUE)
-        y <- unfactor(y, use.names=FALSE, ignore.mcols=TRUE)
-        callGeneric()
+        out <- .two_Factors_to_indices(x, y)
+        pcompare(out[[1]], out[[2]])
     }
 )
 
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        x <- unfactor(x, use.names=FALSE, ignore.mcols=TRUE)
-        table <- unfactor(table, use.names=FALSE, ignore.mcols=TRUE)
-        callGeneric()
+        out <- .two_Factors_to_indices(x, table)
+        match(out[[1]], out[[2]], nomatch=nomatch, incomparables=incomparables, ...)
     }
 )
 
