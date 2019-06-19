@@ -435,5 +435,5 @@ setMethod("selfmatch", "Factor",
     }
 )
 
-setMethod("xtfrm", "Factor", function(x) x@index)
+setMethod("xtfrm", "Factor", function(x) xtfrm(x@levels)[x@index])
 
