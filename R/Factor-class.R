@@ -399,31 +399,28 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 ### Comparing and ordering
 ###
 
-.two_Factors_to_indices <- function(x, y) {
-    if (.same_levels(x@levels, y@levels)) {
-        x <- as.integer(x)
-        y <- as.integer(y)
-    } else {
-        combined <- as.integer(c(x, y))
-        x <- head(combined, length(x))
-        y <- tail(combined, length(y))
-    }
-    list(x, y)
-}
-
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        out <- .two_Factors_to_indices(x, y)
-        pcompare(out[[1]], out[[2]])
+        if (!.same_levels(x@levels, y@levels)) {
+            combined <- c(x, y)
+            x <- head(combined, length(x))
+            y <- tail(combined, length(y))
+        }
+        i <- xtfrm(x@levels)
+        pcompare(i[as.integer(x)], i[as.integer(y)])
     }
 )
 
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        out <- .two_Factors_to_indices(x, table)
-        match(out[[1]], out[[2]], nomatch=nomatch, incomparables=incomparables, ...)
+        if (!.same_levels(x@levels, table@levels)) {
+            combined <- c(x, table)
+            x <- head(combined, length(x))
+            table <- tail(combined, length(table))
+        }
+        match(as.integer(x), as.integer(table), nomatch=nomatch, incomparables=incomparables, ...)
     }
 )
 
