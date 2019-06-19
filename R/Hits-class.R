@@ -2,7 +2,13 @@
 ### Hits objects
 ### -------------------------------------------------------------------------
 ###
-
+### The Hits class hierarchy (4 concrete classes):
+###
+###                  Hits    <----    SortedByQueryHits
+###                   ^                      ^
+###                   |                      |
+###                SelfHits  <----  SortedByQuerySelfHits
+###
 
 ### Vector of hits between a set of left nodes and a set of right nodes.
 setClass("Hits",
@@ -24,7 +30,7 @@ setClass("Hits",
 setClass("SelfHits", contains="Hits")
 
 ### Hits objects where the hits are sorted by query. Coercion from
-### SortedByQueryHits to List takes advantage of this and is very fast.
+### SortedByQueryHits to IntegerList takes advantage of this and is very fast.
 setClass("SortedByQueryHits", contains="Hits")
 setClass("SortedByQuerySelfHits", contains=c("SelfHits", "SortedByQueryHits"))
 
@@ -258,13 +264,69 @@ setMethod("updateObject", "Hits",
 ### Coercion
 ###
 
-.from_Hits_to_SortedByQueryHits <- function(from)
+### --- Coercion within the Hits class hierarchy ---
+
+### There are 4 classes in the Hits class hierarchy. We want to support back
+### and forth coercion between all of them. That's 12 possible coercions.
+### They can be devided in 3 groups:
+###   - Group A: 5 demotions
+###   - Group B: 5 promotions
+###   - Group C: 2 transversal coercions (from SelfHits to SortedByQueryHits
+###              and vice-versa)
+###
+### Group A: Demotions are taken care of by the "automatic coercion methods".
+### (These methods that get automatically defined at run time by the methods
+### package the 1st time a given demotion is requested e.g. when doing
+### as(x, "Hits") where 'x' is any Hits derivative.)
+###
+### Group B: The methods package also defines automatic coercion methods for
+### promotions. Unfortunately, these methods almost never get it right. In
+### particular, a serious problem with these automatic promotion methods is
+### that they don't even try to validate the promoted object so they tend to
+### silently produce invalid objects. This means that we need to define
+### methods for all the coercions in group B.
+###
+### Group C: Note that coercions from SelfHits to SortedByQueryHits and
+### vice-versa will actually be taken care of by the coercion methods from
+### Hits to SortedByQueryHits and from Hits to SelfHits, respectively (both
+### defined in group B).
+###
+### So the good news is that we only need to define coercion methods for
+### group B.
+
+.from_Hits_to_SelfHits <- function(from, to)
 {
-    new_Hits("SortedByQueryHits", from(from), to(from),
-                                  nLnode(from), nRnode(from),
-                                  mcols(from, use.names=FALSE))
+    if (nLnode(from) != nRnode(from))
+        stop(wmsg(class(from), " object to coerce to ", to,
+                  " must satisfy 'nLnode(x) == nRnode(x)'"))
+    class(from) <- class(new(to))
+    from
+}
+setAs("Hits", "SelfHits", .from_Hits_to_SelfHits)
+setAs("SortedByQueryHits", "SortedByQuerySelfHits", .from_Hits_to_SelfHits)
+
+### Note that the 'from' and 'to' arguments below are the standard arguments
+### for coercion methods. They should not be confused with the 'from()'
+### and 'to()' accessors for Hits objects!
+.from_Hits_to_SortedByQueryHits <- function(from, to)
+{
+    new_Hits(to, from(from), to(from), nLnode(from), nRnode(from),
+                 mcols(from, use.names=FALSE))
 }
 setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
+setAs("SelfHits", "SortedByQuerySelfHits", .from_Hits_to_SortedByQueryHits)
+
+### 2 possible routes for this coercion:
+###   1. Hits -> SelfHits -> SortedByQuerySelfHits
+###   2. Hits -> SortedByQueryHits -> SortedByQuerySelfHits
+### They are equivalent. However, the 1st route will fail early rather
+### than after a possibly long and expensive coercion from Hits to
+### SortedByQueryHits.
+setAs("Hits", "SortedByQuerySelfHits",
+    function(from) as(as(from, "SelfHits"), "SortedByQuerySelfHits")
+)
+
+### --- Other coercions ---
 
 setMethod("as.matrix", "Hits",
     function(x)

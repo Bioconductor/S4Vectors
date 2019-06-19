@@ -46,7 +46,11 @@
 \alias{updateObject,Hits-method}
 
 % coercion
+\alias{coerce,Hits,SelfHits-method}
+\alias{coerce,SortedByQueryHits,SortedByQuerySelfHits-method}
 \alias{coerce,Hits,SortedByQueryHits-method}
+\alias{coerce,SelfHits,SortedByQuerySelfHits-method}
+\alias{coerce,Hits,SortedByQuerySelfHits-method}
 \alias{as.matrix,Hits-method}
 \alias{as.table,Hits-method}
 
