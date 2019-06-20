@@ -371,7 +371,22 @@ setMethod("classNameForDisplay", "SortedByQueryHits",
     function(x) sub("^SortedByQuery", "", class(x))
 )
 
-.make_naked_matrix_from_Hits <- function(x)
+.Hits_summary <- function(object)
+{
+    object_len <- length(object)
+    object_mcols <- mcols(object, use.names=FALSE)
+    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
+    paste0(classNameForDisplay(object), " object with ", object_len, " ",
+           ifelse(object_len == 1L, "hit", "hits"),
+           " and ", object_nmc, " metadata ",
+           ifelse(object_nmc == 1L, "column", "columns"))
+}
+### S3/S4 combo for summary.Hits
+summary.Hits <- function(object, ...)
+    .Hits_summary(object, ...)
+setMethod("summary", "Hits", summary.Hits)
+
+.from_Hits_to_naked_character_matrix_for_display <- function(x)
 {
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
@@ -381,26 +396,20 @@ setMethod("classNameForDisplay", "SortedByQueryHits",
     if (is(x, "SortedByQueryHits"))
         colnames(ans) <- c("queryHits", "subjectHits")
     if (x_nmc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
-                                     list(check.names=FALSE)))
+        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
         ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
     }
     ans
 }
 
-showHits <- function(x, margin="", print.classinfo=FALSE,
-                                   print.nnode=FALSE)
+.show_Hits <- function(x, margin="", print.classinfo=FALSE,
+                                     print.nnode=FALSE)
 {
-    x_class <- class(x)
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(classNameForDisplay(x), " object with ",
-        x_len, " hit", ifelse(x_len == 1L, "", "s"),
-        " and ",
-        x_nmc, " metadata column", ifelse(x_nmc == 1L, "", "s"),
-        ":\n", sep="")
-    out <- makePrettyMatrixForCompactPrinting(x, .make_naked_matrix_from_Hits)
+    cat(margin, summary(x), ":\n", sep="")
+    ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
+    ## work on 'x'.
+    out <- makePrettyMatrixForCompactPrinting(x,
+                .from_Hits_to_naked_character_matrix_for_display)
     if (print.classinfo) {
         .COL2CLASS <- c(
             from="integer",
@@ -414,21 +423,21 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste0(margin, rownames(out))
+        rownames(out) <- paste0(margin, "  ", rownames(out))
     ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.nnode) {
-        cat(margin, "-------\n", sep="")
+        cat(margin, "  -------\n", sep="")
         if (is(x, "SortedByQueryHits")) {
-            cat(margin, "queryLength: ", nLnode(x),
+            cat(margin, "  queryLength: ", nLnode(x),
                 " / subjectLength: ", nRnode(x), "\n", sep="")
         } else {
             if (is(x, "SelfHits")) {
-                cat(margin, "nnode: ", nnode(x), "\n", sep="")
+                cat(margin, "  nnode: ", nnode(x), "\n", sep="")
             } else {
-                cat(margin, "nLnode: ", nLnode(x),
+                cat(margin, "  nLnode: ", nLnode(x),
                     " / nRnode: ", nRnode(x), "\n", sep="")
             }
         }
@@ -437,8 +446,7 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
 
 setMethod("show", "Hits",
     function(object)
-        showHits(object, margin="  ", print.classinfo=TRUE,
-                                      print.nnode=TRUE)
+        .show_Hits(object, print.classinfo=TRUE, print.nnode=TRUE)
 )
 
 

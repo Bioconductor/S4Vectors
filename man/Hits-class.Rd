@@ -59,6 +59,8 @@
 
 % displaying
 \alias{classNameForDisplay,SortedByQueryHits-method}
+\alias{summary.Hits}
+\alias{summary,Hits-method}
 \alias{show,Hits-method}
 
 % concatenation
