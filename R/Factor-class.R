@@ -402,25 +402,37 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        if (!.same_levels(x@levels, y@levels)) {
-            combined <- c(x, y)
-            x <- head(combined, length(x))
-            y <- tail(combined, length(y))
+        if (max(length(x), length(y)) < max(length(x@levels), length(y@levels))) {
+            x <- unfactor(x, use.names = FALSE, ignore.mcols = TRUE)
+            y <- unfactor(y, use.names = FALSE, ignore.mcols = TRUE)
+            callNextMethod()
+        } else {
+            if (!.same_levels(x@levels, y@levels)) {
+                combined <- c(x, y)
+                x <- head(combined, length(x))
+                y <- tail(combined, length(y))
+            }
+            i <- xtfrm(x@levels)
+            pcompare(i[as.integer(x)], i[as.integer(y)])
         }
-        i <- xtfrm(x@levels)
-        pcompare(i[as.integer(x)], i[as.integer(y)])
     }
 )
 
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        if (!.same_levels(x@levels, table@levels)) {
-            combined <- c(x, table)
-            x <- head(combined, length(x))
-            table <- tail(combined, length(table))
+        if (max(length(x), length(table)) < max(length(x@levels), length(table@levels))) {
+            x <- unfactor(x, use.names = FALSE, ignore.mcols = TRUE)
+            table <- unfactor(table, use.names = FALSE, ignore.mcols = TRUE)
+            callNextMethod()
+        } else {
+            if (!.same_levels(x@levels, table@levels)) {
+                combined <- c(x, table)
+                x <- head(combined, length(x))
+                table <- tail(combined, length(table))
+            }
+            match(as.integer(x), as.integer(table), nomatch=nomatch, incomparables=incomparables, ...)
         }
-        match(as.integer(x), as.integer(table), nomatch=nomatch, incomparables=incomparables, ...)
     }
 )
 
