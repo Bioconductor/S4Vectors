@@ -19,6 +19,9 @@
 \alias{names<-,Pairs-method}
 
 % comparison
+\alias{order-method}
+\alias{sameAsPreviousROW,Pairs,Pairs-method}
+\alias{pcompare,Pairs,Pairs-method}
 \alias{match,Pairs,Pairs-method}
 
 % constructor
