@@ -92,7 +92,7 @@ setMethod("sameAsPreviousROW", "Pairs", function(x) {
     c(FALSE, a1[-1L]==a1[-N] & a2[-1L]==a2[-N])
 })
 
-setMethod("pcompare", "Pairs", function(x, y) {
+setMethod("pcompare", c("Pairs", "Pairs"), function(x, y) {
     ans1 <- pcompare(first(x), first(y))
     ans2 <- pcompare(second(x), second(y))
     ifelse(ans1!=0, ans1, ans2)

@@ -19,8 +19,8 @@
 \alias{names<-,Pairs-method}
 
 % comparison
-\alias{order-method}
-\alias{sameAsPreviousROW,Pairs,Pairs-method}
+\alias{order,Pairs-method}
+\alias{sameAsPreviousROW,Pairs-method}
 \alias{pcompare,Pairs,Pairs-method}
 \alias{match,Pairs,Pairs-method}
 
