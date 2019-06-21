@@ -74,6 +74,30 @@ Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
 ### Comparison
 ### 
 
+setMethod("order", "Pairs", function (..., na.last = TRUE, decreasing = FALSE, 
+    method = c("auto", "shell", "radix"))
+{
+    collected <- lapply(list(...), FUN=function(x) list(first(x), second(x)))
+    do.call(order, c(unlist(collected, recursive=TRUE), 
+        list(na.last=na.last, decreasing=decreasing, method=method)))
+})
+
+setMethod("sameAsPreviousROW", "Pairs", function(x) {
+    N <- length(x)
+    if (N==0L) {
+        return(logical(0))
+    }
+    a1 <- first(x)
+    a2 <- second(x)
+    c(FALSE, a1[-1L]==a1[-N] & a2[-1L]==a2[-N])
+})
+
+setMethod("pcompare", "Pairs", function(x, y) {
+    ans1 <- pcompare(first(x), first(y))
+    ans2 <- pcompare(second(x), second(y))
+    ifelse(ans1!=0, ans1, ans2)
+})
+
 setMethod("match", c("Pairs", "Pairs"),
           function(x, table, nomatch = NA_integer_, incomparables = NULL, ...) {
               if (!is.null(incomparables))
