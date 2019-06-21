@@ -237,7 +237,7 @@ recycleCharacterArg <- function(arg, argname, length.out)
 ### normarg_names()
 ###
 
-### NOT exported but used in the IRanges package.
+### NOT exported but used in the IRanges and SummarizedExperiment packages.
 normarg_names <- function(names, x_class, x_len)
 {
     if (is.null(names))

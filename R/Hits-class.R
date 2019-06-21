@@ -2,7 +2,13 @@
 ### Hits objects
 ### -------------------------------------------------------------------------
 ###
-
+### The Hits class hierarchy (4 concrete classes):
+###
+###                  Hits    <----    SortedByQueryHits
+###                   ^                      ^
+###                   |                      |
+###                SelfHits  <----  SortedByQuerySelfHits
+###
 
 ### Vector of hits between a set of left nodes and a set of right nodes.
 setClass("Hits",
@@ -24,7 +30,7 @@ setClass("Hits",
 setClass("SelfHits", contains="Hits")
 
 ### Hits objects where the hits are sorted by query. Coercion from
-### SortedByQueryHits to List takes advantage of this and is very fast.
+### SortedByQueryHits to IntegerList takes advantage of this and is very fast.
 setClass("SortedByQueryHits", contains="Hits")
 setClass("SortedByQuerySelfHits", contains=c("SelfHits", "SortedByQueryHits"))
 
@@ -258,13 +264,69 @@ setMethod("updateObject", "Hits",
 ### Coercion
 ###
 
-.from_Hits_to_SortedByQueryHits <- function(from)
+### --- Coercion within the Hits class hierarchy ---
+
+### There are 4 classes in the Hits class hierarchy. We want to support back
+### and forth coercion between all of them. That's 12 possible coercions.
+### They can be devided in 3 groups:
+###   - Group A: 5 demotions
+###   - Group B: 5 promotions
+###   - Group C: 2 transversal coercions (from SelfHits to SortedByQueryHits
+###              and vice-versa)
+###
+### Group A: Demotions are taken care of by the "automatic coercion methods".
+### (These methods that get automatically defined at run time by the methods
+### package the 1st time a given demotion is requested e.g. when doing
+### as(x, "Hits") where 'x' is any Hits derivative.)
+###
+### Group B: The methods package also defines automatic coercion methods for
+### promotions. Unfortunately, these methods almost never get it right. In
+### particular, a serious problem with these automatic promotion methods is
+### that they don't even try to validate the promoted object so they tend to
+### silently produce invalid objects. This means that we need to define
+### methods for all the coercions in group B.
+###
+### Group C: Note that coercions from SelfHits to SortedByQueryHits and
+### vice-versa will actually be taken care of by the coercion methods from
+### Hits to SortedByQueryHits and from Hits to SelfHits, respectively (both
+### defined in group B).
+###
+### So the good news is that we only need to define coercion methods for
+### group B.
+
+.from_Hits_to_SelfHits <- function(from, to)
 {
-    new_Hits("SortedByQueryHits", from(from), to(from),
-                                  nLnode(from), nRnode(from),
-                                  mcols(from, use.names=FALSE))
+    if (nLnode(from) != nRnode(from))
+        stop(wmsg(class(from), " object to coerce to ", to,
+                  " must satisfy 'nLnode(x) == nRnode(x)'"))
+    class(from) <- class(new(to))
+    from
+}
+setAs("Hits", "SelfHits", .from_Hits_to_SelfHits)
+setAs("SortedByQueryHits", "SortedByQuerySelfHits", .from_Hits_to_SelfHits)
+
+### Note that the 'from' and 'to' arguments below are the standard arguments
+### for coercion methods. They should not be confused with the 'from()'
+### and 'to()' accessors for Hits objects!
+.from_Hits_to_SortedByQueryHits <- function(from, to)
+{
+    new_Hits(to, from(from), to(from), nLnode(from), nRnode(from),
+                 mcols(from, use.names=FALSE))
 }
 setAs("Hits", "SortedByQueryHits", .from_Hits_to_SortedByQueryHits)
+setAs("SelfHits", "SortedByQuerySelfHits", .from_Hits_to_SortedByQueryHits)
+
+### 2 possible routes for this coercion:
+###   1. Hits -> SelfHits -> SortedByQuerySelfHits
+###   2. Hits -> SortedByQueryHits -> SortedByQuerySelfHits
+### They are equivalent. However, the 1st route will fail early rather
+### than after a possibly long and expensive coercion from Hits to
+### SortedByQueryHits.
+setAs("Hits", "SortedByQuerySelfHits",
+    function(from) as(as(from, "SelfHits"), "SortedByQuerySelfHits")
+)
+
+### --- Other coercions ---
 
 setMethod("as.matrix", "Hits",
     function(x)
@@ -309,7 +371,22 @@ setMethod("classNameForDisplay", "SortedByQueryHits",
     function(x) sub("^SortedByQuery", "", class(x))
 )
 
-.make_naked_matrix_from_Hits <- function(x)
+.Hits_summary <- function(object)
+{
+    object_len <- length(object)
+    object_mcols <- mcols(object, use.names=FALSE)
+    object_nmc <- if (is.null(object_mcols)) 0L else ncol(object_mcols)
+    paste0(classNameForDisplay(object), " object with ", object_len, " ",
+           ifelse(object_len == 1L, "hit", "hits"),
+           " and ", object_nmc, " metadata ",
+           ifelse(object_nmc == 1L, "column", "columns"))
+}
+### S3/S4 combo for summary.Hits
+summary.Hits <- function(object, ...)
+    .Hits_summary(object, ...)
+setMethod("summary", "Hits", summary.Hits)
+
+.from_Hits_to_naked_character_matrix_for_display <- function(x)
 {
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
@@ -319,26 +396,20 @@ setMethod("classNameForDisplay", "SortedByQueryHits",
     if (is(x, "SortedByQueryHits"))
         colnames(ans) <- c("queryHits", "subjectHits")
     if (x_nmc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell),
-                                     list(check.names=FALSE)))
+        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
         ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
     }
     ans
 }
 
-showHits <- function(x, margin="", print.classinfo=FALSE,
-                                   print.nnode=FALSE)
+.show_Hits <- function(x, margin="", print.classinfo=FALSE,
+                                     print.nnode=FALSE)
 {
-    x_class <- class(x)
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    cat(classNameForDisplay(x), " object with ",
-        x_len, " hit", ifelse(x_len == 1L, "", "s"),
-        " and ",
-        x_nmc, " metadata column", ifelse(x_nmc == 1L, "", "s"),
-        ":\n", sep="")
-    out <- makePrettyMatrixForCompactPrinting(x, .make_naked_matrix_from_Hits)
+    cat(margin, summary(x), ":\n", sep="")
+    ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
+    ## work on 'x'.
+    out <- makePrettyMatrixForCompactPrinting(x,
+                .from_Hits_to_naked_character_matrix_for_display)
     if (print.classinfo) {
         .COL2CLASS <- c(
             from="integer",
@@ -352,21 +423,21 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
         out <- rbind(classinfo, out)
     }
     if (nrow(out) != 0L)
-        rownames(out) <- paste0(margin, rownames(out))
+        rownames(out) <- paste0(margin, "  ", rownames(out))
     ## We set 'max' to 'length(out)' to avoid the getOption("max.print")
     ## limit that would typically be reached when 'showHeadLines' global
     ## option is set to Inf.
     print(out, quote=FALSE, right=TRUE, max=length(out))
     if (print.nnode) {
-        cat(margin, "-------\n", sep="")
+        cat(margin, "  -------\n", sep="")
         if (is(x, "SortedByQueryHits")) {
-            cat(margin, "queryLength: ", nLnode(x),
+            cat(margin, "  queryLength: ", nLnode(x),
                 " / subjectLength: ", nRnode(x), "\n", sep="")
         } else {
             if (is(x, "SelfHits")) {
-                cat(margin, "nnode: ", nnode(x), "\n", sep="")
+                cat(margin, "  nnode: ", nnode(x), "\n", sep="")
             } else {
-                cat(margin, "nLnode: ", nLnode(x),
+                cat(margin, "  nLnode: ", nLnode(x),
                     " / nRnode: ", nRnode(x), "\n", sep="")
             }
         }
@@ -375,8 +446,7 @@ showHits <- function(x, margin="", print.classinfo=FALSE,
 
 setMethod("show", "Hits",
     function(object)
-        showHits(object, margin="  ", print.classinfo=TRUE,
-                                      print.nnode=TRUE)
+        .show_Hits(object, print.classinfo=TRUE, print.nnode=TRUE)
 )
 
 
@@ -512,19 +582,27 @@ breakTies <- function(x, method=c("first", "last"), rank) {
 ###
 
 ### NOT exported (but used in IRanges).
-### TODO: Move revmap() generic from AnnotationDbi to S4Vectors, and make this
-### the "revmap" method for SortedByQueryHits objects.
-### Note that:
-###   - If 'x' is a valid SortedByQueryHits object (i.e. the hits in it are
-###     sorted by query), then 'revmap_Hits(x)' returns a SortedByQueryHits
-###     object where hits are "fully sorted" i.e. sorted by query first and
-###     then by subject.
-###   - Because revmap_Hits() reorders the hits by query, doing
-###     'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits in it
-###     now "fully sorted".
+### TODO: Move revmap() generic from AnnotationDbi to S4Vectors. Then split
+### the code below in 2 revmap() methods: one for SortedByQueryHits objects
+### and one for Hits objects.
 revmap_Hits <- function(x)
-    new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x),
-                       mcols(x, use.names=FALSE))
+{
+    if (is(x, "SortedByQueryHits")) {
+        ## Note that:
+        ## - If 'x' is a valid SortedByQueryHits object (i.e. the hits in it
+        ##   are sorted by query), then 'revmap_Hits(x)' returns a
+        ##   SortedByQueryHits object where hits are "fully sorted" i.e.
+        ##   sorted by query first and then by subject.
+        ## - Because revmap_Hits() reorders the hits by query, doing
+        ##   'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits
+        ##   in it now "fully sorted".
+        return(new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x),
+                                  mcols(x, use.names=FALSE)))
+    }
+    BiocGenerics:::replaceSlots(x, from=to(x), to=from(x),
+                                   nLnode=nRnode(x), nRnode=nLnode(x),
+                                   check=FALSE)
+}
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
 t.Hits <- function(x) t(x)

@@ -1,4 +1,5 @@
-test_Hits_constructor <- function() {
+test_Hits_constructor <- function()
+{
     from <- c(5, 2, 3, 3, 3, 2)
     to <- c(11, 15, 5, 4, 5, 11)
     id <- letters[1:6]
@@ -25,34 +26,114 @@ test_Hits_constructor <- function() {
     checkIdentical(hits0, Hits(from, to, 7, 15, id))
 }
 
-test_Hits_coercion <- function() {
-  ## sparse
-  from <- c(1L, 1L, 3L)
-  to <- 1:3
+test_Hits_coercion <- function()
+{
+    ## --- Coercion within the Hits class hierarchy ---
 
-  hits <- Hits(from, to, 3, 3)
-  checkIdentical(as.matrix(hits), cbind(from=from, to=to))
-  checkIdentical(as.table(hits), c(2L, 0L, 1L))
-  checkIdentical(as.table(t(hits)), c(1L, 1L, 1L))
+    from <- c(5, 2, 3, 10, 5)
+    to <- c(10, 2, 2, 2, 8)
 
-  hits <- Hits(from, to, 3, 3, sort.by.query=TRUE)
-  checkIdentical(as.matrix(hits), cbind(queryHits=from, subjectHits=to))
-  checkIdentical(as.table(hits), c(2L, 0L, 1L))
-  checkIdentical(as.table(t(hits)), c(1L, 1L, 1L))
+    ## promotions
 
-  ## dense
-  from <- rep(1:2, each=2)
-  to <- rep(1:2, 2)
+    h <- Hits(from, to, nLnode=10, nRnode=15, label=LETTERS[1:5])
 
-  hits <- Hits(from, to, 3, 2)
-  checkIdentical(as.matrix(hits), cbind(from=from, to=to))
-  checkIdentical(as.table(hits), c(2L, 2L, 0L))
-  checkIdentical(as.table(t(hits)), c(2L, 2L))
+    current <- as(h, "SortedByQueryHits")
+    checkIdentical(class(new("SortedByQueryHits")), class(current))
+    checkTrue(validObject(current))
+    checkIdentical(c("B", "C", "A", "E", "D"), mcols(current)$label)
 
-  hits <- Hits(from, to, 3, 2, sort.by.query=TRUE)
-  checkIdentical(as.matrix(hits), cbind(queryHits=from, subjectHits=to))
-  checkIdentical(as.table(hits), c(2L, 2L, 0L))
-  checkIdentical(as.table(t(hits)), c(2L, 2L))
+    checkException(as(h, "SelfHits"))
+    checkException(as(h, "SortedByQuerySelfHits"))
+
+    h <- Hits(from, to, nLnode=10, nRnode=10, label=LETTERS[1:5])
+
+    current <- as(h, "SortedByQueryHits")
+    checkIdentical(class(new("SortedByQueryHits")), class(current))
+    checkTrue(validObject(current))
+    checkIdentical(c("B", "C", "A", "E", "D"), mcols(current)$label)
+
+    current <- as(h, "SelfHits")
+    checkIdentical(class(new("SelfHits")), class(current))
+    checkTrue(validObject(current))
+    checkIdentical(mcols(h)$label, mcols(current)$label)
+
+    current <- as(h, "SortedByQuerySelfHits")
+    checkIdentical(class(new("SortedByQuerySelfHits")), class(current))
+    checkTrue(validObject(current))
+    checkIdentical(c("B", "C", "A", "E", "D"), mcols(current)$label)
+
+    ## demotions
+
+    sh <- SelfHits(from, to, nnode=10, label=LETTERS[1:5])
+
+    current <- as(sh, "Hits")
+    checkIdentical(class(new("Hits")), class(current))
+    checkTrue(validObject(current))
+    checkIdentical(mcols(sh)$label, mcols(current)$label)
+
+    h <- Hits(from, to, nLnode=10, nRnode=10, label=LETTERS[1:5],
+              sort.by.query=TRUE)
+
+    current <- as(h, "Hits")
+    checkIdentical(class(new("Hits")), class(current))
+    checkTrue(validObject(current))
+    checkIdentical(mcols(h)$label, mcols(current)$label)
+
+    sh <- SelfHits(from, to, nnode=10, label=LETTERS[1:5], sort.by.query=TRUE)
+
+    for (to_class in c("SelfHits", "SortedByQueryHits", "Hits")) {
+        current <- as(sh, to_class)
+        checkIdentical(class(new(to_class)), class(current))
+        checkTrue(validObject(current))
+        checkIdentical(mcols(sh)$label, mcols(current)$label)
+        checkIdentical(sh, as(sh, to_class, strict=FALSE))
+    }
+
+    ## transversal
+
+    h <- Hits(from, to, nLnode=10, nRnode=15, label=LETTERS[1:5],
+              sort.by.query=TRUE)
+
+    checkException(as(h, "SelfHits"))
+
+    h <- Hits(from, to, nLnode=10, nRnode=10, label=LETTERS[1:5],
+              sort.by.query=TRUE)
+    sh1 <- SelfHits(from, to, nnode=10, label=LETTERS[1:5])
+    sh2 <- as(as(sh1, "SortedByQuerySelfHits"), "SelfHits")
+
+    checkIdentical(sh2, as(h, "SelfHits"))
+    checkIdentical(h, as(sh1, "SortedByQueryHits"))
+    checkIdentical(h, as(sh2, "SortedByQueryHits"))
+
+    ## --- Other coercions ---
+
+    ## sparse
+    from <- c(1L, 1L, 3L)
+    to <- 1:3
+
+    hits <- Hits(from, to, 3, 3)
+    checkIdentical(as.matrix(hits), cbind(from=from, to=to))
+    checkIdentical(as.table(hits), c(2L, 0L, 1L))
+    checkIdentical(as.table(t(hits)), c(1L, 1L, 1L))
+
+    hits <- Hits(from, to, 3, 3, sort.by.query=TRUE)
+    checkIdentical(as.matrix(hits), cbind(queryHits=from, subjectHits=to))
+    checkIdentical(as.table(hits), c(2L, 0L, 1L))
+    checkIdentical(as.table(t(hits)), c(1L, 1L, 1L))
+
+    ## dense
+    from <- rep(1:2, each=2)
+    to <- rep(1:2, 2)
+
+    hits <- Hits(from, to, 3, 2)
+    checkIdentical(as.matrix(hits), cbind(from=from, to=to))
+    checkIdentical(as.table(hits), c(2L, 2L, 0L))
+    checkIdentical(as.table(t(hits)), c(2L, 2L))
+
+    hits <- Hits(from, to, 3, 2, sort.by.query=TRUE)
+    checkIdentical(as.matrix(hits), cbind(queryHits=from, subjectHits=to))
+    checkIdentical(as.table(hits), c(2L, 2L, 0L))
+    checkIdentical(as.table(t(hits)), c(2L, 2L))
 }
 
 test_remapHits <- function()
@@ -112,7 +193,7 @@ test_remapHits <- function()
     new.nLnode3 <- 400L
     Rnodes.remapping3 <- 100L * rev(Rnodes.remapping1) + Rnodes.remapping1
     new.nRnode3 <- 700L
-    
+
     hits30 <- remapHits(hits0, Lnodes.remapping=Lnodes.remapping3,
                                new.nLnode=new.nLnode3)
     expected_hits30 <- Hits(c(103, 103, 202, 301, 301),

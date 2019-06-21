@@ -214,7 +214,7 @@ Factor(x, levels, index=NULL, ...)  # constructor function
   respectively.
 }
 
-\author{Hervé Pagès}
+\author{Hervé Pagès, with contributions from Aaron Lun}
 
 \seealso{
   \itemize{
