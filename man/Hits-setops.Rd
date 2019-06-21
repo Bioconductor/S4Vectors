@@ -2,7 +2,7 @@
 
 \alias{Hits-setops}
 
-\alias{union,Hits,Hits-method}
+\alias{union,SortedByQueryHits,Hits-method}
 
 \title{Set operations on Hits objects}
 
