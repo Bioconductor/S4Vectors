@@ -582,19 +582,27 @@ breakTies <- function(x, method=c("first", "last"), rank) {
 ###
 
 ### NOT exported (but used in IRanges).
-### TODO: Move revmap() generic from AnnotationDbi to S4Vectors, and make this
-### the "revmap" method for SortedByQueryHits objects.
-### Note that:
-###   - If 'x' is a valid SortedByQueryHits object (i.e. the hits in it are
-###     sorted by query), then 'revmap_Hits(x)' returns a SortedByQueryHits
-###     object where hits are "fully sorted" i.e. sorted by query first and
-###     then by subject.
-###   - Because revmap_Hits() reorders the hits by query, doing
-###     'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits in it
-###     now "fully sorted".
+### TODO: Move revmap() generic from AnnotationDbi to S4Vectors. Then split
+### the code below in 2 revmap() methods: one for SortedByQueryHits objects
+### and one for Hits objects.
 revmap_Hits <- function(x)
-    new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x),
-                       mcols(x, use.names=FALSE))
+{
+    if (is(x, "SortedByQueryHits")) {
+        ## Note that:
+        ## - If 'x' is a valid SortedByQueryHits object (i.e. the hits in it
+        ##   are sorted by query), then 'revmap_Hits(x)' returns a
+        ##   SortedByQueryHits object where hits are "fully sorted" i.e.
+        ##   sorted by query first and then by subject.
+        ## - Because revmap_Hits() reorders the hits by query, doing
+        ##   'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits
+        ##   in it now "fully sorted".
+        return(new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x),
+                                  mcols(x, use.names=FALSE)))
+    }
+    BiocGenerics:::replaceSlots(x, from=to(x), to=from(x),
+                                   nLnode=nRnode(x), nRnode=nLnode(x),
+                                   check=FALSE)
+}
 
 ### FIXME: Replace this with "revmap" method for Hits objects.
 t.Hits <- function(x) t(x)
