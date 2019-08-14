@@ -135,8 +135,8 @@ Factor(x, levels, index=NULL, ...)  # constructor function
           and \code{names(x)}, respectively.
   }
 
-  In addition, because Factor objects are Vector derivatives, they support
-  the \code{mcols()} and \code{metadata()} getters and setters.
+  In addition, because Factor objects are \link{Vector} derivatives, they
+  support the \code{mcols()} and \code{metadata()} getters and setters.
 }
 
 \section{Decoding a Factor}{
