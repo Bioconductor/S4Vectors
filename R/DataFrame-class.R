@@ -17,8 +17,18 @@ setClass("DataFrame",
                    listData = structure(list(), names = character())),
          contains = c("DataTable", "SimpleList"))
 
+## Just a direct DataFrame extension with no additional slot for now. Once all
+## serialized DataFrame instances are replaced with DFrame instances (which
+## will take several BioC release cycles) we'll be able to move the DataFrame
+## slots from the DataFrame class definition to the DFrame class definition. 
+## The final goal is to have DataFrame become a virtual class with no slots
+## that only extends DataTable, and DFrame a concrete DataFrame and SimpleList
+## subclass that has the same slots as the current DataFrame class.
+setClass("DFrame", contains="DataFrame")
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Accessors
 ###
 
 setMethod("nrow", "DataFrame", function(x) x@nrows)
@@ -80,10 +90,10 @@ setReplaceMethod("colnames", "DataFrame",
                    x
                  })
 
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Validity.
-###
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Validity
+###
 
 .valid.DataFrame.dim <- function(x)
 {
@@ -124,7 +134,7 @@ setValidity2("DataFrame", .valid.DataFrame)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
+### Constructor
 ###
 
 ### Low-level constructor. For internal use only.
@@ -242,8 +252,9 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
   ans
 }
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting
 ###
 
 setMethod("[[", "DataFrame", function(x, i, j, ...)
@@ -521,8 +532,9 @@ setMethod("rep", "DataFrame", function(x, ...) {
   x[rep(seq_len(nrow(x)), ...),,drop=FALSE]
 })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion
 ###
 
 ## Break DataFrame into a normal R data.frame
@@ -728,8 +740,18 @@ setMethod("coerce2", "DataFrame",
     }
 )
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining.
+### Display
+###
+
+setMethod("classNameForDisplay", "DFrame",
+    function(x) if (class(x) == "DFrame") "DataFrame" else class(x)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combining
 ###
 
 ### Return an integer matrix with 1 column per object in 'objects' and 1 row

@@ -280,7 +280,7 @@ setMethod("show", "DataTable",
               ntail <- get_showTailLines()
               nr <- nrow(object)
               nc <- ncol(object)
-              cat(class(object), " with ",
+              cat(classNameForDisplay(object), " with ",
                   nr, ifelse(nr == 1, " row and ", " rows and "),
                   nc, ifelse(nc == 1, " column\n", " columns\n"),
                   sep = "")

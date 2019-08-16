@@ -4,6 +4,10 @@
 \alias{class:DataFrame}
 \alias{DataFrame-class}
 
+\alias{class:DFrame}
+\alias{DFrame-class}
+\alias{DFrame}
+
 % accessor
 \alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
@@ -40,6 +44,9 @@
 \alias{coerce,xtabs,DataFrame-method}
 \alias{coerce,ANY,DataFrame-method}
 \alias{coerce,SimpleList,DataFrame-method}
+
+% display
+\alias{classNameForDisplay,DFrame-method}
 
 % combining
 \alias{bindROWS,DataFrame-method}

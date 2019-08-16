@@ -27,7 +27,7 @@ exportClasses(
     List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
-    DataFrame,
+    DataFrame, DFrame,
     Pairs,
     expression_OR_function, FilterRules, FilterMatrix
 )

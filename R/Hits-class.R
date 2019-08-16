@@ -364,7 +364,7 @@ setMethod("extractROWS", "SortedByQueryHits",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Displaying
+### Display
 ###
 
 setMethod("classNameForDisplay", "SortedByQueryHits",

@@ -148,7 +148,7 @@ BUG FIXES
     o The mcols() setter no more tries to downgrade to DataFrame a supplied
       right value that extends DataFrame (e.g. DelayedDataFrame).
 
-    o 'DataFrame(I(x)) and as(I(x), "DataFrame")' now drops the I() wrapping
+    o 'DataFrame(I(x))' and 'as(I(x), "DataFrame")' now drop the I() wrapping
       before storing 'x' in the returned object. This wrapping was ugly, not
       needed, and breaking S4 objects.
 
