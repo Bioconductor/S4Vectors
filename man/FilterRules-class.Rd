@@ -37,6 +37,9 @@
 % general 
 \alias{summary,FilterRules-method}
 
+% combining
+\alias{&,FilterRules,FilterRules-method}
+
 % filter closures
 \alias{params}
 \alias{params,FilterClosure-method}
@@ -138,6 +141,9 @@
   In the code snippets below, \code{x} is a \code{FilterRules} object.
   
   \describe{
+    \item{}{\code{x & y}: Appends the rules in \code{y} to the rules in
+      \code{x}.
+    }
     \item{}{\code{c(x, ..., recursive = FALSE)}: Concatenates the
       \code{FilterRule} instances in \code{...} onto the end of \code{x}.
     }
