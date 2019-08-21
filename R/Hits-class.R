@@ -247,15 +247,17 @@ SelfHits <- function(from=integer(0), to=integer(0), nnode=0L, ...,
 setMethod("updateObject", "Hits",
     function(object, ..., verbose=FALSE)
     {
-        if (is(try(object@queryHits, silent=TRUE), "try-error"))
-            return(object)
-        ans <- new_Hits("SortedByQueryHits", object@queryHits,
-                                             object@subjectHits,
-                                             object@queryLength,
-                                             object@subjectLength,
-                                             object@elementMetadata)
-        ans@metadata <- object@metadata
-        ans
+        if (!is(try(object@queryHits, silent=TRUE), "try-error")) {
+            object_metadata <- object@metadata
+            object <- new_Hits("SortedByQueryHits", object@queryHits,
+                                                    object@subjectHits,
+                                                    object@queryLength,
+                                                    object@subjectLength,
+                                                    object@elementMetadata)
+            object@metadata <- object_metadata
+        }
+
+        callNextMethod()
     }
 )
 

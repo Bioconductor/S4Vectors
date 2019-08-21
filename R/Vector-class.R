@@ -72,10 +72,19 @@ setMethod("parallelVectorNames", "ANY",
 ### (e.g. it breaks valid OverlapEncodings objects). So we overwrite it with
 ### a method for Vector objects that does nothing! That way it's simple,
 ### cheap, and safe ;-). And that's really all it needs to do at the moment.
-###
+### UPDATE: Starting with S4Vectors 0.23.19, all DataFrame instances need
+### to be replaced with DFrame instances. So the updateObject() method for
+### Vector objects got updated from doing nothing (no-op) to call
+### updateObject() on the elementMetadata component of the object.
 
 setMethod("updateObject", "Vector",
-    function(object, ..., verbose=FALSE) object
+    function(object, ..., verbose=FALSE)
+    {
+        ## Update from DataFrame to DFrame.
+        object@elementMetadata <- updateObject(object@elementMetadata,
+                                               ..., verbose=verbose)
+        object
+    }
 )
 
 
@@ -114,7 +123,7 @@ setMethod("elementMetadata", "Vector",
     {
         if (!isTRUEorFALSE(use.names))
             stop("'use.names' must be TRUE or FALSE")
-        ans <- x@elementMetadata
+        ans <- updateObject(x@elementMetadata, check=FALSE)
         if (use.names && !is.null(ans))
             rownames(ans) <- names(x)
         ans
@@ -239,7 +248,7 @@ setGeneric("elementMetadata<-",
 
 ### NOT exported but used in packages IRanges, GenomicRanges,
 ### SummarizedExperiment, GenomicAlignments, and maybe more...
-### 3x faster than new("DataFrame", nrows=nrow).
+### 3x faster than new("DFrame", nrows=nrow).
 ### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
 make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
 
@@ -256,6 +265,8 @@ normarg_mcols <- function(mcols, x_class, x_len)
             return(mcols)  # NULL
         mcols <- make_zero_col_DataFrame(x_len)
         ok <- is(mcols, mcols_target_class)
+    } else {
+        mcols <- updateObject(mcols, check=FALSE)
     }
     if (!ok)
         mcols <- as(mcols, mcols_target_class)

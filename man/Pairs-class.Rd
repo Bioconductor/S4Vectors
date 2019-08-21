@@ -29,7 +29,7 @@
 
 % coercion
 \alias{zipup,Pairs,missing-method}
-\alias{coerce,Pairs,DataFrame-method}
+\alias{coerce,Pairs,DFrame-method}
 \alias{coerce,list_OR_List,Pairs-method}
 \alias{as.data.frame,Pairs-method}
 

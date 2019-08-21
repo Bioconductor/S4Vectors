@@ -20,11 +20,41 @@ setClass("DataFrame",
 ## Just a direct DataFrame extension with no additional slot for now. Once all
 ## serialized DataFrame instances are replaced with DFrame instances (which
 ## will take several BioC release cycles) we'll be able to move the DataFrame
-## slots from the DataFrame class definition to the DFrame class definition. 
+## slots from the DataFrame class definition to the DFrame class definition.
 ## The final goal is to have DataFrame become a virtual class with no slots
 ## that only extends DataTable, and DFrame a concrete DataFrame and SimpleList
 ## subclass that has the same slots as the current DataFrame class.
 setClass("DFrame", contains="DataFrame")
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+setMethod("updateObject", "DataFrame",
+    function(object, ..., verbose=FALSE)
+    {
+        ## class attribute.
+        if (class(object) == "DataFrame") {
+            ## Starting with S4Vectors 0.23.19, all DataFrame instances need
+            ## to be replaced with DFrame instances. Note that this is NOT a
+            ## change of the internals, only a change of the class attribute.
+            if (verbose)
+                message("[updateObject] Settting class attribute of DataFrame ",
+                        "instance to \"DFrame\" ... ", appendLF=FALSE)
+            class(object) <- class(new("DFrame"))
+            if (verbose)
+                message("OK")
+        } else {
+            if (verbose)
+                message("[updateObject] ", class(object), " object ",
+                        "is current.\n",
+                        "[updateObject] Nothing to update.")
+        }
+
+        callNextMethod()
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,8 +153,20 @@ setReplaceMethod("colnames", "DataFrame",
   NULL
 }
 
+.OLD_DATAFRAME_INSTANCE_MSG <- c(
+    "Note that starting with BioC 3.10, the class attribute ",
+    "of all DataFrame **instances** should be set to ",
+    "\"DFrame\". Please update this object ",
+    "with 'updateObject(object, verbose=TRUE)' and ",
+    "re-serialize it."
+)
+
 .valid.DataFrame <- function(x)
 {
+  ## class() is broken when used within a validity method. See:
+  ##   https://stat.ethz.ch/pipermail/r-devel/2019-August/078337.html
+  #if (class(x) == "DataFrame")
+  #  return(paste(.OLD_DATAFRAME_INSTANCE_MSG, collapse=""))
   c(.valid.DataFrame.dim(x),
     .valid.DataFrame.rownames(x),
     .valid.DataFrame.names(x))
@@ -165,7 +207,7 @@ new_DataFrame <- function(listData=list(), nrows=NA, what="arguments")
             if (is.null(names(listData)))
                 names(listData) <- paste0("V", seq_along(listData))
         }
-        new2("DataFrame", nrows=nrows, listData=listData, check=FALSE)
+        new2("DFrame", nrows=nrows, listData=listData, check=FALSE)
 }
 
 DataFrame <- function(..., row.names = NULL, check.names = TRUE,
@@ -192,7 +234,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
     varnames[dotnames == ""] <- list(NULL)
     nrows <- ncols <- integer(length(varnames))
     for (i in seq_along(listData)) {
-      element <- try(as(listData[[i]], "DataFrame"), silent = TRUE)
+      element <- try(as(listData[[i]], "DFrame"), silent = TRUE)
       if (inherits(element, "try-error"))
         stop("cannot coerce class \"", class(listData[[i]])[1L],
              "\" to a DataFrame")
@@ -610,7 +652,7 @@ setMethod("as.matrix", "DataFrame", function(x) {
 })
 
 ## take data.frames to DataFrames
-setAs("data.frame", "DataFrame",
+setAs("data.frame", "DFrame",
       function(from) {
         rn <- attributes(from)[["row.names"]]
         if (is.integer(rn))
@@ -626,15 +668,15 @@ setAs("data.frame", "DataFrame",
         ans
       })
 
-setAs("data.table", "DataFrame",
+setAs("data.table", "DFrame",
     function(from)
     {
         df <- data.table:::as.data.frame.data.table(from)
-        as(df, "DataFrame")
+        as(df, "DFrame")
     }
 )
 
-setAs("table", "DataFrame",
+setAs("table", "DFrame",
       function(from) {
         df <- as.data.frame(from)
         factors <- sapply(df, is.factor)
@@ -643,10 +685,10 @@ setAs("table", "DataFrame",
       })
 
 setOldClass(c("xtabs", "table"))
-setAs("xtabs", "DataFrame",
+setAs("xtabs", "DFrame",
       function(from) {
         class(from) <- "table"
-        as(from, "DataFrame")
+        as(from, "DFrame")
       })
 
 .defaultAsDataFrame <- function(from) {
@@ -655,7 +697,7 @@ setAs("xtabs", "DataFrame",
     if (0L == ncol(from))
       ## colnames on matrix with 0 columns are 'NULL'
       names(df) <- character()
-    as(df, "DataFrame")
+    as(df, "DFrame")
   } else {
     ans <- new_DataFrame(setNames(list(from), "X"), nrows=length(from))
     ans@rownames <- names(from)
@@ -663,7 +705,8 @@ setAs("xtabs", "DataFrame",
   }
 }
 
-setAs("ANY", "DataFrame", .defaultAsDataFrame)
+setAs("ANY", "DFrame", .defaultAsDataFrame)
+setAs("ANY", "DataFrame", function(from) as(from, "DFrame"))
 
 .VectorAsDataFrame <- function(from) {
   ans <- .defaultAsDataFrame(from)
@@ -674,24 +717,24 @@ setAs("ANY", "DataFrame", .defaultAsDataFrame)
 }
 
 ## overriding the default inheritance-based coercion from methods package
-setAs("SimpleList", "DataFrame", .VectorAsDataFrame)
-setAs("Vector", "DataFrame", .VectorAsDataFrame)
+setAs("SimpleList", "DFrame", .VectorAsDataFrame)
+setAs("Vector", "DFrame", .VectorAsDataFrame)
 
 ## note that any element named 'row.names' will be interpreted differently
 ## is this a bug or a feature?
-setAs("list", "DataFrame",
+setAs("list", "DFrame",
       function(from) {
         do.call(DataFrame, c(from, list(check.names=is.null(names(from)))))
       })
 
-setAs("NULL", "DataFrame", function(from) as(list(), "DataFrame"))
+setAs("NULL", "DFrame", function(from) as(list(), "DFrame"))
 
-setAs("AsIs", "DataFrame",
+setAs("AsIs", "DFrame",
       function(from) {
         new_DataFrame(setNames(list(drop_AsIs(from)), "X"))
       })
 
-setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DataFrame"))
+setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DFrame"))
 
 setMethod("coerce2", "DataFrame",
     function(from, to)
@@ -747,6 +790,18 @@ setMethod("coerce2", "DataFrame",
 
 setMethod("classNameForDisplay", "DFrame",
     function(x) if (class(x) == "DFrame") "DataFrame" else class(x)
+)
+
+setMethod("show", "DataFrame",
+    function(object)
+    {
+        if (class(object) == "DataFrame") {
+            ## Aug 20, 2019: Too early for this warning.
+            #warning(wmsg(.OLD_DATAFRAME_INSTANCE_MSG))
+            object <- updateObject(object, check=FALSE)
+        }
+        callNextMethod()
+    }
 )
 
 

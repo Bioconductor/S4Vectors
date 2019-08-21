@@ -152,7 +152,7 @@ setMethod("zipdown", "List", function(x) {
               unzipped
           })
 
-setAs("Pairs", "DataFrame", function(from) {
+setAs("Pairs", "DFrame", function(from) {
           df <- DataFrame(first=first(from), second=second(from),
                           mcols(from, use.names=FALSE), check.names=FALSE)
           df$names <- names(from)

@@ -8,6 +8,8 @@
 \alias{DFrame-class}
 \alias{DFrame}
 
+\alias{updateObject,DataFrame-method}
+
 % accessor
 \alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
@@ -30,23 +32,22 @@
 % coercion
 \alias{as.data.frame,DataFrame-method}
 \alias{as.matrix,DataFrame-method}
-\alias{coerce,matrix,DataFrame-method}
-\alias{coerce,vector,DataFrame-method}
-\alias{coerce,list,DataFrame-method}
-\alias{coerce,integer,DataFrame-method}
-\alias{coerce,Vector,DataFrame-method}
-\alias{coerce,data.frame,DataFrame-method}
-\alias{coerce,data.table,DataFrame-method}
-\alias{coerce,NULL,DataFrame-method}
-\alias{coerce,table,DataFrame-method}
-\alias{coerce,AsIs,DataFrame-method}
+\alias{coerce,list,DFrame-method}
+\alias{coerce,Vector,DFrame-method}
+\alias{coerce,data.frame,DFrame-method}
+\alias{coerce,data.table,DFrame-method}
+\alias{coerce,NULL,DFrame-method}
+\alias{coerce,table,DFrame-method}
+\alias{coerce,AsIs,DFrame-method}
 \alias{coerce,DataFrame,data.frame-method}
-\alias{coerce,xtabs,DataFrame-method}
+\alias{coerce,xtabs,DFrame-method}
+\alias{coerce,ANY,DFrame-method}
 \alias{coerce,ANY,DataFrame-method}
-\alias{coerce,SimpleList,DataFrame-method}
+\alias{coerce,SimpleList,DFrame-method}
 
 % display
 \alias{classNameForDisplay,DFrame-method}
+\alias{show,DataFrame-method}
 
 % combining
 \alias{bindROWS,DataFrame-method}
