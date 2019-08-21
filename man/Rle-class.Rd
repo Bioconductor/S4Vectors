@@ -68,6 +68,7 @@
 \alias{findRun}
 \alias{findRun,Rle-method}
 \alias{is.na,Rle-method}
+\alias{is.finite,Rle-method}
 \alias{anyNA,Rle-method}
 
 \alias{match,ANY,Rle-method}
@@ -262,7 +263,11 @@
     }
     \item{}{
       \code{is.na(x)}:
-      Returns a logical Rle indicating with values are \code{NA}.
+      Returns a logical Rle indicating which values are \code{NA}.
+    }
+    \item{}{
+      \code{is.finite(x)}:
+      Returns a logical Rle indicating which values are finite.
     }
     \item{}{
       \code{is.unsorted(x, na.rm = FALSE, strictly = FALSE)}:

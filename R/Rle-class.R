@@ -663,6 +663,10 @@ setMethod("anyNA", "Rle",
           function(x)
               anyNA(runValue(x)))
 
+setMethod("is.finite", "Rle",
+          function(x)
+              new_Rle(is.finite(runValue(x)), runLength(x)))
+
 setMethod("match", c("ANY", "Rle"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL)
     {
