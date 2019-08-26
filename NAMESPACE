@@ -277,6 +277,9 @@ export(
     ## S4-utils.R:
     setValidity2, new2, setMethods,
 
+    ## show-utils.R:
+    coolcat,
+
     ## utils.R:
     wmsg,
     .Call2,

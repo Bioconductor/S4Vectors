@@ -40,6 +40,20 @@ selectSome <- function(obj, maxToShow = 5, ellipsis = "...",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### coolcat()
+###
+
+### Exported!
+coolcat <- function(fmt, vals=character(), exdent=2, ...)
+{
+    vals <- ifelse(nzchar(vals), vals, "''")
+    lbls <- paste(S4Vectors:::selectSome(vals), collapse=" ")
+    txt <- sprintf(fmt, length(vals), lbls)
+    cat(strwrap(txt, exdent=exdent, ...), sep="\n")
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### labeledLine()
 ###
 

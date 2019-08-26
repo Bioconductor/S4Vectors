@@ -2,6 +2,7 @@
 
 \alias{show-utils}
 
+\alias{coolcat}
 \alias{classNameForDisplay}
 \alias{classNameForDisplay,ANY-method}
 \alias{classNameForDisplay,AsIs-method}
