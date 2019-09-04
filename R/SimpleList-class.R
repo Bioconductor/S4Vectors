@@ -205,6 +205,30 @@ setMethod("coerce2", "SimpleList",
 }
 setMethod("as.list", "SimpleList", .as.list.SimpleList)
 
+### NOT exported but used in IRanges.
+coerceToSimpleList <- function(from, element.type)
+{
+    if (missing(element.type)) {
+        if (is(from, "List")) {
+            element.type <- from@elementType
+        } else if (is.list(from)) {
+            element.type <- lowestListElementClass(from)
+        } else {
+            element.type <- class(from)
+        }
+        coerce_list_elts <- FALSE
+    } else {
+        coerce_list_elts <- TRUE
+    }
+    SimpleListClass <- listClassName("Simple", element.type)
+    if (is(from, SimpleListClass))
+        return(from)
+    listData <- as.list(from)
+    if (coerce_list_elts)
+        listData <- lapply(listData, coercerToClass(element.type))
+    new_SimpleList_from_list(SimpleListClass, listData)
+}
+
 setAs("ANY", "SimpleList", function(from) {
   coerceToSimpleList(from)
 })
@@ -212,25 +236,6 @@ setAs("ANY", "SimpleList", function(from) {
 setAs("list", "List", function(from) {
   coerceToSimpleList(from)
 })
-
-coerceToSimpleList <- function(from, element.type, ...) {
-  if (missing(element.type)) {
-    if (is(from, "List"))
-      element.type <- from@elementType
-    else if (is.list(from))
-      element.type <- lowestListElementClass(from)
-    else element.type <- class(from)
-  }
-  SimpleListClass <- listClassName("Simple", element.type)
-  if (!is(from, SimpleListClass)) {
-    listData <- as.list(from)
-    if (!is.null(element.type))
-      listData <- lapply(listData, coercerToClass(element.type), ...)
-    new_SimpleList_from_list(SimpleListClass, listData)
-  } else {
-    from
-  }
-}
 
 setMethod("as.env", "SimpleList",
           function(x, enclos = parent.frame(2), tform = identity) {
