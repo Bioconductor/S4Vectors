@@ -8,6 +8,9 @@
 \alias{class:vector_OR_factor}
 \alias{vector_OR_factor-class}
 \alias{vector_OR_factor}
+\alias{class:atomic}
+\alias{atomic-class}
+\alias{atomic}
 \alias{coerce,ANY,vector-method}
 \alias{setValidity2}
 \alias{new2}

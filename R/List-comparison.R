@@ -182,24 +182,7 @@ setMethod("duplicated", "List", .duplicated.List)
 .unique.List <- function(x, incomparables=FALSE, ...)
 {
     if (!pcompareRecursively(x)) {
-        ## TEMPORARY WORKAROUND A NASTY BUG IN callNextMethod()  (Apr 29, 2018)
-        ##
-        ## The unique() S4 generic defined in BiocGenerics is defined with
-        ##
-        ##   setGeneric("unique", signature="x")
-        ##
-        ## so is different from the base::unique() implicit S4 generic
-        ## defined by packages like rJava or flexmix. Unfortunately, if
-        ## rJava or flexmix is loaded before BiocGenerics, then the call to
-        ## callNextMethod() below (and more generally any call to
-        ## callNextMethod() that happens from within a method defined on the
-        ## BiocGenerics::unique() generic) will look for the next method in
-        ## the wrong generic, that is, it will look in the base::unique()
-        ## implicit generic instead of in the BiocGenerics::unique() generic.
-        ## So for now the workaround is to replace the call to callNextMethod()
-        ## with an explicit call to the "unique" method for Vector objects.
-        #return(callNextMethod())
-        return(.unique.Vector(x, incomparables=incomparables, ...))
+        return(callNextMethod())
     }
     i <- !duplicated(x, incomparables=incomparables, ...)  # LogicalList
     x[i]
@@ -242,15 +225,10 @@ setMethod("order", "List",
     }
 )
 
-.sort.List <- function(x, decreasing=FALSE, na.last=NA)
+.sort.List <- function(x, decreasing=FALSE, na.last=NA, by)
 {
-    if (!pcompareRecursively(x)) {
-        ## TEMPORARY WORKAROUND A NASTY BUG IN callNextMethod()  (Apr 29, 2018)
-        ## We temporary replace the call to callNextMethod() with an explicit
-        ## call to the "sort" method for Vector objects.
-        ## See .unique.List() above in this file for more information.
-        #return(callNextMethod())
-        return(.sort.Vector(x, decreasing=decreasing, na.last=na.last))
+    if (!missing(by) || !pcompareRecursively(x)) {
+        return(callNextMethod())
     }
     i <- order(x, na.last=na.last, decreasing=decreasing)  # IntegerList
     x[i]

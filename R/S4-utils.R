@@ -42,6 +42,16 @@ setClassUnion("character_OR_NULL", c("character", "NULL"))
 ### TODO: Be brave and report this craziness to the R bug tracker.
 setClassUnion("vector_OR_factor", c("vector", "factor"))
 
+### NOT exported but used in the IRanges package.
+ATOMIC_TYPES <- c("logical", "integer", "numeric", "complex",
+                  "character", "raw")
+
+setClassUnion("atomic", ATOMIC_TYPES)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Coercion utilities
+###
 
 ### We define the coercion method below as a workaround to the following
 ### bug in R:
@@ -81,11 +91,6 @@ setClassUnion("vector_OR_factor", c("vector", "factor"))
 ###   make as.vector a dispatching primitive like as.character(), but
 ###   the "mode" argument makes things complicated.
 setAs("ANY", "vector", function(from) as.vector(from))
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion utilities
-###
 
 coercerToClass <- function(class) {
   if (extends(class, "vector"))
