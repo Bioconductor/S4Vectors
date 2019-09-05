@@ -15,7 +15,7 @@ import(BiocGenerics)
 ###
 
 exportClasses(
-    character_OR_NULL, vector_OR_factor,
+    character_OR_NULL, vector_OR_factor, atomic,
     LLint, integer_OR_LLint,
     DataTable,
     NSBS,
