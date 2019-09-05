@@ -135,9 +135,16 @@ setReplaceMethod("[[", "FilterRules",
                    active[[i]] <- TRUE
                    names(active) <- NULL
                    x@active <- active
-                   names(x) <- make.names(names(x), unique = TRUE)
                    x
                  })
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Combination
+###
+
+setMethod("&", c("FilterRules", "FilterRules"), function(e1, e2) {
+    c(e1, e2)
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity.

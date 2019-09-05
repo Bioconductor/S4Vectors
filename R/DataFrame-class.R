@@ -511,11 +511,12 @@ setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
 setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
           function(value, x)
           {
-              isColumnList <- is(value, "DataFrame") || is.list(value)
-              if (is.null(value) || (isColumnList && length(value) == 0L))
+              hasColumns <- is(value, "DataFrame") || is.list(value) ||
+                  length(dim(value)) >= 2L
+              if (is.null(value) || (hasColumns && length(value) == 0L))
                   return(NULL)
               value <- as(value, "DataFrame", strict=FALSE)
-              if (!isColumnList) {
+              if (!hasColumns) {
                   names(value) <- NULL # don't try this at home
               }
               value
@@ -693,7 +694,7 @@ setAs("xtabs", "DFrame",
 
 .defaultAsDataFrame <- function(from) {
   if (length(dim(from)) == 2L) {
-    df <- as.data.frame(from)
+    df <- as.data.frame(from, stringsAsFactors=FALSE)
     if (0L == ncol(from))
       ## colnames on matrix with 0 columns are 'NULL'
       names(df) <- character()
