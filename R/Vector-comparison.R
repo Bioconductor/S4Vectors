@@ -116,7 +116,7 @@ setMethod("sameAsPreviousROW", "ANY", function(x) {
     comp
 }
 
-.basic_sameAsPreviousROW <- function(x) {
+setMethod("sameAsPreviousROW", "atomic", function(x) {
     if (NROW(x)==0) {
         logical(0)
     } else {
@@ -124,15 +124,7 @@ setMethod("sameAsPreviousROW", "ANY", function(x) {
         y <- tail(x, n=-1L)
         c(FALSE, .nasafe_compare(z, y))
     }
-}
-
-setMethod("sameAsPreviousROW", "logical", .basic_sameAsPreviousROW)
-
-setMethod("sameAsPreviousROW", "integer", .basic_sameAsPreviousROW)
-
-setMethod("sameAsPreviousROW", "character", .basic_sameAsPreviousROW)
-
-setMethod("sameAsPreviousROW", "raw", .basic_sameAsPreviousROW)
+})
 
 .numeric_sameAsPreviousROW <- function(x) {
     if (NROW(x)==0) {
@@ -142,8 +134,8 @@ setMethod("sameAsPreviousROW", "raw", .basic_sameAsPreviousROW)
         y <- tail(x, n=-1L)
         comp <- .nasafe_compare(z, y)
 
-        # No need to set TRUEs here, as this is covered by 
-        # the above comparison already.
+        # No need to test for '&' to set to TRUE here, 
+        # as NaN equality is covered by NA equality.
         nan.z <- is.nan(z)
         nan.y <- is.nan(y)
         comp[nan.z!=nan.y] <- FALSE
