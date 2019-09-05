@@ -664,15 +664,9 @@ setMethod("anyNA", "Rle",
               anyNA(runValue(x)))
 
 setMethod("sameAsPreviousROW", "Rle", function(x) {
-    if (length(x)==0L) {
-        logical(0)
-    } else {
-        starts <- c(1L, head(cumsum(runLength(x)), -1L) + 1L)
-        same.val <- sameAsPreviousROW(runValue(x))
-        is.same <- !logical(length(x))
-        is.same[starts] <- same.val
-        is.same
-    }
+    is.same <- !logical(length(x))
+    is.same[start(x)] <- sameAsPreviousROW(runValue(x))
+    is.same
 })
 
 setMethod("is.finite", "Rle",
