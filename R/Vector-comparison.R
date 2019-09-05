@@ -107,51 +107,54 @@ setMethod("sameAsPreviousROW", "ANY", function(x) {
     }
 })
 
-.primitive_sameAsPreviousROW <- function(x) {
+.nasafe_compare <- function(z, y) {
+    comp <- z==y
+    na.z <- is.na(z)
+    na.y <- is.na(y)
+    comp[na.z!=na.y] <- FALSE
+    comp[na.z & na.y] <- TRUE
+    comp
+}
+
+.basic_sameAsPreviousROW <- function(x) {
     if (NROW(x)==0) {
         logical(0)
     } else {
-         z <- head(x, n=-1L) 
-         y <- tail(x, n=-1L)
-         comp <- z==y
-
-         na.z <- is.na(z)
-         na.y <- is.na(y)
-         comp[na.z!=na.y] <- FALSE
-         comp[na.z & na.y] <- TRUE
-
-         c(FALSE, comp)
+        z <- head(x, n=-1L) 
+        y <- tail(x, n=-1L)
+        c(FALSE, .nasafe_compare(z, y))
     }
 }
 
-setMethod("sameAsPreviousROW", "character", .primitive_sameAsPreviousROW)
+setMethod("sameAsPreviousROW", "logical", .basic_sameAsPreviousROW)
 
-setMethod("sameAsPreviousROW", "integer", .primitive_sameAsPreviousROW)
+setMethod("sameAsPreviousROW", "integer", .basic_sameAsPreviousROW)
 
-setMethod("sameAsPreviousROW", "logical", .primitive_sameAsPreviousROW)
+setMethod("sameAsPreviousROW", "character", .basic_sameAsPreviousROW)
 
-setMethod("sameAsPreviousROW", "numeric", function(x) {
+setMethod("sameAsPreviousROW", "raw", .basic_sameAsPreviousROW)
+
+.numeric_sameAsPreviousROW <- function(x) {
     if (NROW(x)==0) {
         logical(0)
     } else {
-         z <- head(x, n=-1L) 
-         y <- tail(x, n=-1L)
-         comp <- z==y
+        z <- head(x, n=-1L) 
+        y <- tail(x, n=-1L)
+        comp <- .nasafe_compare(z, y)
 
-         na.z <- is.na(z)
-         na.y <- is.na(y)
-         comp[na.z!=na.y] <- FALSE
-         comp[na.z & na.y] <- TRUE
+        # No need to set TRUEs here, as this is covered by 
+        # the above comparison already.
+        nan.z <- is.nan(z)
+        nan.y <- is.nan(y)
+        comp[nan.z!=nan.y] <- FALSE
 
-         # No need to set TRUEs here, as this is covered by 
-         # the above comparison already.
-         nan.z <- is.nan(z)
-         nan.y <- is.nan(y)
-         comp[nan.z!=nan.y] <- FALSE
-
-         c(FALSE, comp)
+        c(FALSE, comp)
     }
-})
+}
+
+setMethod("sameAsPreviousROW", "numeric", .numeric_sameAsPreviousROW)
+
+setMethod("sameAsPreviousROW", "complex", .numeric_sameAsPreviousROW)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### match()
