@@ -801,7 +801,7 @@ setMethod("show", "DataFrame",
             #warning(wmsg(.OLD_DATAFRAME_INSTANCE_MSG))
             object <- updateObject(object, check=FALSE)
         }
-        callNextMethod()
+        invisible(callNextMethod())
     }
 )
 

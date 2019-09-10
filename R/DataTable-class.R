@@ -315,6 +315,7 @@ setMethod("show", "DataTable",
                   out <- rbind(classinfo, out)
                   print(out, quote = FALSE, right = TRUE)
               }
+              invisible(NULL)
           })
 
 .rownames <- function(nms, nrow, nhead, ntail)
