@@ -116,7 +116,7 @@ setMethod("sameAsPreviousROW", "ANY", function(x) {
     comp
 }
 
-setMethod("sameAsPreviousROW", "atomic", function(x) {
+.atomic_sameAsPreviousROW <- function(x) {
     if (NROW(x)==0) {
         logical(0)
     } else {
@@ -124,7 +124,13 @@ setMethod("sameAsPreviousROW", "atomic", function(x) {
         y <- tail(x, n=-1L)
         c(FALSE, .nasafe_compare(z, y))
     }
-})
+}
+
+setMethod("sameAsPreviousROW", "atomic", .atomic_sameAsPreviousROW)
+
+# Explicitly define this to avoid dispatching to the numeric method
+# and suffering the unnecessary is.nan() checks.
+setMethod("sameAsPreviousROW", "integer", .atomic_sameAsPreviousROW)
 
 .numeric_sameAsPreviousROW <- function(x) {
     if (NROW(x)==0) {
