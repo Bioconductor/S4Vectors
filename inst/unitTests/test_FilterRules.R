@@ -70,7 +70,7 @@ test_FilterRules_append <- function() {
   checkIdentical(unlist(as.list(filters)), filts)
   fun <- function(rd) rep(FALSE, nrow(rd))
   filters[[4]] <- fun
-  filts <- c(filts, X = new("FilterClosure", fun))
+  filts <- c(filts, new("FilterClosure", fun))
   checkIdentical(unlist(as.list(filters)), filts)
   
   checkException(filters[[]] <- "threeprime", silent = TRUE)
