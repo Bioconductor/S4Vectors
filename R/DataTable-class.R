@@ -84,7 +84,7 @@ setMethod("na.exclude", "DataTable",
           })
 
 setMethod("is.na", "DataTable", function(x) {
-  na <- do.call(cbind, lapply(seq(ncol(x)), function(xi) is.na(x[[xi]])))
+  na <- do.call(cbind, lapply(seq(ncol(x)), function(xi) decode(is.na(x[[xi]]))))
   rownames(na) <- rownames(x)
   na
 })
