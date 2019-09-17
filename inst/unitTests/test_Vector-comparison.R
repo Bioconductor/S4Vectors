@@ -29,6 +29,10 @@ test_Vector_comparison <- function() {
     checkIdentical(sameAsPreviousROW(x[0]), logical(0)) # robust to empty inputs.
     checkIdentical(sameAsPreviousROW(a[0]), logical(0))
 
+    checkIdentical(sameAsPreviousROW(c(NA, 1L, 2L)), logical(3)) # robust to NA values.
+    checkIdentical(sameAsPreviousROW(c(NA, NA, 2L)), c(FALSE, TRUE, FALSE))
+    checkIdentical(sameAsPreviousROW(c(NA, NA, NaN, NaN)), c(FALSE, TRUE, FALSE, TRUE))
+
     # Checking selfmatch.
     checkIdentical(selfmatch(x), match(x, x))
     checkIdentical(selfmatch(a), selfmatch(x))

@@ -15,6 +15,15 @@ test_DataFrame_comparison <- function() {
     checkIdentical(sameAsPreviousROW(DF0),
         sameAsPreviousROW(DF0$stuff) & sameAsPreviousROW(DF0$things))
 
+    # Checking robustness to internal NAs.
+    ids <- c(1:10, 1:10)
+    extra <- c(10:1, 10:1)
+    ids[1] <- NA
+    extra[2] <- NA
+
+    a <- DataFrame(ids, extra)
+    checkIdentical(selfmatch(a), c(1:10, 11:12, 3:10))
+
     # Checking methods to override List behaviour.
     checkIdentical(match(DF, DF), selfmatch(DF))
 

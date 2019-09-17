@@ -107,6 +107,52 @@ setMethod("sameAsPreviousROW", "ANY", function(x) {
     }
 })
 
+.nasafe_compare <- function(z, y) {
+    comp <- z==y
+    na.z <- is.na(z)
+    na.y <- is.na(y)
+    comp[na.z!=na.y] <- FALSE
+    comp[na.z & na.y] <- TRUE
+    comp
+}
+
+.atomic_sameAsPreviousROW <- function(x) {
+    if (NROW(x)==0) {
+        logical(0)
+    } else {
+        z <- head(x, n=-1L) 
+        y <- tail(x, n=-1L)
+        c(FALSE, .nasafe_compare(z, y))
+    }
+}
+
+setMethod("sameAsPreviousROW", "atomic", .atomic_sameAsPreviousROW)
+
+# Explicitly define this to avoid dispatching to the numeric method
+# and suffering the unnecessary is.nan() checks.
+setMethod("sameAsPreviousROW", "integer", .atomic_sameAsPreviousROW)
+
+.numeric_sameAsPreviousROW <- function(x) {
+    if (NROW(x)==0) {
+        logical(0)
+    } else {
+        z <- head(x, n=-1L) 
+        y <- tail(x, n=-1L)
+        comp <- .nasafe_compare(z, y)
+
+        # No need to test for '&' to set to TRUE here, 
+        # as NaN equality is covered by NA equality.
+        nan.z <- is.nan(z)
+        nan.y <- is.nan(y)
+        comp[nan.z!=nan.y] <- FALSE
+
+        c(FALSE, comp)
+    }
+}
+
+setMethod("sameAsPreviousROW", "numeric", .numeric_sameAsPreviousROW)
+
+setMethod("sameAsPreviousROW", "complex", .numeric_sameAsPreviousROW)
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### match()

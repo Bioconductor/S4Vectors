@@ -663,6 +663,12 @@ setMethod("anyNA", "Rle",
           function(x)
               anyNA(runValue(x)))
 
+setMethod("sameAsPreviousROW", "Rle", function(x) {
+    is.same <- !logical(length(x))
+    is.same[start(x)] <- sameAsPreviousROW(runValue(x))
+    is.same
+})
+
 setMethod("is.finite", "Rle",
           function(x)
               new_Rle(is.finite(runValue(x)), runLength(x)))

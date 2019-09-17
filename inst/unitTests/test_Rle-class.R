@@ -138,6 +138,8 @@ test_Rle_general <- function() {
     checkIdentical(is.unsorted(c(1,2,2,3), strictly = TRUE),
                    is.unsorted(Rle(c(1,2,2,3)), strictly = TRUE))
     checkIdentical(length(x), length(xRle))
+
+    checkIdentical(sameAsPreviousROW(x), sameAsPreviousROW(xRle))
     checkIdentical(match(c(x,x), c(7:9)), as.vector(match(c(xRle,xRle), c(7:9))))
     checkIdentical(rep(x, times = 2), as.vector(rep(xRle, times = 2)))
     checkIdentical(rep(x, times = x), as.vector(rep(xRle, times = x)))
