@@ -266,6 +266,8 @@ normarg_mcols <- function(mcols, x_class, x_len)
         mcols <- make_zero_col_DataFrame(x_len)
         ok <- is(mcols, mcols_target_class)
     } else if (is.list(mcols)) {
+        if (ok)
+            return(mcols)
         mcols <- new_DataFrame(mcols)
         ok <- is(mcols, mcols_target_class)
     } else {
