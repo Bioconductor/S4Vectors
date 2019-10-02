@@ -180,10 +180,12 @@ setValidity2("DataFrame", .valid.DataFrame)
 ###
 
 ### Low-level constructor. For internal use only.
-### Note that, when supplied, 'nrows' is trusted.
-### Calling 'new_DataFrame(x)' on an ordinary named list 'x' will turn it
-### into a DataFrame in the most possibly straightforward way, that is,
-### calling 'as.list()' on the result will return a list identical to 'x'.
+### Note that, when supplied, 'nrows' is trusted (except when 'listData' is a
+### data.frame or data-frame-like object).
+### Calling 'new_DataFrame(x)' on an ordinary named list or an ordinary
+### data.frame 'x' will turn it into a DataFrame in the most possibly
+### straightforward way. In particular calling 'as.list()' or 'as.data.frame()'
+### on the returned DataFrame will bring back 'x'.
 ### This is unlike 'DataFrame(x)' or 'as(x, "DataFrame")' which can do all
 ### kind of hard-to-predict mangling to 'x', unless the user does something
 ### like 'DataFrame(lapply(x, I))'. Not super convenient or intuitive!
@@ -193,19 +195,32 @@ new_DataFrame <- function(listData=list(), nrows=NA, what="arguments")
         stopifnot(isSingleNumberOrNA(nrows))
         if (!is.integer(nrows))
             nrows <- as.integer(nrows)
-        if (length(listData) == 0L) {
-            if (is.na(nrows))
-                nrows <- 0L
-            names(listData) <- character(0)
-        } else {
-            if (is.na(nrows)) {
-                elt_nrows <- elementNROWS(listData)
-                nrows <- elt_nrows[[1L]]
-                if (!all(elt_nrows == nrows))
-                    stop(wmsg(what, " imply differing number of rows"))
+        listData_nrow <- nrow(listData)
+        if (is.null(listData_nrow)) {
+            ## 'listData' is NOT a data.frame or data-frame-like object.
+            if (length(listData) == 0L) {
+                if (is.na(nrows))
+                    nrows <- 0L
+                names(listData) <- character(0)
+            } else {
+                if (is.na(nrows)) {
+                    elt_nrows <- elementNROWS(listData)
+                    nrows <- elt_nrows[[1L]]
+                    if (!all(elt_nrows == nrows))
+                        stop(wmsg(what, " imply differing number of rows"))
+                }
+                if (is.null(names(listData)))
+                    names(listData) <- paste0("V", seq_along(listData))
             }
-            if (is.null(names(listData)))
-                names(listData) <- paste0("V", seq_along(listData))
+        } else {
+            ## 'listData' is a data.frame or data-frame-like object.
+            if (is.na(nrows)) {
+                nrows <- listData_nrow
+            } else if (nrows != listData_nrow) {
+                stop(wmsg("the supplied 'nrows' does not match ",
+                          "the nb of rows in 'listData'"))
+            }
+            listData <- as.list(listData)
         }
         new2("DFrame", nrows=nrows, listData=listData, check=FALSE)
 }
