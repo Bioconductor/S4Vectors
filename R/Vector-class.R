@@ -264,15 +264,16 @@ normarg_mcols <- function(mcols, x_class, x_len)
         if (ok)
             return(mcols)  # NULL
         mcols <- make_zero_col_DataFrame(x_len)
-        ok <- is(mcols, mcols_target_class)
     } else if (is.list(mcols)) {
+        ## Note that this will also handle an 'mcols' that is a data.frame
+        ## or a data.frame derivative (e.g. data.table object).
         if (ok)
             return(mcols)
         mcols <- new_DataFrame(mcols)
-        ok <- is(mcols, mcols_target_class)
     } else {
         mcols <- updateObject(mcols, check=FALSE)
     }
+    ok <- is(mcols, mcols_target_class)
     if (!ok)
         mcols <- as(mcols, mcols_target_class)
 
