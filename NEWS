@@ -1,3 +1,69 @@
+CHANGES IN VERSION 0.24.0
+-------------------------
+
+NEW FEATURES
+
+    o Add Factor class. Serves a similar role as factor in base R except that
+      the levels of a Factor object can be any Vector derivative.
+
+    o New methods for DataFrame comparisons (by Aaron Lun)
+
+    o Add sameAsPreviousROW() generic and methods for ANY, atomic, integer,
+      numeric, complex, Rle, DataFrame, and Pairs (by Aaron Lun)
+
+    o Support more comparison methods for Pairs objects
+
+    o Add methods for coercing back and forth between HitsList and
+      SortedByQueryHitsList.
+
+    o Add anyDuplicated() method for Vector derivatives.
+
+    o Support 'by=' argument on sort,List
+
+    o Add is.finite() method for Rle objects
+
+    o Add add "&" method for FilterRules objects as a convenience for
+      concatenation
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Add DFrame class (commit 36837bdf). DataFrame() now returns a DFrame
+      instance (commit 83b09b19).
+
+    o Now 'stringsAsFactors' is set to FALSE when coercing something to
+      a DataFrame.
+
+    o Move splitAsList() from the IRanges package
+
+    o Move S4 class "atomic" from the IRanges package
+
+    o Improve handling of user-supplied metadata columns
+
+DEPRECATED AND DEFUNCT
+
+    o Remove phead(), ptail(), and strsplitAsListOfIntegerVectors(). These
+      functions were deprecated in BioC 3.7 and defunct in BioC 3.8.
+
+BUG FIXES
+
+    o Fix split() on a SortedByQueryHits object (issue #39)
+
+    o Fix the following coercions:
+      - Hits -> SelfHits
+      - SortedByQueryHits -> SortedByQuerySelfHits
+      - SelfHits -> SortedByQuerySelfHits
+      - Hits -> SortedByQuerySelfHits
+      Before this fix all these coercions **seemed** to work but they
+      were in fact silently producing invalid objects.
+
+    o A fix to anyDuplicated() method for Rle objects (commit 63495d6)
+
+    o A fix related to replacing DataFrame columns with matrix columns
+      (commit 00169dd6)
+
+    o All show() methods now return an invisible NULL (commit f4b4ee76)
+
+
 CHANGES IN VERSION 0.22.0
 -------------------------
 
