@@ -932,7 +932,13 @@ setMethod("show", "DataFrame",
                  x_col <- x[[i]]
                  other_cols <- lapply(seq_along(objects),
                                       function(j) objects[[j]][[colmaps[i, j]]])
-                 .bind_cols_along_their_ROWS(c(list(x_col), other_cols))
+                 tryCatch( 
+                     .bind_cols_along_their_ROWS(c(list(x_col), other_cols)),
+                     error=function(err) {
+                        stop("failed to rbind '", colnames(x)[i], 
+                            "' across DataFrames\n", conditionMessage(err))
+                     }
+                 )
             }
         )
         ans_nrow <- NROW(ans_listData[[1L]])
