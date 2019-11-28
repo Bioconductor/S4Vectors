@@ -936,7 +936,7 @@ setMethod("show", "DataFrame",
                      .bind_cols_along_their_ROWS(c(list(x_col), other_cols)),
                      error=function(err) {
                         stop("failed to rbind '", colnames(x)[i], 
-                            "' across DataFrames\n", conditionMessage(err))
+                            "' across DataFrames\n  ", conditionMessage(err))
                      }
                  )
             }
