@@ -837,9 +837,16 @@ setMethod("show", "DataFrame",
                       "must have the same number of columns"))
         colmap <- selectHits(findMatches(x_colnames, object_colnames),
                              select="first", nodup=TRUE)
-        if (anyNA(colmap))
+        if (anyNA(colmap)) {
+            delta <- c(setdiff(x_colnames, object_colnames),
+                setdiff(object_colnames, x_colnames))
+            delta <- sprintf("'%s'", delta)
+            if (length(delta)>3) delta <- c(head(delta, 3), "...")
+            delta <- paste(delta, collapse=", ")
             stop(wmsg("the DataFrame objects to rbind ",
-                      "must have the same colnames"))
+                      "have mismatching colnames ", 
+                      paste0("(", delta, ")")))
+        }
         colmap
     }
     if (length(objects) == 0L) {
