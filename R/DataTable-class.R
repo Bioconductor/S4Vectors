@@ -58,7 +58,7 @@ tail.DataTable <- tail.matrix
 setMethod("tail", "DataTable", tail.DataTable)
 
 setMethod("subset", "DataTable",
-          function(x, subset, select, drop = FALSE, ...) 
+          function(x, subset, select, drop = FALSE, ...)
           {
               i <- evalqForSubset(subset, x, ...)
               j <- evalqForSelect(select, x, ...)
@@ -173,13 +173,13 @@ setMethod("rbind2", c("DataTable", "DataTable"), function(x, y, ...) {
   rbind(x, y, ...)
 })
 
-.mergeByHits <- function(x, y, by, all.x=FALSE, all.y=FALSE, sort = TRUE, 
+.mergeByHits <- function(x, y, by, all.x=FALSE, all.y=FALSE, sort = TRUE,
                          suffixes = c(".x", ".y"))
-{    
+{
     nm.x <- colnames(x)
     nm.y <- colnames(y)
     cnm <- nm.x %in% nm.y
-    if (any(cnm) && nzchar(suffixes[1L])) 
+    if (any(cnm) && nzchar(suffixes[1L]))
         nm.x[cnm] <- paste0(nm.x[cnm], suffixes[1L])
     cnm <- nm.y %in% nm.x
     if (any(cnm) && nzchar(suffixes[2L]))
@@ -196,7 +196,7 @@ setMethod("rbind2", c("DataTable", "DataTable"), function(x, y, ...) {
     }
     y <- y[c(to(by), if (all.x) rep.int(NA_integer_, length(x.alone)),
              if (all.y) y.alone), , drop = FALSE]
-    
+
     cbind(x, y)
 }
 
@@ -288,35 +288,29 @@ setMethod("makeCharacterMatrixForDisplay", "DataTable",
     }
 )
 
-.make_rownames_for_display <- function(x_rownames, nrow, nhead, ntail)
+make_rownames_for_DataTable_display <- function(x_rownames, nrow, nhead, ntail)
 {
-    p1 <- ifelse (nhead == 0L, 0L, 1L)
-    p2 <- ifelse (ntail == 0L, 0L, ntail - 1L)
+    p1 <- ifelse(nhead == 0L, 0L, 1L)
+    p2 <- ifelse(ntail == 0L, 0L, ntail - 1L)
     s1 <- s2 <- character(0)
     if (is.null(x_rownames)) {
-        if (nhead > 0) 
+        if (nhead > 0L)
             s1 <- paste0(as.character(p1:nhead))
-        if (ntail > 0) 
+        if (ntail > 0L)
             s2 <- paste0(as.character((nrow-p2):nrow))
-    } else { 
-        if (nhead > 0) 
+    } else {
+        if (nhead > 0L)
             s1 <- paste0(head(x_rownames, nhead))
-        if (ntail > 0) 
+        if (ntail > 0L)
             s2 <- paste0(tail(x_rownames, ntail))
     }
     c(s1, "...", s2)
 }
 
-.make_class_info_for_display <- function(x)
+make_class_info_for_DataTable_display <- function(x)
 {
-    matrix(
-        unlist(
-            lapply(x, function(col) paste0("<", classNameForDisplay(col), ">")),
-            use.names=FALSE
-        ),
-        nrow=1L,
-        dimnames=list("", colnames(x))
-    )
+    vapply(x, function(xi) paste0("<", classNameForDisplay(xi), ">"),
+           character(1), USE.NAMES=FALSE)
 }
 
 .show_DataTable <- function(x)
@@ -340,10 +334,11 @@ setMethod("makeCharacterMatrixForDisplay", "DataTable",
             m <- rbind(makeCharacterMatrixForDisplay(head(x, nhead)),
                        rbind(rep.int("...", x_ncol)),
                        makeCharacterMatrixForDisplay(tail(x, ntail)))
-            rownames(m) <- .make_rownames_for_display(x_rownames, x_nrow,
-                                                      nhead, ntail)
+            rownames(m) <- make_rownames_for_DataTable_display(
+                                                   x_rownames, x_nrow,
+                                                   nhead, ntail)
         }
-        m <- rbind(.make_class_info_for_display(x), m)
+        m <- rbind(make_class_info_for_DataTable_display(x), m)
         print(m, quote=FALSE, right=TRUE)
     }
     invisible(NULL)
