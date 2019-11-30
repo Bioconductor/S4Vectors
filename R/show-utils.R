@@ -344,7 +344,8 @@ toNumSnippet <- function(x, max.width)
 
 ### Exported!
 setGeneric("classNameForDisplay",
-    function(x) standardGeneric("classNameForDisplay"))
+    function(x) standardGeneric("classNameForDisplay")
+)
 
 setMethod("classNameForDisplay", "ANY",
    function(x)
@@ -370,6 +371,18 @@ setMethod("classNameForDisplay", "ANY",
 setMethod("classNameForDisplay", "AsIs",
     function(x) classNameForDisplay(.drop_AsIs(x))
 )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### makeCharacterMatrixForDisplay()
+###
+
+### Exported!
+setGeneric("makeCharacterMatrixForDisplay",
+    function(x) standardGeneric("makeCharacterMatrixForDisplay")
+)
+
+setMethod("makeCharacterMatrixForDisplay", "ANY", function(x) as.matrix(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -269,74 +269,87 @@ setMethod("as.data.frame", "DataTable",
                             row.names=row.names, optional=optional, ...)
           })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### Display
+###
+### Even though the "show" method and its helper functions below are defined
+### for DataTable derivatives, they're totally geared towards data-frame-like
+### objects. Don't get fooled!
+### TODO: Either make them work for DataTable derivatives **in general** or
+### move this to DataFrame-class.R
 ###
 
-setMethod("show", "DataTable",
-          function(object)
-          {
-              nhead <- get_showHeadLines()
-              ntail <- get_showTailLines()
-              nr <- nrow(object)
-              nc <- ncol(object)
-              cat(classNameForDisplay(object), " with ",
-                  nr, ifelse(nr == 1, " row and ", " rows and "),
-                  nc, ifelse(nc == 1, " column\n", " columns\n"),
-                  sep = "")
-              if (nr > 0 && nc > 0) {
-                  nms <- rownames(object)
-                  if (nr <= (nhead + ntail + 1L)) {
-                      out <-
-                        as.matrix(format(as.data.frame(
-                                         lapply(object, showAsCell),
-                                         optional = TRUE)))
-                      if (!is.null(nms))
-                          rownames(out) <- nms
-                  } else {
-                      out <-
-                        rbind(as.matrix(format(as.data.frame(
-                                               lapply(object, function(x)
-                                                      showAsCell(head(x, nhead))),
-                                               optional = TRUE))),
-                              rbind(rep.int("...", nc)),
-                              as.matrix(format(as.data.frame(
-                                               lapply(object, function(x) 
-                                                      showAsCell(tail(x, ntail))),
-                                               optional = TRUE))))
-                  rownames(out) <- .rownames(nms, nr, nhead, ntail) 
-                  }
-                  classinfo <-
-                    matrix(unlist(lapply(object, function(x) {
-                        paste0("<", classNameForDisplay(x)[1],
-                               ">")
-                    }), use.names = FALSE), nrow = 1,
-                           dimnames = list("", colnames(out)))
-                  out <- rbind(classinfo, out)
-                  print(out, quote = FALSE, right = TRUE)
-              }
-              invisible(NULL)
-          })
+setMethod("makeCharacterMatrixForDisplay", "DataTable",
+    function(x)
+    {
+        df <- as.data.frame(lapply(x, showAsCell), optional=TRUE)
+        as.matrix(format(df))
+    }
+)
 
-.rownames <- function(nms, nrow, nhead, ntail)
+.make_rownames_for_display <- function(x_rownames, nrow, nhead, ntail)
 {
-    p1 <- ifelse (nhead == 0, 0L, 1L)
-    p2 <- ifelse (ntail == 0, 0L, ntail-1L)
+    p1 <- ifelse (nhead == 0L, 0L, 1L)
+    p2 <- ifelse (ntail == 0L, 0L, ntail - 1L)
     s1 <- s2 <- character(0)
-
-    if (is.null(nms)) {
+    if (is.null(x_rownames)) {
         if (nhead > 0) 
             s1 <- paste0(as.character(p1:nhead))
         if (ntail > 0) 
             s2 <- paste0(as.character((nrow-p2):nrow))
     } else { 
         if (nhead > 0) 
-            s1 <- paste0(head(nms, nhead))
+            s1 <- paste0(head(x_rownames, nhead))
         if (ntail > 0) 
-            s2 <- paste0(tail(nms, ntail))
+            s2 <- paste0(tail(x_rownames, ntail))
     }
     c(s1, "...", s2)
 }
+
+.make_class_info_for_display <- function(x)
+{
+    matrix(
+        unlist(
+            lapply(x, function(col) paste0("<", classNameForDisplay(col), ">")),
+            use.names=FALSE
+        ),
+        nrow=1L,
+        dimnames=list("", colnames(x))
+    )
+}
+
+.show_DataTable <- function(x)
+{
+    nhead <- get_showHeadLines()
+    ntail <- get_showTailLines()
+    x_nrow <- nrow(x)
+    x_ncol <- ncol(x)
+    cat(classNameForDisplay(x), " with ",
+        x_nrow, " row", ifelse(x_nrow == 1L, "", "s"),
+        " and ",
+        x_ncol, " column", ifelse(x_ncol == 1L, "", "s"),
+        "\n", sep="")
+    if (x_nrow != 0L && x_ncol != 0L) {
+        x_rownames <- rownames(x)
+        if (x_nrow <= nhead + ntail + 1L) {
+            m <- makeCharacterMatrixForDisplay(x)
+            if (!is.null(x_rownames))
+                rownames(m) <- x_rownames
+        } else {
+            m <- rbind(makeCharacterMatrixForDisplay(head(x, nhead)),
+                       rbind(rep.int("...", x_ncol)),
+                       makeCharacterMatrixForDisplay(tail(x, ntail)))
+            rownames(m) <- .make_rownames_for_display(x_rownames, x_nrow,
+                                                      nhead, ntail)
+        }
+        m <- rbind(.make_class_info_for_display(x), m)
+        print(m, quote=FALSE, right=TRUE)
+    }
+    invisible(NULL)
+}
+
+setMethod("show", "DataTable", function(object) .show_DataTable(object))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
