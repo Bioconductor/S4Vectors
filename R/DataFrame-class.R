@@ -825,6 +825,22 @@ setMethod("show", "DataFrame",
 ### Combining
 ###
 
+.find_mismatches <- function(x, y) {
+    universe <- union(x, y)
+    tx <- table(factor(x, levels=universe))
+    ty <- table(factor(y, levels=universe))
+    common <- pmin(tx, ty)
+    leftx <- tx - common
+    lefty <- ty - common
+    c(names(leftx)[leftx > 0], names(lefty)[lefty > 0])
+}
+
+.format_failed_colnames <- function(x) {
+    x <- sprintf("'%s'", x)
+    if (length(x)>3) x <- c(head(x, 3), "...")
+    paste(x, collapse=", ")
+}
+
 ### Return an integer matrix with 1 column per object in 'objects' and 1 row
 ### per column in 'x'.
 .make_colmaps <- function(x, objects)
@@ -832,20 +848,20 @@ setMethod("show", "DataFrame",
     x_colnames <- colnames(x)
     x_ncol <- length(x_colnames)
     map_x_colnames_to_object_colnames <- function(object_colnames) {
-        if (length(object_colnames) != x_ncol)
+        if (length(object_colnames) != x_ncol) {
+            mm <- .find_mismatches(x_colnames, object_colnames)
             stop(wmsg("the DataFrame objects to rbind ",
-                      "must have the same number of columns"))
+                      "have different numbers of columns ",
+                      sprintf("(e.g. %s)", .format_failed_colnames(mm))))
+        }
+
         colmap <- selectHits(findMatches(x_colnames, object_colnames),
                              select="first", nodup=TRUE)
         if (anyNA(colmap)) {
-            delta <- c(setdiff(x_colnames, object_colnames),
-                setdiff(object_colnames, x_colnames))
-            delta <- sprintf("'%s'", delta)
-            if (length(delta)>3) delta <- c(head(delta, 3), "...")
-            delta <- paste(delta, collapse=", ")
+            mm <- .find_mismatches(x_colnames, object_colnames)
             stop(wmsg("the DataFrame objects to rbind ",
                       "have mismatching colnames ", 
-                      paste0("(", delta, ")")))
+                      sprintf("(%s)", .format_failed_colnames(mm))))
         }
         colmap
     }
