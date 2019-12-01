@@ -273,13 +273,21 @@ int _get_select_mode(SEXP select)
 	return 0;
 }
 
-static int get_nodup(SEXP nodup)
+static int get_nodup(SEXP nodup, int select_mode)
 {
 	int nodup0;
 
 	if (!IS_LOGICAL(nodup) || LENGTH(nodup) != 1
 	 || (nodup0 = LOGICAL(nodup)[0]) == NA_LOGICAL)
 		error("'nodup' must be a TRUE or FALSE");
+	if (nodup0 && select_mode != FIRST_HIT
+		   && select_mode != LAST_HIT
+		   && select_mode != ARBITRARY_HIT)
+	{
+		error("'nodup=TRUE' is only supported when "
+		      "'select' is \"first\", \"last\",\n"
+		      "  or \"arbitrary\"");
+	}
 	return nodup0;
 }
 
@@ -306,15 +314,7 @@ SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
 				    "from(hits)", "to(hits)");
 	ans_len = get_nnode(nLnode, "L");
 	select_mode = _get_select_mode(select);
-	nodup0 = get_nodup(nodup);
-	if (nodup0) {
-		if (select_mode != FIRST_HIT
-		 && select_mode != LAST_HIT
-		 && select_mode != ARBITRARY_HIT)
-			error("'nodup=TRUE' is only supported when "
-			      "'select' is \"first\", \"last\",\n"
-			      "  or \"arbitrary\"");
-	}
+	nodup0 = get_nodup(nodup, select_mode);
 	PROTECT(ans = NEW_INTEGER(ans_len));
 	init_val = select_mode == COUNT_HITS ? 0 : NA_INTEGER;
 	for (i = 0, ans_p = INTEGER(ans); i < ans_len; i++, ans_p++)
@@ -338,7 +338,8 @@ SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
 				      "  are sorted by query at the moment");
 			if (i > i_prev) {
 				ans_elt = INTEGER(ans)[i_prev];
-				is_used->elts[ans_elt - 1] = 1;
+				if (ans_elt != NA_INTEGER)
+					is_used->elts[ans_elt - 1] = 1;
 			}
 		}
 		i_prev = i;

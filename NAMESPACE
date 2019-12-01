@@ -356,7 +356,7 @@ export(
 
 export(
     ## show-utils.R:
-    classNameForDisplay, showAsCell,
+    classNameForDisplay, makeCharacterMatrixForDisplay, showAsCell,
 
     ## LLint-class.R:
     bindROWS,
@@ -436,7 +436,7 @@ export(
 
 ### Exactly the same list as above.
 exportMethods(
-    classNameForDisplay, showAsCell,
+    classNameForDisplay, makeCharacterMatrixForDisplay, showAsCell,
     bindROWS,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
