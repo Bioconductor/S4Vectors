@@ -340,7 +340,7 @@ export(
     HitsList,
 
     ## DataFrame-class.R:
-    DataFrame,
+    DataFrame, make_zero_col_DFrame,
 
     ## Pairs-class.R:
     Pairs,

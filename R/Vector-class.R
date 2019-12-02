@@ -246,12 +246,6 @@ setValidity2("Vector", .valid.Vector)
 setGeneric("elementMetadata<-",
            function(x, ..., value) standardGeneric("elementMetadata<-"))
 
-### NOT exported but used in packages IRanges, GenomicRanges,
-### SummarizedExperiment, GenomicAlignments, and maybe more...
-### 3x faster than new("DFrame", nrows=nrow).
-### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
-make_zero_col_DataFrame <- function(nrow) new_DataFrame(nrows=nrow)
-
 ### NOT exported but used in the IRanges and GenomicRanges packages.
 normarg_mcols <- function(mcols, x_class, x_len)
 {
@@ -263,7 +257,7 @@ normarg_mcols <- function(mcols, x_class, x_len)
     if (is.null(mcols)) {
         if (ok)
             return(mcols)  # NULL
-        mcols <- make_zero_col_DataFrame(x_len)
+        mcols <- make_zero_col_DFrame(x_len)
     } else if (is.list(mcols)) {
         ## Note that this will also handle an 'mcols' that is a data.frame
         ## or a data.frame derivative (e.g. data.table object).
@@ -666,7 +660,7 @@ setMethod("summary", "Vector", summary.Vector)
 ensureMcols <- function(x) {
   ans <- mcols(x, use.names=FALSE)
   if (is.null(ans))
-    ans <- make_zero_col_DataFrame(length(x))
+    ans <- make_zero_col_DFrame(length(x))
   ans
 }
 
@@ -681,7 +675,7 @@ rbind_mcols <- function(...)
         return(NULL)
     mcols_list[mcols_is_null] <- lapply(
         objects[mcols_is_null],
-        function(object) make_zero_col_DataFrame(length(object))
+        function(object) make_zero_col_DFrame(length(object))
     )
     colnames_list <- lapply(mcols_list, colnames)
     all_colnames <- unique(unlist(colnames_list, use.names=FALSE))

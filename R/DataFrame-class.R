@@ -191,38 +191,38 @@ setValidity2("DataFrame", .valid.DataFrame)
 ### like 'DataFrame(lapply(x, I))'. Not super convenient or intuitive!
 new_DataFrame <- function(listData=list(), nrows=NA, what="arguments")
 {
-        stopifnot(is.list(listData))
-        stopifnot(isSingleNumberOrNA(nrows))
-        if (!is.integer(nrows))
-            nrows <- as.integer(nrows)
-        listData_nrow <- nrow(listData)
-        if (is.null(listData_nrow)) {
-            ## 'listData' is NOT a data.frame or data-frame-like object.
-            if (length(listData) == 0L) {
-                if (is.na(nrows))
-                    nrows <- 0L
-                names(listData) <- character(0)
-            } else {
-                if (is.na(nrows)) {
-                    elt_nrows <- elementNROWS(listData)
-                    nrows <- elt_nrows[[1L]]
-                    if (!all(elt_nrows == nrows))
-                        stop(wmsg(what, " imply differing number of rows"))
-                }
-                if (is.null(names(listData)))
-                    names(listData) <- paste0("V", seq_along(listData))
-            }
+    stopifnot(is.list(listData))
+    stopifnot(isSingleNumberOrNA(nrows))
+    if (!is.integer(nrows))
+        nrows <- as.integer(nrows)
+    listData_nrow <- nrow(listData)
+    if (is.null(listData_nrow)) {
+        ## 'listData' is NOT a data.frame or data-frame-like object.
+        if (length(listData) == 0L) {
+            if (is.na(nrows))
+                nrows <- 0L
+            names(listData) <- character(0)
         } else {
-            ## 'listData' is a data.frame or data-frame-like object.
             if (is.na(nrows)) {
-                nrows <- listData_nrow
-            } else if (nrows != listData_nrow) {
-                stop(wmsg("the supplied 'nrows' does not match ",
-                          "the nb of rows in 'listData'"))
+                elt_nrows <- elementNROWS(listData)
+                nrows <- elt_nrows[[1L]]
+                if (!all(elt_nrows == nrows))
+                    stop(wmsg(what, " imply differing number of rows"))
             }
-            listData <- as.list(listData)
+            if (is.null(names(listData)))
+                names(listData) <- paste0("V", seq_along(listData))
         }
-        new2("DFrame", nrows=nrows, listData=listData, check=FALSE)
+    } else {
+        ## 'listData' is a data.frame or data-frame-like object.
+        if (is.na(nrows)) {
+            nrows <- listData_nrow
+        } else if (nrows != listData_nrow) {
+            stop(wmsg("the supplied 'nrows' does not match ",
+                      "the nb of rows in 'listData'"))
+        }
+        listData <- as.list(listData)
+    }
+    new2("DFrame", nrows=nrows, listData=listData, check=FALSE)
 }
 
 DataFrame <- function(..., row.names = NULL, check.names = TRUE,
@@ -308,6 +308,21 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
   metadata(ans) <- metadata
   ans
 }
+
+### Exported. Intended for developers to use in other packages and typically
+### not needed by the end user.
+### 3x faster than new("DFrame", nrows=nrow).
+### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
+make_zero_col_DFrame <- function(nrow)
+{
+    stopifnot(isSingleNumber(nrow))
+    new2("DFrame", nrows=nrow, check=FALSE)
+}
+
+### Alias for backward compatibility.
+### NOT exported but used in packages IRanges, GenomicRanges,
+### SummarizedExperiment, GenomicAlignments, and maybe more...
+make_zero_col_DataFrame <- make_zero_col_DFrame
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

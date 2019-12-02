@@ -64,7 +64,7 @@ Pairs <- function(first, second, ..., names = NULL, hits = NULL) {
     if (!missing(...)) {
         elementMetadata <- DataFrame(...)
     } else {
-        elementMetadata <- make_zero_col_DataFrame(NROW(first))
+        elementMetadata <- make_zero_col_DFrame(NROW(first))
     }
     new("Pairs", first=first, second=second, NAMES=names,
                  elementMetadata=elementMetadata)

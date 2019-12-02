@@ -18,8 +18,9 @@
 \alias{rownames<-,DataFrame-method}
 \alias{colnames<-,DataFrame-method}
 
-% constructor
+% constructors
 \alias{DataFrame}
+\alias{make_zero_col_DFrame}
 
 % subsetting
 \alias{[,DataFrame-method}
@@ -91,25 +92,36 @@
 }
 
 \section{Constructor}{
-  \describe{\code{DataFrame(..., row.names = NULL, check.names = TRUE,
-      stringsAsFactors)}:
-    Constructs a \code{DataFrame} in similar fashion to
-    \code{\link{data.frame}}. Each argument in \code{...} is coerced to
-    a \code{DataFrame} and combined column-wise. No special effort is
-    expended to automatically determine the row names from the
-    arguments. The row names should be given in
-    \code{row.names}; otherwise, there are no row names. This is by
-    design, as row names are normally undesirable when data is
-    large. If \code{check.names} is \code{TRUE}, the column names will
-    be checked for syntactic validity and made unique, if necessary.
+  \describe{
+    \item{}{
+      \code{DataFrame(..., row.names = NULL, check.names = TRUE,
+                      stringsAsFactors)}
 
-    To store an object of a class that does not support coercion to
-    \code{DataFrame}, wrap it in \code{I()}. The class must still have
-    methods for \code{length} and \code{[}.
+      Constructs a \code{DataFrame} in similar fashion to
+      \code{\link{data.frame}}. Each argument in \code{...} is coerced to
+      a \code{DataFrame} and combined column-wise. No special effort is
+      expended to automatically determine the row names from the
+      arguments. The row names should be given in
+      \code{row.names}; otherwise, there are no row names. This is by
+      design, as row names are normally undesirable when data is
+      large. If \code{check.names} is \code{TRUE}, the column names will
+      be checked for syntactic validity and made unique, if necessary.
 
-    The \code{stringsAsFactors} argument is ignored. The coercion of
-    column arguments to DataFrame determines whether strings
-    become factors.
+      To store an object of a class that does not support coercion to
+      \code{DataFrame}, wrap it in \code{I()}. The class must still have
+      methods for \code{length} and \code{[}.
+
+      The \code{stringsAsFactors} argument is ignored. The coercion of
+      column arguments to DataFrame determines whether strings
+      become factors.
+    }
+    \item{}{
+      \code{make_zero_col_DFrame(nrow)}
+
+      Constructs a zero-column DFrame object with \code{nrow} rows.
+      Intended for developers to use in other packages and typically
+      not needed by the end user.
+    }
   }
 }
 
