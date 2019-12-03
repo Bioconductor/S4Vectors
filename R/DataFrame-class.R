@@ -825,20 +825,35 @@ setMethod("show", "DataFrame",
 ### Combining
 ###
 
-.find_mismatches <- function(x, y) {
+.format_mismatch_message <- function(x, y) {
     universe <- union(x, y)
     tx <- table(factor(x, levels=universe))
     ty <- table(factor(y, levels=universe))
     common <- pmin(tx, ty)
+
     leftx <- tx - common
     lefty <- ty - common
-    c(names(leftx)[leftx > 0], names(lefty)[lefty > 0])
-}
+    misleft <- names(leftx)[leftx > 0]
+    misright <- names(lefty)[lefty > 0]
 
-.format_failed_colnames <- function(x) {
-    x <- sprintf("'%s'", x)
-    if (length(x)>3) x <- c(head(x, 3), "...")
-    paste(x, collapse=", ")
+    .format_failed_colnames <- function(x) {
+        x <- sprintf("'%s'", x)
+        if (length(x)>3) x <- c(head(x, 3), "...")
+        paste(x, collapse=", ")
+    }
+
+    if (length(misleft) && length(misright)) {
+        paste0("(", .format_failed_colnames(misleft), 
+            " vs ", .format_failed_colnames(misright), ")")
+    } else if (length(misleft)) {
+        paste0("(", .format_failed_colnames(misleft), " ",
+            if (length(misleft) > 1) "are" else "is",
+            " unique)")
+    } else {
+        paste0("(", .format_failed_colnames(misright), " ",
+            if (length(misright) > 1) "are" else "is",
+            " unique)")
+    }
 }
 
 ### Return an integer matrix with 1 column per object in 'objects' and 1 row
@@ -849,19 +864,17 @@ setMethod("show", "DataFrame",
     x_ncol <- length(x_colnames)
     map_x_colnames_to_object_colnames <- function(object_colnames) {
         if (length(object_colnames) != x_ncol) {
-            mm <- .find_mismatches(x_colnames, object_colnames)
             stop(wmsg("the DataFrame objects to rbind ",
                       "have different numbers of columns ",
-                      sprintf("(e.g. %s)", .format_failed_colnames(mm))))
+                      .format_mismatch_message(x_colnames, object_colnames)))
         }
 
         colmap <- selectHits(findMatches(x_colnames, object_colnames),
                              select="first", nodup=TRUE)
         if (anyNA(colmap)) {
-            mm <- .find_mismatches(x_colnames, object_colnames)
             stop(wmsg("the DataFrame objects to rbind ",
                       "have mismatching colnames ", 
-                      sprintf("(%s)", .format_failed_colnames(mm))))
+                      .format_mismatch_message(x_colnames, object_colnames)))
         }
         colmap
     }
