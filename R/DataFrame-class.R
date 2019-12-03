@@ -313,9 +313,12 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
 ### not needed by the end user.
 ### 3x faster than new("DFrame", nrows=nrow).
 ### 500x faster than DataFrame(matrix(nrow=nrow, ncol=0L)).
-make_zero_col_DFrame <- function(nrow)
+make_zero_col_DFrame <- function(nrow=0L)
 {
     stopifnot(isSingleNumber(nrow))
+    if (!is.integer(nrow))
+        nrow <- as.integer(nrow)
+    stopifnot(nrow >= 0L)
     new2("DFrame", nrows=nrow, check=FALSE)
 }
 
