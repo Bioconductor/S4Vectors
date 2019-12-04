@@ -843,17 +843,20 @@ setMethod("show", "DataFrame",
     }
 
     if (length(misleft) && length(misright)) {
-        paste0("(", .format_failed_colnames(misleft), 
+        msg <- paste0("(", .format_failed_colnames(misleft), 
             " vs ", .format_failed_colnames(misright), ")")
     } else if (length(misleft)) {
-        paste0("(", .format_failed_colnames(misleft), " ",
+        msg <- paste0("(", .format_failed_colnames(misleft), " ",
             if (length(misleft) > 1) "are" else "is",
             " unique)")
     } else {
-        paste0("(", .format_failed_colnames(misright), " ",
+        msg <- paste0("(", .format_failed_colnames(misright), " ",
             if (length(misright) > 1) "are" else "is",
             " unique)")
     }
+
+    stop(wmsg("the DataFrame objects to rbind do not have ",
+              "identical column names ", msg))
 }
 
 ### Return an integer matrix with 1 column per object in 'objects' and 1 row
@@ -864,17 +867,12 @@ setMethod("show", "DataFrame",
     x_ncol <- length(x_colnames)
     map_x_colnames_to_object_colnames <- function(object_colnames) {
         if (length(object_colnames) != x_ncol) {
-            stop(wmsg("the DataFrame objects to rbind ",
-                      "have different numbers of columns ",
-                      .format_mismatch_message(x_colnames, object_colnames)))
+            .format_mismatch_message(x_colnames, object_colnames)
         }
-
         colmap <- selectHits(findMatches(x_colnames, object_colnames),
                              select="first", nodup=TRUE)
         if (anyNA(colmap)) {
-            stop(wmsg("the DataFrame objects to rbind ",
-                      "have mismatching colnames ", 
-                      .format_mismatch_message(x_colnames, object_colnames)))
+            .format_mismatch_message(x_colnames, object_colnames)
         }
         colmap
     }
@@ -964,8 +962,8 @@ setMethod("show", "DataFrame",
                  tryCatch( 
                      .bind_cols_along_their_ROWS(c(list(x_col), other_cols)),
                      error=function(err) {
-                        stop("failed to rbind '", colnames(x)[i], 
-                            "' across DataFrames\n  ", conditionMessage(err))
+                        stop("failed to rbind column '", colnames(x)[i], 
+                            "' across DataFrames:\n  ", conditionMessage(err))
                      }
                  )
             }
