@@ -843,6 +843,40 @@ setMethod("show", "DataFrame",
 ### Combining
 ###
 
+.format_mismatch_message <- function(x, y) {
+    universe <- union(x, y)
+    tx <- table(factor(x, levels=universe))
+    ty <- table(factor(y, levels=universe))
+    common <- pmin(tx, ty)
+
+    leftx <- tx - common
+    lefty <- ty - common
+    misleft <- names(leftx)[leftx > 0]
+    misright <- names(lefty)[lefty > 0]
+
+    .format_failed_colnames <- function(x) {
+        x <- sprintf("'%s'", x)
+        if (length(x)>3) x <- c(head(x, 3), "...")
+        paste(x, collapse=", ")
+    }
+
+    if (length(misleft) && length(misright)) {
+        msg <- paste0("(", .format_failed_colnames(misleft), 
+            " vs ", .format_failed_colnames(misright), ")")
+    } else if (length(misleft)) {
+        msg <- paste0("(", .format_failed_colnames(misleft), " ",
+            if (length(misleft) > 1) "are" else "is",
+            " unique)")
+    } else {
+        msg <- paste0("(", .format_failed_colnames(misright), " ",
+            if (length(misright) > 1) "are" else "is",
+            " unique)")
+    }
+
+    stop(wmsg("the DataFrame objects to rbind do not have ",
+              "identical column names ", msg))
+}
+
 ### Return an integer matrix with 1 column per object in 'objects' and 1 row
 ### per column in 'x'.
 .make_colmaps <- function(x, objects)
@@ -850,14 +884,14 @@ setMethod("show", "DataFrame",
     x_colnames <- colnames(x)
     x_ncol <- length(x_colnames)
     map_x_colnames_to_object_colnames <- function(object_colnames) {
-        if (length(object_colnames) != x_ncol)
-            stop(wmsg("the DataFrame objects to rbind ",
-                      "must have the same number of columns"))
+        if (length(object_colnames) != x_ncol) {
+            .format_mismatch_message(x_colnames, object_colnames)
+        }
         colmap <- selectHits(findMatches(x_colnames, object_colnames),
                              select="first", nodup=TRUE)
-        if (anyNA(colmap))
-            stop(wmsg("the DataFrame objects to rbind ",
-                      "must have the same colnames"))
+        if (anyNA(colmap)) {
+            .format_mismatch_message(x_colnames, object_colnames)
+        }
         colmap
     }
     if (length(objects) == 0L) {
@@ -943,7 +977,13 @@ setMethod("show", "DataFrame",
                  x_col <- x[[i]]
                  other_cols <- lapply(seq_along(objects),
                                       function(j) objects[[j]][[colmaps[i, j]]])
-                 .bind_cols_along_their_ROWS(c(list(x_col), other_cols))
+                 tryCatch( 
+                     .bind_cols_along_their_ROWS(c(list(x_col), other_cols)),
+                     error=function(err) {
+                        stop("failed to rbind column '", colnames(x)[i], 
+                            "' across DataFrames:\n  ", conditionMessage(err))
+                     }
+                 )
             }
         )
         ans_nrow <- NROW(ans_listData[[1L]])
