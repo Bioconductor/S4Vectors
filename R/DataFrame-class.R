@@ -861,7 +861,7 @@ setMethod("show", "DataFrame",
     }
 
     if (length(misleft) && length(misright)) {
-        msg <- paste0("(", .format_failed_colnames(misleft), 
+        msg <- paste0("(", .format_failed_colnames(misleft),
             " vs ", .format_failed_colnames(misright), ")")
     } else if (length(misleft)) {
         msg <- paste0("(", .format_failed_colnames(misleft), " ",
@@ -874,7 +874,7 @@ setMethod("show", "DataFrame",
     }
 
     stop(wmsg("the DataFrame objects to rbind do not have ",
-              "identical column names ", msg))
+              "the same column names ", msg))
 }
 
 ### Return an integer matrix with 1 column per object in 'objects' and 1 row
@@ -977,11 +977,12 @@ setMethod("show", "DataFrame",
                  x_col <- x[[i]]
                  other_cols <- lapply(seq_along(objects),
                                       function(j) objects[[j]][[colmaps[i, j]]])
-                 tryCatch( 
+                 tryCatch(
                      .bind_cols_along_their_ROWS(c(list(x_col), other_cols)),
                      error=function(err) {
-                        stop("failed to rbind column '", colnames(x)[i], 
-                            "' across DataFrames:\n  ", conditionMessage(err))
+                        stop("failed to rbind column '", colnames(x)[i],
+                            "' across DataFrame objects:\n  ",
+                            conditionMessage(err))
                      }
                  )
             }
