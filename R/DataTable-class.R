@@ -335,8 +335,8 @@ make_class_info_for_DataTable_display <- function(x)
                        rbind(rep.int("...", x_ncol)),
                        makeCharacterMatrixForDisplay(tail(x, ntail)))
             rownames(m) <- make_rownames_for_DataTable_display(
-                                                   x_rownames, x_nrow,
-                                                   nhead, ntail)
+                                                       x_rownames, x_nrow,
+                                                       nhead, ntail)
         }
         m <- rbind(make_class_info_for_DataTable_display(x), m)
         print(m, quote=FALSE, right=TRUE)

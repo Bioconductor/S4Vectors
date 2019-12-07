@@ -228,6 +228,8 @@
   \itemize{
     \item \link{DataTable} and \link{SimpleList} which DataFrame extends
           directly.
+
+    \item \link{TransposedDataFrame} objects.
   }
 }
 

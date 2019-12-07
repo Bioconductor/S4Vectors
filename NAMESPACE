@@ -27,7 +27,7 @@ exportClasses(
     List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
-    DataFrame, DFrame,
+    DataFrame, DFrame, TransposedDataFrame,
     Pairs,
     expression_OR_function, FilterRules, FilterMatrix
 )
@@ -103,6 +103,8 @@ S3method(summary, Rle)
 
 S3method(t, Hits)
 S3method(t, HitsList)
+S3method(t, DataFrame)
+S3method(t, TransposedDataFrame)
 
 S3method(tail, DataTable)
 S3method(tail, LLint)
@@ -189,6 +191,8 @@ export(
 
     t.Hits,
     t.HitsList,
+    t.DataFrame,
+    t.TransposedDataFrame,
 
     tail.DataTable,
     tail.LLint,
@@ -208,17 +212,17 @@ export(
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Export S4 methods for generics not defined in S4Vectors
+### Export S4 methods for generics NOT defined in this package
 ###
 
 exportMethods(
     ## Methods for generics defined in the base package:
     length, names, "names<-",
-    nrow, ncol, dim,
+    dim, nrow, ncol,
     NROW, NCOL,
+    dimnames, "dimnames<-",
     rownames, "rownames<-",
     colnames, "colnames<-",
-    dimnames, "dimnames<-",
     is.na, anyNA,
     as.logical, as.integer, as.numeric,
     as.complex, as.character, as.raw, as.factor,

@@ -124,11 +124,9 @@
   \item The \emph{element-wise} metadata annotates individual elements
         of the object: this metadata is accessed via the \code{mcols}
         accessor (\code{mcols} stands for \emph{metadata columns}) and
-        is represented as a \link{DataTable} object (i.e. as an instance
-        of a concrete subclass of \link{DataTable}, e.g. a
-        \link{DataFrame} object), with a row for each element
-        and a column for each metadata variable. Note that the element-wise
-        metadata can also be \code{NULL}.
+        is represented as a \link{DataFrame} object with a row for each
+        element and a column for each metadata variable. Note that the
+        element-wise metadata can also be \code{NULL}.
   }
 
   To be functional, a class that inherits from Vector must define at
@@ -154,10 +152,9 @@
     }
     \item{}{
       \code{NROW(x)}:
-      Defined as \code{length(x)} for any Vector object that is
-      \emph{not} a \link{DataTable} object.
-      If \code{x} is a \link{DataTable} object, then it's
-      defined as \code{nrow(x)}.
+      Equivalent to either \code{nrow(x)} or \code{length(x)}, depending on
+      whether \code{x} has dimensions (i.e. \code{dim(x)} is not \code{NULL})
+      or not (i.e. \code{dim(x)} is \code{NULL}).
     }
     \item{}{
       \code{names(x)}, \code{names(x) <- value}:
@@ -180,9 +177,9 @@
       Get or set the metadata columns.
       If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
       then the names of \code{x} are propagated as the row names of the
-      returned \link{DataTable} object.
+      returned \link{DataFrame} object.
       When setting the metadata columns, the supplied value must be \code{NULL}
-      or a \link{DataTable} object holding element-wise metadata.
+      or a \link{DataFrame} object holding element-wise metadata.
     }
     \item{}{
        \code{elementMetadata(x, use.names=FALSE)},
@@ -396,7 +393,7 @@
     \item \link[IRanges]{extractList} for grouping elements of a vector-like
           object into a list-like object.
 
-    \item \link{DataTable} which is the type of objects returned by the
+    \item \link{DataFrame} which is the type of object returned by the
           \code{mcols} accessor.
 
     \item The \link{Annotated} class, which Vector extends.
