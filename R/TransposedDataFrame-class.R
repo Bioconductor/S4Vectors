@@ -83,18 +83,34 @@ setMethod("extractCOLS", "TransposedDataFrame",
     function(x, i) t(extractROWS(t(x), i))
 )
 
-setMethod("[", "TransposedDataFrame",
-    function(x, i, j, ..., drop=TRUE)
-    {
-        if (!isTRUEorFALSE(drop))
-            stop("'drop' must be TRUE or FALSE")
-        i <- normalizeSingleBracketSubscript(i, x)
-        ans <- t(x)[j, i, ..., drop=FALSE]  # 'ans' is a DataFrame
-        if (drop && ncol(ans) == 1L)
-            return(ans[[1L]])
-        t(ans)
+.subset_TransposedDataFrame <- function(x, i, j, ..., drop=TRUE)
+{
+    if (!isTRUEorFALSE(drop))
+        stop("'drop' must be TRUE or FALSE")
+    linear_subsetting <- (nargs() - !missing(drop)) < 3L
+    if (linear_subsetting) {
+        if (!missing(drop))
+            warning("'drop' argument ignored by linear subsetting")
+        if (missing(i))
+            return(x)
+        return(extractROWS(x, i))
     }
-)
+    tx <- t(x)
+    ## Use 'drop=FALSE' to make sure 'ans' is a DataFrame.
+    if (missing(i) && missing(j)) {
+        ans <- tx[ ,  , ..., drop=FALSE]
+    } else if (missing(i)) {
+        ans <- tx[j,  , ..., drop=FALSE]
+    } else if (missing(j)) {
+        ans <- tx[ , i, ..., drop=FALSE]
+    } else {
+        ans <- tx[j, i, ..., drop=FALSE]
+    }
+    if (drop && ncol(ans) == 1L)
+        return(ans[[1L]])
+    t(ans)
+}
+setMethod("[", "TransposedDataFrame", .subset_TransposedDataFrame)
 
 setMethod("getListElement", "TransposedDataFrame",
     function(x, i, exact=TRUE) getListElement(x@data, i, exact=exact)
