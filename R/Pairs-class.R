@@ -200,6 +200,9 @@ setMethod("t", "Pairs", function(x) {
     }
     ans
 }
+setMethod("makeNakedCharacterMatrixForDisplay", "Pairs",
+    .makeNakedMatFromPairs
+)
 
 showPairs <- function(x, margin = "", print.classinfo = FALSE) {
     x_class <- class(x)
@@ -211,7 +214,7 @@ showPairs <- function(x, margin = "", print.classinfo = FALSE) {
     cat(x_class, " object with ", x_len, " pair",
         ifelse(x_len ==  1L, "", "s"), " and ", x_nmc, " metadata column",
         ifelse(x_nmc == 1L, "", "s"), ":\n", sep = "")
-    out <- makePrettyMatrixForCompactPrinting(x, .makeNakedMatFromPairs)
+    out <- makePrettyMatrixForCompactPrinting(x)
     if (print.classinfo) {
         .COL2CLASS <- c(first = class(first(x)), second = class(second(x)))
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)

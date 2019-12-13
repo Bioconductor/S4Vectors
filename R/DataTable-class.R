@@ -280,7 +280,7 @@ setMethod("as.data.frame", "DataTable",
 ### move this to DataFrame-class.R
 ###
 
-setMethod("makeCharacterMatrixForDisplay", "DataTable",
+setMethod("makeNakedCharacterMatrixForDisplay", "DataTable",
     function(x)
     {
         df <- as.data.frame(lapply(x, showAsCell), optional=TRUE)
@@ -327,13 +327,13 @@ make_class_info_for_DataTable_display <- function(x)
     if (x_nrow != 0L && x_ncol != 0L) {
         x_rownames <- rownames(x)
         if (x_nrow <= nhead + ntail + 1L) {
-            m <- makeCharacterMatrixForDisplay(x)
+            m <- makeNakedCharacterMatrixForDisplay(x)
             if (!is.null(x_rownames))
                 rownames(m) <- x_rownames
         } else {
-            m <- rbind(makeCharacterMatrixForDisplay(head(x, nhead)),
+            m <- rbind(makeNakedCharacterMatrixForDisplay(head(x, nhead)),
                        rbind(rep.int("...", x_ncol)),
-                       makeCharacterMatrixForDisplay(tail(x, ntail)))
+                       makeNakedCharacterMatrixForDisplay(tail(x, ntail)))
             rownames(m) <- make_rownames_for_DataTable_display(
                                                        x_rownames, x_nrow,
                                                        nhead, ntail)

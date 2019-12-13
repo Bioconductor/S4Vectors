@@ -61,6 +61,7 @@
 \alias{classNameForDisplay,SortedByQueryHits-method}
 \alias{summary.Hits}
 \alias{summary,Hits-method}
+\alias{makeNakedCharacterMatrixForDisplay,Hits-method}
 \alias{show,Hits-method}
 
 % concatenation

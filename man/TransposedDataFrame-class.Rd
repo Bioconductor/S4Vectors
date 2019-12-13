@@ -30,7 +30,7 @@
 \alias{as.list,TransposedDataFrame-method}
 \alias{coerce,list,TransposedDataFrame-method}
 
-\alias{makeCharacterMatrixForDisplay,TransposedDataFrame-method}
+\alias{makeNakedCharacterMatrixForDisplay,TransposedDataFrame-method}
 \alias{show,TransposedDataFrame-method}
 
 \alias{bindROWS,TransposedDataFrame-method}

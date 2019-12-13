@@ -403,6 +403,9 @@ setMethod("summary", "Hits", summary.Hits)
     }
     ans
 }
+setMethod("makeNakedCharacterMatrixForDisplay", "Hits",
+    .from_Hits_to_naked_character_matrix_for_display
+)
 
 .show_Hits <- function(x, margin="", print.classinfo=FALSE,
                                      print.nnode=FALSE)
@@ -410,8 +413,7 @@ setMethod("summary", "Hits", summary.Hits)
     cat(margin, summary(x), ":\n", sep="")
     ## makePrettyMatrixForCompactPrinting() assumes that head() and tail()
     ## work on 'x'.
-    out <- makePrettyMatrixForCompactPrinting(x,
-                .from_Hits_to_naked_character_matrix_for_display)
+    out <- makePrettyMatrixForCompactPrinting(x)
     if (print.classinfo) {
         .COL2CLASS <- c(
             from="integer",

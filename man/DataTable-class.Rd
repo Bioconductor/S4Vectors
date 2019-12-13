@@ -43,7 +43,7 @@
 \alias{as.data.frame.DataTable}
 \alias{as.data.frame,DataTable-method}
 
-\alias{makeCharacterMatrixForDisplay,DataTable-method}
+\alias{makeNakedCharacterMatrixForDisplay,DataTable-method}
 \alias{show,DataTable-method}
 
 \alias{xtabs,DataTable-method}

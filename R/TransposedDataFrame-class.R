@@ -139,10 +139,10 @@ setAs("list", "TransposedDataFrame", function(from) t(as(from, "DataFrame")))
 ### Display
 ###
 
-setMethod("makeCharacterMatrixForDisplay", "TransposedDataFrame",
+setMethod("makeNakedCharacterMatrixForDisplay", "TransposedDataFrame",
     function(x)
     {
-        m <- t(makeCharacterMatrixForDisplay(x@data))
+        m <- t(makeNakedCharacterMatrixForDisplay(x@data))
         x_colnames <- rownames(x@data)
         if (!is.null(x_colnames))
             colnames(m) <- x_colnames
@@ -164,13 +164,13 @@ setMethod("makeCharacterMatrixForDisplay", "TransposedDataFrame",
     if (x_nrow != 0L && x_ncol != 0L) {
         x_rownames <- rownames(x)
         if (x_nrow <= nhead + ntail + 1L) {
-            m <- makeCharacterMatrixForDisplay(x)
+            m <- makeNakedCharacterMatrixForDisplay(x)
             if (!is.null(x_rownames))
                 rownames(m) <- x_rownames
         } else { 
-            m <- rbind(makeCharacterMatrixForDisplay(head(x, nhead)),
+            m <- rbind(makeNakedCharacterMatrixForDisplay(head(x, nhead)),
                        rbind(rep.int("...", x_ncol)),
-                       makeCharacterMatrixForDisplay(tail(x, ntail)))
+                       makeNakedCharacterMatrixForDisplay(tail(x, ntail)))
             rownames(m) <- make_rownames_for_DataTable_display(
                                                        x_rownames, x_nrow,
                                                        nhead, ntail)

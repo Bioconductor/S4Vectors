@@ -6,8 +6,9 @@
 \alias{classNameForDisplay}
 \alias{classNameForDisplay,ANY-method}
 \alias{classNameForDisplay,AsIs-method}
-\alias{makeCharacterMatrixForDisplay}
-\alias{makeCharacterMatrixForDisplay,ANY-method}
+\alias{makeNakedCharacterMatrixForDisplay}
+\alias{makeNakedCharacterMatrixForDisplay,ANY-method}
+\alias{makePrettyMatrixForCompactPrinting}
 \alias{showAsCell}
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,AsIs-method}

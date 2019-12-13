@@ -34,6 +34,7 @@
 \alias{as.data.frame,Pairs-method}
 
 % displaying
+\alias{makeNakedCharacterMatrixForDisplay,Pairs-method}
 \alias{show,Pairs-method}
 
 \title{Pairs objects}

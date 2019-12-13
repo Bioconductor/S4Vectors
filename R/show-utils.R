@@ -177,7 +177,7 @@ get_showTailLines <- function() .get_showLines(5L, "showTailLines")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Pretty printing
+### printAtomicVectorInAGrid() and toNumSnippet()
 ###
 
 ### Exported!
@@ -229,78 +229,6 @@ printAtomicVectorInAGrid <- function(x, prefix="", justify="left")
         for (i in idx2) print_grid_row(i)
     }
     invisible(x)
-}
-
-### 'makeNakedMat.FUN' must be a function returning a character matrix.
-makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN)
-{
-    nhead <- get_showHeadLines()
-    ntail <- get_showTailLines()
-    x_NROW <- NROW(x)
-    x_ROWNAMES <- ROWNAMES(x)
-    wrap_in_square_brackets <- function(idx) {
-        if (length(idx) == 0L)
-            return(character(0))
-        paste0("[", idx, "]")
-    }
-    if (x_NROW <= nhead + ntail + 1L) {
-        ## Compute 'ans' (the matrix).
-        ans <- makeNakedMat.FUN(x)
-        ## Compute 'ans_rownames' (the matrix row names).
-        if (is.null(x_ROWNAMES)) {
-            ans_rownames <- wrap_in_square_brackets(seq_len(x_NROW))
-        } else {
-            ans_rownames <- x_ROWNAMES
-        }
-    } else {
-        ## Compute 'ans' (the matrix).
-        ans_top <- makeNakedMat.FUN(head(x, n=nhead))
-        ans_bottom <- makeNakedMat.FUN(tail(x, n=ntail))
-        ellipses <- rep.int("...", ncol(ans_top))
-        ellipses[colnames(ans_top) %in% "|"] <- "."
-        ans <- rbind(ans_top, matrix(ellipses, nrow=1L), ans_bottom)
-        ## Compute 'ans_rownames' (the matrix row names).
-        if (is.null(x_ROWNAMES)) {
-            idx1 <- seq(from=1L, by=1L, length.out=nhead)
-            idx2 <- seq(to=x_NROW, by=1L, length.out=ntail)
-            s1 <- wrap_in_square_brackets(idx1)
-            s2 <- wrap_in_square_brackets(idx2)
-        } else {
-            s1 <- head(x_ROWNAMES, n=nhead)
-            s2 <- tail(x_ROWNAMES, n=ntail)
-        }
-        max_width <- max(nchar(s1, type="width"), nchar(s2, type="width"))
-        if (max_width <= 1L) {
-            ellipsis <- "."
-        } else if (max_width == 2L) {
-            ellipsis <- ".."
-        } else {
-            ellipsis <- "..."
-        }
-        ans_rownames <- c(s1, ellipsis, s2)
-    }
-    rownames(ans) <- format(ans_rownames, justify="right")
-    ans
-}
-
-makeClassinfoRowForCompactPrinting <- function(x, col2class)
-{
-    ans_names <- names(col2class)
-    no_bracket <- ans_names == ""
-    ans_names[no_bracket] <- col2class[no_bracket]
-    left_brackets <- right_brackets <- character(length(col2class))
-    left_brackets[!no_bracket] <- "<"
-    right_brackets[!no_bracket] <- ">"
-    ans <- paste0(left_brackets, col2class, right_brackets)
-    names(ans) <- ans_names
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    if (x_nmc > 0L) {
-        tmp <- sapply(x_mcols,
-                      function(xx) paste0("<", classNameForDisplay(xx), ">"))
-        ans <- c(ans, `|`="|", tmp)
-    }
-    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
 ### Works as long as length(), "[" and as.numeric() work on 'x'.
@@ -357,32 +285,105 @@ setMethod("classNameForDisplay", "ANY",
    }
 )
 
-.drop_AsIs <- function(x)
-{
-    #x_class <- class(x)
-    #if (x_class[[1L]] == "AsIs")
-    #    class(x) <- x_class[-1L]
-
-    ## Simpler, and probably more robust, than the above.
-    class(x) <- setdiff(class(x), "AsIs")
-    x
-}
-
 setMethod("classNameForDisplay", "AsIs",
-    function(x) classNameForDisplay(.drop_AsIs(x))
+    function(x) classNameForDisplay(drop_AsIs(x))
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### makeCharacterMatrixForDisplay()
+### makeNakedCharacterMatrixForDisplay() and
+### makePrettyMatrixForCompactPrinting()
 ###
 
 ### Exported!
-setGeneric("makeCharacterMatrixForDisplay",
-    function(x) standardGeneric("makeCharacterMatrixForDisplay")
+setGeneric("makeNakedCharacterMatrixForDisplay",
+    function(x) standardGeneric("makeNakedCharacterMatrixForDisplay")
 )
 
-setMethod("makeCharacterMatrixForDisplay", "ANY", function(x) as.matrix(x))
+setMethod("makeNakedCharacterMatrixForDisplay", "ANY",
+    function(x) as.matrix(x)
+)
+
+### Exported!
+### 'makeNakedMat.FUN' for backward compatibility with code that predates
+### the makeNakedCharacterMatrixForDisplay() generic above.
+makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN=NULL)
+{
+    if (!is.null(makeNakedMat.FUN))
+        makeNakedCharacterMatrixForDisplay <- makeNakedMat.FUN
+    nhead <- get_showHeadLines()
+    ntail <- get_showTailLines()
+    x_NROW <- NROW(x)
+    x_ROWNAMES <- ROWNAMES(x)
+    wrap_in_square_brackets <- function(idx) {
+        if (length(idx) == 0L)
+            return(character(0))
+        paste0("[", idx, "]")
+    }
+    if (x_NROW <= nhead + ntail + 1L) {
+        ## Compute 'ans' (the matrix).
+        ans <- makeNakedCharacterMatrixForDisplay(x)
+        ## Compute 'ans_rownames' (the matrix row names).
+        if (is.null(x_ROWNAMES)) {
+            ans_rownames <- wrap_in_square_brackets(seq_len(x_NROW))
+        } else {
+            ans_rownames <- x_ROWNAMES
+        }
+    } else {
+        ## Compute 'ans' (the matrix).
+        ans_top <- makeNakedCharacterMatrixForDisplay(head(x, n=nhead))
+        ans_bottom <- makeNakedCharacterMatrixForDisplay(tail(x, n=ntail))
+        ellipses <- rep.int("...", ncol(ans_top))
+        ellipses[colnames(ans_top) %in% "|"] <- "."
+        ans <- rbind(ans_top, matrix(ellipses, nrow=1L), ans_bottom)
+        ## Compute 'ans_rownames' (the matrix row names).
+        if (is.null(x_ROWNAMES)) {
+            idx1 <- seq(from=1L, by=1L, length.out=nhead)
+            idx2 <- seq(to=x_NROW, by=1L, length.out=ntail)
+            s1 <- wrap_in_square_brackets(idx1)
+            s2 <- wrap_in_square_brackets(idx2)
+        } else {
+            s1 <- head(x_ROWNAMES, n=nhead)
+            s2 <- tail(x_ROWNAMES, n=ntail)
+        }
+        max_width <- max(nchar(s1, type="width"), nchar(s2, type="width"))
+        if (max_width <= 1L) {
+            ellipsis <- "."
+        } else if (max_width == 2L) {
+            ellipsis <- ".."
+        } else {
+            ellipsis <- "..."
+        }
+        ans_rownames <- c(s1, ellipsis, s2)
+    }
+    rownames(ans) <- format(ans_rownames, justify="right")
+    ans
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### makeClassinfoRowForCompactPrinting()
+###
+
+makeClassinfoRowForCompactPrinting <- function(x, col2class)
+{
+    ans_names <- names(col2class)
+    no_bracket <- ans_names == ""
+    ans_names[no_bracket] <- col2class[no_bracket]
+    left_brackets <- right_brackets <- character(length(col2class))
+    left_brackets[!no_bracket] <- "<"
+    right_brackets[!no_bracket] <- ">"
+    ans <- paste0(left_brackets, col2class, right_brackets)
+    names(ans) <- ans_names
+    x_mcols <- mcols(x, use.names=FALSE)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    if (x_nmc > 0L) {
+        tmp <- sapply(x_mcols,
+                      function(xx) paste0("<", classNameForDisplay(xx), ">"))
+        ans <- c(ans, `|`="|", tmp)
+    }
+    matrix(ans, nrow=1L, dimnames=list("", names(ans)))
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -446,7 +447,7 @@ setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
 setMethod("showAsCell", "ANY", .default_showAsCell)
 
 setMethod("showAsCell", "AsIs",
-    function(object) showAsCell(.drop_AsIs(object))
+    function(object) showAsCell(drop_AsIs(object))
 )
 
 ### Mmmh... these methods don't return a character vector. Is that ok?

@@ -282,7 +282,7 @@ export(
     setValidity2, new2, setMethods,
 
     ## show-utils.R:
-    coolcat,
+    coolcat, makePrettyMatrixForCompactPrinting,
 
     ## utils.R:
     wmsg,
@@ -360,7 +360,7 @@ export(
 
 export(
     ## show-utils.R:
-    classNameForDisplay, makeCharacterMatrixForDisplay, showAsCell,
+    classNameForDisplay, makeNakedCharacterMatrixForDisplay, showAsCell,
 
     ## LLint-class.R:
     bindROWS,
@@ -440,7 +440,7 @@ export(
 
 ### Exactly the same list as above.
 exportMethods(
-    classNameForDisplay, makeCharacterMatrixForDisplay, showAsCell,
+    classNameForDisplay, makeNakedCharacterMatrixForDisplay, showAsCell,
     bindROWS,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
