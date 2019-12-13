@@ -390,18 +390,11 @@ setMethod("summary", "Hits", summary.Hits)
 
 .from_Hits_to_naked_character_matrix_for_display <- function(x)
 {
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
-    ans <- cbind(from=as.character(from(x)),
-                 to=as.character(to(x)))
+    m <- cbind(from=as.character(from(x)),
+               to=as.character(to(x)))
     if (is(x, "SortedByQueryHits"))
-        colnames(ans) <- c("queryHits", "subjectHits")
-    if (x_nmc > 0L) {
-        tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
-        ans <- cbind(ans, `|`=rep.int("|", x_len), as.matrix(tmp))
-    }
-    ans
+        colnames(m) <- c("queryHits", "subjectHits")
+    cbind_mcols_for_display(m, x)
 }
 setMethod("makeNakedCharacterMatrixForDisplay", "Hits",
     .from_Hits_to_naked_character_matrix_for_display

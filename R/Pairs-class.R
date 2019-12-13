@@ -185,23 +185,14 @@ setMethod("t", "Pairs", function(x) {
 ### Show
 ###
 
-.makeNakedMatFromPairs <- function(x) {
-    x_len <- length(x)
-    x_mcols <- mcols(x, use.names=FALSE)
-    x_nmc <- if (is.null(x_mcols)) 
-                 0L
-             else ncol(x_mcols)
-    ans <- cbind(first = showAsCell(first(x)),
-                 second = showAsCell(second(x)))
-    if (x_nmc > 0L) {
-        tmp <- do.call(data.frame, c(lapply(x_mcols, showAsCell), 
-                                     list(check.names = FALSE)))
-        ans <- cbind(ans, `|` = rep.int("|", x_len), as.matrix(tmp))
-    }
-    ans
+.from_Pairs_to_naked_character_matrix_for_display <- function(x)
+{
+    m <- cbind(first=showAsCell(first(x)),
+               second=showAsCell(second(x)))
+    cbind_mcols_for_display(m, x)
 }
 setMethod("makeNakedCharacterMatrixForDisplay", "Pairs",
-    .makeNakedMatFromPairs
+    .from_Pairs_to_naked_character_matrix_for_display
 )
 
 showPairs <- function(x, margin = "", print.classinfo = FALSE) {

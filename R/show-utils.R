@@ -291,6 +291,85 @@ setMethod("classNameForDisplay", "AsIs",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### showAsCell()
+###
+### All "showAsCell" methods should return a character vector.
+###
+
+### Exported!
+setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
+
+### Should work on any matrix-like object e.g. ordinary matrix, Matrix,
+### data.frame, DataFrame, data.table, etc...
+### Should also work on any array-like object with more than 2 dimensions
+### that supports "reshaping" via the dim() setter. Note that DelayedArray
+### objects don't support this reshaping in general.
+.showAsCell_array <- function(object)
+{
+    if (length(dim(object)) > 2L) {
+        ## Reshape 'object' as a 2D object.
+        dim1 <- dim(object)[-1L]
+        dim(object) <- c(nrow(object), prod(dim1))
+    }
+    object_ncol <- ncol(object)
+    if (object_ncol == 0L)
+        return(rep.int("", nrow(object)))
+    first_cols <- lapply(seq_len(min(object_ncol, 3L)),
+        function(j) showAsCell(object[ , j, drop=TRUE])
+    )
+    ans <- do.call(paste, c(first_cols, list(sep=":")))
+    if (object_ncol > 3L)
+        ans <- paste0(ans, ":...")
+    ans
+}
+
+.default_showAsCell <- function(object)
+{
+    ## Some objects like SplitDataFrameList have a "dim" method that
+    ## returns a non-MULL object (a matrix!) even though they don't have
+    ## an array-like semantic.
+    if (length(dim(object)) >= 2L && !is.matrix(dim(object)))
+        return(.showAsCell_array(object))
+    object_NROW <- NROW(object)
+    if (object_NROW == 0L)
+        return(character(0L))
+    attempt <- try(as.character(object), silent=TRUE)
+    if (!is(attempt, "try-error"))
+        return(attempt)
+    if (!is(object, "list_OR_List"))
+        return(rep.int("#####", object_NROW))
+    vapply(object,
+        function(x) {
+            str <- paste(showAsCell(head(x, 3L)), collapse=",")
+            if (length(x) > 3L)
+                str <- paste0(str, ",...")
+            str
+        },
+        character(1L)
+    )
+}
+
+setMethod("showAsCell", "ANY", .default_showAsCell)
+
+setMethod("showAsCell", "numeric",
+    function(object)
+    {
+        if (is.integer(object))
+            return(as.character(object))
+        format(object, digits=6L)
+    }
+)
+
+setMethod("showAsCell", "AsIs",
+    function(object) showAsCell(drop_AsIs(object))
+)
+
+### Mmmh... these methods don't return a character vector. Is that ok?
+setMethod("showAsCell", "Date", function(object) object)
+setMethod("showAsCell", "POSIXt", function(object) object)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### makeNakedCharacterMatrixForDisplay() and
 ### makePrettyMatrixForCompactPrinting()
 ###
@@ -303,6 +382,20 @@ setGeneric("makeNakedCharacterMatrixForDisplay",
 setMethod("makeNakedCharacterMatrixForDisplay", "ANY",
     function(x) as.matrix(x)
 )
+
+### Exported!
+### For use within makeNakedCharacterMatrixForDisplay() methods.
+cbind_mcols_for_display <- function(m, x)
+{
+    x_len <- length(x)
+    stopifnot(identical(nrow(m), x_len))
+    x_mcols <- mcols(x, use.names=FALSE)
+    x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
+    if (x_nmc == 0L)
+        return(m)
+    tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
+    cbind(m, `|` = rep.int("|", x_len), as.matrix(tmp))
+}
 
 ### Exported!
 ### 'makeNakedMat.FUN' for backward compatibility with code that predates
@@ -385,72 +478,4 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### showAsCell()
-###
-### All "showAsCell" methods should return a character vector.
-###
-
-### Exported!
-setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
-
-### Should work on any matrix-like object e.g. ordinary matrix, Matrix,
-### data.frame, DataFrame, data.table, etc...
-### Should also work on any array-like object with more than 2 dimensions
-### that supports "reshaping" via the dim() setter. Note that DelayedArray
-### objects don't support this reshaping in general.
-.showAsCell_array <- function(object)
-{
-    if (length(dim(object)) > 2L) {
-        ## Reshape 'object' as a 2D object.
-        dim1 <- dim(object)[-1L]
-        dim(object) <- c(nrow(object), prod(dim1))
-    }
-    object_ncol <- ncol(object)
-    if (object_ncol == 0L)
-        return(rep.int("", nrow(object)))
-    first_cols <- lapply(seq_len(min(object_ncol, 3L)),
-        function(j) showAsCell(object[ , j, drop=TRUE])
-    )
-    ans <- do.call(paste, c(first_cols, list(sep=":")))
-    if (object_ncol > 3L)
-        ans <- paste0(ans, ":...")
-    ans
-}
-
-.default_showAsCell <- function(object)
-{
-  ## Some objects like SplitDataFrameList have a "dim" method that
-  ## returns a non-MULL object (a matrix!) even though they don't have
-  ## an array-like semantic.
-  if (length(dim(object)) >= 2L && !is.matrix(dim(object)))
-    return(.showAsCell_array(object))
-  object_NROW <- NROW(object)
-  if (object_NROW == 0L)
-    return(character(0L))
-  attempt <- try(as.character(object), silent=TRUE)
-  if (!is(attempt, "try-error"))
-      return(attempt)
-  if (!is(object, "list_OR_List"))
-      return(rep.int("#####", object_NROW))
-  vapply(object,
-      function(x) {
-          str <- paste(showAsCell(head(x, 3L)), collapse=",")
-          if (length(x) > 3L)
-              str <- paste0(str, ",...")
-          str
-      },
-      character(1L))
-}
-
-setMethod("showAsCell", "ANY", .default_showAsCell)
-
-setMethod("showAsCell", "AsIs",
-    function(object) showAsCell(drop_AsIs(object))
-)
-
-### Mmmh... these methods don't return a character vector. Is that ok?
-setMethod("showAsCell", "Date", function(object) object)
-setMethod("showAsCell", "POSIXt", function(object) object)
 
