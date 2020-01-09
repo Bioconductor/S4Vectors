@@ -44,6 +44,7 @@
 \alias{coerce,xtabs,DFrame-method}
 \alias{coerce,ANY,DFrame-method}
 \alias{coerce,ANY,DataFrame-method}
+\alias{coerce,DFrame,DataFrame-method}
 \alias{coerce,SimpleList,DFrame-method}
 
 % display

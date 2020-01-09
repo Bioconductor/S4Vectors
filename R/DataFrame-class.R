@@ -527,6 +527,9 @@ setMethod("mergeROWS", c("DataFrame", "ANY"),
     x
 }
 
+### Not a real default replaceCOLS() method for DataFrame objects (it actually
+### assumes that 'x' derives from SimpleList i.e. that 'x' is a DFrame object
+### or derivative).
 setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
     stopifnot(is.null(value) || is(value, "DataFrame"))
     sl <- as(x, "SimpleList")
@@ -538,7 +541,12 @@ setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
     sl <- .fill_short_columns(sl, max_len)
     names(sl) <- .make_colnames(sl, i, length(x), value)
     ri <- seq_len(max_len)
-    initialize(x, sl, rownames=.make_rownames(x, ri, ri, value), nrows=max_len)
+    ## Assumes that 'x' has a "listData" slot i.e. that 'x' is a DFrame object
+    ## or derivative.
+    BiocGenerics:::replaceSlots(x, listData=sl@listData,
+                                   elementMetadata=sl@elementMetadata,
+                                   rownames=.make_rownames(x, ri, ri, value),
+                                   nrows=max_len)
 })
 
 setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
@@ -741,6 +749,9 @@ setAs("xtabs", "DFrame",
 
 setAs("ANY", "DFrame", .defaultAsDataFrame)
 setAs("ANY", "DataFrame", function(from) as(from, "DFrame"))
+
+## Only temporarily needed (until we make DataFrame VIRTUAL).
+setAs("DFrame", "DataFrame", function(from) from)
 
 .VectorAsDataFrame <- function(from) {
   ans <- .defaultAsDataFrame(from)

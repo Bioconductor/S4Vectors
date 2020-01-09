@@ -173,7 +173,7 @@ test_DataFrame_dimnames_replace <- function() {
   colnames(sw) <- cn[1]
   colnames(swiss) <- cn[1]
   checkIdentical(colnames(sw), colnames(swiss))
-  rn <- seq(nrow(sw))
+  rn <- seq_len(nrow(sw))
   rownames(sw) <- rn
   checkIdentical(rownames(sw), as.character(rn))
   checkException(rownames(sw) <- rn[1], silent = TRUE)
@@ -246,13 +246,14 @@ test_DataFrame_replace <- function() {
   sw1[nrow(sw1)+(1:2),] <- NA; swiss1[nrow(swiss1)+(1:2),] <- NA
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
-  sw1["NewCol"] <- seq(nrow(sw1)); swiss1["NewCol"] <- seq(nrow(sw1))
+  sw1["NewCol"] <- seq_len(nrow(sw1)); swiss1["NewCol"] <- seq_len(nrow(sw1))
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
-  sw1[ncol(sw1)+1L] <- seq(nrow(sw1)); swiss1[ncol(swiss1)+1L] <- seq(nrow(sw1))
+  sw1[ncol(sw1)+1L] <- seq_len(nrow(sw1))
+  swiss1[ncol(swiss1)+1L] <- seq_len(nrow(sw1))
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
-  sw1[,"NewCol"] <- seq(nrow(sw1)); swiss1[,"NewCol"] <- seq(nrow(sw1))
+  sw1[,"NewCol"] <- seq_len(nrow(sw1)); swiss1[,"NewCol"] <- seq_len(nrow(sw1))
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
   sw1["NewCity","NewCol"] <- 0
@@ -267,16 +268,16 @@ test_DataFrame_replace <- function() {
   swiss1[nrow(swiss1)+(1:2),] <- data.frame(NA)
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
-  sw1["NewCol"] <- DataFrame(seq(nrow(sw1)))
-  swiss1["NewCol"] <- data.frame(seq(nrow(sw1)))
+  sw1["NewCol"] <- DataFrame(seq_len(nrow(sw1)))
+  swiss1["NewCol"] <- data.frame(seq_len(nrow(sw1)))
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
-  sw1[ncol(sw1)+1L] <- DataFrame(seq(nrow(sw1)))
-  swiss1[ncol(swiss1)+1L] <- data.frame(seq(nrow(sw1)))
+  sw1[ncol(sw1)+1L] <- DataFrame(seq_len(nrow(sw1)))
+  swiss1[ncol(swiss1)+1L] <- data.frame(seq_len(nrow(sw1)))
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
-  sw1[,"NewCol"] <- DataFrame(seq(nrow(sw1)))
-  swiss1[,"NewCol"] <- data.frame(seq(nrow(sw1)))
+  sw1[,"NewCol"] <- DataFrame(seq_len(nrow(sw1)))
+  swiss1[,"NewCol"] <- data.frame(seq_len(nrow(sw1)))
   checkIdentical(as.data.frame(sw1), swiss1)
   sw1 <- sw; swiss1 <- swiss
   sw1["NewCity","NewCol"] <- DataFrame(0)
@@ -299,7 +300,7 @@ test_DataFrame_replace <- function() {
 
   sw1 <- sw
   mcols(sw1) <- DataFrame(id = seq_len(ncol(sw1)))
-  sw1["NewCol"] <- DataFrame(seq(nrow(sw1)))
+  sw1["NewCol"] <- DataFrame(seq_len(nrow(sw1)))
   checkIdentical(mcols(sw1, use.names=TRUE),
                  DataFrame(id = c(seq_len(ncol(sw1)-1), NA),
                            row.names = colnames(sw1)))
