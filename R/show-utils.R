@@ -336,17 +336,7 @@ setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
     attempt <- try(as.character(object), silent=TRUE)
     if (!is(attempt, "try-error"))
         return(attempt)
-    if (!is(object, "list_OR_List"))
-        return(rep.int("#####", object_NROW))
-    vapply(object,
-        function(x) {
-            str <- paste(showAsCell(head(x, 3L)), collapse=",")
-            if (length(x) > 3L)
-                str <- paste0(str, ",...")
-            str
-        },
-        character(1L)
-    )
+    rep.int("#####", object_NROW)
 }
 
 setMethod("showAsCell", "ANY", .default_showAsCell)

@@ -19,7 +19,7 @@ setClassUnion("list_OR_List", c("list", "List"))  # list-like objects
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods.
+### Accessor methods
 ###
 
 setGeneric("elementType", function(x, ...) standardGeneric("elementType"))
@@ -68,7 +68,7 @@ setMethod("isEmpty", "List", function(x) all(elementNROWS(x) == 0L))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Constructor.
+### Constructor
 ###
 
 List <- function(...)
@@ -81,7 +81,7 @@ List <- function(...)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### The "show" method.
+### Display
 ###
 
 setMethod("show", "List",
@@ -93,6 +93,22 @@ setMethod("show", "List",
               if (!is.null(names(object)))
                 cat(labeledLine("names", names(object)))
           })
+
+
+.showAsCell_list <- function(object)
+{
+    vapply(object,
+        function(x) {
+            str <- paste(showAsCell(head(x, 3L)), collapse=",")
+            if (length(x) > 3L)
+                str <- paste0(str, ",...")
+            str
+        },
+        character(1L),
+        USE.NAMES=FALSE
+    )
+}
+setMethod("showAsCell", "list_OR_List", .showAsCell_list)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -181,7 +197,7 @@ setMethod("unlist", "List",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
+### Subsetting
 ###
 
 ### Assume 'x' and 'i' are parallel List objects (i.e. same length).
@@ -562,7 +578,7 @@ setMethod("getListElement", "List",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Coercion.
+### Coercion
 ###
 
 setAs("List", "list", function(from) as.list(from))

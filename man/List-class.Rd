@@ -39,7 +39,7 @@
 \alias{getListElement,List-method}
 
 \alias{show,List-method}
-
+\alias{showAsCell,list_OR_List-method}
 
 \title{List objects}
 
@@ -104,7 +104,7 @@
 
 \section{Accessors}{
   In the following code snippets, \code{x} is a List object.
-  
+
   \describe{
     \item{}{
       \code{length(x)}:
@@ -170,24 +170,24 @@
     }
     \item{}{
       \code{as.data.frame(x, row.names=NULL, optional=FALSE ,
-                          value.name="value", use.outer.mcols=FALSE, 
-                          group_name.as.factor=FALSE, ...)}: 
+                          value.name="value", use.outer.mcols=FALSE,
+                          group_name.as.factor=FALSE, ...)}:
       Coerces a \code{List} to a \code{data.frame}. The result has the
       same length as unlisted \code{x} with two additional columns,
       \code{group} and \code{group_name}. \code{group} is an \code{integer}
-      that indicates which list element the record came from. 
+      that indicates which list element the record came from.
       \code{group_name} holds the list name associated with each
-      record; value is \code{character} by default and \code{factor} when 
-      \code{group_name.as.factor} is TRUE. 
+      record; value is \code{character} by default and \code{factor} when
+      \code{group_name.as.factor} is TRUE.
 
-      When \code{use.outer.mcols} is TRUE the metadata columns on the 
-      outer list elements of \code{x} are replicated out and included 
-      in the \code{data.frame}. List objects that unlist to a 
+      When \code{use.outer.mcols} is TRUE the metadata columns on the
+      outer list elements of \code{x} are replicated out and included
+      in the \code{data.frame}. List objects that unlist to a
       single vector (column) are given the column name `value` by default.
       A custom name can be provided in \code{value.name}.
 
-      Splitting values in the resulting \code{data.frame} by the original 
-      groups in \code{x} should be done using the \code{group} column as 
+      Splitting values in the resulting \code{data.frame} by the original
+      groups in \code{x} should be done using the \code{group} column as
       the \code{f} argument to \code{splitAsList}. To relist data, use
       \code{x} as the \code{skeleton} argument to \code{relist}.
     }
