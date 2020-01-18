@@ -849,6 +849,8 @@ setMethod("show", "DataFrame",
     }
 )
 
+setMethod("showAsCell", "DataFrame", showAsCell_array)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining

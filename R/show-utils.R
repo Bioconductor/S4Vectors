@@ -304,7 +304,7 @@ setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
 ### Should also work on any array-like object with more than 2 dimensions
 ### that supports "reshaping" via the dim() setter. Note that DelayedArray
 ### objects don't support this reshaping in general.
-.showAsCell_array <- function(object)
+showAsCell_array <- function(object)
 {
     if (length(dim(object)) > 2L) {
         ## Reshape 'object' as a 2D object.
@@ -329,7 +329,7 @@ setGeneric("showAsCell", function(object) standardGeneric("showAsCell"))
     ## returns a non-MULL object (a matrix!) even though they don't have
     ## an array-like semantic.
     if (length(dim(object)) >= 2L && !is.matrix(dim(object)))
-        return(.showAsCell_array(object))
+        return(showAsCell_array(object))
     object_NROW <- NROW(object)
     if (object_NROW == 0L)
         return(character(0L))
