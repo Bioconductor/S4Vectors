@@ -229,18 +229,13 @@ quick_unsplit <- function(x, f)
 ### What kills [.data.frame is the overhead of propagating the original
 ### rownames and trying to keep them unique with make.unique(). However, most
 ### of the time, nobody cares about the rownames so this effort is pointless
-### and only a waste of time.
+### and a waste of time.
 ###
 
 extract_data_frame_rows <- function(x, i)
 {
     stopifnot(is.data.frame(x))
-    ## The commented code should be as fast (or even faster, because 'i' is
-    ## normalized only once) as the code below but unfortunately it's not.
-    ## TODO: Investigate why and make it as fast as the code below.
-    #i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, as.NSBS=TRUE)
-    #ans <- lapply(x, extractROWS, i)
-    i <- normalizeSingleBracketSubscript(i, x, exact=FALSE)
+    i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, allow.NAs=TRUE)
     ans <- lapply(x, "[", i)
     ## Do NOT use data.frame() or as.data.frame() here as it adds a lot of
     ## overhead and will mess up non-atomic columns.
