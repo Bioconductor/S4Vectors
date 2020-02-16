@@ -13,6 +13,8 @@
 % accessor
 \alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
+\alias{groupInfo,DataFrame-method}
+\alias{groupInfo<-,DataFrame-method}
 \alias{rownames,DataFrame-method}
 \alias{colnames,DataFrame-method}
 \alias{rownames<-,DataFrame-method}
@@ -37,6 +39,9 @@
 \alias{coerce,Vector,DFrame-method}
 \alias{coerce,data.frame,DFrame-method}
 \alias{coerce,data.table,DFrame-method}
+\alias{coerce,tbl_df,DFrame-method}
+\alias{coerce,grouped_df,DFrame-method}
+\alias{coerce,DFrame-method,tbl_df}
 \alias{coerce,NULL,DFrame-method}
 \alias{coerce,table,DFrame-method}
 \alias{coerce,AsIs,DFrame-method}
@@ -96,7 +101,7 @@
 \section{Constructor}{
   \describe{
     \item{}{
-      \code{DataFrame(..., row.names = NULL, check.names = TRUE,
+      \code{DataFrame(..., row.names = NULL, groupInfo = NULL, check.names = TRUE,
                       stringsAsFactors)}
 
       Constructs a \code{DataFrame} in similar fashion to
@@ -116,6 +121,13 @@
       The \code{stringsAsFactors} argument is ignored. The coercion of
       column arguments to DataFrame determines whether strings
       become factors.
+      
+      \code{groupInfo} can be supplied to label columns which should 
+      participate in group-wise operations (provided by extension packages).
+      Alternatively, if grouping information is already present in the supplied
+      object (e.g. via \code{\link[dplyr]{group_by}}) this will be used to 
+      infer \code{groupInfo}. An additional header line will list the 
+      group columns when the \code{DataFrame} is printed.
     }
     \item{}{
       \code{make_zero_col_DFrame(nrow)}
@@ -138,6 +150,9 @@
       Get and set the two element list containing the row names
       (character vector of length \code{nrow(x)} or \code{NULL})
       and the column names (character vector of length \code{ncol(x)}).
+    }
+    \item{}{\code{groupInfo(x)}, \code{groupInfo(x) <- value}: Get and set the 
+    grouping information (character vector of column names).
     }
   }
 }
@@ -312,6 +327,9 @@ df[["counts"]]
 df[[3]] <- score
 df[["X"]]
 df[[3]] <- NULL # deletion
+
+# group information
+DataFrame(mtcars, groupInfo = c("am", "gear"))
 }
 \keyword{classes}
 \keyword{methods}

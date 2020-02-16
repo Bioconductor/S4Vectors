@@ -1,3 +1,12 @@
+CHANGES IN VERSION 0.25.0
+-------------------------
+
+NEW FEATURES
+
+    o Add native support for groupwise operations via groupInfo, with getter, setter,
+      and constructor support (by Jonathan Carroll).
+
+
 CHANGES IN VERSION 0.24.0
 -------------------------
 

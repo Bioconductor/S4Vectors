@@ -220,6 +220,7 @@ exportMethods(
     length, names, "names<-",
     dim, nrow, ncol,
     NROW, NCOL,
+    groupInfo, "groupInfo<-",
     dimnames, "dimnames<-",
     rownames, "rownames<-",
     colnames, "colnames<-",
