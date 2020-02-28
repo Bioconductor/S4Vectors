@@ -174,7 +174,7 @@ setGeneric("groupInfo<-", function(x, value) standardGeneric("groupInfo<-"))
 setReplaceMethod("groupInfo", "DataFrame", 
                  function(x, value) { 
                    if (!is.null(value) && !is.character(value))
-                     stop("replacement 'groupInfo' value must be NULL or a list")
+                     stop("replacement 'groupInfo' value must be NULL or character vector")
                    x@groupInfo <- value
                    x
                  })
@@ -254,6 +254,18 @@ new_DataFrame <- function(listData=list(), nrows=NA, groupInfo = NULL, what="arg
     if (!is.integer(nrows))
         nrows <- as.integer(nrows)
     listData_nrow <- nrow(listData)
+    if (!is.null(groupInfo(listData))) {
+      if (!is.null(groupInfo)) {
+        stop("groupInfo provided explicitly when data already has groups.")
+      } else {
+        groups <- groupInfo(listData)
+      }
+    }
+    if (!is.null(groupInfo)) {
+      groups <- groupInfo
+    } else {
+      groups <- NULL
+    }
     if (is.null(listData_nrow)) {
         ## 'listData' is NOT a data.frame or data-frame-like object.
         if (length(listData) == 0L) {
@@ -280,7 +292,7 @@ new_DataFrame <- function(listData=list(), nrows=NA, groupInfo = NULL, what="arg
         }
         listData <- as.list(listData)
     }
-    new2("DFrame", nrows=nrows, listData=listData, groupInfo=groupInfo, check=FALSE)
+    new2("DFrame", nrows=nrows, listData=listData, groupInfo=groups, check=FALSE)
 }
 
 DataFrame <- function(..., row.names = NULL, groupInfo = NULL, check.names = TRUE,
@@ -1146,7 +1158,9 @@ cbind.DataFrame <- function(..., deparse.level=1)
     ## because then DataFrame() wouldn't be able to deparse what was in ...
     ## and selectMethod("cbind", "DataFrame")(b) would produce a DataFrame
     ## with a column named "11:13".
-    DataFrame(..., check.names=FALSE)
+    ## Group information is taken from the first argument, so if 
+    ## trying to preserve groups, use the grouped object first.
+    DataFrame(..., groupInfo = groupInfo(..1), check.names=FALSE)
 }
 
 setMethod("cbind", "DataFrame", cbind.DataFrame)
