@@ -8,11 +8,14 @@
 ## but we allow the rownames to be NULL for efficiency. This means that we
 ## need to store the number of rows (nrows).
 setClass("DataFrame",
-         slots = c(rownames = "character_OR_NULL",
-                   nrows = "integer",
-                   groupInfo = "character_OR_NULL"),
+         representation(
+           rownames = "character_OR_NULL",
+           nrows = "integer"
+         ),
+         prototype(rownames = NULL,
+                   nrows = 0L,
+                   listData = structure(list(), names = character())),
          contains = c("DataTable", "SimpleList"))
-
 ## Just a direct DataFrame extension with no additional slot for now. Once all
 ## serialized DataFrame instances are replaced with DFrame instances (which
 ## will take several BioC release cycles) we'll be able to move the DataFrame
@@ -120,8 +123,8 @@ setReplaceMethod("colnames", "DataFrame",
 ### Grouping
 ###
 
-## Equivalent of groupInfo() in dplyr is group_vars() which stores
-## the columns to be used for grouping. groupInfo() does not perform 
+## Equivalent of groupCols() in dplyr is group_vars() which stores
+## the columns to be used for grouping. groupCols() does not perform 
 ## any calculations to determine the rows involved, whereas dplyr 
 ## pre-computes these. 
 ## dplyr stores a tbl_df of group information; grouping columns with the non-empty
@@ -138,8 +141,8 @@ setReplaceMethod("colnames", "DataFrame",
 ##   4     1     5 <int [5]> 
 ## 
 ## dplyr stores this information in attr(*, "groups"). Here, the grouping 
-## columns are stored in a new slot `groupings` and the responsibility of 
-## using these is pushed to third-party packages.
+## columns are stored in a column of `mcols` named `.groupCol` and the 
+## responsibility of making use of these is pushed to third-party packages.
 ## The default grouping behaviour of tbl_df is a single-column
 ## tbl_df which looks like 
 ##   setNames(dplyr::tibble(list(seq_len(32))), ".rows")
@@ -152,30 +155,48 @@ setReplaceMethod("colnames", "DataFrame",
 ## The group information here is stored as a character vector of 
 ## column names, with the responsibility of using these pushed downstream
 ## to third-party packages providing group-wise operation support.
-## The default groupInfo for DataFrame is NULL
+## The default groupCols() for DataFrame is NULL
 
-setGeneric("groupInfo", function(x, ...) standardGeneric("groupInfo"))
+setGeneric("groupCols", function(x, ...) standardGeneric("groupCols"))
 
 ## most classes do not support grouping information but we 
 ## still want to dispatch on those
 
-setMethod("groupInfo", "ANY", function(x) NULL)
+setMethod("groupCols", "ANY", function(x) NULL)
 
-setMethod("groupInfo", "DataFrame", function(x) x@groupInfo)
+setMethod("groupCols", "DataFrame", function(x) {
+  m <- mcols(x)
+  
+  if (!is.null(m) && utils::hasName(m, ".groupCol")) {
+    ## protection against bad state
+    m$.groupCol[is.na(m$.groupCol)] <- FALSE
+    if (sum(m$.groupCol) > 0) {
+      rownames(m)[which(m$.groupCol)]
+    } else {
+      NULL
+    }
+  } else {
+    NULL
+  }
+})
 
 ## dplyr compatibility to enable conservation of group information
 ## NOTE: DataFrame method stores only the columns for grouping, not 
 ## the pre-computed rows to which the grouping applies
 
-setMethod("groupInfo", "grouped_df", function(x) dplyr::group_vars(x))
+setMethod("groupCols", "grouped_df", function(x) dplyr::group_vars(x))
 
-setGeneric("groupInfo<-", function(x, value) standardGeneric("groupInfo<-"))
+setGeneric("groupCols<-", function(x, value) standardGeneric("groupCols<-"))
 
-setReplaceMethod("groupInfo", "DataFrame", 
+setReplaceMethod("groupCols", "DataFrame", 
                  function(x, value) { 
-                   if (!is.null(value) && !is.character(value))
-                     stop("replacement 'groupInfo' value must be NULL or character vector")
-                   x@groupInfo <- value
+                   if (!is.null(value) && !is.character(value) && !(value == FALSE))
+                     stop("replacement 'groupCols' value must be NULL or character vector")
+                   if (!length(intersect(names(x), value)) || is.null(value) || value == FALSE) {
+                     mcols(x)$.groupCol <- FALSE
+                   } else {
+                     mcols(x)$.groupCol <- names(x) %in% value
+                   }
                    x
                  })
 
@@ -247,25 +268,13 @@ setValidity2("DataFrame", .valid.DataFrame)
 ### This is unlike 'DataFrame(x)' or 'as(x, "DataFrame")' which can do all
 ### kind of hard-to-predict mangling to 'x', unless the user does something
 ### like 'DataFrame(lapply(x, I))'. Not super convenient or intuitive!
-new_DataFrame <- function(listData=list(), nrows=NA, groupInfo = NULL, what="arguments")
+new_DataFrame <- function(listData=list(), nrows=NA, what="arguments")
 {
     stopifnot(is.list(listData))
     stopifnot(isSingleNumberOrNA(nrows))
     if (!is.integer(nrows))
         nrows <- as.integer(nrows)
     listData_nrow <- nrow(listData)
-    if (!is.null(groupInfo(listData))) {
-      if (!is.null(groupInfo)) {
-        stop("groupInfo provided explicitly when data already has groups.")
-      } else {
-        groups <- groupInfo(listData)
-      }
-    }
-    if (!is.null(groupInfo)) {
-      groups <- groupInfo
-    } else {
-      groups <- NULL
-    }
     if (is.null(listData_nrow)) {
         ## 'listData' is NOT a data.frame or data-frame-like object.
         if (length(listData) == 0L) {
@@ -292,10 +301,10 @@ new_DataFrame <- function(listData=list(), nrows=NA, groupInfo = NULL, what="arg
         }
         listData <- as.list(listData)
     }
-    new2("DFrame", nrows=nrows, listData=listData, groupInfo=groups, check=FALSE)
+    new2("DFrame", nrows=nrows, listData=listData, check=FALSE)
 }
 
-DataFrame <- function(..., row.names = NULL, groupInfo = NULL, check.names = TRUE,
+DataFrame <- function(..., row.names = NULL, check.names = TRUE,
                       stringsAsFactors)
 {
   ## build up listData, with names from arguments
@@ -306,18 +315,6 @@ DataFrame <- function(..., row.names = NULL, groupInfo = NULL, check.names = TRU
   nr <- 0
   listData <- list(...)
   varlist <- vector("list", length(listData))
-  if (!is.null(groupInfo(listData))) {
-    if (!is.null(groupInfo)) {
-      stop("groupInfo provided explicitly when data already has groups.")
-    } else {
-      groups <- groupInfo(listData)
-    }
-  }
-  if (!is.null(groupInfo)) {
-    groups <- groupInfo
-  } else {
-    groups <- NULL
-  }
   metadata <- list()
   if (length(listData) > 0) {
     if (is(listData[[1L]], getClass("Annotated")))
@@ -384,7 +381,7 @@ DataFrame <- function(..., row.names = NULL, groupInfo = NULL, check.names = TRU
     row.names <- as.character(row.names)
   }
   
-  ans <- new_DataFrame(varlist, nrows=as.integer(max(nr, length(row.names))), groupInfo=groups)
+  ans <- new_DataFrame(varlist, nrows=as.integer(max(nr, length(row.names))))
   ans@rownames <- row.names
   mcols(ans) <- mcols
   metadata(ans) <- metadata
@@ -472,12 +469,8 @@ setMethod("extractCOLS", "DataFrame", function(x, i) {
     }
     new_listData <- extractROWS(x@listData, i)
     new_mcols <- extractROWS(mcols(x, use.names=FALSE), i)
-    new_groupInfo <- intersect(names(new_listData), groupInfo(x))
-    if (length(new_groupInfo) == 0L) 
-      new_groupInfo <- NULL # dropped all grouping columns
     x <- initialize(x, listData=new_listData,
-                    elementMetadata=new_mcols,
-                    groupInfo=new_groupInfo)
+                    elementMetadata=new_mcols)
     if (anyDuplicated(names(x)))
         names(x) <- make.unique(names(x))
     x
@@ -810,7 +803,7 @@ setAs("data.table", "DFrame",
 setAs("tbl_df", "DFrame", 
       function(from) {
         df <- callNextMethod()
-        groupInfo(df) <- dplyr::group_vars(from)
+        groupCols(df) <- dplyr::group_vars(from)
         df
       })
 
@@ -820,8 +813,8 @@ setAs("tbl_df", "DFrame",
 setAs("DFrame", "tbl_df",
       function(from) {
         df <- as(from, "data.frame")
-        if (!is.null(groupInfo(from))) {
-          df <- dplyr::grouped_df(df, groupInfo(from))
+        if (!is.null(groupCols(from))) {
+          df <- dplyr::grouped_df(df, groupCols(from))
         }
         df
       })
@@ -1160,7 +1153,9 @@ cbind.DataFrame <- function(..., deparse.level=1)
     ## with a column named "11:13".
     ## Group information is taken from the first argument, so if 
     ## trying to preserve groups, use the grouped object first.
-    DataFrame(..., groupInfo = groupInfo(..1), check.names=FALSE)
+    d <- DataFrame(..., check.names=FALSE)
+    groupCols(d) <- groupCols(..1)
+    d
 }
 
 setMethod("cbind", "DataFrame", cbind.DataFrame)

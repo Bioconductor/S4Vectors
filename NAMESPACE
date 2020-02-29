@@ -1,7 +1,7 @@
 useDynLib(S4Vectors)
 
 import(methods)
-importFrom(utils, head, tail, head.matrix, tail.matrix, getS3method)
+importFrom(utils, head, tail, head.matrix, tail.matrix, getS3method, hasName)
 importFrom(stats, cov, cor, median, quantile,
            smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames, terms)
@@ -220,7 +220,7 @@ exportMethods(
     length, names, "names<-",
     dim, nrow, ncol,
     NROW, NCOL,
-    groupInfo, "groupInfo<-",
+    groupCols, "groupCols<-",
     dimnames, "dimnames<-",
     rownames, "rownames<-",
     colnames, "colnames<-",
