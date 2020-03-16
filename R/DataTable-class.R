@@ -324,6 +324,9 @@ make_class_info_for_DataTable_display <- function(x)
         " and ",
         x_ncol, " column", ifelse(x_ncol == 1L, "", "s"),
         "\n", sep="")
+    if (!is.null(groupCols(x))) {
+      cat("Groups: ", toString(groupCols(x)), "\n")
+    }
     if (x_nrow != 0L && x_ncol != 0L) {
         x_rownames <- rownames(x)
         if (x_nrow <= nhead + ntail + 1L) {

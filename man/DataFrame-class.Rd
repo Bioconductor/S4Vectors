@@ -13,6 +13,8 @@
 % accessor
 \alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
+\alias{groupCols,DataFrame-method}
+\alias{groupCols<-,DataFrame-method}
 \alias{rownames,DataFrame-method}
 \alias{colnames,DataFrame-method}
 \alias{rownames<-,DataFrame-method}
@@ -37,6 +39,9 @@
 \alias{coerce,Vector,DFrame-method}
 \alias{coerce,data.frame,DFrame-method}
 \alias{coerce,data.table,DFrame-method}
+\alias{coerce,tbl_df,DFrame-method}
+\alias{coerce,grouped_df,DFrame-method}
+\alias{coerce,DFrame-method,tbl_df}
 \alias{coerce,NULL,DFrame-method}
 \alias{coerce,table,DFrame-method}
 \alias{coerce,AsIs,DFrame-method}
@@ -138,6 +143,9 @@
       Get and set the two element list containing the row names
       (character vector of length \code{nrow(x)} or \code{NULL})
       and the column names (character vector of length \code{ncol(x)}).
+    }
+    \item{}{\code{groupCols(x)}, \code{groupCols(x) <- value}: Get and set the 
+    grouping information (character vector of column names).
     }
   }
 }
@@ -312,6 +320,10 @@ df[["counts"]]
 df[[3]] <- score
 df[["X"]]
 df[[3]] <- NULL # deletion
+
+# group information
+d <- DataFrame(mtcars)
+groupCols(d) <- c("am", "gear")
 }
 \keyword{classes}
 \keyword{methods}

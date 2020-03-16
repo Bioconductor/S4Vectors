@@ -9,14 +9,13 @@
 ## need to store the number of rows (nrows).
 setClass("DataFrame",
          representation(
-                        rownames = "character_OR_NULL",
-                        nrows = "integer"
-                        ),
+           rownames = "character_OR_NULL",
+           nrows = "integer"
+         ),
          prototype(rownames = NULL,
                    nrows = 0L,
                    listData = structure(list(), names = character())),
          contains = c("DataTable", "SimpleList"))
-
 ## Just a direct DataFrame extension with no additional slot for now. Once all
 ## serialized DataFrame instances are replaced with DFrame instances (which
 ## will take several BioC release cycles) we'll be able to move the DataFrame
@@ -120,6 +119,86 @@ setReplaceMethod("colnames", "DataFrame",
                    x
                  })
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Grouping
+###
+
+## Equivalent of groupCols() in dplyr is group_vars() which stores
+## the columns to be used for grouping. groupCols() does not perform 
+## any calculations to determine the rows involved, whereas dplyr 
+## pre-computes these. 
+## dplyr stores a tbl_df of group information; grouping columns with the non-empty
+## combinations of levels (named by their respective column name in the
+## data) and .rows which is a list of rownames to which the grouping
+## results. e.g. in dplyr
+##   group_data(group_by(mtcars, am, gear))
+##   # A tibble: 4 x 3
+##        am  gear .rows     
+##     <dbl> <dbl> <list>    
+##   1     0     3 <int [15]>
+##   2     0     4 <int [4]> 
+##   3     1     4 <int [8]> 
+##   4     1     5 <int [5]> 
+## 
+## dplyr stores this information in attr(*, "groups"). Here, the grouping 
+## columns are stored in a column of `mcols` named `.groupCol` and the 
+## responsibility of making use of these is pushed to third-party packages.
+## The default grouping behaviour of tbl_df is a single-column
+## tbl_df which looks like 
+##   setNames(dplyr::tibble(list(seq_len(32))), ".rows")
+##   # i.e. dplyr::tibble(`:=`(".rows", list(seq_len(32))))
+##   # A tibble: 1 x 1
+##     .rows     
+##     <list>    
+##   1 <int [32]>
+## 
+## The group information here is stored as a character vector of 
+## column names, with the responsibility of using these pushed downstream
+## to third-party packages providing group-wise operation support.
+## The default groupCols() for DataFrame is NULL
+
+setGeneric("groupCols", function(x, ...) standardGeneric("groupCols"))
+
+## most classes do not support grouping information but we 
+## still want to dispatch on those
+
+setMethod("groupCols", "ANY", function(x) NULL)
+
+setMethod("groupCols", "DataFrame", function(x) {
+  m <- mcols(x)
+  
+  if (!is.null(m) && utils::hasName(m, ".groupCol")) {
+    ## protection against bad state
+    m$.groupCol[is.na(m$.groupCol)] <- FALSE
+    if (sum(m$.groupCol) > 0) {
+      rownames(m)[which(m$.groupCol)]
+    } else {
+      NULL
+    }
+  } else {
+    NULL
+  }
+})
+
+## dplyr compatibility to enable conservation of group information
+## NOTE: DataFrame method stores only the columns for grouping, not 
+## the pre-computed rows to which the grouping applies
+
+setMethod("groupCols", "grouped_df", function(x) dplyr::group_vars(x))
+
+setGeneric("groupCols<-", function(x, value) standardGeneric("groupCols<-"))
+
+setReplaceMethod("groupCols", "DataFrame", 
+                 function(x, value) { 
+                   if (!is.null(value) && !is.character(value) && !(value == FALSE))
+                     stop("replacement 'groupCols' value must be NULL or character vector")
+                   if (!length(intersect(names(x), value)) || is.null(value) || value == FALSE) {
+                     mcols(x)$.groupCol <- FALSE
+                   } else {
+                     mcols(x)$.groupCol <- names(x) %in% value
+                   }
+                   x
+                 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity
@@ -301,7 +380,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
       stop("invalid length of row names")
     row.names <- as.character(row.names)
   }
-
+  
   ans <- new_DataFrame(varlist, nrows=as.integer(max(nr, length(row.names))))
   ans@rownames <- row.names
   mcols(ans) <- mcols
@@ -718,6 +797,28 @@ setAs("data.table", "DFrame",
     }
 )
 
+## For interop consistency with dplyr, the group_vars information
+## of a grouped_df is used in a converted DFrame. 
+
+setAs("tbl_df", "DFrame", 
+      function(from) {
+        df <- callNextMethod()
+        groupCols(df) <- dplyr::group_vars(from)
+        df
+      })
+
+## The format of grouping information in tbl_df contains the rows 
+## involved so this is recomputed on conversion
+
+setAs("DFrame", "tbl_df",
+      function(from) {
+        df <- as(from, "data.frame")
+        if (!is.null(groupCols(from))) {
+          df <- dplyr::grouped_df(df, groupCols(from))
+        }
+        df
+      })
+
 setAs("table", "DFrame",
       function(from) {
         df <- as.data.frame(from)
@@ -1050,7 +1151,11 @@ cbind.DataFrame <- function(..., deparse.level=1)
     ## because then DataFrame() wouldn't be able to deparse what was in ...
     ## and selectMethod("cbind", "DataFrame")(b) would produce a DataFrame
     ## with a column named "11:13".
-    DataFrame(..., check.names=FALSE)
+    ## Group information is taken from the first argument, so if 
+    ## trying to preserve groups, use the grouped object first.
+    d <- DataFrame(..., check.names=FALSE)
+    groupCols(d) <- groupCols(..1)
+    d
 }
 
 setMethod("cbind", "DataFrame", cbind.DataFrame)
