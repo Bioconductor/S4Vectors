@@ -5,7 +5,7 @@
 \alias{SimpleList}
 \alias{SimpleList-class}
 
-\alias{parallelSlotNames,SimpleList-method}
+\alias{vertical_slot_names,SimpleList-method}
 
 % accessors
 \alias{names,SimpleList-method}

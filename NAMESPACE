@@ -60,6 +60,7 @@ S3method(as.numeric, LLint)
 
 S3method(as.vector, Rle)
 
+S3method(cbind, DataTable)
 S3method(cbind, DataFrame)
 
 S3method(diff, Rle)
@@ -84,7 +85,7 @@ S3method(median, Rle)
 
 S3method(quantile, Rle)
 
-S3method(rbind, DataFrame)
+S3method(rbind, DataTable)
 
 S3method(rev, Vector)
 S3method(rev, Rle)
@@ -148,6 +149,7 @@ export(
 
     as.vector.Rle,
 
+    cbind.DataTable,
     cbind.DataFrame,
 
     diff.Rle,
@@ -172,7 +174,7 @@ export(
 
     quantile.Rle,
 
-    rbind.DataFrame,
+    rbind.DataTable,
 
     rev.Vector,
     rev.Rle,
@@ -260,7 +262,7 @@ exportMethods(
     summary,
 
     ## Methods for generics defined in the BiocGenerics package:
-    cbind, rbind,
+    rbind, cbind,
     lapply, sapply,
     Reduce, Filter,
     unlist,
@@ -298,6 +300,9 @@ export(
     recycleLogicalArg, recycleCharacterArg,
     recycleArg,
     fold,
+
+    ## bindROWS.R:
+    parallelSlotNames,
 
     ## LLint-class.R:
     is.LLint, as.LLint, LLint,
@@ -363,8 +368,9 @@ export(
     ## show-utils.R:
     classNameForDisplay, showAsCell, makeNakedCharacterMatrixForDisplay,
 
-    ## LLint-class.R:
-    bindROWS,
+    ## bindROWS.R:
+    vertical_slot_names, horizontal_slot_names,
+    bindROWS, bindCOLS,
 
     ## isSorted.R:
     isConstant, isSorted, isStrictlySorted,
@@ -386,7 +392,7 @@ export(
     metadata, "metadata<-",
 
     ## Vector-class.R:
-    parallelSlotNames, parallelVectorNames,
+    parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
@@ -442,7 +448,8 @@ export(
 ### Exactly the same list as above.
 exportMethods(
     classNameForDisplay, showAsCell, makeNakedCharacterMatrixForDisplay,
-    bindROWS,
+    vertical_slot_names, horizontal_slot_names,
+    bindROWS, bindCOLS,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
     normalizeSingleBracketReplacementValue,
@@ -452,7 +459,7 @@ exportMethods(
     ROWNAMES,
     as.env,
     metadata, "metadata<-",
-    parallelSlotNames, parallelVectorNames,
+    parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,

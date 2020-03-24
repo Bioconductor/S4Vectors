@@ -36,12 +36,13 @@ setClass("SortedByQuerySelfHits", contains=c("SelfHits", "SortedByQueryHits"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotNames()
+### vertical_slot_names()
 ###
 
-### Combine the new parallel slots with those of the parent class. Make sure
-### to put the new parallel slots *first*.
-setMethod("parallelSlotNames", "Hits",
+### Combine the new "vertical slots" with those of the parent class. Make
+### sure to put the new vertical slots **first**. See bindROWS.R file for
+### what slots should or should not be considered "vertical".
+setMethod("vertical_slot_names", "Hits",
     function(x) c("from", "to", callNextMethod())
 )
 

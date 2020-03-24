@@ -37,9 +37,6 @@
 \alias{recycleArg}
 \alias{fold}
 
-% Stuff from R/vector-utils.R:
-\alias{bindROWS,ANY-method}
-
 \title{S4Vectors internals}
 
 \description{

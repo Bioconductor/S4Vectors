@@ -133,29 +133,27 @@ setMethod("transform", "DataTable", transform.DataTable)
 ### Combining.
 ###
 
-setMethod("cbind", "DataTable", function(..., deparse.level=1)
-          stop("missing 'cbind' method for DataTable class ",
-               class(list(...)[[1L]])))
+### S3/S4 combo for rbind.DataTable
+rbind.DataTable <- function(..., deparse.level=1)
+{
+    if (!identical(deparse.level, 1))
+        warning(wmsg("the rbind() method for DataTable objects ",
+                     "ignores the 'deparse.level' argument"))
+    objects <- list(...)
+    bindROWS(objects[[1L]], objects=objects[-1L])
+}
+setMethod("rbind", "DataTable", rbind.DataTable)
 
-setMethod("rbind", "DataTable", function(..., deparse.level=1)
-          stop("missing 'rbind' method for DataTable class ",
-               class(list(...)[[1L]])))
-
-setMethod("cbind2", c("ANY", "DataTable"), function(x, y, ...) {
-  x <- as(x, "DataFrame")
-  cbind(x, y, ...)
-})
-
-setMethod("cbind2", c("DataTable", "ANY"), function(x, y, ...) {
-  y <- as(y, "DataFrame")
-  cbind(x, y, ...)
-})
-
-setMethod("cbind2", c("DataTable", "DataTable"), function(x, y, ...) {
-  x <- as(x, "DataFrame")
-  y <- as(y, "DataFrame")
-  cbind(x, y, ...)
-})
+### S3/S4 combo for cbind.DataTable
+cbind.DataTable <- function(..., deparse.level=1)
+{
+    if (!identical(deparse.level, 1))
+        warning(wmsg("the cbind() method for DataTable objects ",
+                     "ignores the 'deparse.level' argument"))
+    objects <- list(...)
+    bindCOLS(objects[[1L]], objects=objects[-1L])
+}
+setMethod("cbind", "DataTable", cbind.DataTable)
 
 setMethod("rbind2", c("ANY", "DataTable"), function(x, y, ...) {
   x <- as(x, "DataFrame")
@@ -171,6 +169,22 @@ setMethod("rbind2", c("DataTable", "DataTable"), function(x, y, ...) {
   x <- as(x, "DataFrame")
   y <- as(y, "DataFrame")
   rbind(x, y, ...)
+})
+
+setMethod("cbind2", c("ANY", "DataTable"), function(x, y, ...) {
+  x <- as(x, "DataFrame")
+  cbind(x, y, ...)
+})
+
+setMethod("cbind2", c("DataTable", "ANY"), function(x, y, ...) {
+  y <- as(y, "DataFrame")
+  cbind(x, y, ...)
+})
+
+setMethod("cbind2", c("DataTable", "DataTable"), function(x, y, ...) {
+  x <- as(x, "DataFrame")
+  y <- as(y, "DataFrame")
+  cbind(x, y, ...)
 })
 
 .mergeByHits <- function(x, y, by, all.x=FALSE, all.y=FALSE, sort = TRUE,

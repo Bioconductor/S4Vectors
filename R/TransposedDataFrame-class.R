@@ -188,60 +188,35 @@ setMethod("show", "TransposedDataFrame",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### rbind/cbind
+### Combining
 ###
 
-.rbind_TransposedDataFrame_objects <- function(x, objects=list(),
-                                               ignore.mcols=FALSE)
-{
-    if (!isTRUEorFALSE(ignore.mcols))
-        stop("'ignore.mcols' must be TRUE or FALSE")
-    objects <- prepare_objects_to_bind(x, objects)
-    all_objects <- c(list(x), objects)
-    if (ignore.mcols)
-        all_objects <- lapply(all_objects, `mcols<-`, value=NULL)
-    t(do.call(cbind, lapply(all_objects, t)))
-}
-
-.cbind_TransposedDataFrame_objects <- function(x, objects=list())
-{
-    objects <- prepare_objects_to_bind(x, objects)
-    all_objects <- c(list(x), objects)
-    t(do.call(rbind, lapply(all_objects, t)))
-}
-
-### Defining bindROWS() gives us c() for free.
-### Ignores the 'check' argument!
+### Defining bindROWS() gives us c() and rbind().
+### Ignore the 'check' argument!
 setMethod("bindROWS", "TransposedDataFrame",
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
     {
         if (!identical(use.names, TRUE))
             stop(wmsg("the bindROWS() method for TransposedDataFrame objects ",
                       "only accepts 'use.names=TRUE'"))
-        .rbind_TransposedDataFrame_objects(x, objects=objects,
-                                              ignore.mcols=ignore.mcols)
+        if (!isTRUEorFALSE(ignore.mcols))
+            stop("'ignore.mcols' must be TRUE or FALSE")
+        objects <- prepare_objects_to_bind(x, objects)
+        all_objects <- c(list(x), objects)
+        if (ignore.mcols)
+            all_objects <- lapply(all_objects, `mcols<-`, value=NULL)
+        t(do.call(cbind, lapply(all_objects, t)))
     }
 )
 
-setMethod("rbind", "TransposedDataFrame",
-    function(..., deparse.level=1)
+### Defining bindCOLS() gives us cbind().
+### Ignore the 'ignore.mcols' argument!
+setMethod("bindCOLS", "TransposedDataFrame",
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
     {
-        if (!identical(deparse.level, 1))
-            warning(wmsg("the rbind() method for TransposedDataFrame objects ",
-                         "ignores the 'deparse.level' argument"))
-        all_objects <- list(...)
-        .rbind_TransposedDataFrame_objects(all_objects[[1L]], all_objects[-1L])
-    }
-)
-
-setMethod("cbind", "TransposedDataFrame",
-    function(..., deparse.level=1)
-    {
-        if (!identical(deparse.level, 1))
-            warning(wmsg("the cbind() method for TransposedDataFrame objects ",
-                         "ignores the 'deparse.level' argument"))
-        all_objects <- list(...)
-        .cbind_TransposedDataFrame_objects(all_objects[[1L]], all_objects[-1L])
+        objects <- prepare_objects_to_bind(x, objects)
+        t(bindROWS(t(x), objects=lapply(objects, t),
+                   use.names=use.names, check=check))
     }
 )
 

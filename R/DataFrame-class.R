@@ -960,8 +960,8 @@ setMethod("showAsCell", "DataFrame", showAsCell_array)
     bindROWS(cols[[1L]], cols[-1L])
 }
 
-### Argument 'ignore.mcols' is ignored.
-.rbind_DataFrame_objects <-
+### Ignore the 'ignore.mcols' argument!
+.bindROWS_DataFrame_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
@@ -1022,22 +1022,15 @@ setMethod("showAsCell", "DataFrame", showAsCell_array)
                                    check=check)
 }
 
-setMethod("bindROWS", "DataFrame", .rbind_DataFrame_objects)
+### Defining bindROWS() gives us rbind().
+setMethod("bindROWS", "DataFrame", .bindROWS_DataFrame_objects)
 
-### The "rbind" method for DataFrame objects is just a thin wrapper around
-### a call to bindROWS().
-### Argument 'deparse.level' is ignored.
-rbind.DataFrame <- function(..., deparse.level=1)
-{
-    objects <- list(...)
-    bindROWS(objects[[1L]], objects[-1L], check=FALSE)
-}
-
-setMethod("rbind", "DataFrame", rbind.DataFrame)
-
-### Argument 'deparse.level' is ignored.
+### S3/S4 combo for cbind.DataFrame
 cbind.DataFrame <- function(..., deparse.level=1)
 {
+    if (!identical(deparse.level, 1))
+        warning(wmsg("the cbind() method for DataFrame objects ",
+                     "ignores the 'deparse.level' argument"))
     ## It's important that the call to DataFrame() below is able to deparse
     ## the arguments in ... so for example
     ##   b <- 11:13
@@ -1052,7 +1045,6 @@ cbind.DataFrame <- function(..., deparse.level=1)
     ## with a column named "11:13".
     DataFrame(..., check.names=FALSE)
 }
-
 setMethod("cbind", "DataFrame", cbind.DataFrame)
 
 ### If we didn't define this method, calling c() on DataFrame objects would

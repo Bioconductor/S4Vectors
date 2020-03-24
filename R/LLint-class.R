@@ -153,42 +153,6 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ### Concatenation
 ###
 
-### Low-level generic for binding objects **along the ROWS**. It is intended
-### to facilitate implementation of "c" methods for vector-like objects and
-### "rbind" methods for rectangular objects. It can also be used to unlist
-### an ordinary list of vector-like or rectangular objects.
-### See R/Vector-class.R for more information.
-setGeneric("bindROWS", signature="x",
-    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
-        standardGeneric("bindROWS")
-)
-
-setMethod("bindROWS", "NULL",
-    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
-    {
-        if (!is.list(objects))
-            stop("'objects' must be a list")
-        objects <- delete_NULLs(objects)
-        if (length(objects) == 0L)
-            return(NULL)
-        x <- objects[[1L]]
-        objects <- objects[-1L]
-        callGeneric()
-    }
-)
-
-### Not exported.
-### Low-level utility used by various "bindROWS" methods.
-### Prepare 'objects' by deleting NULLs from it, dropping its names, and
-### making sure that each of its list element belongs to the same class
-### as 'x' (or to one of its subclasses) by coercing it if necessary.
-prepare_objects_to_bind <- function(x, objects=list())
-{
-    if (!is.list(objects))
-        stop("'objects' must be a list")
-    lapply(unname(delete_NULLs(objects)), coerce2, x)
-}
-
 ### Arguments 'use.names' and 'ignore.mcols' are ignored.
 .concatenate_LLint_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)

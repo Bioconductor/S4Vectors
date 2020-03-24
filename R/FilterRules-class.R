@@ -8,7 +8,7 @@ setClass("FilterRules", representation(active = "logical"),
          prototype(elementType = "expression_OR_function"),
          contains = "SimpleList")
 
-setMethod("parallelSlotNames", "FilterRules",
+setMethod("vertical_slot_names", "FilterRules",
           function(x) c("active", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -54,8 +54,6 @@
 
 % combining
 \alias{bindROWS,DataFrame-method}
-\alias{rbind.DataFrame}
-\alias{rbind,DataFrame-method}
 \alias{c,DataFrame-method}
 \alias{cbind.DataFrame}
 \alias{cbind,DataFrame-method}

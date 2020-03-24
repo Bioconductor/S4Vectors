@@ -14,8 +14,7 @@
 \alias{vector_OR_Vector-class}
 \alias{vector_OR_Vector}
 
-\alias{parallelSlotNames}
-\alias{parallelSlotNames,Vector-method}
+\alias{vertical_slot_names,Vector-method}
 
 \alias{updateObject,Vector-method}
 

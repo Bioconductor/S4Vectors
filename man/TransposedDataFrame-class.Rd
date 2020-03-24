@@ -34,8 +34,7 @@
 \alias{show,TransposedDataFrame-method}
 
 \alias{bindROWS,TransposedDataFrame-method}
-\alias{rbind,TransposedDataFrame-method}
-\alias{cbind,TransposedDataFrame-method}
+\alias{bindCOLS,TransposedDataFrame-method}
 
 \title{TransposedDataFrame objects}
 

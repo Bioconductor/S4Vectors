@@ -8,7 +8,7 @@
 \alias{class:FilterRules}
 \alias{FilterRules-class}
 
-\alias{parallelSlotNames,FilterRules-method}
+\alias{vertical_slot_names,FilterRules-method}
 
 % accessors
 \alias{active}

@@ -22,8 +22,10 @@
 \alias{is.na,DataTable-method}
 \alias{complete.cases,DataTable-method}
 
-\alias{cbind,DataTable-method}
+\alias{rbind.DataTable}
 \alias{rbind,DataTable-method}
+\alias{cbind.DataTable}
+\alias{cbind,DataTable-method}
 \alias{merge,DataTable,DataTable-method}
 \alias{merge,data.frame,DataTable-method}
 \alias{merge,DataTable,data.frame-method}
@@ -143,12 +145,12 @@
 
   \describe{
     \item{}{
-      \code{cbind(...)}: Creates a new \code{DataTable} by combining the columns
-      of the \code{DataTable} objects in \code{...}.
-    }
-    \item{}{
       \code{rbind(...)}: Creates a new \code{DataTable} by combining the rows of
       the \code{DataTable} objects in \code{...}.
+    }
+    \item{}{
+      \code{cbind(...)}: Creates a new \code{DataTable} by combining the columns
+      of the \code{DataTable} objects in \code{...}.
     }
     \item{}{
       \code{merge(x, y, ...)}: Merges two \code{DataTable}

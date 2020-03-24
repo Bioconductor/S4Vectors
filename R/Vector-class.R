@@ -31,33 +31,25 @@ setClassUnion("vector_OR_Vector", c("vector", "Vector"))  # vector-like objects
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### parallelSlotNames()
+### vertical_slot_names()
+###
+### Methods for Vector subclasses should be defined in an incremental fashion,
+### that is, they should only explicitly list the new "vertical slots" (i.e.
+### the vertical slots that they introduce). See bindROWS.R file for what
+### slots should or should not be considered "vertical". See Hits-class.R
+### file for an example of a vertical_slot_names() method defined for a
+### Vector derivative.
+###
+
+setMethod("vertical_slot_names", "Vector", function(x) "elementMetadata")
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### parallelVectorNames()
 ###
 ### For internal use only.
 ###
-### Must return the names of all the slots in Vector object 'x' that are
-### "parallel" to 'x'. Slot 'foo' is considered to be "parallel" to 'x' if:
-###   (a) 'x@foo' is NULL or an object for which NROW() is equal to
-###       'length(x)', and
-###   (b) the i-th element in 'x@foo' describes some component of the i-th
-###       element in 'x'.
-### For example, the "start", "width", "NAMES", and "elementMetadata" slots
-### of an IRanges object are parallel to the object. Note that the "NAMES"
-### and "elementMetadata" slots can be set to NULL.
-### The *first" slot name returned by parallelSlotNames() is used to get the
-### length of 'x'.
-###
 
-setGeneric("parallelSlotNames",
-    function(x) standardGeneric("parallelSlotNames")
-)
-
-setMethod("parallelSlotNames", "Vector", function(x) "elementMetadata")
-
-### Methods for Vector subclasses only need to specify the parallel slots they
-### add to their parent class. See Hits-class.R file for an example.
-
-### parallelVectorNames() is for internal use only.
 setGeneric("parallelVectorNames",
            function(x) standardGeneric("parallelVectorNames"))
 setMethod("parallelVectorNames", "ANY",
@@ -92,8 +84,12 @@ setMethod("updateObject", "Vector",
 ### Getters
 ###
 
+### We use the **first** slot returned by vertical_slot_names() to infer
+### the length of 'x' so hopefully this is not a slot that can contain a
+### NULL (like the "elementMetadata" of a Vector derivative or the "NAMES"
+### slot of an IRanges object).
 setMethod("length", "Vector",
-    function(x) NROW(slot(x, parallelSlotNames(x)[[1L]]))
+    function(x) NROW(slot(x, vertical_slot_names(x)[[1L]]))
 )
 
 setMethod("lengths", "Vector",
@@ -152,7 +148,7 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
 ### Validity
 ###
 
-.valid.Vector.length <- function(x)
+.validate_Vector_length <- function(x)
 {
     x_len <- length(x)
     if (!isSingleNumber(x_len) || x_len < 0L)
@@ -162,24 +158,24 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
     NULL
 }
 
-.valid.Vector.parallelSlots <- function(x)
+.validate_Vector_vertical_slots <- function(x)
 {
     x_len <- length(x)
-    x_pslotnames <- parallelSlotNames(x)
-    if (!is.character(x_pslotnames)
-     || anyMissing(x_pslotnames)
-     || anyDuplicated(x_pslotnames)) {
-        msg <- c("'parallelSlotNames(x)' must be a character vector ",
+    x_vslotnames <- vertical_slot_names(x)
+    if (!is.character(x_vslotnames)
+     || anyMissing(x_vslotnames)
+     || anyDuplicated(x_vslotnames)) {
+        msg <- c("'vertical_slot_names(x)' must be a character vector ",
                  "with no NAs and no duplicates")
         return(paste(msg, collapse=""))
     }
-    if (x_pslotnames[[length(x_pslotnames)]] != "elementMetadata") {
-        msg <- c("last string in 'parallelSlotNames(x)' ",
+    if (x_vslotnames[[length(x_vslotnames)]] != "elementMetadata") {
+        msg <- c("last string in 'vertical_slot_names(x)' ",
                  "must be \"elementMetadata\"")
         return(paste(msg, collapse=""))
     }
     msg <- NULL
-    for (slotname in head(x_pslotnames, -1L)) {
+    for (slotname in head(x_vslotnames, -1L)) {
         tmp <- slot(x, slotname)
         if (!(is.null(tmp) || NROW(tmp) == x_len)) {
             what <- paste0("x@", slotname)
@@ -193,7 +189,7 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
     msg
 }
 
-.valid.Vector.names <- function(x)
+.validate_Vector_names <- function(x)
 {
     x_names <- names(x)
     if (is.null(x_names))
@@ -208,7 +204,7 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
     NULL
 }
 
-.valid.Vector.mcols <- function(x)
+.validate_Vector_mcols <- function(x)
 {
     x_mcols <- mcols(x, use.names=FALSE)
     if (is.null(x_mcols))
@@ -228,15 +224,15 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
     NULL
 }
 
-.valid.Vector <- function(x)
+.validate_Vector <- function(x)
 {
-    c(.valid.Vector.length(x),
-      .valid.Vector.parallelSlots(x),
-      .valid.Vector.names(x),
-      .valid.Vector.mcols(x))
+    c(.validate_Vector_length(x),
+      .validate_Vector_vertical_slots(x),
+      .validate_Vector_names(x),
+      .validate_Vector_mcols(x))
 }
 
-setValidity2("Vector", .valid.Vector)
+setValidity2("Vector", .validate_Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -458,18 +454,22 @@ setMethod("[", "Vector",
     }
 )
 
-### We provide a default "extractROWS" method for Vector objects that subsets
-### all the parallel slots.
-### Note that this method will work out-of-the-box and do the right thing
-### on most Vector subclasses as long as parallelSlotNames() reports the
-### names of all the parallel slots on objects of the subclass (some Vector
-### subclasses might require a "parallelSlotNames" method for this to happen).
-### For those Vector subclasses on which extractROWS() does not work
-### out-of-the-box nor do the right thing, it is strongly advised to override
-### the method for Vector objects rather than trying to override the "["
-### method for Vector objects with a specialized method. The specialized
-### "extractROWS" method will typically delegate to the method below via the
-### use of callNextMethod(). See "extractROWS" method for Hits for an example.
+### We provide a default extractROWS() method for Vector objects. It calls
+### the extractROWS() generic internally to subset all the "vertical slots".
+### It behaves like an endomorphism with respect to 'x'.
+### NOTE TO THE DEVELOPERS OF Vector SUBCLASSES: The default extractROWS()
+### method below will work out-of-the-box and do the right thing on your
+### objects as long as calling vertical_slot_names() on them reports all
+### the "vertical slots". So please make sure to register all the parallel
+### slots via a vertical_slot_names() method.
+### If that simple approach does not work for your objects (typically
+### because some slots require special treatment) then you should override
+### the extractROWS() method for Vector objects (you should never need to
+### override the "[" method for Vector objects). In addition to taking care
+### of the slots that require special treatment, your specialized extractROWS()
+### method will typically delegate to the default extractROWS() method below
+### via the use of callNextMethod(). See extractROWS() method for Hits objects
+### for an example.
 setMethod("extractROWS", "Vector",
     function(x, i)
     {
@@ -477,15 +477,15 @@ setMethod("extractROWS", "Vector",
         ## instances).
         x <- updateObject(x, check=FALSE)
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
-        x_pslotnames <- parallelSlotNames(x)
-        ans_pslots <- lapply(setNames(x_pslotnames, x_pslotnames),
+        x_vslotnames <- vertical_slot_names(x)
+        ans_vslots <- lapply(setNames(x_vslotnames, x_vslotnames),
                              function(slotname)
                                  extractROWS(slot(x, slotname), i))
         ## Does NOT validate the object before returning it, because, most of
         ## the times, this is not needed. There are exceptions though. See
         ## for example the "extractROWS" method for Hits objects.
         do.call(BiocGenerics:::replaceSlots,
-                c(list(x), ans_pslots, list(check=FALSE)))
+                c(list(x), ans_vslots, list(check=FALSE)))
     }
 )
 
@@ -687,22 +687,23 @@ rbind_mcols <- function(...)
     do.call(rbind, lapply(mcols_list, fillCols))
 }
 
-### We provide a default "bindROWS" method for Vector objects that uses
-### bindROWS() internally to concatenate the parallel slots along the ROWS.
-### The method behaves like an endomorphism with respect to its first
-### argument 'x'. Note that this method will work out-of-the-box and do the
-### right thing on most Vector subclasses as long as parallelSlotNames()
-### reports the names of all the parallel slots on objects of the subclass
-### (some Vector subclasses might require a "parallelSlotNames" method for
-### this to happen). For those Vector subclasses on which bindROWS() does not
-### work out-of-the-box nor do the right thing, it is strongly advised to
-### override the method for Vector objects rather than trying to override
-### the "c" method for Vector objects with a specialized method. The
-### specialized "bindROWS" method will typically delegate to the method
-### below via the use of callNextMethod(). See "bindROWS" methods for
-### Hits and Rle objects for some examples.
-### No Vector subclass should need to override the "c" method for
-### Vector objects.
+### We provide a default bindROWS() method for Vector objects. It calls the
+### bindROWS() generic internally to concatenate all the "vertical slots"
+### from all the input objects. It behaves like an endomorphism with respect
+### to its first input object 'x'.
+### NOTE TO THE DEVELOPERS OF Vector SUBCLASSES: The default bindROWS()
+### method below will work out-of-the-box and do the right thing on your
+### objects as long as calling vertical_slot_names() on them reports all
+### the "vertical slots". So please make sure to register all the parallel
+### slots via a vertical_slot_names() method.
+### If that simple approach does not work for your objects (typically
+### because some slots require special treatment) then you should override
+### the bindROWS() method for Vector objects (you should never need to
+### override the c() method for Vector objects). In addition to taking care
+### of the slots that require special treatment, your specialized bindROWS()
+### method will typically delegate to the default bindROWS() method below
+### via the use of callNextMethod(). See bindROWS() methods for Hits and Rle
+### objects for some examples.
 concatenate_Vector_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
@@ -717,9 +718,9 @@ concatenate_Vector_objects <-
     all_objects <- c(list(x), objects)
 
     ## Concatenate all the parallel slots except "NAMES" and "elementMetadata".
-    x_pslotnames <- parallelSlotNames(x)
-    pslotnames <- setdiff(x_pslotnames, c("NAMES", "elementMetadata"))
-    ans_pslots <- lapply(setNames(pslotnames, pslotnames),
+    x_vslotnames <- vertical_slot_names(x)
+    vslotnames <- setdiff(x_vslotnames, c("NAMES", "elementMetadata"))
+    ans_vslots <- lapply(setNames(vslotnames, vslotnames),
         function(slotname) {
             x_slot <- slot(x, slotname)
             if (is.null(x_slot))
@@ -729,7 +730,7 @@ concatenate_Vector_objects <-
         }
     )
 
-    if ("NAMES" %in% x_pslotnames) {
+    if ("NAMES" %in% x_vslotnames) {
         ans_NAMES <- NULL
         if (use.names) {
             names_list <- lapply(all_objects, slot, "NAMES")
@@ -742,17 +743,17 @@ concatenate_Vector_objects <-
                 ans_NAMES <- unlist(names_list, use.names=FALSE)
             }
         }
-        ans_pslots <- c(ans_pslots, list(NAMES=ans_NAMES))
+        ans_vslots <- c(ans_vslots, list(NAMES=ans_NAMES))
     }
 
     if (!ignore.mcols) {
         ## Concatenate the "elementMetadata" slots.
         ans_mcols <- do.call(rbind_mcols, all_objects)
-        ans_pslots <- c(ans_pslots, list(elementMetadata=ans_mcols))
+        ans_vslots <- c(ans_vslots, list(elementMetadata=ans_mcols))
     }
 
     ans <- do.call(BiocGenerics:::replaceSlots,
-                   c(list(x), ans_pslots, list(check=FALSE)))
+                   c(list(x), ans_vslots, list(check=FALSE)))
 
     if (ignore.mcols)
         mcols(ans) <- NULL

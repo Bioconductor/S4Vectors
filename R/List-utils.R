@@ -243,7 +243,7 @@ setMethod("anyNA", "List", function(x, recursive=FALSE) {
 ### Matrix construction
 ###
 
-normBindArgs <- function(..., deparse.level=1L) {
+.normBindArgs <- function(..., deparse.level=1L) {
     stopifnot(isSingleNumber(deparse.level),
               deparse.level >= 0L,
               deparse.level <= 2L)
@@ -263,11 +263,11 @@ normBindArgs <- function(..., deparse.level=1L) {
 }
 
 setMethod("rbind", "List", function(..., deparse.level=1L) {
-    args <- normBindArgs(..., deparse.level=deparse.level)
+    args <- .normBindArgs(..., deparse.level=deparse.level)
     do.call(rbind, lapply(args, as.list))
 })
 
 setMethod("cbind", "List", function(..., deparse.level=1L) {
-    args <- normBindArgs(..., deparse.level=deparse.level)
+    args <- .normBindArgs(..., deparse.level=deparse.level)
     do.call(cbind, lapply(args, as.list))
 })

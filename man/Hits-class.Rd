@@ -17,7 +17,7 @@
 \alias{SortedByQuerySelfHits-class}
 \alias{SortedByQuerySelfHits}
 
-\alias{parallelSlotNames,Hits-method}
+\alias{vertical_slot_names,Hits-method}
 
 % accessors
 \alias{from}

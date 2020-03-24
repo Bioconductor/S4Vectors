@@ -32,8 +32,6 @@
 \alias{show,LLint-method}
 \alias{showAsCell,LLint-method}
 
-\alias{bindROWS}
-\alias{bindROWS,NULL-method}
 \alias{bindROWS,LLint-method}
 \alias{c,LLint-method}
 
