@@ -56,6 +56,16 @@ DEFINE_CCALLABLE_STUB(int, as_int,
 	(            val,     val_len)
 )
 
+DEFINE_CCALLABLE_STUB(long long int, safe_llint_add,
+	(long long int x, long long int y),
+	(              x,               y)
+)
+
+DEFINE_CCALLABLE_STUB(long long int, safe_llint_mult,
+	(long long int x, long long int y),
+	(              x,               y)
+)
+
 /*
  * Stubs for callables defined in sort_utils.c
  */

@@ -36,6 +36,16 @@ int as_int(
 	int val_len
 );
 
+long long int safe_llint_add(
+	long long int x,
+	long long int y
+);
+
+long long int safe_llint_mult(
+	long long int x,
+	long long int y
+);
+
 /*
  * Low-level sorting utilities.
  * (see sort_utils.c)
