@@ -1,3 +1,29 @@
+CHANGES IN VERSION 0.26.0
+-------------------------
+
+NEW FEATURES
+
+    o Add TransposedDataFrame objects.
+
+    o Add make_zero_col_DFrame() for constructing a zero-column DFrame object.
+      Intended for developers to use in other packages and typically not needed
+      by the end user.
+
+    o Add internal generic makeNakedCharacterMatrixForDisplay() to facilitate
+      implementation of show() methods. Also add cbind_mcols_for_display()
+      helper for use within makeNakedCharacterMatrixForDisplay() methods.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Rename parallelSlotNames() internal generic -> vertical_slot_names().
+      Also add new horizontal_slot_names() internal generic (no methods yet).
+
+BUG FIXES
+
+    o Fix bug causing segfault in C function 'select_hits()' when 'nodup'
+      is TRUE.
+
+
 CHANGES IN VERSION 0.24.0
 -------------------------
 
