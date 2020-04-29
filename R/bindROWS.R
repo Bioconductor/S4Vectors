@@ -30,7 +30,7 @@ setGeneric("vertical_slot_names",
 
 parallelSlotNames <- function(x)
 {
-    .Deprecated("vertical_slot_names")
+    .Defunct("vertical_slot_names")
     vertical_slot_names(x)
 }
 
