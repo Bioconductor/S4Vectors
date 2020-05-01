@@ -6,11 +6,26 @@
 ### classes that aim at representing objects with a rectangular shape.
 ### Current RectangularData derivatives are DataFrame, DelayedMatrix,
 ### SummarizedExperiment, and Assays objects.
-### RectangularData derivatives are expected to support the 2D API i.e.
-### at least dim(), [, bindROWS(), and bindCOLS().
+### RectangularData derivatives are expected to support the 2D API: at
+### least 'dim()', but also typically 'dimnames()', `[` (the 2D form
+### 'x[i, j]'), 'bindROWS()', and 'bindCOLS()'.
 ###
 
 setClass("RectangularData", representation("VIRTUAL"))
+
+.validate_RectangularData <- function(x)
+{
+    x_dim <- try(dim(x), silent=TRUE)
+    if (inherits(x_dim, "try-error"))
+        return("'dim(x)' must work")
+    if (!(is.vector(x_dim) && is.numeric(x_dim)))
+        return("'dim(x)' must return a numeric vector")
+    if (length(x_dim) != 2L)
+        return("'x' must have exactly 2 dimensions")
+    TRUE
+}
+
+setValidity2("RectangularData", .validate_RectangularData)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

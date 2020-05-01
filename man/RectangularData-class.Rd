@@ -30,8 +30,9 @@
   \link[SummarizedExperiment]{SummarizedExperiment}, and
   \link[SummarizedExperiment]{Assays} objects.
 
-  RectangularData derivatives are expected to support the 2D API i.e.
-  at least \code{dim()}, \code{[}, \code{bindROWS()}, and \code{bindCOLS()}.
+  RectangularData derivatives are expected to support the 2D API: at least
+  \code{dim()}, but also typically \code{dimnames}, \code{[} (the 2D form
+  \code{x[i, j]}), \code{bindROWS()}, and \code{bindCOLS()}.
 }
 
 \section{Accessors}{
