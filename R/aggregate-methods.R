@@ -18,7 +18,7 @@
 ### the method for vector) for more mess.
 ###
 ### FIXME: Fix the aggregate() mess. Before fixing, it would be good to
-### simplify by gettting rid of the 'frequency' and 'delta' arguments.
+### simplify by getting rid of the 'frequency' and 'delta' arguments.
 ### Then the 'start', 'end', and 'width' arguments wouldn't be needed
 ### anymore because the user can aggregate by range by passing
 ### IRanges(start, end, width) to 'by'. After removing these arguments,

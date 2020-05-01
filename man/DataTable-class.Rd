@@ -5,27 +5,11 @@
 \alias{DataTable-class}
 \alias{DataTable}
 
-\alias{NROW,DataTable-method}
-\alias{NCOL,DataTable-method}
-\alias{dim,DataTable-method}
-\alias{ROWNAMES}
-\alias{ROWNAMES,ANY-method}
-\alias{ROWNAMES,DataTable-method}
-\alias{dimnames,DataTable-method}
-\alias{dimnames<-,DataTable-method}
-
-\alias{head.DataTable}
-\alias{tail.DataTable}
-\alias{subset,DataTable-method}
 \alias{na.omit,DataTable-method}
 \alias{na.exclude,DataTable-method}
 \alias{is.na,DataTable-method}
 \alias{complete.cases,DataTable-method}
 
-\alias{rbind.DataTable}
-\alias{rbind,DataTable-method}
-\alias{cbind.DataTable}
-\alias{cbind,DataTable-method}
 \alias{merge,DataTable,DataTable-method}
 \alias{merge,data.frame,DataTable-method}
 \alias{merge,DataTable,data.frame-method}
@@ -54,72 +38,15 @@
 \title{DataTable objects}
 
 \description{
-  DataTable is an API only (i.e. virtual class with no slots) for accessing
-  objects with a rectangular shape like \link{DataFrame} or
-  \link[DelayedArray]{DelayedMatrix} objects.
+  The DataTable class will go away. It sits between the \link{RectangularData}
+  and \link{DataFrame} classes.
+  The DataTable methods documented here will need to become
+  RectangularData or DataFrame methods, or to be removed.
 }
 
-\section{Accessors}{
-  In the following code snippets, \code{x} is a \code{DataTable}.
-  \describe{
-    \item{}{
-      \code{nrow(x)}, \code{ncol(x)}:
-      Get the number of rows and columns, respectively.
-    }
-    \item{}{
-      \code{NROW(x)}, \code{NCOL(x)}:
-      Same as \code{nrow(x)} and \code{ncol(x)}, respectively.
-    }
-    \item{}{
-      \code{dim(x)}:
-      Length two integer vector defined as \code{c(nrow(x), ncol(x))}.
-    }
-    \item{}{
-      \code{rownames(x)}, \code{colnames(x)}:
-      Get the names of the rows and columns, respectively.
-    }
-    \item{}{
-      \code{dimnames(x)}:
-      Length two list of character vectors defined as
-      \code{list(rownames(x), colnames(x))}.
-    }
-  }
-}
-
-\section{Subsetting}{
+\section{High-level subsetting}{
   In the code snippets below, \code{x} is a DataTable object.
-
   \describe{
-    \item{}{
-      \code{x[i, j, drop=TRUE]}:
-      Return a new DataTable object made of the selected rows and columns. For
-      single column selection, the \code{drop} argument specifies whether or not
-      to coerce the returned sequence to a standard vector.
-    }
-    \item{}{
-      \code{head(x, n=6L)}:
-      If \code{n} is non-negative, returns the first n rows of the DataTable
-      object.
-      If \code{n} is negative, returns all but the last \code{abs(n)} rows of
-      the DataTable object.
-    }
-    \item{}{
-      \code{tail(x, n=6L)}:
-      If \code{n} is non-negative, returns the last n rows of the DataTable
-      object.
-      If \code{n} is negative, returns all but the first \code{abs(n)} rows of
-      the DataTable object.
-    }
-    \item{}{
-      \code{subset(x, subset, select, drop=FALSE)}:
-      Return a new DataTable object using:
-      \describe{
-        \item{subset}{logical expression indicating rows to keep, where missing
-          values are taken as FALSE.}
-        \item{select}{expression indicating columns to keep.}
-        \item{drop}{passed on to \code{[} indexing operator.}
-      }
-    }
     \item{}{
       \code{\link[stats:na.fail]{na.omit}(object)}:
       Returns a subset with incomplete cases removed.
@@ -142,16 +69,7 @@
 
 \section{Combining}{
   In the code snippets below, \code{x} is a DataTable object.
-
   \describe{
-    \item{}{
-      \code{rbind(...)}: Creates a new \code{DataTable} by combining the rows of
-      the \code{DataTable} objects in \code{...}.
-    }
-    \item{}{
-      \code{cbind(...)}: Creates a new \code{DataTable} by combining the columns
-      of the \code{DataTable} objects in \code{...}.
-    }
     \item{}{
       \code{merge(x, y, ...)}: Merges two \code{DataTable}
       objects \code{x} and \code{y}, with arguments in \code{...} being
@@ -163,7 +81,6 @@
 
 \section{Looping}{
   In the code snippets below, \code{x} is a DataTable object.
-
   \describe{
     \item{}{
       \code{by(data, INDICES, FUN, ..., simplify = TRUE)}:
@@ -176,7 +93,6 @@
 
 \section{Transforming}{
   In the code snippets below, \code{x} is a DataTable object.
-
   \describe{
     \item{}{
       \code{transform(`_data`, ...)}: adds or replaces columns based on

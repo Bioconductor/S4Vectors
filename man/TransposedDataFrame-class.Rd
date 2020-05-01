@@ -15,8 +15,7 @@
 \alias{dimnames,TransposedDataFrame-method}
 \alias{names,TransposedDataFrame-method}
 
-\alias{rownames<-,TransposedDataFrame-method}
-\alias{colnames<-,TransposedDataFrame-method}
+\alias{dimnames<-,TransposedDataFrame-method}
 \alias{names<-,TransposedDataFrame-method}
 
 \alias{extractROWS,TransposedDataFrame,ANY-method}

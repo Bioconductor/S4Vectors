@@ -20,8 +20,6 @@
 
 \alias{length,Vector-method}
 \alias{lengths,Vector-method}
-\alias{NROW,Vector-method}
-\alias{ROWNAMES,Vector-method}
 \alias{elementMetadata}
 \alias{elementMetadata,Vector-method}
 \alias{mcols}

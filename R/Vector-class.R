@@ -104,9 +104,6 @@ setMethod("lengths", "Vector",
      }
 )
 
-setMethod("NROW", "Vector", function(x) length(x))
-setMethod("ROWNAMES", "Vector", function(x) names(x))
-
 ### 3 accessors for the same slot: elementMetadata(), mcols(), and values().
 ### mcols() is the recommended one, use of elementMetadata() or values() is
 ### discouraged.

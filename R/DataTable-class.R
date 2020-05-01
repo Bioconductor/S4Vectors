@@ -2,68 +2,18 @@
 ### DataTable objects
 ### -------------------------------------------------------------------------
 ###
-### DataTable is an API only (i.e. virtual class with no slots) for
-### accessing objects with a rectangular shape like DataFrame or
-### RangedData objects.  It mimics the API for standard data.frame
-### objects, except derivatives do not necessarily behave as a list of
-### columns.
+### DataTable must go away. It sits between RectangularData and DataFrame.
+### Everything in this file must either move up (to RectangularData), or
+### down (to DataFrame), or be removed.
 ###
 
 
-setClass("DataTable", representation("VIRTUAL"))
+setClass("DataTable", contains="RectangularData", representation("VIRTUAL"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessors.
+### High-level subsetting.
 ###
-
-setMethod("NROW", "DataTable", function(x) nrow(x))
-
-setMethod("NCOL", "DataTable", function(x) ncol(x))
-
-setMethod("dim", "DataTable", function(x) c(nrow(x), ncol(x)))
-
-setGeneric("ROWNAMES", function(x) standardGeneric("ROWNAMES"))
-
-setMethod("ROWNAMES", "ANY",
-    function (x) if (length(dim(x)) != 0L) rownames(x) else names(x)
-)
-
-setMethod("ROWNAMES", "DataTable", function(x) rownames(x))
-
-setMethod("dimnames", "DataTable",
-          function(x) {
-            list(rownames(x), colnames(x))
-          })
-
-setReplaceMethod("dimnames", "DataTable",
-                 function(x, value)
-                 {
-                   if (!is.list(value))
-                     stop("replacement value must be a list")
-                   rownames(x) <- value[[1L]]
-                   colnames(x) <- value[[2L]]
-                   x
-                 })
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Subsetting.
-###
-
-head.DataTable <- head.matrix
-setMethod("head", "DataTable", head.DataTable)
-
-tail.DataTable <- tail.matrix
-setMethod("tail", "DataTable", tail.DataTable)
-
-setMethod("subset", "DataTable",
-          function(x, subset, select, drop = FALSE, ...)
-          {
-              i <- evalqForSubset(subset, x, ...)
-              j <- evalqForSelect(select, x, ...)
-              x[i, j, drop=drop]
-          })
 
 ### FIXME: na.omit() and na.exclude() set non-slot attributes,
 ###        and will fail with things like Rle.
@@ -129,31 +79,10 @@ transform.DataTable <- transformColumns
 
 setMethod("transform", "DataTable", transform.DataTable)
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
 ###
-
-### S3/S4 combo for rbind.DataTable
-rbind.DataTable <- function(..., deparse.level=1)
-{
-    if (!identical(deparse.level, 1))
-        warning(wmsg("the rbind() method for DataTable objects ",
-                     "ignores the 'deparse.level' argument"))
-    objects <- list(...)
-    bindROWS(objects[[1L]], objects=objects[-1L])
-}
-setMethod("rbind", "DataTable", rbind.DataTable)
-
-### S3/S4 combo for cbind.DataTable
-cbind.DataTable <- function(..., deparse.level=1)
-{
-    if (!identical(deparse.level, 1))
-        warning(wmsg("the cbind() method for DataTable objects ",
-                     "ignores the 'deparse.level' argument"))
-    objects <- list(...)
-    bindCOLS(objects[[1L]], objects=objects[-1L])
-}
-setMethod("cbind", "DataTable", cbind.DataTable)
 
 setMethod("rbind2", c("ANY", "DataTable"), function(x, y, ...) {
   x <- as(x, "DataFrame")
@@ -226,6 +155,7 @@ setMethod("merge", c("data.frame", "DataTable"), function(x, y, ...) {
 setMethod("merge", c("DataTable", "data.frame"), function(x, y, ...) {
   as(merge(as(x, "data.frame"), y, ...), class(x))
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Summary methods.

@@ -40,7 +40,7 @@ setMethod("updateObject", "DataFrame",
             ## to be replaced with DFrame instances. Note that this is NOT a
             ## change of the internals, only a change of the class attribute.
             if (verbose)
-                message("[updateObject] Settting class attribute of DataFrame ",
+                message("[updateObject] Setting class attribute of DataFrame ",
                         "instance to \"DFrame\" ... ", appendLF=FALSE)
             class(object) <- class(new("DFrame"))
             if (verbose)
@@ -64,6 +64,8 @@ setMethod("updateObject", "DataFrame",
 setMethod("nrow", "DataFrame", function(x) x@nrows)
 
 setMethod("ncol", "DataFrame", function(x) length(x))
+
+setMethod("dim", "DataFrame", function(x) c(nrow(x), ncol(x)))
 
 setMethod("rownames", "DataFrame",
           function(x, do.NULL = TRUE, prefix = "row")
@@ -93,6 +95,10 @@ setMethod("colnames", "DataFrame",
             return(character(0))
           })
 
+setMethod("dimnames", "DataFrame",
+    function(x) list(rownames(x), colnames(x))
+)
+
 setReplaceMethod("rownames", "DataFrame",
                  function(x, value)
                  {
@@ -119,6 +125,17 @@ setReplaceMethod("colnames", "DataFrame",
                    names(x) <- value
                    x
                  })
+
+setReplaceMethod("dimnames", "DataFrame",
+    function(x, value)
+    {
+        if (!(is.list(value) && length(value) == 2L))
+            stop("dimnames replacement value must be a list of length 2")
+        rownames(x) <- value[[1L]]
+        colnames(x) <- value[[2L]]
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

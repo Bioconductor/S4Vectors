@@ -17,6 +17,7 @@ import(BiocGenerics)
 exportClasses(
     character_OR_NULL, vector_OR_factor, atomic,
     LLint, integer_OR_LLint,
+    RectangularData,
     DataTable,
     NSBS,
     Annotated,
@@ -60,7 +61,7 @@ S3method(as.numeric, LLint)
 
 S3method(as.vector, Rle)
 
-S3method(cbind, DataTable)
+S3method(cbind, RectangularData)
 S3method(cbind, DataFrame)
 
 S3method(diff, Rle)
@@ -71,8 +72,8 @@ S3method(droplevels, Rle)
 S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
 
-S3method(head, DataTable)
 S3method(head, LLint)
+S3method(head, RectangularData)
 S3method(head, Vector)
 
 S3method(intersect, Vector)
@@ -85,7 +86,7 @@ S3method(median, Rle)
 
 S3method(quantile, Rle)
 
-S3method(rbind, DataTable)
+S3method(rbind, RectangularData)
 
 S3method(rev, Vector)
 S3method(rev, Rle)
@@ -107,8 +108,8 @@ S3method(t, HitsList)
 S3method(t, DataFrame)
 S3method(t, TransposedDataFrame)
 
-S3method(tail, DataTable)
 S3method(tail, LLint)
+S3method(tail, RectangularData)
 S3method(tail, Vector)
 
 S3method(transform, DataTable)
@@ -149,7 +150,7 @@ export(
 
     as.vector.Rle,
 
-    cbind.DataTable,
+    cbind.RectangularData,
     cbind.DataFrame,
 
     diff.Rle,
@@ -160,8 +161,8 @@ export(
     duplicated.DataTable,
     duplicated.Vector,
 
-    head.DataTable,
     head.LLint,
+    head.RectangularData,
     head.Vector,
 
     intersect.Vector,
@@ -174,7 +175,7 @@ export(
 
     quantile.Rle,
 
-    rbind.DataTable,
+    rbind.RectangularData,
 
     rev.Vector,
     rev.Rle,
@@ -196,8 +197,8 @@ export(
     t.DataFrame,
     t.TransposedDataFrame,
 
-    tail.DataTable,
     tail.LLint,
+    tail.RectangularData,
     tail.Vector,
 
     transform.DataTable,
@@ -221,7 +222,6 @@ exportMethods(
     ## Methods for generics defined in the base package:
     length, names, "names<-",
     dim, nrow, ncol,
-    NROW, NCOL,
     dimnames, "dimnames<-",
     rownames, "rownames<-",
     colnames, "colnames<-",
@@ -384,8 +384,10 @@ export(
     ## character-utils.R:
     unstrsplit,
 
-    ## DataTable-class.R:
+    ## RectangularData-class.R:
     ROWNAMES,
+
+    ## DataTable-class.R:
     as.env,
 
     ## Annotated-class.R:

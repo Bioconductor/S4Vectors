@@ -30,6 +30,7 @@ Collate: S4-utils.R
 	raw-utils.R
 	eval-utils.R
 	map_ranges_to_runs.R
+	RectangularData-class.R
 	DataTable-class.R
 	Annotated-class.R
 	Vector-class.R

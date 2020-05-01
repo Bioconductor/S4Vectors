@@ -42,6 +42,7 @@ setMethod("t", "TransposedDataFrame", t.TransposedDataFrame)
 setMethod("dim", "TransposedDataFrame", function(x) rev(dim(x@data)))
 setMethod("length", "TransposedDataFrame", function(x) ncol(x@data))
 
+### base::rownames() and base::colnames() work as long as dimnames() works.
 setMethod("dimnames", "TransposedDataFrame", function(x) rev(dimnames(x@data)))
 setMethod("names", "TransposedDataFrame", function(x) colnames(x@data))
 
@@ -50,19 +51,14 @@ setMethod("names", "TransposedDataFrame", function(x) colnames(x@data))
 ### Setters
 ###
 
-setReplaceMethod("rownames", "TransposedDataFrame",
+### base::`rownames<-`() and base::`colnames<-`() work as long as
+### `dimnames<-`() works.
+setReplaceMethod("dimnames", "TransposedDataFrame",
     function(x, value)
     {
-        if (is.null(value))
-            stop(wmsg("the names of a ", class(x), " object cannot be NULL"))
-        colnames(x@data) <- value
-        x
-    }
-)
-setReplaceMethod("colnames", "TransposedDataFrame",
-    function(x, value)
-    {
-        rownames(x@data) <- value
+        if (!(is.list(value) && length(value) == 2L))
+            stop("dimnames replacement value must be a list of length 2")
+        dimnames(x@data) <- rev(value)
         x
     }
 )

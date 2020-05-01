@@ -13,10 +13,13 @@
 % accessor
 \alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
+\alias{dim,DataFrame-method}
 \alias{rownames,DataFrame-method}
 \alias{colnames,DataFrame-method}
+\alias{dimnames,DataFrame-method}
 \alias{rownames<-,DataFrame-method}
 \alias{colnames<-,DataFrame-method}
+\alias{dimnames<-,DataFrame-method}
 
 % constructors
 \alias{DataFrame}
