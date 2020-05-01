@@ -15,6 +15,7 @@
 \alias{makeNakedCharacterMatrixForDisplay,ANY-method}
 \alias{cbind_mcols_for_display}
 \alias{makePrettyMatrixForCompactPrinting}
+\alias{makeClassinfoRowForCompactPrinting}
 
 \title{Display utilities}
 

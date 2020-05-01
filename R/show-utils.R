@@ -464,4 +464,3 @@ makeClassinfoRowForCompactPrinting <- function(x, col2class)
     matrix(ans, nrow=1L, dimnames=list("", names(ans)))
 }
 
-

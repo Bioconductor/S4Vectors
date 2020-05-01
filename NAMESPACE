@@ -285,7 +285,9 @@ export(
 
     ## show-utils.R:
     coolcat,
-    cbind_mcols_for_display, makePrettyMatrixForCompactPrinting,
+    cbind_mcols_for_display,
+    makePrettyMatrixForCompactPrinting,
+    makeClassinfoRowForCompactPrinting,
 
     ## utils.R:
     wmsg,
