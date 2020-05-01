@@ -391,8 +391,8 @@ setMethod("summary", "Hits", summary.Hits)
 
 .from_Hits_to_naked_character_matrix_for_display <- function(x)
 {
-    m <- cbind(from=as.character(from(x)),
-               to=as.character(to(x)))
+    m <- cbind(from=showAsCell(from(x)),
+               to=showAsCell(to(x)))
     if (is(x, "SortedByQueryHits"))
         colnames(m) <- c("queryHits", "subjectHits")
     cbind_mcols_for_display(m, x)
