@@ -11,8 +11,6 @@
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,numeric-method}
 \alias{showAsCell,AsIs-method}
-\alias{showAsCell,Date-method}
-\alias{showAsCell,POSIXt-method}
 \alias{makeNakedCharacterMatrixForDisplay}
 \alias{makeNakedCharacterMatrixForDisplay,ANY-method}
 \alias{cbind_mcols_for_display}

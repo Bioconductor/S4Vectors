@@ -917,5 +917,3 @@ setMethod("show", "Rle",
                   cat(labeledLine("Levels", levels(object)))
           })
 
-setMethod("showAsCell", "Rle", function(object) as.vector(object))
-

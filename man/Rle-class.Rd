@@ -98,7 +98,6 @@
 \alias{setdiff,Rle,ANY-method}
 
 \alias{show,Rle-method}
-\alias{showAsCell,Rle-method}
 
 \title{Rle objects}
 

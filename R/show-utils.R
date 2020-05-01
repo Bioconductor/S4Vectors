@@ -293,7 +293,7 @@ setMethod("classNameForDisplay", "AsIs",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### showAsCell()
 ###
-### All "showAsCell" methods should return a character vector.
+### All "showAsCell" methods must return a character vector.
 ###
 
 ### Exported!
@@ -353,10 +353,6 @@ setMethod("showAsCell", "numeric",
 setMethod("showAsCell", "AsIs",
     function(object) showAsCell(drop_AsIs(object))
 )
-
-### Mmmh... these methods don't return a character vector. Is that ok?
-setMethod("showAsCell", "Date", function(object) object)
-setMethod("showAsCell", "POSIXt", function(object) object)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
