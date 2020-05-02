@@ -10,8 +10,6 @@
 
 setClass("DataTable", contains="RectangularData", representation("VIRTUAL"))
 
-setClassUnion("DataTable_OR_NULL", c("DataTable", "NULL"))
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### High-level subsetting.
