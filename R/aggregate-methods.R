@@ -190,7 +190,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
 
     endomorphism <- FALSE
     if (missing(by)) {
-        if (is(x, "List") && !is(x, "DataTable") && !is(x, "Ranges")) {
+        if (is(x, "List") && !is(x, "DataFrame") && !is(x, "Ranges")) {
             by <- IRanges::PartitioningByEnd(x)
             x <- unlist(x, use.names=FALSE)
         } else {
@@ -205,7 +205,7 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
     
     if (is(by, "formula")) {
         by <- ModelFrame(by, x)
-    } else if (is.list(by) || is(by, "DataTable")) {
+    } else if (is.list(by) || is(by, "DataFrame")) {
         by <- IRanges::FactorList(by, compress=FALSE)
     }
     

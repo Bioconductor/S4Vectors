@@ -327,13 +327,9 @@ See the ``An Overview of the \Biocpkg{IRanges} package'' vignette in the
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Data Tables}
+\section{DataFrame and DataFrameList objects}
 
-To Do:
-\Rclass{DataTable},
-\Rclass{DataFrame},
-\Rclass{DataFrameList},
-\Rclass{SplitDataFrameList}
+TODO
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -352,12 +348,11 @@ Two kinds of metadata can be attached to a \Rclass{Vector} object:
 \item Metadata about the individual elements of the object: this metadata
       is accessed via the \Rfunction{mcols} accessor (\Rfunction{mcols}
       stands for {\it metadata columns}) and is represented as a
-      \Rclass{DataTable} object (i.e. as an instance of a concrete
-      subclass of \Rclass{DataTable}, e.g. a \Rclass{DataFrame} object).
-      This \Rclass{DataTable} object can be thought of as the result of
+      \Rclass{DataFrame} object.
+      This \Rclass{DataFrame} object can be thought of as the result of
       binding together one or several vector-like objects (the metadata
       columns) of the same length as the \Rclass{Vector} object. Each
-      row of the \Rclass{DataTable} object annotates the corresponding
+      row of the \Rclass{DataFrame} object annotates the corresponding
       element of the \Rclass{Vector} object.
 \end{enumerate}
 

@@ -33,6 +33,7 @@ Collate: S4-utils.R
 	RectangularData-class.R
 	DataTable-class.R
 	Annotated-class.R
+	DataFrame_OR_NULL-class.R
 	Vector-class.R
 	Vector-comparison.R
 	Vector-setops.R

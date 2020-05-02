@@ -5,6 +5,10 @@
 \alias{DataTable-class}
 \alias{DataTable}
 
+\alias{class:DataTable_OR_NULL}
+\alias{DataTable_OR_NULL-class}
+\alias{DataTable_OR_NULL}
+
 \alias{na.omit,DataTable-method}
 \alias{na.exclude,DataTable-method}
 \alias{is.na,DataTable-method}

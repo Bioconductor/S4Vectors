@@ -17,6 +17,9 @@ setClass("DataFrame",
                    listData = structure(list(), names = character())),
          contains = c("DataTable", "SimpleList"))
 
+### Add DataFrame to the DataFrame_OR_NULL union.
+setIs("DataFrame", "DataFrame_OR_NULL")
+
 ## Just a direct DataFrame extension with no additional slot for now. Once all
 ## serialized DataFrame instances are replaced with DFrame instances (which
 ## will take several BioC release cycles) we'll be able to move the DataFrame
@@ -796,7 +799,7 @@ setAs("AsIs", "DFrame",
         new_DataFrame(setNames(list(drop_AsIs(from)), "X"))
       })
 
-setAs("ANY", "DataTable_OR_NULL", function(from) as(from, "DFrame"))
+setAs("ANY", "DataFrame_OR_NULL", function(from) as(from, "DFrame"))
 
 setMethod("coerce2", "DataFrame",
     function(from, to)

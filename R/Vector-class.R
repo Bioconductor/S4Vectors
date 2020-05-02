@@ -6,13 +6,11 @@
 ### sequence i.e. an ordered finite collection of elements.
 ###
 
-setClassUnion("DataTable_OR_NULL", c("DataTable", "NULL"))
-
 setClass("Vector",
     contains="Annotated",
     representation(
         "VIRTUAL",
-        elementMetadata="DataTable_OR_NULL"
+        elementMetadata="DataFrame_OR_NULL"
     )
 )
 
@@ -206,15 +204,15 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
     x_mcols <- mcols(x, use.names=FALSE)
     if (is.null(x_mcols))
         return(NULL)
-    if (!is(x_mcols, "DataTable"))
-        return("'mcols(x)' must be a DataTable object or NULL")
-    ## 'x_mcols' is a DataTable object.
+    if (!is(x_mcols, "DataFrame"))
+        return("'mcols(x)' must be a DataFrame object or NULL")
+    ## 'x_mcols' is a DataFrame derivative.
     x_mcols_rownames <- rownames(x_mcols)
     if (is.null(x_mcols_rownames))
         return(NULL)
     if (!identical(x_mcols_rownames, names(x)))
     {
-        msg <- c("the rownames of DataTable 'mcols(x)' ",
+        msg <- c("the rownames of DataFrame 'mcols(x)' ",
                  "must match the names of 'x'")
         return(paste(msg, collapse=""))
     }
@@ -264,7 +262,7 @@ normarg_mcols <- function(mcols, x_class, x_len)
     if (!ok)
         mcols <- as(mcols, mcols_target_class)
 
-    ## From now on, 'mcols' is guaranteed to be a DataTable object.
+    ## From now on, 'mcols' is guaranteed to be a DataFrame derivative.
     if (!is.null(rownames(mcols)))
         rownames(mcols) <- NULL
 
@@ -653,7 +651,6 @@ setMethod("summary", "Vector", summary.Vector)
 ### "[<-") work out-of-the-box!
 ###
 
-### Somewhat painful that we do not always have a DataFrame in elementMetadata
 ensureMcols <- function(x) {
   ans <- mcols(x, use.names=FALSE)
   if (is.null(ans))
@@ -776,8 +773,8 @@ setMethod("c", "Vector",
     }
 )
 
-### FIXME: This method doesn't work properly on DataTable objects if 'after'
-### is >= 1 and < length(x).
+### FIXME: This method doesn't work properly on DataFrame derivatives
+### if 'after' is >= 1 and < length(x).
 setMethod("append", c("Vector", "Vector"),
     function(x, values, after=length(x))
     {

@@ -64,8 +64,8 @@
 \title{DataFrame objects}
 
 \description{
-  The \code{DataFrame} class extends the \link{DataTable} virtual
-  class and supports the storage of any type of object (with \code{length}
+  The \code{DataFrame} class extends the \link{RectangularData} virtual
+  class supports the storage of any type of object (with \code{length}
   and \code{[} methods) as columns.
 }
 
@@ -229,7 +229,7 @@
 
 \seealso{
   \itemize{
-    \item \link{DataTable} and \link{SimpleList} which DataFrame extends
+    \item \link{RectangularData} and \link{SimpleList} which DataFrame extends
           directly.
 
     \item \link{TransposedDataFrame} objects.

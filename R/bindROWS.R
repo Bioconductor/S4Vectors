@@ -50,7 +50,8 @@ setGeneric("horizontal_slot_names",
 ###
 ### A low-level generic function for binding objects along their 1st dimension.
 ### It is intended to be the workhorse behind:
-### - the rbind() methods for rectangular objects (e.g. DataTable derivatives);
+### - the rbind() methods for rectangular objects (e.g. RectangularData
+###   derivatives);
 ### - the c() methods for vector-like objects that are not data-frame-like
 ###   objects (e.g. Vector derivatives that are not DataFrame derivatives);
 ### - the unlist() methods for list-like objects (e.g. List derivatives).
@@ -172,7 +173,8 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
 ###
 ### A low-level generic function for binding objects along their 2nd dimension.
 ### It is intended to be the workhorse behind:
-### - the cbind() methods for rectangular objects (e.g. DataTable derivatives);
+### - the cbind() methods for rectangular objects (e.g. RectangularData
+###   derivatives);
 ### - the c() method for data-frame-like objects (e.g. DataFrame derivatives).
 ###
 
