@@ -35,8 +35,8 @@ R files: 73 files
 
     List-comparison.R   (methods for CompressedList need to stay in IRanges)
 
-    DataFrame-utils.R
-    expand-methods.R    (merge with DataFrame-utils.R)
+  X DataFrame-utils.R
+  X expand-methods.R
 
   X FilterRules-class.R
 
@@ -74,6 +74,5 @@ Other TODO items that originated in the IRanges package
 
 o FilterRules:
   - refactor, using ShortRead filter framework (becomes FilterList)
-  - support subsetting DataFrame/RangedData directly
+  - support subsetting DataFrame directly
 
-oooooooo

@@ -49,38 +49,6 @@ setMethod("complete.cases", "DataTable", function(...) {
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Transforming.
-###
-
-setGeneric("column<-",
-           function(x, name, value) standardGeneric("column<-"),
-           signature="x")
-
-setReplaceMethod("column", "DataTable", function(x, name, value) {
-    x[,name] <- value
-    x
-})
-
-transformColumns <- function(`_data`, ...) {
-    exprs <- as.list(substitute(list(...))[-1L])
-    if (any(names(exprs) == "")) {
-        stop("all arguments in '...' must be named")
-    }
-    ## elements in '...' can originate from different environments
-    env <- setNames(top_prenv_dots(...), names(exprs))
-    for (colName in names(exprs)) { # for loop allows inter-arg dependencies
-        value <- safeEval(exprs[[colName]], `_data`, env[[colName]])
-        column(`_data`, colName) <- value
-    }
-    `_data`
-}
-
-transform.DataTable <- transformColumns
-
-setMethod("transform", "DataTable", transform.DataTable)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Combining.
 ###
 

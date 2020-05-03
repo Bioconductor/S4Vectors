@@ -37,6 +37,11 @@
 \alias{recycleArg}
 \alias{fold}
 
+% From R/DataFrame_OR_NULL-class.R:
+\alias{class:DataFrame_OR_NULL}
+\alias{DataFrame_OR_NULL-class}
+\alias{DataFrame_OR_NULL}
+
 \title{S4Vectors internals}
 
 \description{

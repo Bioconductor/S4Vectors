@@ -94,6 +94,9 @@
 \alias{append}
 \alias{append,Vector,Vector-method}
 
+\alias{transform.Vector}
+\alias{transform,Vector-method}
+
 \alias{expand.grid}
 \alias{expand.grid,Vector-method}
 

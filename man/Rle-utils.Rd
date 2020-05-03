@@ -304,9 +304,11 @@
 \author{P. Aboyoun}
 
 \seealso{
-  \link{Rle} objects
+  \itemize{
+    \item \link{Rle} objects.
 
-  \link[methods]{S4groupGeneric}
+    \item \link[methods]{S4groupGeneric}.
+  }
 }
 
 \examples{

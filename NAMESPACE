@@ -1,7 +1,7 @@
 useDynLib(S4Vectors)
 
 import(methods)
-importFrom(utils, head, tail, head.matrix, tail.matrix, getS3method)
+importFrom(utils, head, tail, head.matrix, tail.matrix, getS3method, stack)
 importFrom(stats, cov, cor, median, quantile,
            smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames, terms)
@@ -113,8 +113,8 @@ S3method(tail, LLint)
 S3method(tail, RectangularData)
 S3method(tail, Vector)
 
-S3method(transform, DataTable)
 S3method(transform, Vector)
+S3method(transform, DataFrame)
 
 S3method(union, Vector)
 
@@ -202,8 +202,8 @@ export(
     tail.RectangularData,
     tail.Vector,
 
-    transform.DataTable,
     transform.Vector,
+    transform.DataFrame,
 
     union.Vector,
 
@@ -242,7 +242,6 @@ exportMethods(
     merge,
     t,
     by,
-    transform,
     nchar, substr, substring, levels, "levels<-", droplevels,
     "[[", "[[<-", "$", "$<-",
     lengths,
@@ -254,7 +253,7 @@ exportMethods(
     coerce, show,
 
     ## Methods for generics defined in the utils package:
-    head, tail,
+    head, tail, stack,
 
     ## Methods for generics defined in the stats package:
     var, cov, cor, sd, window, aggregate, na.omit, na.exclude, complete.cases,
@@ -437,14 +436,20 @@ export(
     ## HitsList-class.R:
     space,
 
+    ## DataFrame-utils.R:
+    transform,
+
     ## Pairs-class.R:
     first, "first<-", second, "second<-", zipup, zipdown,
 
-    ## expand-methods.R
-    expand,
-
     ## FilterRules-class.R:
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
+
+    ## mstack-methods.R
+    mstack,
+
+    ## expand-methods.R
+    expand,
 
     ## shiftApply-methods.R:
     shiftApply
@@ -483,9 +488,11 @@ exportMethods(
     relistToClass, splitAsList,
     revElements,
     space,
+    transform,
     first, "first<-", second, "second<-", zipup, zipdown,
-    expand,
     active, "active<-", evalSeparately, subsetByFilter, params, filterRules,
+    mstack,
+    expand,
     shiftApply
 )
 

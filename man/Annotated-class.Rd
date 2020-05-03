@@ -21,7 +21,7 @@
 }
 
 \section{Accessors}{
-  In the following code snippets, \code{x} is an \code{Annotated} object.
+  In the code snippet below, \code{x} is an Annotated object.
 
   \describe{
     \item{}{\code{metadata(x)}, \code{metadata(x) <- value}: Get or set the list

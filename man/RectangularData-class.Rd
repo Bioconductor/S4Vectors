@@ -68,9 +68,23 @@
     \item{}{
       \code{x[i, j, drop=TRUE]}:
       Return a new RectangularData derivative of the same class as \code{x}
-      made of the selected rows and columns. For single row and/or column
-      selection, the \code{drop} argument specifies whether or not to
-      coerce the returned sequence to an ordinary vector.
+      made of the selected rows and columns.
+
+      For single row and/or column selection, the \code{drop} argument
+      specifies whether or not to "drop the dimensions" of the result.
+      More precisely, when \code{drop=TRUE} (the default), a single
+      row or column is returned as a vector-like object (of length/NROW
+      equal to \code{ncol(x)} if a single row, or equal to \code{nrow(x)}
+      if a single column).
+
+      Not all RectangularData derivatives support the \code{drop} argument.
+      For example \link{DataFrame} and \link[DelayedArray]{DelayedMatrix}
+      objects support it (only for a single column
+      selection for \link{DataFrame} objects), but
+      \link[SummarizedExperiment]{SummarizedExperiment} objects don't
+      (\code{drop} is ignored for these objects and subsetting always
+      returns a \link[SummarizedExperiment]{SummarizedExperiment}
+      derivative of the same class as \code{x}).
     }
     \item{}{
       \code{head(x, n=6L)}:

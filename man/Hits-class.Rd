@@ -128,7 +128,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 }
 
 \section{Accessors}{
-  In the code snippets below, \code{x} is a \code{Hits} object.
+  In the code snippets below, \code{x} is a Hits object.
   \describe{
     \item{}{\code{length(x)}: get the number of hits}
     \item{}{\code{from(x)}: Equivalent to \code{as.data.frame(x)[[1]]}.}
@@ -155,7 +155,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 }
 
 \section{Coercion}{
-  In the code snippets below, \code{x} is a \code{Hits} object.
+  In the code snippets below, \code{x} is a Hits object.
   \describe{
     \item{}{\code{as.matrix(x)}: Coerces \code{x} to a two
       column integer matrix, with each row representing a hit
@@ -203,7 +203,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 }
 
 \section{Other transformations}{
-  In the code snippets below, \code{x} is a \code{Hits} object.
+  In the code snippets below, \code{x} is a Hits object.
   \describe{
     \item{}{\code{t(x)}:
       Transpose \code{x} by interchanging the left and right nodes. This
