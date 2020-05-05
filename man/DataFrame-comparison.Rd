@@ -3,7 +3,15 @@
 
 \alias{sameAsPreviousROW,DataFrame-method}
 \alias{match,DataFrame,DataFrame-method}
+
+\alias{duplicated.DataFrame}
+\alias{duplicated,DataFrame-method}
+\alias{unique.DataFrame}
+\alias{unique,DataFrame-method}
+
 \alias{order,DataFrame-method}
+\alias{sort.DataFrame}
+\alias{sort,DataFrame-method}
 
 \alias{pcompare,DataFrame,DataFrame-method}
 \alias{==,DataFrame,DataFrame-method}

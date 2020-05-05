@@ -134,7 +134,6 @@ setAs("Rle", "character", function(from) as.character(from))
 setAs("Rle", "raw", function(from) as.raw(from))
 setAs("Rle", "factor", function(from) as.factor(from))
 setAs("Rle", "list", function(from) as.list(from))
-setAs("Rle", "data.frame", function(from) as.data.frame(from))
 
 as.vector.Rle <- function(x, mode)
   rep.int(as.vector(runValue(x), mode), runLength(x))
@@ -751,7 +750,8 @@ setMethod("isStrictlySorted", "Rle",
     function(x) all(runLength(x) == 1L) && isStrictlySorted(runValue(x))
 )
 
-.sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
+### S3/S4 combo for sort.Rle
+sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
 {
     if (is.na(na.last)) {
         if (anyNA(runValue(x)))
@@ -760,7 +760,7 @@ setMethod("isStrictlySorted", "Rle",
     ord <- base::order(runValue(x), na.last=na.last, decreasing=decreasing)
     new_Rle(runValue(x)[ord], runLength(x)[ord])
 }
-setMethod("sort", "Rle", .sort.Rle)
+setMethod("sort", "Rle", sort.Rle)
 
 setMethod("rank", "Rle", function (x, na.last = TRUE,
                                    ties.method = c("average", "first", 

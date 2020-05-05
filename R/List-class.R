@@ -666,5 +666,3 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
 }
 setMethod("as.data.frame", "List", .as.data.frame.List)
 
-setAs("List", "data.frame", function(from) as.data.frame(from))
-

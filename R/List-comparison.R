@@ -225,15 +225,17 @@ setMethod("order", "List",
     }
 )
 
-.sort.List <- function(x, decreasing=FALSE, na.last=NA, by)
+### S3/S4 combo for sort.List
+.sort_List <- function(x, decreasing=FALSE, na.last=NA, by)
 {
-    if (!missing(by) || !pcompareRecursively(x)) {
+    if (!missing(by) || !pcompareRecursively(x))
         return(callNextMethod())
-    }
     i <- order(x, na.last=na.last, decreasing=decreasing)  # IntegerList
     x[i]
 }
-setMethod("sort", "List", .sort.List)
+sort.List <- function(x, decreasing=FALSE, ...)
+    .sort_List(x, decreasing=decreasing, ...)
+setMethod("sort", "List", .sort_List)
 
 setMethod("rank", "List",
     function(x, na.last=TRUE,

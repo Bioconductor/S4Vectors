@@ -15,7 +15,7 @@ setClass("DataFrame",
          prototype(rownames = NULL,
                    nrows = 0L,
                    listData = structure(list(), names = character())),
-         contains = c("DataTable", "SimpleList"))
+         contains = c("RectangularData", "SimpleList"))
 
 ### Add DataFrame to the DataFrame_OR_NULL union.
 setIs("DataFrame", "DataFrame_OR_NULL")
@@ -25,8 +25,8 @@ setIs("DataFrame", "DataFrame_OR_NULL")
 ## will take several BioC release cycles) we'll be able to move the DataFrame
 ## slots from the DataFrame class definition to the DFrame class definition.
 ## The final goal is to have DataFrame become a virtual class with no slots
-## that only extends DataTable, and DFrame a concrete DataFrame and SimpleList
-## subclass that has the same slots as the current DataFrame class.
+## that only extends RectangularData, and DFrame a concrete DataFrame and
+## SimpleList subclass that has the same slots as the current DataFrame class.
 setClass("DFrame", contains="DataFrame")
 
 
@@ -641,12 +641,6 @@ setMethod("rep", "DataFrame", function(x, ...) {
 ### Coercion
 ###
 
-## Break DataFrame into a normal R data.frame
-setAs("DataFrame", "data.frame",
-      function(from) {
-        as.data.frame(from, optional=TRUE)
-      })
-
 .as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
                                      stringsAsFactors=FALSE, ...)
 {
@@ -857,6 +851,51 @@ setMethod("classNameForDisplay", "DFrame",
     function(x) if (class(x) == "DFrame") "DataFrame" else class(x)
 )
 
+setMethod("makeNakedCharacterMatrixForDisplay", "DataFrame",
+    function(x)
+    {
+        df <- as.data.frame(lapply(x, showAsCell), optional=TRUE)
+        as.matrix(format(df))
+    }
+)
+
+make_class_info_for_DataFrame_display <- function(x)
+{
+    vapply(x, function(xi) paste0("<", classNameForDisplay(xi), ">"),
+           character(1), USE.NAMES=FALSE)
+}
+
+.show_DataFrame <- function(x)
+{
+    nhead <- get_showHeadLines()
+    ntail <- get_showTailLines()
+    x_nrow <- nrow(x)
+    x_ncol <- ncol(x)
+    cat(classNameForDisplay(x), " with ",
+        x_nrow, " row", ifelse(x_nrow == 1L, "", "s"),
+        " and ",
+        x_ncol, " column", ifelse(x_ncol == 1L, "", "s"),
+        "\n", sep="")
+    if (x_nrow != 0L && x_ncol != 0L) {
+        x_rownames <- rownames(x)
+        if (x_nrow <= nhead + ntail + 1L) {
+            m <- makeNakedCharacterMatrixForDisplay(x)
+            if (!is.null(x_rownames))
+                rownames(m) <- x_rownames
+        } else {
+            m <- rbind(makeNakedCharacterMatrixForDisplay(head(x, nhead)),
+                       rbind(rep.int("...", x_ncol)),
+                       makeNakedCharacterMatrixForDisplay(tail(x, ntail)))
+            rownames(m) <- make_rownames_for_RectangularData_display(
+                                             x_rownames, x_nrow,
+                                             nhead, ntail)
+        }
+        m <- rbind(make_class_info_for_DataFrame_display(x), m)
+        print(m, quote=FALSE, right=TRUE)
+    }
+    invisible(NULL)
+}
+
 setMethod("show", "DataFrame",
     function(object)
     {
@@ -865,7 +904,7 @@ setMethod("show", "DataFrame",
             #warning(wmsg(.OLD_DATAFRAME_INSTANCE_MSG))
             object <- updateObject(object, check=FALSE)
         }
-        invisible(callNextMethod())
+        .show_DataFrame(object)
     }
 )
 

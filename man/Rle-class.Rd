@@ -38,7 +38,6 @@
 \alias{coerce,Rle,character-method}
 \alias{coerce,Rle,raw-method}
 \alias{coerce,Rle,factor-method}
-\alias{coerce,Rle,data.frame-method}
 \alias{decode}
 \alias{decode,ANY-method}
 \alias{decode,Rle-method}
@@ -81,6 +80,7 @@
 \alias{order,Rle-method}
 \alias{is.unsorted,Rle-method}
 \alias{isStrictlySorted,Rle-method}
+\alias{sort.Rle}
 \alias{sort,Rle-method}
 \alias{rank,Rle-method}
 \alias{xtfrm,Rle-method}

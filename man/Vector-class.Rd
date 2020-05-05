@@ -55,6 +55,8 @@
 \alias{coerce,Vector,data.frame-method}
 \alias{as.data.frame.Vector}
 \alias{as.data.frame,Vector-method}
+\alias{as.env}
+\alias{as.env,NULL-method}
 \alias{as.env,Vector-method}
 \alias{as.list.Vector}
 \alias{as.list,Vector-method}

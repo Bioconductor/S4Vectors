@@ -18,7 +18,6 @@ exportClasses(
     character_OR_NULL, vector_OR_factor, atomic,
     LLint, integer_OR_LLint,
     RectangularData,
-    DataTable,
     NSBS,
     Annotated,
     DataFrame_OR_NULL,
@@ -48,7 +47,6 @@ S3method(anyDuplicated, Rle)
 S3method(as.character, LLint)
 
 S3method(as.data.frame, Vector)
-S3method(as.data.frame, DataTable)
 
 S3method(as.integer, LLint)
 
@@ -70,8 +68,8 @@ S3method(diff, Rle)
 S3method(droplevels, List)
 S3method(droplevels, Rle)
 
-S3method(duplicated, DataTable)
 S3method(duplicated, Vector)
+S3method(duplicated, DataFrame)
 
 S3method(head, LLint)
 S3method(head, RectangularData)
@@ -97,6 +95,9 @@ S3method(setdiff, Vector)
 S3method(setequal, Vector)
 
 S3method(sort, Vector)
+S3method(sort, Rle)
+S3method(sort, List)
+S3method(sort, DataFrame)
 
 S3method(subset, Vector)
 
@@ -118,8 +119,8 @@ S3method(transform, DataFrame)
 
 S3method(union, Vector)
 
-S3method(unique, DataTable)
 S3method(unique, Vector)
+S3method(unique, DataFrame)
 
 S3method(window, LLint)
 S3method(window, Vector)
@@ -137,7 +138,6 @@ export(
     as.character.LLint,
 
     as.data.frame.Vector,
-    as.data.frame.DataTable,
 
     as.integer.LLint,
 
@@ -159,8 +159,8 @@ export(
     droplevels.Rle,
     droplevels.List,
 
-    duplicated.DataTable,
     duplicated.Vector,
+    duplicated.DataFrame,
 
     head.LLint,
     head.RectangularData,
@@ -186,6 +186,9 @@ export(
     setequal.Vector,
 
     sort.Vector,
+    sort.Rle,
+    sort.List,
+    sort.DataFrame,
 
     subset.Vector,
 
@@ -207,8 +210,8 @@ export(
 
     union.Vector,
 
-    unique.DataTable,
     unique.Vector,
+    unique.DataFrame,
 
     window.LLint,
     window.Vector
@@ -389,9 +392,6 @@ export(
     ## RectangularData-class.R:
     ROWNAMES,
 
-    ## DataTable-class.R:
-    as.env,
-
     ## Annotated-class.R:
     metadata, "metadata<-",
 
@@ -400,6 +400,7 @@ export(
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
+    as.env,
 
     ## Vector-comparison.R:
     pcompare,
@@ -467,12 +468,12 @@ exportMethods(
     getListElement, setListElement,
     unstrsplit,
     ROWNAMES,
-    as.env,
     metadata, "metadata<-",
     parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
+    as.env,
     pcompare,
     sameAsPreviousROW,
     selfmatch,

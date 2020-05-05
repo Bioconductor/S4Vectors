@@ -4,7 +4,7 @@
 
 
 setClass("TransposedDataFrame",
-    contains=c("DataTable", "List"),
+    contains=c("RectangularData", "List"),
     slots=c(data="DataFrame")
 )
 
@@ -167,11 +167,11 @@ setMethod("makeNakedCharacterMatrixForDisplay", "TransposedDataFrame",
             m <- rbind(makeNakedCharacterMatrixForDisplay(head(x, nhead)),
                        rbind(rep.int("...", x_ncol)),
                        makeNakedCharacterMatrixForDisplay(tail(x, ntail)))
-            rownames(m) <- make_rownames_for_DataTable_display(
-                                                       x_rownames, x_nrow,
-                                                       nhead, ntail)
+            rownames(m) <- make_rownames_for_RectangularData_display(
+                                             x_rownames, x_nrow,
+                                             nhead, ntail)
         }
-        classinfo <- make_class_info_for_DataTable_display(x@data)
+        classinfo <- make_class_info_for_DataFrame_display(x@data)
         rownames(m) <- paste(format(rownames(m)), classinfo)
         print(m, quote=FALSE, right=TRUE)
     }

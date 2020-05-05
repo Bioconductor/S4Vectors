@@ -87,3 +87,29 @@ cbind.RectangularData <- function(..., deparse.level=1)
 }
 setMethod("cbind", "RectangularData", cbind.RectangularData)
 
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### make_rownames_for_RectangularData_display()
+###
+
+### NOT exported but used in package RNAmodR.
+make_rownames_for_RectangularData_display <-
+    function(x_rownames, nrow, nhead, ntail)
+{
+    p1 <- ifelse(nhead == 0L, 0L, 1L)
+    p2 <- ifelse(ntail == 0L, 0L, ntail - 1L)
+    s1 <- s2 <- character(0)
+    if (is.null(x_rownames)) {
+        if (nhead > 0L)
+            s1 <- paste0(as.character(p1:nhead))
+        if (ntail > 0L)
+            s2 <- paste0(as.character((nrow-p2):nrow))
+    } else {
+        if (nhead > 0L)
+            s1 <- paste0(head(x_rownames, nhead))
+        if (ntail > 0L)
+            s2 <- paste0(tail(x_rownames, ntail))
+    }
+    c(s1, "...", s2)
+}
+

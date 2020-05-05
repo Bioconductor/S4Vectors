@@ -369,7 +369,7 @@ setAs("Vector", "raw", function(from) as.raw(from))
 
 setAs("Vector", "factor", function(from) as.factor(from))
 
-setAs("Vector", "data.frame", function(from) as.data.frame(from))
+setAs("Vector", "data.frame", function(from) as.data.frame(from, optional=TRUE))
 
 ### S3/S4 combo for as.data.frame.Vector
 as.data.frame.Vector <- function(x, row.names=NULL, optional=FALSE, ...) {
@@ -411,6 +411,17 @@ makeFixedColumnEnv <- function(x, parent, tform = identity) {
       val
     }, env)
   })
+  env
+}
+
+setGeneric("as.env", function(x, ...) standardGeneric("as.env"))
+
+setMethod("as.env", "NULL", function(x, enclos, tform = identity) {
+  new.env(parent=enclos)
+})
+
+addSelfRef <- function(x, env) {
+  env$.. <- x
   env
 }
 

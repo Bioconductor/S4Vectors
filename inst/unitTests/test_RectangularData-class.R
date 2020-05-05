@@ -1,4 +1,4 @@
-test_DataTable_basic <- function() {
+test_RectangularData_basic <- function() {
   x <- DataFrame(a = 1:10, b = 11:20)
   y <- as.data.frame(x)
 
@@ -13,7 +13,7 @@ test_DataTable_basic <- function() {
 #  checkIdentical(as.data.frame(tail(x)), tail(y))
 }
 
-test_DataTable_subset <- function() {
+test_RectangularData_subset <- function() {
   y <- airquality
   rownames(y) <- as.character(seq_len(nrow(y)))
   x <- as(y, "DataFrame")

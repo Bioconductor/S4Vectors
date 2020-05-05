@@ -27,7 +27,6 @@
 \alias{as.list,List-method}
 \alias{unlist,List-method}
 \alias{as.data.frame,List-method}
-\alias{coerce,List,data.frame-method}
 
 \alias{[,List-method}
 \alias{[<-,List-method}

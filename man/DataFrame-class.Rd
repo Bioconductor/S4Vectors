@@ -43,7 +43,6 @@
 \alias{coerce,NULL,DFrame-method}
 \alias{coerce,table,DFrame-method}
 \alias{coerce,AsIs,DFrame-method}
-\alias{coerce,DataFrame,data.frame-method}
 \alias{coerce,xtabs,DFrame-method}
 \alias{coerce,ANY,DFrame-method}
 \alias{coerce,ANY,DataFrame-method}
@@ -52,6 +51,7 @@
 
 % display
 \alias{classNameForDisplay,DFrame-method}
+\alias{makeNakedCharacterMatrixForDisplay,DataFrame-method}
 \alias{show,DataFrame-method}
 \alias{showAsCell,DataFrame-method}
 
@@ -176,6 +176,15 @@
     \item{}{\code{as.matrix(x)}: Coerces the \code{DataFrame} to a
       \code{matrix}, if possible.
     }
+    \item{}{\code{as.env(x, enclos = parent.frame())}:
+      Creates an environment from \code{x} with a symbol for each
+      \code{colnames(x)}. The values are not actually copied into the
+      environment. Rather, they are dynamically bound using
+      \code{\link{makeActiveBinding}}. This prevents unnecessary copying
+      of the data from the external vectors into R vectors. The values
+      are cached, so that the data is not copied every time the symbol
+      is accessed.
+    }
   }
 }
 
@@ -229,6 +238,8 @@
 
 \seealso{
   \itemize{
+    \item \link{DataFrame-utils} for common operations on DataFrame objects.
+
     \item \link{RectangularData} and \link{SimpleList} which DataFrame extends
           directly.
 

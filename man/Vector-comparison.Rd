@@ -58,8 +58,8 @@
 \alias{countMatches}
 \alias{countMatches,ANY,ANY-method}
 
-\alias{sort,Vector-method}
 \alias{sort.Vector}
+\alias{sort,Vector-method}
 \alias{rank,Vector-method}
 \alias{xtfrm,Vector-method}
 
