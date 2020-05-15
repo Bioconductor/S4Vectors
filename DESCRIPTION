@@ -13,7 +13,7 @@ Encoding: UTF-8
 Author: H. Pagès, M. Lawrence and P. Aboyoun
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
 biocViews: Infrastructure, DataRepresentation
-Depends: R (>= 3.3.0), methods, utils, stats, stats4, BiocGenerics (>= 0.31.1)
+Depends: R (>= 3.3.0), methods, utils, stats, stats4, BiocGenerics (>= 0.35.0)
 Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle
 License: Artistic-2.0
 Collate: S4-utils.R
