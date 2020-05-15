@@ -762,7 +762,9 @@ setAs("xtabs", "DFrame",
 }
 
 setAs("ANY", "DFrame", .defaultAsDataFrame)
+
 setAs("ANY", "DataFrame", function(from) as(from, "DFrame"))
+setAs("SimpleList", "DataFrame", function(from) as(from, "DFrame"))
 
 ## Only temporarily needed (until we make DataFrame VIRTUAL).
 setAs("DFrame", "DataFrame", function(from) from)
