@@ -11,6 +11,8 @@
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,numeric-method}
 \alias{showAsCell,AsIs-method}
+\alias{showAsCell,list-method}
+\alias{showAsCell,data.frame-method}
 \alias{makeNakedCharacterMatrixForDisplay}
 \alias{makeNakedCharacterMatrixForDisplay,ANY-method}
 \alias{cbind_mcols_for_display}

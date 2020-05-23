@@ -38,7 +38,7 @@
 \alias{getListElement,List-method}
 
 \alias{show,List-method}
-\alias{showAsCell,list_OR_List-method}
+\alias{showAsCell,List-method}
 
 \title{List objects}
 

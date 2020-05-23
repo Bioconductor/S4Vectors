@@ -354,6 +354,23 @@ setMethod("showAsCell", "AsIs",
     function(object) showAsCell(drop_AsIs(object))
 )
 
+showAsCell_list <- function(object)
+{
+    vapply(object,
+        function(x) {
+            str <- paste(showAsCell(head(x, 3L)), collapse=",")
+            if (length(x) > 3L)
+                str <- paste0(str, ",...")
+            str
+        },
+        character(1L),
+        USE.NAMES=FALSE
+    )
+}
+setMethod("showAsCell", "list", showAsCell_list)
+
+setMethod("showAsCell", "data.frame", showAsCell_array)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### makeNakedCharacterMatrixForDisplay() and
