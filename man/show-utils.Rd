@@ -10,6 +10,7 @@
 \alias{showAsCell}
 \alias{showAsCell,ANY-method}
 \alias{showAsCell,numeric-method}
+\alias{showAsCell,character-method}
 \alias{showAsCell,AsIs-method}
 \alias{showAsCell,list-method}
 \alias{showAsCell,data.frame-method}

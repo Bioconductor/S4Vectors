@@ -350,6 +350,19 @@ setMethod("showAsCell", "numeric",
     }
 )
 
+setMethod("showAsCell", "character",
+    function(object)
+    {
+        nc <- nchar(object, type="chars")
+        trim_idx <- which(nc > 22L)
+        if (length(trim_idx) != 0L) {
+            tmp <- substr(object[trim_idx], start=1L, stop=20L)
+            object[trim_idx] <- paste0(tmp, "..")
+        }
+        object
+    }
+)
+
 setMethod("showAsCell", "AsIs",
     function(object) showAsCell(drop_AsIs(object))
 )
