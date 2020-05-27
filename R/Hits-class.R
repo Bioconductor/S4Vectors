@@ -343,6 +343,29 @@ setMethod("as.matrix", "Hits",
 
 setMethod("as.table", "Hits", .count_Lnode_hits)
 
+### FIXME: Coercions of Vector derivatives to DFrame are inconsistent.
+### For some Vector derivatives (e.g. IRanges, GRanges) the object is stored
+### "as is" in the 1st column of the returned DFrame, whereas for others (e.g.
+### Hits below) the object is "dismantled" into various parallel components
+### that end up in separate columns of the returned DFrame.
+setAs("Hits", "DFrame",
+    function(from)
+    {
+        from_mcols <- mcols(from, use.names=FALSE)
+        if (is.null(from_mcols))
+            from_mcols <- make_zero_col_DFrame(length(from))
+        DataFrame(as.matrix(from), from_mcols, check.names=FALSE)
+    }
+)
+
+### S3/S4 combo for as.data.frame.Hits
+as.data.frame.Hits <- function(x, row.names=NULL, optional=FALSE, ...)
+{
+    x <- as(x, "DFrame")
+    as.data.frame(x, row.names=row.names, optional=optional, ...)
+}
+setMethod("as.data.frame", "Hits", as.data.frame.Hits)
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting

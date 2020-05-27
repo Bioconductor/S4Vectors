@@ -53,6 +53,9 @@
 \alias{coerce,Hits,SortedByQuerySelfHits-method}
 \alias{as.matrix,Hits-method}
 \alias{as.table,Hits-method}
+\alias{coerce,Hits,DFrame-method}
+\alias{as.data.frame.Hits}
+\alias{as.data.frame,Hits-method}
 
 % subsetting
 \alias{extractROWS,SortedByQueryHits,ANY-method}
@@ -164,6 +167,12 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
     }
     \item{}{\code{as.table(x)}: Counts the number of hits for
       each left node in \code{x} and outputs the counts as a \code{table}.
+    }
+    \item{}{\code{as(x, "DataFrame")}: Creates a \link{DataFrame} by
+      combining the result of \code{as.matrix(x)} with \code{mcols(x)}.
+    }
+    \item{}{\code{as.data.frame(x)}: Attempts to coerce the result of
+      \code{as(x, "DataFrame")} to a \code{data.frame}.
     }
   }
 }
