@@ -187,18 +187,18 @@ setMethod("unlist", "List",
 ###
 
 ### Assume 'x' and 'i' are parallel List objects (i.e. same length).
-### Returns TRUE iff 'i' contains non-NA positive values that are compatible
-### with the shape of 'x'.
+### Returns TRUE iff 'i' contains positive values that are compatible
+### with the shape of 'x'. NAs are allowed.
 .is_valid_NL_subscript <- function(i, x)
 {
     unlisted_i <- unlist(i, use.names=FALSE)
     if (!is.integer(unlisted_i))
         unlisted_i <- as.integer(unlisted_i)
-    if (anyMissingOrOutside(unlisted_i, lower=1L))
+    if (any(unlisted_i < 1L, na.rm=TRUE))
         return(FALSE)
     x_eltNROWS <- elementNROWS(x)
     i_eltNROWS <- elementNROWS(i)
-    if (any(unlisted_i > rep.int(x_eltNROWS, i_eltNROWS)))
+    if (any(unlisted_i > rep.int(x_eltNROWS, i_eltNROWS), na.rm=TRUE))
         return(FALSE)
     return(TRUE)
 }
