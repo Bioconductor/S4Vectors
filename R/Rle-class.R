@@ -897,14 +897,14 @@ setMethod("show", "Rle",
                   " with ", nr, ifelse(nr == 1, " run\n", " runs\n"), sep = "")
               first <- max(1L, halfWidth)
               showMatrix <-
-                rbind(as.character(head(runLength(object), first)),
-                      as.character(head(runValue(object), first)))
+                rbind(showAsCell(head(runLength(object), first)),
+                      showAsCell(head(runValue(object), first)))
               if (nr > first) {
                   last <- min(nr - first, halfWidth)
                   showMatrix <-
                     cbind(showMatrix,
-                          rbind(as.character(tail(runLength(object), last)),
-                                as.character(tail(runValue(object), last))))
+                          rbind(showAsCell(tail(runLength(object), last)),
+                                showAsCell(tail(runValue(object), last))))
               }
               if (is.character(runValue(object))) {
                   showMatrix[2L,] <-
