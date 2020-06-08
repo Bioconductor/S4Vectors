@@ -4,48 +4,6 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### vertical_slot_names() and horizontal_slot_names()
-###
-### Sorry for the names, couldn't find anything better! (Things like
-### slots_parallel_to_1st_dim()/slots_parallel_to_2nd_dim() or
-### ROWS_slots()/COLS_slots() are even more confusing.)
-###
-### For internal use only.
-###
-
-### vertical_slot_names() must return the names of all the slots in S4
-### object 'x' that are **parallel** to its 1st dimension. Slot "foo"
-### in 'x' is considered to be parallel to its 1st dimension if it's
-### guaranteed to contain a value that is either NULL or such that
-### 'NROW(x@foo)' is equal to 'NROW(x)' and the i-th ROW in 'x@foo' is
-### associated with the i-th ROW in 'x'.
-### For example, the "start", "width", "NAMES", and "elementMetadata"
-### slots of an IRanges object 'x' are parallel to its 1st dimension.
-### Note that the "NAMES" and "elementMetadata" slots can be set to NULL.
-### Renamed from parallelSlotNames() to vertical_slot_names() in
-### S4Vectors 0.25.14.
-setGeneric("vertical_slot_names",
-    function(x) standardGeneric("vertical_slot_names")
-)
-
-parallelSlotNames <- function(x)
-{
-    .Defunct("vertical_slot_names")
-    vertical_slot_names(x)
-}
-
-### horizontal_slot_names() must return the names of all the slots in S4
-### object 'x' that are **parallel** to its 2nd dimension. Slot "bar"
-### in 'x' is considered to be parallel to its 2nd dimension if it's
-### guaranteed to contain a value that is either NULL or such that
-### 'NROW(x@bar)' is equal to 'NCOL(x)' and the j-th ROW in 'x@bar' is
-### associated with the j-th COL in 'x'.
-setGeneric("horizontal_slot_names",
-    function(x) standardGeneric("horizontal_slot_names")
-)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### bindROWS()
 ###
 ### A low-level generic function for binding objects along their 1st dimension.

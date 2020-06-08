@@ -17,13 +17,13 @@ setClass("Factor",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### vertical_slot_names()
+### parallel_slot_names()
 ###
 
-### Combine the new "vertical slots" with those of the parent class. Make
-### sure to put the new vertical slots **first**. See bindROWS.R file for
-### what slots should or should not be considered "vertical".
-setMethod("vertical_slot_names", "Factor",
+### Combine the new "parallel slots" with those of the parent class. Make
+### sure to put the new parallel slots **first**. See Vector-class.R file
+### for what slots should or should not be considered "parallel".
+setMethod("parallel_slot_names", "Factor",
     function(x) c("index", callNextMethod())
 )
 
@@ -418,8 +418,8 @@ setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
 setMethod("pcompare", c("Factor", "Factor"),
     function(x, y)
     {
-        .two_factor_comparison(x, y, 
-            unfactored.FUN=pcompare, 
+        .two_factor_comparison(x, y,
+            unfactored.FUN=pcompare,
             combined.FUN=function(x, y) {
                 i <- xtfrm(x@levels)
                 pcompare(i[as.integer(x)], i[as.integer(y)])
@@ -431,11 +431,11 @@ setMethod("pcompare", c("Factor", "Factor"),
 setMethod("match", c("Factor", "Factor"),
     function(x, table, nomatch=NA_integer_, incomparables=NULL, ...)
     {
-        .two_factor_comparison(x, table, 
+        .two_factor_comparison(x, table,
             unfactored.FUN=match,
             combined.FUN=function(x, table, ...) {
                 match(as.integer(x), as.integer(table), ...)
-            }, 
+            },
             nomatch=nomatch, incomparables=incomparables, ...
         )
     }

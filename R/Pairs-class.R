@@ -14,7 +14,7 @@ setClass("Pairs",
                    second=logical(0L),
                    elementMetadata=DataFrame()))
 
-setMethod("vertical_slot_names", "Pairs", function(x)
+setMethod("parallel_slot_names", "Pairs", function(x)
     c("first", "second", "NAMES", callNextMethod()))
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

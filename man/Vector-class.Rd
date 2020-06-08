@@ -9,7 +9,9 @@
 \alias{vector_OR_Vector-class}
 \alias{vector_OR_Vector}
 
-\alias{vertical_slot_names,Vector-method}
+\alias{parallel_slot_names}
+\alias{parallelSlotNames}
+\alias{parallel_slot_names,Vector-method}
 
 \alias{updateObject,Vector-method}
 

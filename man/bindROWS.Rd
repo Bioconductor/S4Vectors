@@ -1,9 +1,5 @@
 \name{bindROWS}
 
-\alias{vertical_slot_names}
-\alias{horizontal_slot_names}
-\alias{parallelSlotNames}
-
 \alias{bindROWS}
 \alias{bindROWS,NULL-method}
 \alias{bindROWS,ANY-method}

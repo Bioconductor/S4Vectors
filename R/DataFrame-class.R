@@ -31,6 +31,19 @@ setClass("DFrame", contains="DataFrame")
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### vertical_slot_names() and horizontal_slot_names()
+###
+
+setMethod("vertical_slot_names", "DataFrame",
+    function(x) "rownames"
+)
+
+setMethod("horizontal_slot_names", "DataFrame",
+    function(x) parallel_slot_names(x)
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### updateObject()
 ###
 

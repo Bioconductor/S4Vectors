@@ -5,6 +5,9 @@
 \alias{RectangularData-class}
 \alias{RectangularData}
 
+\alias{vertical_slot_names}
+\alias{horizontal_slot_names}
+
 \alias{ROWNAMES}
 \alias{ROWNAMES,ANY-method}
 \alias{ROWNAMES,RectangularData-method}

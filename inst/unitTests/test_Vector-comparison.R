@@ -2,7 +2,7 @@ test_Vector_comparison <- function() {
     # Creating a dummy Vector class, and implementing the
     # minimum operations required to get all comparison methods.
     setClass("AaronStuff", contains="Vector", slots=c(stuff="integer"))
-    setMethod("vertical_slot_names", "AaronStuff", function(x) c("stuff", callNextMethod()))
+    setMethod("parallel_slot_names", "AaronStuff", function(x) c("stuff", callNextMethod()))
 
     setMethod("sameAsPreviousROW", "AaronStuff", function(x) sameAsPreviousROW(x@stuff))
     setMethod("order", "AaronStuff",

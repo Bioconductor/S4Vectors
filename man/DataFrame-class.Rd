@@ -8,6 +8,9 @@
 \alias{DFrame-class}
 \alias{DFrame}
 
+\alias{vertical_slot_names,DataFrame-method}
+\alias{horizontal_slot_names,DataFrame-method}
+
 \alias{updateObject,DataFrame-method}
 
 % accessor

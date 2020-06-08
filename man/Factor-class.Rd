@@ -5,7 +5,7 @@
 \alias{Factor-class}
 \alias{Factor}
 
-\alias{vertical_slot_names,Factor-method}
+\alias{parallel_slot_names,Factor-method}
 
 \alias{FactorToClass}
 \alias{FactorToClass,vector_OR_Vector-method}

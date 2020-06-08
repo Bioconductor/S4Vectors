@@ -29,6 +29,33 @@ setValidity2("RectangularData", .validate_RectangularData)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### vertical_slot_names() and horizontal_slot_names()
+###
+### For internal use only.
+###
+
+### vertical_slot_names() must return the names of all the slots in
+### RectangularData derivative 'x' that are **parallel** to its 1st
+### dimension. Slot "foo" in 'x' is considered to be parallel to its
+### 1st dimension if it's guaranteed to contain a value that is either
+### NULL or such that 'NROW(x@foo)' is equal to 'nrow(x)' and the i-th
+### ROW in 'x@foo' is associated with the i-th row in 'x'.
+setGeneric("vertical_slot_names",
+    function(x) standardGeneric("vertical_slot_names")
+)
+
+### horizontal_slot_names() must return the names of all the slots in
+### RectangularData derivative 'x' that are **parallel** to its 2nd
+### dimension. Slot "bar" in 'x' is considered to be parallel to its
+### 2nd dimension if it's guaranteed to contain a value that is either
+### NULL or such that 'NROW(x@bar)' is equal to 'ncol(x)' and the j-th
+### ROW in 'x@bar' is associated with the j-th col in 'x'.
+setGeneric("horizontal_slot_names",
+    function(x) standardGeneric("horizontal_slot_names")
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessors
 ###
 

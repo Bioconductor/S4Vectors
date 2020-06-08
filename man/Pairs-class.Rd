@@ -4,7 +4,7 @@
 \alias{class:Pairs}
 \alias{Pairs-class}
 
-\alias{vertical_slot_names,Pairs-method}
+\alias{parallel_slot_names,Pairs-method}
 
 % accessors
 \alias{first}

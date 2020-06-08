@@ -308,9 +308,6 @@ export(
     recycleArg,
     fold,
 
-    ## bindROWS.R:
-    parallelSlotNames,
-
     ## LLint-class.R:
     is.LLint, as.LLint, LLint,
 
@@ -329,6 +326,9 @@ export(
     ## character-utils.R:
     safeExplode,
     svn.time,
+
+    ## Vector-class.R:
+    parallelSlotNames,
 
     ## Hits-class.R:
     queryHits, subjectHits,
@@ -376,7 +376,6 @@ export(
     classNameForDisplay, showAsCell, makeNakedCharacterMatrixForDisplay,
 
     ## bindROWS.R:
-    vertical_slot_names, horizontal_slot_names,
     bindROWS, bindCOLS,
 
     ## isSorted.R:
@@ -392,13 +391,14 @@ export(
     unstrsplit,
 
     ## RectangularData-class.R:
+    vertical_slot_names, horizontal_slot_names,
     ROWNAMES,
 
     ## Annotated-class.R:
     metadata, "metadata<-",
 
     ## Vector-class.R:
-    parallelVectorNames,
+    parallel_slot_names, parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
@@ -461,7 +461,6 @@ export(
 ### Exactly the same list as above.
 exportMethods(
     classNameForDisplay, showAsCell, makeNakedCharacterMatrixForDisplay,
-    vertical_slot_names, horizontal_slot_names,
     bindROWS, bindCOLS,
     isConstant, isSorted, isStrictlySorted,
     NSBS,
@@ -469,9 +468,10 @@ exportMethods(
     extractROWS, replaceROWS,
     getListElement, setListElement,
     unstrsplit,
+    vertical_slot_names, horizontal_slot_names,
     ROWNAMES,
     metadata, "metadata<-",
-    parallelVectorNames,
+    parallel_slot_names, parallelVectorNames,
     elementMetadata, mcols, values,
     "elementMetadata<-", "mcols<-", "values<-",
     rename,
