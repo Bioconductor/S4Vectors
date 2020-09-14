@@ -27,7 +27,7 @@ setGeneric("expand", signature="x",
         })
     }
     idx <- rep(seq_len(nrow(x)), elementNROWS(cols[[1L]]))
-    ans <- x[idx, setdiff(colnames(x), colnames)]
+    ans <- x[idx, setdiff(colnames(x), colnames), drop=FALSE]
     ans[colnames] <- lapply(cols, unlist, use.names=FALSE)
     ans[colnames(x)]
 }
