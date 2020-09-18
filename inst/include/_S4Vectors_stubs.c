@@ -378,6 +378,56 @@ DEFINE_CCALLABLE_STUB(LLongAEAE *, new_LLongAEAE,
 	(       buflength,        nelt)
 )
 
+DEFINE_CCALLABLE_STUB(size_t, DoubleAE_get_nelt,
+	(const DoubleAE *ae),
+	(                ae)
+)
+
+DEFINE_CCALLABLE_STUB(size_t, DoubleAE_set_nelt,
+	(DoubleAE *ae, size_t nelt),
+	(          ae,        nelt)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(DoubleAE_set_val,
+	(const DoubleAE *ae, double val),
+	(                ae,        val)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(DoubleAE_extend,
+	(DoubleAE *ae, size_t new_buflength),
+	(          ae,        new_buflength)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(DoubleAE_insert_at,
+	(DoubleAE *ae, size_t at, double val),
+	(          ae,        at,        val)
+)
+
+DEFINE_CCALLABLE_STUB(DoubleAE *, new_DoubleAE,
+	(size_t buflength, size_t nelt, double val),
+	(       buflength,        nelt,        val)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(DoubleAE_append,
+	(DoubleAE *ae, const double *newvals, size_t nnewval),
+	(          ae,               newvals,        nnewval)
+)
+
+DEFINE_NOVALUE_CCALLABLE_STUB(DoubleAE_delete_at,
+	(DoubleAE *ae, size_t at, size_t nelt),
+	(          ae,        at,        nelt)
+)
+
+DEFINE_CCALLABLE_STUB(SEXP, new_NUMERIC_from_DoubleAE,
+	(const DoubleAE *ae),
+	(             ae)
+)
+
+DEFINE_CCALLABLE_STUB(DoubleAE *, new_DoubleAE_from_NUMERIC,
+	(SEXP x),
+	(     x)
+)
+
 DEFINE_CCALLABLE_STUB(size_t, CharAE_get_nelt,
 	(const CharAE *ae),
 	(              ae)

@@ -186,6 +186,16 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_LLongAEAE_extend);
 	REGISTER_CCALLABLE(_LLongAEAE_insert_at);
 	REGISTER_CCALLABLE(_new_LLongAEAE);
+	REGISTER_CCALLABLE(_DoubleAE_get_nelt);
+	REGISTER_CCALLABLE(_DoubleAE_set_nelt);
+	REGISTER_CCALLABLE(_DoubleAE_set_val);
+	REGISTER_CCALLABLE(_DoubleAE_extend);
+	REGISTER_CCALLABLE(_DoubleAE_insert_at);
+	REGISTER_CCALLABLE(_new_DoubleAE);
+	REGISTER_CCALLABLE(_DoubleAE_append);
+	REGISTER_CCALLABLE(_DoubleAE_delete_at);
+	REGISTER_CCALLABLE(_new_NUMERIC_from_DoubleAE);
+	REGISTER_CCALLABLE(_new_DoubleAE_from_NUMERIC);
 	REGISTER_CCALLABLE(_CharAE_get_nelt);
 	REGISTER_CCALLABLE(_CharAE_set_nelt);
 	REGISTER_CCALLABLE(_CharAE_extend);

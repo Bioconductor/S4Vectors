@@ -408,6 +408,51 @@ LLongAEAE *new_LLongAEAE(
 	size_t nelt
 );
 
+size_t DoubleAE_get_nelt(const DoubleAE *ae);
+
+size_t DoubleAE_set_nelt(
+	DoubleAE *ae,
+	size_t nelt
+);
+
+void DoubleAE_set_val(
+	const DoubleAE *ae,
+	double val
+);
+
+void DoubleAE_extend(
+	DoubleAE *ae,
+	size_t new_buflength
+);
+
+void DoubleAE_insert_at(
+	DoubleAE *ae,
+	size_t at,
+	double val
+);
+
+DoubleAE *new_DoubleAE(
+	size_t buflength,
+	size_t nelt,
+	double val
+);
+
+void DoubleAE_append(
+	DoubleAE *ae,
+	const double *newvals,
+	size_t nnewval
+);
+
+void DoubleAE_delete_at(
+	DoubleAE *ae,
+	size_t at,
+	size_t nelt
+);
+
+SEXP new_NUMERIC_from_DoubleAE(const DoubleAE *ae);
+
+DoubleAE *new_DoubleAE_from_NUMERIC(SEXP x);
+
 size_t CharAE_get_nelt(const CharAE *ae);
 
 size_t CharAE_set_nelt(

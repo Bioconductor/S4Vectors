@@ -1156,6 +1156,188 @@ static void flush_LLongAEAE_pool()
 
 
 /****************************************************************************
+ * DoubleAE buffers
+ */
+
+#define	DOUBLEAE_POOL_MAXLEN 256
+static DoubleAE *DoubleAE_pool[DOUBLEAE_POOL_MAXLEN];
+static int DoubleAE_pool_len = 0;
+
+size_t _DoubleAE_get_nelt(const DoubleAE *ae)
+{
+	return ae->_nelt;
+}
+
+size_t _DoubleAE_set_nelt(DoubleAE *ae, size_t nelt)
+{
+	if (nelt > ae->_buflength)
+		error("S4Vectors internal error in _DoubleAE_set_nelt(): "
+		      "trying to set a nb of buffer elements that exceeds "
+		      "the buffer length");
+	return ae->_nelt = nelt;
+}
+
+static DoubleAE *new_empty_DoubleAE()
+{
+	DoubleAE *ae;
+
+	if (use_malloc && DoubleAE_pool_len >= DOUBLEAE_POOL_MAXLEN)
+		error("S4Vectors internal error in new_empty_DoubleAE(): "
+		      "DoubleAE pool is full");
+	ae = (DoubleAE *) alloc2(1, sizeof(DoubleAE));
+	ae->_buflength = ae->_nelt = 0;
+	if (use_malloc)
+		DoubleAE_pool[DoubleAE_pool_len++] = ae;
+	return ae;
+}
+
+void _DoubleAE_set_val(const DoubleAE *ae, double val)
+{
+	size_t ae_nelt, i;
+	double *elt_p;
+
+	ae_nelt = _DoubleAE_get_nelt(ae);
+	elt_p = ae->elts;
+	for (i = 0; i < ae_nelt; i++)
+		*(elt_p++) = val;
+	return;
+}
+
+void _DoubleAE_extend(DoubleAE *ae, size_t new_buflength)
+{
+	ae->elts = (double *) realloc2(ae->elts, ae->_buflength,
+				       new_buflength, sizeof(double));
+	ae->_buflength = new_buflength;
+	return;
+}
+
+static int DoubleAE_extend_if_full(DoubleAE *ae)
+{
+	if (_DoubleAE_get_nelt(ae) < ae->_buflength)
+		return 0;
+	_DoubleAE_extend(ae, _increase_buflength(ae->_buflength));
+	return 1;
+}
+
+void _DoubleAE_insert_at(DoubleAE *ae, size_t at, double val)
+{
+	size_t ae_nelt, i;
+	double *elt1_p;
+	const double *elt2_p;
+
+	ae_nelt = _DoubleAE_get_nelt(ae);
+	if (at > ae_nelt)
+		error("S4Vectors internal error in _DoubleAE_insert_at(): "
+		      "trying to insert a buffer element at an invalid "
+		      "buffer position");
+	DoubleAE_extend_if_full(ae);
+	elt1_p = ae->elts + ae_nelt;
+	elt2_p = elt1_p - 1;
+	for (i = ae_nelt; i > at; i--)
+		*(elt1_p--) = *(elt2_p--);
+	*elt1_p = val;
+	_DoubleAE_set_nelt(ae, ae_nelt + 1);
+	return;
+}
+
+DoubleAE *_new_DoubleAE(size_t buflength, size_t nelt, double val)
+{
+	DoubleAE *ae;
+
+	ae = new_empty_DoubleAE();
+	if (buflength != 0) {
+		_DoubleAE_extend(ae, buflength);
+		_DoubleAE_set_nelt(ae, nelt);
+		_DoubleAE_set_val(ae, val);
+	}
+	return ae;
+}
+
+void _DoubleAE_append(DoubleAE *ae, const double *newvals, size_t nnewval)
+{
+	size_t ae_nelt, new_nelt;
+	double *dest;
+
+	ae_nelt = _DoubleAE_get_nelt(ae);
+	new_nelt = ae_nelt + nnewval;
+	if (new_nelt > ae->_buflength)
+		_DoubleAE_extend(ae, new_nelt);
+	dest = ae->elts + ae_nelt;
+	memcpy(dest, newvals, nnewval * sizeof(double));
+	_DoubleAE_set_nelt(ae, new_nelt);
+	return;
+}
+
+/*
+ * Delete 'nelt' elements, starting at position 'at'.
+ * Calling _DoubleAE_delete_at(x, at, nelt) is equivalent to calling
+ * _DoubleAE_delete_at(x, at, 1) nelt times.
+ */
+void _DoubleAE_delete_at(DoubleAE *ae, size_t at, size_t nelt)
+{
+	double *elt1_p;
+	const double *elt2_p;
+	size_t ae_nelt, i2;
+
+	if (nelt == 0)
+		return;
+	elt1_p = ae->elts + at;
+	elt2_p = elt1_p + nelt;
+	ae_nelt = _DoubleAE_get_nelt(ae);
+	for (i2 = at + nelt; i2 < ae_nelt; i2++)
+		*(elt1_p++) = *(elt2_p++);
+	_DoubleAE_set_nelt(ae, ae_nelt - nelt);
+	return;
+}
+
+SEXP _new_NUMERIC_from_DoubleAE(const DoubleAE *ae)
+{
+	size_t ae_nelt;
+	SEXP ans;
+
+	ae_nelt = _DoubleAE_get_nelt(ae);
+	/* ae_nelt <= R_XLEN_T_MAX so casting is safe. */
+	PROTECT(ans = NEW_NUMERIC((R_xlen_t) ae_nelt));
+	memcpy(REAL(ans), ae->elts, ae_nelt * sizeof(double));
+	UNPROTECT(1);
+	return ans;
+}
+
+DoubleAE *_new_DoubleAE_from_NUMERIC(SEXP x)
+{
+	size_t x_len;
+	DoubleAE *ae;
+
+	/* Casting R_xlen_t to size_t is safe. */
+	x_len = (size_t) XLENGTH(x);
+	ae = _new_DoubleAE(x_len, 0, 0.0);
+	_DoubleAE_append(ae, REAL(x), x_len);
+	return ae;
+}
+
+/* Must be used on a malloc-based DoubleAE */
+static void DoubleAE_free(DoubleAE *ae)
+{
+	if (ae->_buflength != 0)
+		free(ae->elts);
+	free(ae);
+	return;
+}
+
+static void flush_DoubleAE_pool()
+{
+	DoubleAE *ae;
+
+	while (DoubleAE_pool_len > 0) {
+		DoubleAE_pool_len--;
+		ae = DoubleAE_pool[DoubleAE_pool_len];
+		DoubleAE_free(ae);
+	}
+	return;
+}
+
+
+/****************************************************************************
  * CharAE buffers
  */
 
@@ -1537,6 +1719,7 @@ SEXP AEbufs_free()
 	flush_IntPairAEAE_pool();
 	flush_LLongAE_pool();
 	flush_LLongAEAE_pool();
+	flush_DoubleAE_pool();
 	flush_CharAE_pool();
 	flush_CharAEAE_pool();
 	return R_NilValue;

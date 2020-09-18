@@ -63,6 +63,7 @@ struct htab {
  *   o LLongAE:     Auto-Extending buffer of long long ints;
  *   o LLongAEAE:   Auto-Extending buffer of Auto-Extending buffers of
  *                  long long ints;
+ *   o DoubleAE:    Auto-Extending buffer of doubles;
  *   o CharAE:      Auto-Extending buffer of chars;
  *   o CharAEAE:    Auto-Extending buffer of Auto-Extending buffers of chars.
  *
@@ -106,6 +107,12 @@ typedef struct llong_aeae {
 	size_t _nelt;
 	LLongAE **elts;
 } LLongAEAE;
+
+typedef struct double_ae {
+	size_t _buflength;
+	size_t _nelt;
+	double *elts;
+} DoubleAE;
 
 typedef struct char_ae {
 	size_t _buflength;
