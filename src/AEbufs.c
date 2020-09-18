@@ -315,6 +315,19 @@ SEXP _new_INTEGER_from_IntAE(const IntAE *ae)
 	return ans;
 }
 
+SEXP _new_LOGICAL_from_IntAE(const IntAE *ae)
+{
+	size_t ae_nelt;
+	SEXP ans;
+
+	ae_nelt = _IntAE_get_nelt(ae);
+	/* ae_nelt <= R_XLEN_T_MAX so casting is safe. */
+	PROTECT(ans = NEW_LOGICAL((R_xlen_t) ae_nelt));
+	memcpy(LOGICAL(ans), ae->elts, ae_nelt * sizeof(int));
+	UNPROTECT(1);
+	return ans;
+}
+
 IntAE *_new_IntAE_from_INTEGER(SEXP x)
 {
 	size_t x_len;

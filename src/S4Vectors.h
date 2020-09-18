@@ -284,6 +284,8 @@ void _IntAE_uniq(
 
 SEXP _new_INTEGER_from_IntAE(const IntAE *ae);
 
+SEXP _new_LOGICAL_from_IntAE(const IntAE *ae);
+
 IntAE *_new_IntAE_from_INTEGER(SEXP x);
 
 IntAE *_new_IntAE_from_CHARACTER(
