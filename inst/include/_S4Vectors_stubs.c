@@ -208,6 +208,11 @@ DEFINE_CCALLABLE_STUB(SEXP, new_INTEGER_from_IntAE,
 	(             ae)
 )
 
+DEFINE_CCALLABLE_STUB(SEXP, new_LOGICAL_from_IntAE,
+	(const IntAE *ae),
+	(             ae)
+)
+
 DEFINE_CCALLABLE_STUB(IntAE *, new_IntAE_from_INTEGER,
 	(SEXP x),
 	(     x)
