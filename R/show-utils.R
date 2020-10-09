@@ -335,8 +335,10 @@ showAsCell_array <- function(object)
         return(character(0L))
     attempt <- try(as.character(object), silent=TRUE)
     if (!is(attempt, "try-error"))
-        return(attempt)
-    rep.int("#####", object_NROW)
+        return(showAsCell(attempt))
+    if (object_NROW == 1L)
+        return(paste0("<", classNameForDisplay(object), ">"))
+    rep.int("####", object_NROW)
 }
 
 setMethod("showAsCell", "ANY", .default_showAsCell)
@@ -371,7 +373,15 @@ showAsCell_list <- function(object)
 {
     vapply(object,
         function(x) {
-            str <- paste(showAsCell(head(x, 3L)), collapse=",")
+            ## 'x' is not necessarily subsettable so if its length is 1 (e.g.
+            ## 'x' is a BamFile object) we avoid the risky subsetting.
+            if (NROW(x) == 1L)
+                return(showAsCell(x))
+            ## 'head(x, 3L)' is still no guaranteed to work.
+            x3 <- try(head(x, 3L), silent=TRUE)
+            if (is(x3, "try-error"))
+                return("####")
+            str <- paste(showAsCell(x3), collapse=",")
             if (length(x) > 3L)
                 str <- paste0(str, ",...")
             str
