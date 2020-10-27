@@ -8,14 +8,16 @@ Description: The S4Vectors package defines the Vector and List virtual classes
 	interest (e.g. DataFrame, Rle, and Hits) are implemented in the
 	S4Vectors package itself (many more are implemented in the IRanges
 	package and in other Bioconductor infrastructure packages).
+biocViews: Infrastructure, DataRepresentation
+URL: https://bioconductor.org/packages/S4Vectors
+BugReports: https://github.com/Bioconductor/S4Vectors/issues
 Version: 0.27.14
+License: Artistic-2.0
 Encoding: UTF-8
 Author: H. Pagès, M. Lawrence and P. Aboyoun
 Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
-biocViews: Infrastructure, DataRepresentation
 Depends: R (>= 3.3.0), methods, utils, stats, stats4, BiocGenerics (>= 0.35.0)
 Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle
-License: Artistic-2.0
 Collate: S4-utils.R
 	show-utils.R
 	utils.R
