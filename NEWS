@@ -1,3 +1,45 @@
+CHANGES IN VERSION 0.28.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Replaced DataTable class with RectangularData class.
+
+    o Replaced DataTable_OR_NULL with DataFrame_OR_NULL class.
+
+    o Add parallel_slot_names() generic and methods for Vector derivatives.
+      This replaces vertical_slot_names().  The concept of "vertical" and
+      "horizontal" slots is now a RectangularData concept only i.e. only
+      RectangularData derivatives should define vertical_slot_names() and
+      horizontal_slot_names() methods. For RectangularData derivatives that
+      are also Vector derivatives, one of the two methods should typically
+      be defined as a synonym of parallel_slot_names().  For example
+      horizontal_slot_names() now returns parallel_slot_names() on a
+      DataFrame derivative and vertical_slot_names() will return
+      parallel_slot_names() on a SummarizedExperiment derivative.
+
+    o makeClassinfoRowForCompactPrinting() is now exported.
+
+    o showAsCell() now trims strings that are > 22 characters.
+
+    o Small tweak to show() method for Rle objects. Now it uses showAsCell()
+      instead of as.character() for more compact display of the run values
+      of the Rle object, and for consistency with other show() methods (e.g.
+      with method for DataFrame objects).
+
+DEPRECATED AND DEFUNCT
+
+    o parallelSlotNames() is now defunct (after being deprecated in BioC 3.11).
+
+BUG FIXES
+
+    o Fix coercion from SimpleList to DataFrame.
+
+    o Fix bug in showAsCell() on ordinary data frames.
+
+    o Make sure showAsCell() works on a list of non-subsettable objects.
+
+
 CHANGES IN VERSION 0.26.0
 -------------------------
 
