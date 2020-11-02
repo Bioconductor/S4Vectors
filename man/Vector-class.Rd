@@ -10,7 +10,6 @@
 \alias{vector_OR_Vector}
 
 \alias{parallel_slot_names}
-\alias{parallelSlotNames}
 \alias{parallel_slot_names,Vector-method}
 
 \alias{updateObject,Vector-method}

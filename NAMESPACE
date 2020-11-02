@@ -327,9 +327,6 @@ export(
     safeExplode,
     svn.time,
 
-    ## Vector-class.R:
-    parallelSlotNames,
-
     ## Hits-class.R:
     queryHits, subjectHits,
     queryLength, subjectLength,

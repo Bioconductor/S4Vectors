@@ -47,13 +47,6 @@ setGeneric("parallel_slot_names",
     function(x) standardGeneric("parallel_slot_names")
 )
 
-parallelSlotNames <- function(x)
-{
-    .Defunct("parallel_slot_names")
-    parallel_slot_names(x)
-}
-
-
 ### Methods for Vector derivatives should be defined in an incremental
 ### fashion, that is, they should only explicitly list the new "parallel
 ### slots" (i.e. the parallel slots that they add to their parent class).
