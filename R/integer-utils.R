@@ -552,24 +552,6 @@ mseq <- function(from, to)
     .Call2("Integer_mseq", from, to, PACKAGE="S4Vectors")
 }
 
-fancy_mseq <- function(lengths, offset=0L, rev=FALSE)
-{
-    if (!is.integer(lengths))
-        lengths <- as.integer(lengths)
-    if (!is.integer(offset))
-        offset <- as.integer(offset)
-    if (!is.logical(rev))
-        stop("'rev' must be a logical vector")
-    #unlist(lapply(seq_len(length(lengths)),
-    #              function(i) {
-    #                  tmp <- seq_len(lengths[i]) + offset[i]
-    #                  if (rev[i])
-    #                      tmp <- rev(tmp)
-    #                  tmp
-    #              }))
-    .Call2("Integer_fancy_mseq", lengths, offset, rev, PACKAGE="S4Vectors")
-}
-
 make_XYZxyz_to_XxYyZz_subscript <- function(N)
     as.vector(matrix(seq_len(2L * N), nrow=2L, byrow=TRUE))
 
