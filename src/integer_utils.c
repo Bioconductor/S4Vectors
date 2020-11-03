@@ -817,54 +817,6 @@ SEXP Integer_sorted_merge(SEXP x, SEXP y)
 
 
 /****************************************************************************
- * --- .Call ENTRY POINT ---
- */
-
-SEXP Integer_mseq(SEXP from, SEXP to)
-{
-        R_xlen_t i, n, ans_len;
-	int *from_elt, *to_elt, *ans_elt, j;
-	SEXP ans;
-
-	if (!IS_INTEGER(from) || !IS_INTEGER(to))
-		error("'from' and 'to' must be integer vectors");
-
-	n = LENGTH(from);
-	if (n != LENGTH(to))
-		error("lengths of 'from' and 'to' must be equal");
-
-	ans_len = 0;
-	for (i = 0, from_elt = INTEGER(from), to_elt = INTEGER(to); i < n;
-		 i++, from_elt++, to_elt++) {
-		ans_len += (*from_elt <= *to_elt ? *to_elt - *from_elt
-						 : *from_elt - *to_elt) + 1;
-	}
-
-	PROTECT(ans = NEW_INTEGER(ans_len));
-	ans_elt = INTEGER(ans);
-	for (i = 0, from_elt = INTEGER(from), to_elt = INTEGER(to); i < n;
-		 i++, from_elt++, to_elt++) {
-		if (*from_elt == NA_INTEGER || *to_elt == NA_INTEGER)
-			error("'from' and 'to' contain NAs");
-
-		if (*from_elt <= *to_elt) {
-			for (j = *from_elt; j <= *to_elt; j++) {
-				*ans_elt = j;
-				ans_elt++;
-			}
-		} else {
-			for (j = *from_elt; j >= *to_elt; j--) {
-				*ans_elt = j;
-				ans_elt++;
-			}
-		}
-	}
-	UNPROTECT(1);
-	return ans;
-}
-
-
-/****************************************************************************
  * findIntervalAndStartFromWidth()
  *
  * 'x' and 'width' are integer vectors

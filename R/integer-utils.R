@@ -543,15 +543,6 @@ intbitsOR <- function(x, y)
 sortedMerge <- function(x, y)
     .Call2("Integer_sorted_merge", x, y, PACKAGE="S4Vectors")
 
-mseq <- function(from, to)
-{
-    if (!is.integer(from))
-        from <- as.integer(from)
-    if (!is.integer(to))
-        to <- as.integer(to)
-    .Call2("Integer_mseq", from, to, PACKAGE="S4Vectors")
-}
-
 make_XYZxyz_to_XxYyZz_subscript <- function(N)
     as.vector(matrix(seq_len(2L * N), nrow=2L, byrow=TRUE))
 

@@ -853,11 +853,6 @@ SEXP Integer_sorted_merge(
 	SEXP y
 );
 
-SEXP Integer_mseq(
-	SEXP from,
-	SEXP to
-);
-
 SEXP _find_interv_and_start_from_width(
 	const int *x,
 	int x_len,

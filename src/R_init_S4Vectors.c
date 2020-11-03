@@ -62,7 +62,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(Integer_tabulate2, 4),
 	CALLMETHOD_DEF(Integer_explode_bits, 2),
 	CALLMETHOD_DEF(Integer_sorted_merge, 2),
-	CALLMETHOD_DEF(Integer_mseq, 2),
 	CALLMETHOD_DEF(findIntervalAndStartFromWidth, 2),
 
 /* character_utils.c */

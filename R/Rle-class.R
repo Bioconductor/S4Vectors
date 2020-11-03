@@ -728,7 +728,7 @@ setMethod("order", "Rle",
         x <- args[[1L]]
         o <- order(runValue(x), na.last=na.last, decreasing=decreasing,
                    method=method)
-        mseq(start(x)[o], end(x)[o])
+        sequence(width(x)[o], from=start(x)[o])
     } else {
         args <- lapply(unname(args), decodeRle)
         do.call(order, c(args, list(na.last=na.last,

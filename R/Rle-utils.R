@@ -179,11 +179,7 @@ setMethod("which", "Rle",
                   stop("argument to 'which' is not logical")
               ok <- runValue(x)
               ok[is.na(ok)] <- FALSE
-              from <- start(x)[ok]
-              to <- end(x)[ok]
-              if (length(from) == 0)
-                  integer(0)
-              else mseq(from, to)
+              sequence(width(x)[ok], from=start(x)[ok])
           })
 
 setMethod("which.max", "Rle",
