@@ -4,16 +4,44 @@
 ###
 
 
-### Not really a S4-related utility but I don't have a better place to put
-### this at the moment.
-drop_AsIs <- function(x)
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Not S4 utilities strictly speaking but I don't have a better place to put
+### this at the moment
+###
+
+### Override base::I() with a less broken one. This is an ugly hack and
+### hopefully it is temporary only!
+### See https://stat.ethz.ch/pipermail/r-devel/2020-October/080038.html
+### for the full story.
+### Must be idempotent i.e. 'I(I(x))' must be identical to 'I(x)' for
+### any 'x'.
+I <- function(x)
 {
-    x_class <- class(x)
-    class(x) <- x_class[x_class != "AsIs"]
-    x
+    if (isS4(x)) {
+        x_class <- class(x)
+        new_classes <- unique.default(c("AsIs", x_class))
+        attr(new_classes, "package") <- attr(x_class, "package")
+        structure(x, class=new_classes)
+    } else {
+        class(x) <- unique.default(c("AsIs", oldClass(x)))
+        x
+    }
 }
 
 setAs("ANY", "AsIs", function(from) I(from))
+
+### Implement the revert of I() i.e. 'drop_AsIs(I(x))' should be identical
+### to 'x' for any 'x'. Must be idempotent i.e. 'drop_AsIs(drop_AsIs(x))'
+### must be identical to 'drop_AsIs(x)' for any 'x'.
+### NOT exported.
+drop_AsIs <- function(x)
+{
+    x_classes <- class(x)
+    new_class <- x_classes[x_classes != "AsIs"]
+    attr(new_class, "package") <- attr(x_classes, "package")
+    class(x) <- new_class
+    x
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
