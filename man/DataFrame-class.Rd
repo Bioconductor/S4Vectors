@@ -109,7 +109,8 @@
       a \code{DataFrame} and combined column-wise.
       The row names should be given in
       \code{row.names}; otherwise, they are inherited from the
-      arguments, as in \code{data.frame}.
+      arguments, as in \code{data.frame}. Explicitly passing
+      \code{NULL} to \code{row.names} ensures that there are no rownames.
       If \code{check.names} is \code{TRUE}, the column names will
       be checked for syntactic validity and made unique, if necessary.
 
