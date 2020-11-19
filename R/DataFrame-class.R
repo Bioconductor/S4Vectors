@@ -869,7 +869,8 @@ setMethod("classNameForDisplay", "DFrame",
 setMethod("makeNakedCharacterMatrixForDisplay", "DataFrame",
     function(x)
     {
-        df <- as.data.frame(lapply(x, showAsCell), optional=TRUE)
+        df <- data.frame(lapply(x, showAsCell), check.names=FALSE,
+                         row.names=rownames(x))
         as.matrix(format(df))
     }
 )

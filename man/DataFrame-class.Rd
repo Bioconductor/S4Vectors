@@ -106,12 +106,11 @@
 
       Constructs a \code{DataFrame} in similar fashion to
       \code{\link{data.frame}}. Each argument in \code{...} is coerced to
-      a \code{DataFrame} and combined column-wise. No special effort is
-      expended to automatically determine the row names from the
-      arguments. The row names should be given in
-      \code{row.names}; otherwise, there are no row names. This is by
-      design, as row names are normally undesirable when data is
-      large. If \code{check.names} is \code{TRUE}, the column names will
+      a \code{DataFrame} and combined column-wise.
+      The row names should be given in
+      \code{row.names}; otherwise, they are inherited from the
+      arguments, as in \code{data.frame}.
+      If \code{check.names} is \code{TRUE}, the column names will
       be checked for syntactic validity and made unique, if necessary.
 
       To store an object of a class that does not support coercion to
