@@ -870,7 +870,7 @@ setMethod("makeNakedCharacterMatrixForDisplay", "DataFrame",
     function(x)
     {
         df <- data.frame(lapply(x, showAsCell), check.names=FALSE,
-                         row.names=rownames(x))
+                         row.names=NULL)
         as.matrix(format(df))
     }
 )
