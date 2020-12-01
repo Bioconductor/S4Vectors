@@ -270,7 +270,7 @@ exportMethods(
     rbind, cbind,
     lapply, sapply,
     Reduce, Filter,
-    unlist,
+    unlist, unname,
     do.call,
     union, intersect, setdiff, setequal,
     xtabs,
