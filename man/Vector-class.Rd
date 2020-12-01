@@ -34,6 +34,7 @@
 \alias{rename}
 \alias{rename,vector-method}
 \alias{rename,Vector-method}
+\alias{unname,Vector-method}
 
 \alias{as.logical,Vector-method}
 \alias{as.integer,Vector-method}
@@ -165,6 +166,9 @@
       arguments in \code{...}. The names of the character vector
       indicate the source names, and the corresponding values the
       destination names. This also works on a plain old \code{vector}.
+    }
+    \item{}{
+      \code{unname(x)}: removes the names from \code{x}, if any.
     }
     \item{}{
       \code{nlevels(x)}:

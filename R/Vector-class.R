@@ -342,6 +342,12 @@ setGeneric("rename", function(x, ...) standardGeneric("rename"))
 setMethod("rename", "vector", .renameVector)
 setMethod("rename", "Vector", .renameVector)
 
+setGeneric("unname", signature="obj")
+
+setMethod("unname", "Vector", function(obj, force = FALSE) {
+    names(obj) <- NULL
+    obj
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
