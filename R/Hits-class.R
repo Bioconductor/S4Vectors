@@ -215,7 +215,7 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
 {
     if (nargs() == 0L)
         return(NULL)
-    DataFrame(..., check.names=FALSE)
+    new_DataFrame(list(...))
 }
 
 ### 2 high-level constructors.
