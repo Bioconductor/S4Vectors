@@ -215,7 +215,17 @@ new_Hits <- function(Class, from=integer(0), to=integer(0),
 {
     if (nargs() == 0L)
         return(NULL)
-    new_DataFrame(list(...))
+    ## We use 'DataFrame(..., check.names=FALSE)' rather than
+    ## 'new_DataFrame(list(...))' because we want to make use of the
+    ## former's ability to deparse unnamed arguments to generate column
+    ## names for them. Unfortunately this means that the user won't be
+    ## able to pass metadata columns named "row.names" or "check.names"
+    ## because things like '.make_mcols(11:13, row.names=21:23)'
+    ## or '.make_mcols(11:13, check.names=21:23)' won't work as expected.
+    ## The solution would be to have a mid-level DataFrame constructor
+    ## that has no extra arguments after the ellipsis and implements the
+    ## same deparsing mechanism as DataFrame(), and to use it here.
+    DataFrame(..., check.names=FALSE)
 }
 
 ### 2 high-level constructors.
