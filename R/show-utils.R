@@ -419,8 +419,13 @@ cbind_mcols_for_display <- function(m, x)
     x_nmc <- if (is.null(x_mcols)) 0L else ncol(x_mcols)
     if (x_nmc == 0L)
         return(m)
-    tmp <- as.data.frame(lapply(x_mcols, showAsCell), optional=TRUE)
-    cbind(m, `|` = rep.int("|", x_len), as.matrix(tmp))
+    ## cbind() must be called with unnamed arguments to avoid problems
+    ## in the unlikely situation where some of the argument names are
+    ## 'deparse.level'. So we drop the names with unname() and add them
+    ## back on the matrix returned by cbind().
+    tmp <- do.call(cbind, unname(lapply(x_mcols, showAsCell)))
+    colnames(tmp) <- colnames(x_mcols)
+    cbind(m, `|` = rep.int("|", x_len), tmp)
 }
 
 ### Exported!
