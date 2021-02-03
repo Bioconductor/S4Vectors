@@ -885,7 +885,6 @@ setMethod("transform", "Vector", transform.Vector)
 ###
 
 setGeneric("expand.grid", signature="...")
-BiocGenerics:::apply_hotfix73465(getGeneric("expand.grid"))
 
 setMethod("expand.grid", "Vector",
           function(..., KEEP.OUT.ATTRS = TRUE, stringsAsFactors = TRUE) {
