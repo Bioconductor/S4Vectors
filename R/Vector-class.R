@@ -702,14 +702,7 @@ rbind_mcols <- function(...)
         objects[mcols_is_null],
         function(object) make_zero_col_DFrame(length(object))
     )
-    colnames_list <- lapply(mcols_list, colnames)
-    all_colnames <- unique(unlist(colnames_list, use.names=FALSE))
-    fillCols <- function(df) {
-        if (nrow(df))
-            df[setdiff(all_colnames, colnames(df))] <- NA
-        df
-    }
-    do.call(rbind, lapply(mcols_list, fillCols))
+    do.call(combine_df, mcols_list)
 }
 
 ### We provide a default bindROWS() method for Vector objects. It calls the

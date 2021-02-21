@@ -276,6 +276,7 @@ exportMethods(
     xtabs,
     start, end, width,
     grep, grepl,
+    combineRows, combineCols,
     updateObject
 )
 

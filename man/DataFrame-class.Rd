@@ -64,6 +64,8 @@
 \alias{c,DataFrame-method}
 \alias{cbind.DataFrame}
 \alias{cbind,DataFrame-method}
+\alias{combineCols,DataFrame-method}
+\alias{combineRows,DataFrame-method}
 
 \title{DataFrame objects}
 
@@ -217,7 +219,8 @@
 }
 
 \section{Combining}{
-  In the following code snippets, \code{x} is a \code{DataFrame}.
+  In the following code snippets, \code{x}, \code{y} and all elements of
+  \code{...} are \code{DataFrame}s.
 
   \describe{
     \item{}{
@@ -234,6 +237,28 @@
       combining the columns of the \code{DataFrame} objects in
       \code{...}. Very similar to \code{\link{cbind.data.frame}}. The
       return value inherits its metadata from the first argument.
+    }
+    \item{}{
+      \code{combineRows(x, y, ...)}: Creates a new \code{DataFrame} by
+      combining the rows of the \code{DataFrame} objects. Unlike \code{rbind},
+      \code{combineRows} will handle cases involving differences in the
+      column names of its inputs. Missing columns in any individual input
+      \code{DataFrame} are filled with \code{NA}s, such that the column names
+      of the returned object are a union of the column names of the inputs.
+    }
+    \item{}{
+      \code{combineCols(x, y, ..., use.names=TRUE)}: Creates a new
+      \code{DataFrame} by combining the columns of the \code{DataFrame}
+      objects. Unlike \code{cbind}, \code{combineCols} will handle cases
+      involving differences in the row names of its inputs. Missing rows in any
+      individual input \code{DataFrame} are filled with \code{NA}s, such that
+      the row names of the returned object are a union of the row names of the
+      inputs.
+
+      If \code{use.names=FALSE}, all inputs are expected to have the same
+      number of rows, and this function behaves the same as \code{cbind}. The
+      row names of the returned object is set to \code{rownames(x)}. Differences
+      in the row names between input objects are ignored.
     }
   }
 }
