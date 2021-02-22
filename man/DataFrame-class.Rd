@@ -250,10 +250,14 @@
       \code{combineCols(x, y, ..., use.names=TRUE)}: Creates a new
       \code{DataFrame} by combining the columns of the \code{DataFrame}
       objects. Unlike \code{cbind}, \code{combineCols} will handle cases
-      involving differences in the row names of its inputs. Missing rows in any
-      individual input \code{DataFrame} are filled with \code{NA}s, such that
-      the row names of the returned object are a union of the row names of the
-      inputs.
+      involving differences in the number of the rows among its inputs. 
+
+      If \code{use.names=TRUE}, all objects are expected to have
+      non-\code{NULL}, non-duplicated row names. These row names do not have to
+      be the same, or even shared, across the input objects. Missing rows in
+      any individual input \code{DataFrame} are filled with \code{NA}s, such
+      that the row names of the returned object are a union of the row names of
+      the inputs.
 
       If \code{use.names=FALSE}, all inputs are expected to have the same
       number of rows, and this function behaves the same as \code{cbind}. The
