@@ -267,7 +267,9 @@ setMethod("rbind", "List", function(..., deparse.level=1L) {
     do.call(rbind, lapply(args, as.list))
 })
 
-setMethod("cbind", "List", function(..., deparse.level=1L) {
+setMethod("cbind", "List", cbind.List)
+
+cbind.List <- function(..., deparse.level=1L) {
     args <- .normBindArgs(..., deparse.level=deparse.level)
     do.call(cbind, lapply(args, as.list))
-})
+}
