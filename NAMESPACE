@@ -62,8 +62,8 @@ S3method(as.numeric, LLint)
 S3method(as.vector, Rle)
 
 S3method(cbind, RectangularData)
-S3method(cbind, DataFrame)
 S3method(cbind, List)
+S3method(cbind, DataFrame)
 
 S3method(diff, Rle)
 
@@ -155,8 +155,8 @@ export(
     as.vector.Rle,
 
     cbind.RectangularData,
-    cbind.DataFrame,
     cbind.List,
+    cbind.DataFrame,
 
     diff.Rle,
 
