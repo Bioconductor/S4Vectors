@@ -66,6 +66,7 @@
 \alias{cbind,DataFrame-method}
 \alias{combineCols,DataFrame-method}
 \alias{combineRows,DataFrame-method}
+\alias{combineUniqueCols}
 
 \title{DataFrame objects}
 
@@ -263,6 +264,20 @@
       number of rows, and this function behaves the same as \code{cbind}. The
       row names of the returned object is set to \code{rownames(x)}. Differences
       in the row names between input objects are ignored.
+    }
+    \item{}{
+      \code{combineUniqueCols(x, y, ..., use.names=TRUE)}: Same as 
+      \code{combineCols}, but this function will attempt to collapse multiple
+      columns with the same name across the input \code{DataFrame}s into
+      a single column in the output. This guarantees that the column names
+      in the output \code{DataFrame} are always unique.
+
+      When \code{use.names=TRUE}, collapsing is only performed if the
+      duplicated column has identical values for the shared rows in the
+      \code{DataFrame}s involved. Otherwise, the contents of the later
+      \code{DataFrame} is simply ignored with a warning. Similarly, if
+      \code{use.names=FALSE}, the duplicated columns must be identical for all
+      rows in the affected \code{DataFrame}s.
     }
   }
 }

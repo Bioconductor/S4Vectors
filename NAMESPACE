@@ -361,7 +361,10 @@ export(
     Pairs,
 
     ## FilterRules-class.R:
-    FilterRules, FilterMatrix
+    FilterRules, FilterMatrix,
+
+    ## combine-methods.R:
+    combineUniqueCols
 )
 
 

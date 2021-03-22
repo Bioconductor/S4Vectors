@@ -45,3 +45,64 @@ setMethod("combineCols", "DataFrame", function(x, y, ..., use.names=TRUE) {
 
     do.call(cbind, all_df)
 })
+
+# This breaks the combineCols contract by consolidating data together from
+# the same column name, such that the ncol() of combineCols's output is no
+# longer equal to the sum of the ncols() of its inputs. However, it's very
+# convenient for avoiding 2-3 copies of the same column during the merge,
+# so we still provide it. Note that we call combineCols so that we handle
+# other DataFrame representations that might have their own methods.
+combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
+    combined <- combineCols(x, y, ..., use.names=use.names)
+    combined <- combined[,!duplicated(colnames(combined)),drop=FALSE]
+
+    all_df <- list(x, y, ...)
+    shared <- lapply(all_df, colnames)
+    indices <- rep(seq_along(shared), lengths(shared))
+    by.colname <- split(indices, unlist(shared))
+    dupped <- names(by.colname)[lengths(by.colname) > 1]
+
+    for (d in dupped) {
+        affected <- by.colname[[d]]
+        reference <- combined[[d]]
+
+        if (use.names) {
+            filled <- rownames(combined) %in% rownames(all_df[[affected[1]]])
+
+            for (i in affected[-1]) {
+                cur_df <- all_df[[i]]
+                candidates <- match(rownames(cur_df), rownames(combined))
+
+                overlapped <- filled[candidates]
+                previous <- reference[candidates]
+                replacements <- cur_df[[d]]
+
+                # Only doing the replacement if the overlaps are identical.
+                # Incidentally, this also checks for the right type. We could
+                # be more aggressive and do a partial replacement, but
+                # something is probably already wrong if this warning fires.
+                if (!identical(previous[overlapped], replacements[overlapped])) {
+                    warning(wmsg("column '", d, "' is present in DataFrames ", affected[1], " and ", i,
+                        " but contains different values for the shared rows; ",
+                        "only values from the former will be reported"))
+                } else {
+                    reference[candidates] <- replacements
+                    filled[candidates] <- TRUE
+                }
+            }
+
+            combined[[d]] <- reference
+
+        } else {
+            for (i in affected[-1]) {
+                if (!identical(all_df[[i]][[d]], reference)) {
+                    # In this case, the warning is only emitted if they are not identical.
+                    warning(wmsg("column '", d, "' is present in DataFrames ", affected[1], " and ", i,
+                        " but contains different values; only values from the former will be reported"))
+                }
+            }
+        }
+    }
+
+    combined
+}
