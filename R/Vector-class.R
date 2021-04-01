@@ -729,7 +729,7 @@ rbind_mcols <- function(...)
 ### method will typically delegate to the default bindROWS() method below
 ### via the use of callNextMethod(). See bindROWS() methods for Hits and Rle
 ### objects for some examples.
-concatenate_Vector_objects <-
+bindROWS_Vector_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
@@ -751,7 +751,7 @@ concatenate_Vector_objects <-
             if (is.null(x_slot))
                 return(NULL)
             slot_list <- lapply(objects, slot, slotname)
-            bindROWS(x_slot, slot_list)
+            bindROWS2(x_slot, slot_list)
         }
     )
 
@@ -788,7 +788,7 @@ concatenate_Vector_objects <-
     ans
 }
 
-setMethod("bindROWS", "Vector", concatenate_Vector_objects)
+setMethod("bindROWS", "Vector", bindROWS_Vector_objects)
 
 ### Thin wrapper around bindROWS(). Behave like an endomorphism i.e. return
 ### an object of the same class as 'x'. In particular 'c(x)' should return 'x'.

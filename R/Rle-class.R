@@ -590,7 +590,7 @@ setMethod("rep", "Rle",
 ### Concatenation
 ###
 
-.concatenate_Rle_objects <-
+.bindROWS_Rle_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     objects <- prepare_objects_to_bind(x, objects)
@@ -623,7 +623,7 @@ setMethod("rep", "Rle",
                                      check=check)
 }
 
-setMethod("bindROWS", "Rle", .concatenate_Rle_objects)
+setMethod("bindROWS", "Rle", .bindROWS_Rle_objects)
 
 setMethod("append", c("Rle", "vector"),
           function (x, values, after = length(x)) {

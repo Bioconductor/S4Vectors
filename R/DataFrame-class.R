@@ -928,155 +928,105 @@ setMethod("showAsCell", "DataFrame", showAsCell_array)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Combining
+### combine_DFrame_rows()
+###
+### The workhorse behind the rbind() and combineRows() methods for DataFrame
+### objects.
 ###
 
-.format_mismatch_message <- function(x, y) {
-    universe <- union(x, y)
-    tx <- table(factor(x, levels=universe))
-    ty <- table(factor(y, levels=universe))
-    common <- pmin(tx, ty)
-
-    leftx <- tx - common
-    lefty <- ty - common
-    misleft <- names(leftx)[leftx > 0]
-    misright <- names(lefty)[lefty > 0]
-
-    .format_failed_colnames <- function(x) {
-        x <- sprintf("'%s'", x)
-        if (length(x)>3) x <- c(head(x, 3), "...")
-        paste(x, collapse=", ")
-    }
-
-    if (length(misleft) && length(misright)) {
-        msg <- paste0("(", .format_failed_colnames(misleft),
-            " vs ", .format_failed_colnames(misright), ")")
-    } else if (length(misleft)) {
-        msg <- paste0("(", .format_failed_colnames(misleft), " ",
-            if (length(misleft) > 1) "are" else "is",
-            " unique)")
-    } else {
-        msg <- paste0("(", .format_failed_colnames(misright), " ",
-            if (length(misright) > 1) "are" else "is",
-            " unique)")
-    }
-
-    stop(wmsg("the DataFrame objects to rbind do not have ",
-              "the same column names ", msg))
-}
-
-### Return an integer matrix with 1 column per object in 'objects' and 1 row
-### per column in 'x'.
-.make_colmaps <- function(x, objects)
+### 'all_colnames' must be a list of colnames vectors (character vectors).
+### Returns an integer matrix describing how each colnames vector aligns to
+### the "aggregated colnames". The "aggregated colnames" is the vector of
+### colnames obtained by taking the duplicates-preserving union of all the
+### colnames vectors (e.g. the aggregation of c("a", "b", "c", "b") and
+### c("e", "b", "e", "a", "a") is c("a", "b", "c", "b", "e", "e", "a")).
+### The returned matrix has one row per colnames vector and one column
+### per "aggregated colname". The "aggregated colnames" are set as the
+### colnames of the matrix.
+### If 'strict.colnames' is TRUE, all the supplied colnames vectors must be
+### the same (modulo the order of their elements). An error is raised if
+### they are not.
+### If 'strict.colnames' is FALSE, the returned matrix can contain NAs.
+.aggregate_and_align_all_colnames <- function(all_colnames,
+                                              strict.colnames=FALSE,
+                                              what="DFrame objects")
 {
-    x_colnames <- colnames(x)
-    x_ncol <- length(x_colnames)
-    map_x_colnames_to_object_colnames <- function(object_colnames) {
-        if (length(object_colnames) != x_ncol) {
-            .format_mismatch_message(x_colnames, object_colnames)
+    stopifnot(is.list(all_colnames),
+              length(all_colnames) >= 1L,
+              isTRUEorFALSE(strict.colnames))
+    ans <- matrix(seq_along(all_colnames[[1L]]), nrow=1L,
+                  dimnames=list(NULL, all_colnames[[1L]]))
+    for (colnames in all_colnames[-1L]) {
+        colnames_hits <- findMatches(colnames, colnames(ans))
+        colnames_map <- selectHits(colnames_hits, select="first", nodup=TRUE)
+        unmapped_idx <- which(is.na(colnames_map))
+        if (strict.colnames) {
+            if (length(colnames) != ncol(ans) || length(unmapped_idx) != 0L)
+                stop(wmsg("the ", what, " to combine ",
+                          "must have the same colnames"))
         }
-        colmap <- selectHits(findMatches(x_colnames, object_colnames),
-                             select="first", nodup=TRUE)
-        if (anyNA(colmap)) {
-            .format_mismatch_message(x_colnames, object_colnames)
+        mapped_idx <- which(!is.na(colnames_map))
+        colnames_revmap <- rep.int(NA_integer_, ncol(ans))
+        colnames_revmap[colnames_map[mapped_idx]] <- mapped_idx
+        ans <- rbind(ans, matrix(colnames_revmap, nrow=1L))
+        if (length(unmapped_idx) != 0L) {
+            m <- matrix(NA_integer_,
+                        nrow=nrow(ans)-1L, ncol=length(unmapped_idx),
+                        dimnames=list(NULL, colnames[unmapped_idx]))
+            m <- rbind(m, matrix(unmapped_idx, nrow=1L))
+            ans <- cbind(ans, m)
         }
-        colmap
     }
-    if (length(objects) == 0L) {
-        colmaps <- integer(0)
-    } else {
-        colmaps <- lapply(objects,
-            function(object)
-                map_x_colnames_to_object_colnames(colnames(object)))
-        colmaps <- unlist(colmaps, use.names=FALSE)
-    }
-    dim(colmaps) <- c(x_ncol, length(objects))
-    colmaps
+    ans
 }
 
-### A thin wrapper around bindROWS()
-###
-### If all the columns to bind have the same type, the result of the binding
-### should be a column of that type (endomorphism). Note that this is what
-### happens with ordinary data frames. So we could just use bindROWS() for
-### that. However, when the columns to bind have mixed types, bindROWS()
-### won't necessarily do the right thing.
-### The purpose of the wrapper below is to improve handling of mixed type
-### columns by pre-processing some of them before calling bindROWS() on them.
-### More precisely, it tries to work around the 2 following problems that
-### direct use of bindROWS() on mixed type columns would pose:
-###  1) When the columns to bind are a mix of Rle and non-Rle objects,
-###     the type of the column returned by bindROWS() depends on the type
-###     of cols[[1]]. More precisely it's an Rle if and only if cols[[1]]
-###     is an Rle. The wrapper below **mitigate** this by decoding the Rle
-###     columns first. Note that this is a mitigation process only. For
-###     example it will help if Rle columns are mixed with atomic vectors
-###     or factors, but it won't help if cols[[1]] is an Rle and the other
-###     columns are IntegerList objects.
-###  2) When the columns to bind are a mix of atomic vectors and factors,
-###     bindROWS() would **always** return an atomic vector (whatever
-###     cols[[1]] is, i.e. atomic vector or factor). However we **always**
-###     want a factor. This is an intended deviation with respect to what
-###     rbind() does on ordinary data frames where the 1st data frame
-###     involved in the binding operation governs (i.e. a column in the
-###     result will be atomic vector or factor depending on what the
-###     corresponding column in the 1st data frame is).
-.bind_cols_along_their_ROWS <- function(cols)
+### NOT exported.
+### 'x' can be a DFrame object or derivative.
+### Return an object of class "DFrame".
+combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
+                                                   use.names=TRUE, check=TRUE)
 {
-    is_Rle <- vapply(cols, is, logical(1L), "Rle")
-    if (any(is_Rle) && !all(is_Rle))
-        cols[is_Rle] <- lapply(cols[is_Rle], decodeRle)
-    is_factor <- vapply(cols, is.factor, logical(1L))
-    if (any(is_factor)) {
-        cols <- lapply(cols, as.factor)
-        all_levels <- unique(unlist(lapply(cols, levels), use.names=FALSE))
-        cols <- lapply(cols, factor, all_levels)
-    }
-    bindROWS(cols[[1L]], cols[-1L])
-}
-
-### Ignore the 'ignore.mcols' argument!
-.bindROWS_DataFrame_objects <-
-    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
-{
+    if (!is(x, "DFrame"))
+        stop(wmsg("the objects to combine must be ",
+                  "DFrame objects or derivatives"))
+    if (!isTRUEorFALSE(strict.colnames))
+        stop(wmsg("'strict.colnames' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(use.names))
-        stop("'use.names' must be TRUE or FALSE")
+        stop(wmsg("'use.names' must be TRUE or FALSE"))
     objects <- prepare_objects_to_bind(x, objects)
     all_objects <- c(list(x), objects)
-    has_rows <- vapply(all_objects, nrow, integer(1L), USE.NAMES=FALSE) > 0L
-    has_cols <- vapply(all_objects, ncol, integer(1L), USE.NAMES=FALSE) > 0L
-    if (!any(has_rows)) {
-        if (!any(has_cols))
-            return(x)
-        return(all_objects[[which(has_cols)[[1L]]]])
-    }
-    all_objects <- all_objects[has_rows]
-
-    ## From now on, all the objects to bind have rows.
-    x <- all_objects[[1L]]
-    objects <- all_objects[-1L]
-    colmaps <- .make_colmaps(x, objects)
-    if (ncol(x) == 0L) {
+    all_colnames <- lapply(all_objects, colnames)
+    colmap <- .aggregate_and_align_all_colnames(all_colnames,
+                                                strict.colnames=strict.colnames)
+    all_nrows <- unlist(lapply(all_objects, nrow), use.names=FALSE)
+    if (ncol(colmap) == 0L) {
         ans_listData <- x@listData
-        ans_nrow <- sum(unlist(lapply(all_objects, nrow), use.names=FALSE))
     } else {
-        ans_listData <- lapply(setNames(seq_along(x), colnames(x)),
-            function(i) {
-                 x_col <- x[[i]]
-                 other_cols <- lapply(seq_along(objects),
-                                      function(j) objects[[j]][[colmaps[i, j]]])
+        ans_colnames <- colnames(colmap)
+        ans_listData <- lapply(setNames(seq_along(ans_colnames), ans_colnames),
+            function(j) {
+                 all_cols <- lapply(seq_along(all_objects),
+                     function(i) {
+                         j2 <- colmap[i, j]
+                         if (is.na(j2)) {
+                             Rle(NA, all_nrows[[i]])
+                         } else {
+                             all_objects[[i]][[j2]]
+                         }
+                     }
+                 )
                  tryCatch(
-                     .bind_cols_along_their_ROWS(c(list(x_col), other_cols)),
+                     bindROWS2(all_cols[[1L]], all_cols[-1L]),
                      error=function(err) {
-                        stop("failed to rbind column '", colnames(x)[i],
-                            "' across DataFrame objects:\n  ",
-                            conditionMessage(err))
+                        stop(wmsg("failed to rbind column '", ans_colnames[j],
+                                  "' across DataFrame objects:\n  ",
+                                  conditionMessage(err)))
                      }
                  )
             }
         )
-        ans_nrow <- NROW(ans_listData[[1L]])
     }
+    ans_nrow <- sum(all_nrows)
     if (use.names) {
         ## Bind the rownames.
         ans_rownames <- unlist(lapply(all_objects, rownames), use.names=FALSE)
@@ -1091,14 +1041,47 @@ setMethod("showAsCell", "DataFrame", showAsCell_array)
     } else {
         ans_rownames <- NULL
     }
-    BiocGenerics:::replaceSlots(x, listData=ans_listData,
-                                   nrows=ans_nrow,
-                                   rownames=ans_rownames,
-                                   check=check)
+    new2("DFrame", listData=ans_listData,
+                   nrows=ans_nrow,
+                   rownames=ans_rownames,
+                   check=check)
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### rbind()
+###
+
+### Ignore the 'ignore.mcols' argument!
+.bindROWS_DFrame_objects <-
+    function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
+{
+    all_objects <- c(list(x), objects)
+    has_rows <- vapply(all_objects, nrow, integer(1L), USE.NAMES=FALSE) > 0L
+    has_cols <- vapply(all_objects, ncol, integer(1L), USE.NAMES=FALSE) > 0L
+    if (!any(has_rows)) {
+        if (!any(has_cols))
+            return(x)
+        return(all_objects[[which(has_cols)[[1L]]]])
+    }
+    all_objects <- all_objects[has_rows]
+    DF <- combine_DFrame_rows(all_objects[[1L]], all_objects[-1L],
+                              strict.colnames=TRUE,
+                              use.names=use.names, check=check)
+    as(DF, class(x))
 }
 
 ### Defining bindROWS() gives us rbind().
-setMethod("bindROWS", "DataFrame", .bindROWS_DataFrame_objects)
+### FIXME: Note that .bindROWS_DFrame_objects() doesn't work on DataFrame
+### objects in general but only on those that are DFrame objects or
+### derivatives. So this method should be defined for DFrame objects,
+### not for DataFrame objects.
+setMethod("bindROWS", "DataFrame", .bindROWS_DFrame_objects)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### cbind()
+###
 
 ### S3/S4 combo for cbind.DataFrame
 cbind.DataFrame <- function(..., deparse.level=1)

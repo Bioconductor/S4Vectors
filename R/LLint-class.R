@@ -154,7 +154,7 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
 ###
 
 ### Arguments 'use.names' and 'ignore.mcols' are ignored.
-.concatenate_LLint_objects <-
+.bindROWS_LLint_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!is.list(objects))
@@ -193,7 +193,7 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
     new2("LLint", bytes=ans_bytes, check=check)
 }
 
-setMethod("bindROWS", "LLint", .concatenate_LLint_objects)
+setMethod("bindROWS", "LLint", .bindROWS_LLint_objects)
 
 ### Thin wrapper around bindROWS().
 setMethod("c", "LLint",

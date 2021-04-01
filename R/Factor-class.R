@@ -338,12 +338,12 @@ setMethod("showAsCell", "Factor",
 {
     ## 1. Take care of the parallel slots
 
-    ## Use concatenate_Vector_objects() to concatenate parallel slots "index"
+    ## Use bindROWS_Vector_objects() to concatenate parallel slots "index"
     ## and "elementMetadata". Note that the resulting 'ans' can be an invalid
     ## Factor instance (e.g. some indices in 'ans@index' can be wrong).
-    ans <- concatenate_Vector_objects(x, list(y), use.names=FALSE,
-                                                  ignore.mcols=ignore.mcols,
-                                                  check=FALSE)
+    ans <- bindROWS_Vector_objects(x, list(y), use.names=FALSE,
+                                               ignore.mcols=ignore.mcols,
+                                               check=FALSE)
 
     ## 2. Take care of slot "levels"
 
@@ -373,7 +373,7 @@ setMethod("showAsCell", "Factor",
                                      check=FALSE)
 }
 
-.concatenate_Factor_objects <-
+.bindROWS_Factor_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
@@ -393,7 +393,7 @@ setMethod("showAsCell", "Factor",
     x
 }
 
-setMethod("bindROWS", "Factor", .concatenate_Factor_objects)
+setMethod("bindROWS", "Factor", .bindROWS_Factor_objects)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

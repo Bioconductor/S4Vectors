@@ -497,7 +497,7 @@ setMethod("show", "Hits",
                   "objects by number of left and/or right nodes"))
 }
 
-.concatenate_Hits_objects <-
+.bindROWS_Hits_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     objects <- prepare_objects_to_bind(x, objects)
@@ -505,7 +505,7 @@ setMethod("show", "Hits",
     callNextMethod()
 }
 
-setMethod("bindROWS", "Hits", .concatenate_Hits_objects)
+setMethod("bindROWS", "Hits", .bindROWS_Hits_objects)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
