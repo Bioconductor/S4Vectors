@@ -307,7 +307,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
       if (missing(row.names))
         row.names <- rownames(element)
     }
-    mcols <- do.call(rbind_mcols, varlist)
+    mcols <- combine_mcols(varlist)
     varlist <- lapply(varlist, as.list, use.names = FALSE)
     nr <- max(nrows)
     for (i in which((nrows > 0L) & (nrows < nr) & (nr %% nrows == 0L))) {

@@ -40,3 +40,33 @@ test_DataFrame_rbind <- function() {
   checkException(rbind(other, sw), silent = TRUE)
 }
 
+test_DataFrame_combineRows <- function() {
+    X <- DataFrame(x=1)
+    Y <- DataFrame(x=2, y="A")
+    Z <- DataFrame(z=TRUE)
+
+    checkIdentical(Y, combineRows(Y))
+
+    out <- combineRows(X, Y, Z)
+    checkIdentical(out$x, c(1,2,NA))
+    checkIdentical(out$y, c(NA,"A",NA))
+    checkIdentical(out$z, c(NA,NA,TRUE))
+
+    # Robust to no-rows.
+    out <- combineRows(X, Y, Z[0,,drop=FALSE])
+    checkIdentical(out$x, c(1,2))
+    checkIdentical(out$y, c(NA,"A"))
+    checkIdentical(out$z, c(NA,NA))
+
+    # A more complex situation.
+    x <- DataFrame(A=Rle(101:103, 3:1), A=letters[1:6], B=Rle(51:52, c(1, 5)),
+                   check.names=FALSE)
+    y <- DataFrame(B=Rle(c("a", "b")), A=runif(2))
+    target <- DataFrame(A=c(S4Vectors:::decodeRle(x[[1]]), y[[2]]),
+                        A=c(x[[2]], c(NA, NA)),
+                        B=c(x[[3]], y[[1]]),
+                        check.names=FALSE)
+    current <- combineRows(x, y)
+    checkIdentical(target, current)
+}
+

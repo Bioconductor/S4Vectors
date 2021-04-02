@@ -4,7 +4,7 @@
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### combine_DFrame_rows()
+### .combine_DFrame_rows()
 ###
 ### The workhorse behind the rbind() and combineRows() methods for DataFrame
 ### objects.
@@ -60,8 +60,8 @@
 ### Behaves like an endomorphism with respect to 'x' i.e. returns an object
 ### of the same class as 'x'.
 ### NOT exported.
-combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
-                                                   use.names=TRUE, check=TRUE)
+.combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
+                                                    use.names=TRUE, check=TRUE)
 {
     if (!is(x, "DFrame"))
         stop(wmsg("the objects to combine must be ",
@@ -143,7 +143,7 @@ combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
         i <- (ncol(x0)+1L):length(ans_colnames)
         ## If 'x0' carries metadata columns, 'replaceCOLS()' will take care
         ## of extending them by appending NA-filled rows to 'mcols(x0)'.
-        ## The workhorse behind this process is also 'combine_DFrame_rows()'.
+        ## The workhorse behind this process is also '.combine_DFrame_rows()'.
         ## Also note that we don't care about the colnames of the object
         ## returned by this call to 'replaceCOLS()' because they're going
         ## to be ignored anyways.
@@ -177,17 +177,46 @@ combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
         return(all_objects[[which(has_cols)[[1L]]]])
     }
     all_objects <- all_objects[has_rows]
-    combine_DFrame_rows(all_objects[[1L]], all_objects[-1L],
-                        strict.colnames=TRUE,
-                        use.names=use.names, check=check)
+    .combine_DFrame_rows(all_objects[[1L]], all_objects[-1L],
+                         strict.colnames=TRUE,
+                         use.names=use.names, check=check)
 }
 
 ### Defining bindROWS() gives us rbind().
 ### FIXME: Note that .bindROWS_DFrame_objects() doesn't work on DataFrame
 ### objects in general but only on those that are DFrame objects or
-### derivatives. So this method should be defined for DFrame objects,
-### not for DataFrame objects.
+### derivatives. So this method should really be defined for DFrame
+### objects, not for DataFrame objects.
 setMethod("bindROWS", "DataFrame", .bindROWS_DFrame_objects)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### combineRows()
+###
+
+setMethod("combineRows", c("DataFrame", "DataFrame"),
+    function(x, y, ...)
+    {
+        objects <- list(y, ...)
+        .combine_DFrame_rows(x, objects, strict.colnames=FALSE)
+    }
+)
+
+setMethod("combineRows", c("DataFrame", "missing"),
+    function(x, y, ...)
+    {
+        objects <- list(...)
+        .combine_DFrame_rows(x, objects, strict.colnames=FALSE)
+    }
+)
+
+setMethod("combineRows", c("missing", "DataFrame"),
+    function(x, y, ...)
+    {
+        objects <- list(...)
+        .combine_DFrame_rows(y, objects, strict.colnames=FALSE)
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

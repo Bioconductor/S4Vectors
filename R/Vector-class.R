@@ -689,27 +689,19 @@ ensureMcols <- function(x) {
   ans
 }
 
-rbind_mcols <- function(...)
+combine_mcols <- function(objects)
 {
-    objects <- unname(list(...))
-    mcols_list <- lapply(objects, mcols, use.names=FALSE)
-    if (length(mcols_list) == 1L)
-        return(mcols_list[[1L]])
-    mcols_is_null <- sapply_isNULL(mcols_list)
-    if (all(mcols_is_null))
+    if (length(objects) == 1L)
+        return(mcols(objects[[1L]]))
+    all_mcols <- lapply(objects, mcols, use.names=FALSE)
+    is_null <- sapply_isNULL(all_mcols)
+    if (all(is_null))
         return(NULL)
-    mcols_list[mcols_is_null] <- lapply(
-        objects[mcols_is_null],
+    all_mcols[is_null] <- lapply(
+        objects[is_null],
         function(object) make_zero_col_DFrame(length(object))
     )
-    colnames_list <- lapply(mcols_list, colnames)
-    all_colnames <- unique(unlist(colnames_list, use.names=FALSE))
-    fillCols <- function(df) {
-        if (nrow(df))
-            df[setdiff(all_colnames, colnames(df))] <- NA
-        df
-    }
-    do.call(rbind, lapply(mcols_list, fillCols))
+    do.call(combineRows, all_mcols)
 }
 
 ### We provide a default bindROWS() method for Vector objects. It calls the
@@ -773,7 +765,7 @@ bindROWS_Vector_objects <-
 
     if (!ignore.mcols) {
         ## Concatenate the "elementMetadata" slots.
-        ans_mcols <- do.call(rbind_mcols, all_objects)
+        ans_mcols <- combine_mcols(all_objects)
         ans_pslots <- c(ans_pslots, list(elementMetadata=ans_mcols))
     }
 
