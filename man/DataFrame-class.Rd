@@ -59,12 +59,6 @@
 \alias{show,DataFrame-method}
 \alias{showAsCell,DataFrame-method}
 
-% combining
-\alias{bindROWS,DataFrame-method}
-\alias{c,DataFrame-method}
-\alias{cbind.DataFrame}
-\alias{cbind,DataFrame-method}
-
 \title{DataFrame objects}
 
 \description{
@@ -216,38 +210,19 @@
   }
 }
 
-\section{Combining}{
-  In the following code snippets, \code{x} is a \code{DataFrame}.
-
-  \describe{
-    \item{}{
-      \code{rbind(...)}: Creates a new \code{DataFrame} by
-      combining the rows of the \code{DataFrame} objects in
-      \code{...}. Very similar to \code{\link{rbind.data.frame}}, except
-      in the handling of row names. If all elements have row names, they
-      are concatenated and made unique. Otherwise, the result does not
-      have row names. The return value inherits its metadata from
-      the first argument.
-    }
-    \item{}{
-      \code{cbind(...)}: Creates a new \code{DataFrame} by
-      combining the columns of the \code{DataFrame} objects in
-      \code{...}. Very similar to \code{\link{cbind.data.frame}}. The
-      return value inherits its metadata from the first argument.
-    }
-  }
-}
-
 \author{Michael Lawrence}
 
 \seealso{
   \itemize{
-    \item \link{DataFrame-utils} for common operations on DataFrame objects.
+    \item \link{DataFrame-combine} for combining DataFrame objects.
+
+    \item \link{DataFrame-utils} for other common operations on DataFrame
+          objects.
+
+    \item \link{TransposedDataFrame} objects.
 
     \item \link{RectangularData} and \link{SimpleList} which DataFrame extends
           directly.
-
-    \item \link{TransposedDataFrame} objects.
   }
 }
 

@@ -52,6 +52,7 @@ Collate: S4-utils.R
 	SimpleList-class.R
 	HitsList-class.R
 	DataFrame-class.R
+	DataFrame-combine.R
 	DataFrame-comparison.R
 	DataFrame-utils.R
 	TransposedDataFrame-class.R
