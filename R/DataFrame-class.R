@@ -980,9 +980,10 @@ setMethod("showAsCell", "DataFrame", showAsCell_array)
     ans
 }
 
+### 'x' must be a DFrame object or derivative.
+### Behaves like an endomorphism with respect to 'x' i.e. returns an object
+### of the same class as 'x'.
 ### NOT exported.
-### 'x' can be a DFrame object or derivative.
-### Return an object of class "DFrame".
 combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
                                                    use.names=TRUE, check=TRUE)
 {
@@ -993,40 +994,52 @@ combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
         stop(wmsg("'strict.colnames' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(use.names))
         stop(wmsg("'use.names' must be TRUE or FALSE"))
+    if (!isTRUEorFALSE(check))
+        stop(wmsg("'check' must be TRUE or FALSE"))
+
     objects <- prepare_objects_to_bind(x, objects)
     all_objects <- c(list(x), objects)
+    all_nrows <- unlist(lapply(all_objects, nrow), use.names=FALSE)
     all_colnames <- lapply(all_objects, colnames)
     colmap <- .aggregate_and_align_all_colnames(all_colnames,
                                                 strict.colnames=strict.colnames)
-    all_nrows <- unlist(lapply(all_objects, nrow), use.names=FALSE)
+    ## Unfortunately there seems to be no way to put colnames on a 0-col
+    ## matrix. So when the 'colmap' matrix has 0 cols, 'colnames(colmap)'
+    ## will always be NULL, even though we'd like it to be 'character(0)'.
     if (ncol(colmap) == 0L) {
-        ans_listData <- x@listData
+        ans_colnames <- character(0)
     } else {
         ans_colnames <- colnames(colmap)
-        ans_listData <- lapply(setNames(seq_along(ans_colnames), ans_colnames),
-            function(j) {
-                 all_cols <- lapply(seq_along(all_objects),
-                     function(i) {
-                         j2 <- colmap[i, j]
-                         if (is.na(j2)) {
-                             Rle(NA, all_nrows[[i]])
-                         } else {
-                             all_objects[[i]][[j2]]
-                         }
-                     }
-                 )
-                 tryCatch(
-                     bindROWS2(all_cols[[1L]], all_cols[-1L]),
-                     error=function(err) {
-                        stop(wmsg("failed to rbind column '", ans_colnames[j],
-                                  "' across DataFrame objects:\n  ",
-                                  conditionMessage(err)))
-                     }
-                 )
-            }
-        )
     }
+
+    ## Compute 'ans_listData'.
+    ans_listData <- lapply(setNames(seq_along(ans_colnames), ans_colnames),
+        function(j) {
+             all_cols <- lapply(seq_along(all_objects),
+                 function(i) {
+                     j2 <- colmap[i, j]
+                     if (is.na(j2)) {
+                         Rle(NA, all_nrows[[i]])
+                     } else {
+                         all_objects[[i]][[j2]]
+                     }
+                 }
+             )
+             tryCatch(
+                 bindROWS2(all_cols[[1L]], all_cols[-1L]),
+                 error=function(err) {
+                    stop(wmsg("failed to rbind column '", ans_colnames[[j]],
+                              "' across DataFrame objects:\n  ",
+                              conditionMessage(err)))
+                 }
+             )
+        }
+    )
+
+    ## Compute 'ans_nrow'.
     ans_nrow <- sum(all_nrows)
+
+    ## Compute 'ans_rownames'.
     if (use.names) {
         ## Bind the rownames.
         ans_rownames <- unlist(lapply(all_objects, rownames), use.names=FALSE)
@@ -1041,10 +1054,33 @@ combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
     } else {
         ans_rownames <- NULL
     }
-    new2("DFrame", listData=ans_listData,
-                   nrows=ans_nrow,
-                   rownames=ans_rownames,
-                   check=check)
+
+    ## Create 'x0', a 0-row DataFrame derivative of the same class as 'x'
+    ## but with all the additional columns that result from the combining
+    ## operation. Also the original metadata columns on 'x' must propagate
+    ## to 'x0'.
+    x0 <- extractROWS(x, integer(0))
+    if (length(ans_colnames) > ncol(x0)) {
+        ## It doesn't really matter what value we use here as long it's of
+        ## length zero.
+        dummy_col <- normalizeSingleBracketReplacementValue(logical(0), x0)
+        i <- (ncol(x0)+1L):length(ans_colnames)
+        ## If 'x0' carries metadata columns, 'replaceCOLS()' will take care
+        ## of extending them by appending NA-filled rows to 'mcols(x0)'.
+        ## The workhorse behind this process is also 'combine_DFrame_rows()'.
+        ## Also note that we don't care about the colnames of the object
+        ## returned by this call to 'replaceCOLS()' because they're going
+        ## to be ignored anyways.
+        x0 <- replaceCOLS(x0, i, value=dummy_col)
+    }
+    ## Sanity check. Should never fail.
+    stopifnot(ncol(x0) == length(ans_colnames))
+    ## The only reason we created 'x0' is so that we can use it here to
+    ## propagate its class and metadata columns.
+    BiocGenerics:::replaceSlots(x0, listData=ans_listData,
+                                    nrows=ans_nrow,
+                                    rownames=ans_rownames,
+                                    check=check)
 }
 
 
@@ -1065,10 +1101,9 @@ combine_DFrame_rows <- function(x, objects=list(), strict.colnames=FALSE,
         return(all_objects[[which(has_cols)[[1L]]]])
     }
     all_objects <- all_objects[has_rows]
-    DF <- combine_DFrame_rows(all_objects[[1L]], all_objects[-1L],
-                              strict.colnames=TRUE,
-                              use.names=use.names, check=check)
-    as(DF, class(x))
+    combine_DFrame_rows(all_objects[[1L]], all_objects[-1L],
+                        strict.colnames=TRUE,
+                        use.names=use.names, check=check)
 }
 
 ### Defining bindROWS() gives us rbind().
