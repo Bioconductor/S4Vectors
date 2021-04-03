@@ -692,7 +692,7 @@ ensureMcols <- function(x) {
 combine_mcols <- function(objects)
 {
     if (length(objects) == 1L)
-        return(mcols(objects[[1L]]))
+        return(mcols(objects[[1L]], use.names=FALSE))
     all_mcols <- lapply(objects, mcols, use.names=FALSE)
     is_null <- sapply_isNULL(all_mcols)
     if (all(is_null))

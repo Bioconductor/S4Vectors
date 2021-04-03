@@ -56,7 +56,7 @@
   }
 }
 
-\author{Michael Lawrence}
+\author{Michael Lawrence, Hervé Pagès, and Aaron Lun}
 
 \seealso{
   \itemize{
