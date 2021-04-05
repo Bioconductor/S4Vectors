@@ -11,7 +11,7 @@ Description: The S4Vectors package defines the Vector and List virtual classes
 biocViews: Infrastructure, DataRepresentation
 URL: https://bioconductor.org/packages/S4Vectors
 BugReports: https://github.com/Bioconductor/S4Vectors/issues
-Version: 0.29.7
+Version: 0.29.12
 License: Artistic-2.0
 Encoding: UTF-8
 Author: H. Pagès, M. Lawrence and P. Aboyoun
@@ -52,12 +52,12 @@ Collate: S4-utils.R
 	SimpleList-class.R
 	HitsList-class.R
 	DataFrame-class.R
+	DataFrame-combine.R
 	DataFrame-comparison.R
 	DataFrame-utils.R
 	TransposedDataFrame-class.R
 	Pairs-class.R
 	FilterRules-class.R
-    combine-methods.R
 	stack-methods.R
 	expand-methods.R
 	aggregate-methods.R

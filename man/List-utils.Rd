@@ -24,6 +24,7 @@
 \alias{within,List-method}
 
 \alias{rbind,List-method}
+\alias{cbind.List}
 \alias{cbind,List-method}
 
 \alias{droplevels.List}

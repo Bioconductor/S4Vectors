@@ -2,10 +2,6 @@
 
 \alias{DataFrame-utils}
 
-\alias{merge,DataFrame,DataFrame-method}
-\alias{merge,data.frame,DataFrame-method}
-\alias{merge,DataFrame,data.frame-method}
-
 \alias{relistToClass,DataFrame-method}
 \alias{relistToClass,data.frame-method}
 
@@ -23,18 +19,6 @@
 
 \description{
   Common operations on \link{DataFrame} objects.
-}
-
-\section{Merging}{
-  In the code snippet below, \code{x} is a \link{DataFrame} object.
-  \describe{
-    \item{}{
-      \code{merge(x, y, ...)}: Merges two \link{DataFrame} objects
-      \code{x} and \code{y}, with arguments in \code{...} being
-      the same as those allowed by the base \code{\link{merge}}. It is
-      allowed for either \code{x} or \code{y} to be a \code{data.frame}.
-    }
-  }
 }
 
 \section{Splitting}{
@@ -111,22 +95,20 @@
 
 \seealso{
   \itemize{
-    \item \link{DataFrame} objects.
-
-    \item \code{\link{merge}} in the \pkg{base} package.
-
     \item \code{\link{by}} in the \pkg{base} package.
-
-    \item \code{\link{splitAsList}} in this package (\pkg{S4Vectors}).
-
-    \item \link[IRanges]{SplitDataFrameList} objects in the \pkg{IRanges}
-          package.
 
     \item \code{\link{na.omit}} in the \pkg{stats} package.
 
     \item \code{\link{transform}} in the \pkg{base} package.
 
     \item \code{\link{xtabs}} in the \pkg{stats} package.
+
+    \item \code{\link{splitAsList}} in this package (\pkg{S4Vectors}).
+
+    \item \link[IRanges]{SplitDataFrameList} objects in the \pkg{IRanges}
+          package.
+
+    \item \link{DataFrame} objects.
   }
 }
 

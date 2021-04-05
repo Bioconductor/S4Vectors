@@ -689,20 +689,19 @@ ensureMcols <- function(x) {
   ans
 }
 
-rbind_mcols <- function(...)
+combine_mcols <- function(objects)
 {
-    objects <- unname(list(...))
-    mcols_list <- lapply(objects, mcols, use.names=FALSE)
-    if (length(mcols_list) == 1L)
-        return(mcols_list[[1L]])
-    mcols_is_null <- sapply_isNULL(mcols_list)
-    if (all(mcols_is_null))
+    if (length(objects) == 1L)
+        return(mcols(objects[[1L]], use.names=FALSE))
+    all_mcols <- lapply(objects, mcols, use.names=FALSE)
+    is_null <- sapply_isNULL(all_mcols)
+    if (all(is_null))
         return(NULL)
-    mcols_list[mcols_is_null] <- lapply(
-        objects[mcols_is_null],
+    all_mcols[is_null] <- lapply(
+        objects[is_null],
         function(object) make_zero_col_DFrame(length(object))
     )
-    do.call(combine_df, mcols_list)
+    do.call(combineRows, all_mcols)
 }
 
 ### We provide a default bindROWS() method for Vector objects. It calls the
@@ -722,7 +721,7 @@ rbind_mcols <- function(...)
 ### method will typically delegate to the default bindROWS() method below
 ### via the use of callNextMethod(). See bindROWS() methods for Hits and Rle
 ### objects for some examples.
-concatenate_Vector_objects <-
+bindROWS_Vector_objects <-
     function(x, objects=list(), use.names=TRUE, ignore.mcols=FALSE, check=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
@@ -744,7 +743,7 @@ concatenate_Vector_objects <-
             if (is.null(x_slot))
                 return(NULL)
             slot_list <- lapply(objects, slot, slotname)
-            bindROWS(x_slot, slot_list)
+            bindROWS2(x_slot, slot_list)
         }
     )
 
@@ -766,7 +765,7 @@ concatenate_Vector_objects <-
 
     if (!ignore.mcols) {
         ## Concatenate the "elementMetadata" slots.
-        ans_mcols <- do.call(rbind_mcols, all_objects)
+        ans_mcols <- combine_mcols(all_objects)
         ans_pslots <- c(ans_pslots, list(elementMetadata=ans_mcols))
     }
 
@@ -781,7 +780,7 @@ concatenate_Vector_objects <-
     ans
 }
 
-setMethod("bindROWS", "Vector", concatenate_Vector_objects)
+setMethod("bindROWS", "Vector", bindROWS_Vector_objects)
 
 ### Thin wrapper around bindROWS(). Behave like an endomorphism i.e. return
 ### an object of the same class as 'x'. In particular 'c(x)' should return 'x'.

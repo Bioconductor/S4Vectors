@@ -1,10 +1,52 @@
-# Tests the various combining methods.
+test_DataFrame_rbind <- function() {
+  data(swiss)
+  rn <- rownames(swiss)
+  sw <- DataFrame(swiss, row.names=rn)
+  swisssplit <- split(swiss, swiss$Education)
+ 
+  ## rbind
+  checkIdentical(rbind(DataFrame(), DataFrame()), DataFrame())
+  score <- c(X=1L, Y=3L, Z=NA)
+  DF <- DataFrame(score)
+  checkIdentical(rbind(DF, DF)[[1]], c(score, score))
+  zr <- sw[FALSE,]
+  checkIdentical(rbind(DataFrame(), zr, zr[,1:2]), zr)
+  checkIdentical(as.data.frame(rbind(DataFrame(), zr, sw)), swiss)
+  target <- do.call(rbind, swisssplit)
+  current <- do.call(rbind, lapply(swisssplit, DataFrame))
+  rownames(target) <- rownames(current) <- NULL
+  checkIdentical(target, as.data.frame(current))
+  DF <- DataFrame(A=I(list(1:3)))
+  df <- as.data.frame(DF)
+  checkIdentical(as.data.frame(rbind(DF, DF)), rbind(df, df))
+  
+  ## combining factors
+  df1 <- data.frame(species = c("Mouse", "Chicken"), n = c(5, 6))
+  DF1 <- DataFrame(df1)
+  df2 <- data.frame(species = c("Human", "Chimp"), n = c(1, 2))
+  DF2 <- DataFrame(df2)
+  df12 <- rbind(df1, df2)
+  rownames(df12) <- NULL
+  checkIdentical(as.data.frame(rbind(DF1, DF2)), df12)
+ 
+  checkIdentical(rownames(rbind(sw, DataFrame(swiss))),
+                 c(rownames(swiss), rownames(swiss)))
+  checkIdentical(rownames(do.call(rbind, lapply(swisssplit, DataFrame))),
+                 unlist(lapply(swisssplit, rownames), use.names=FALSE))
 
-test_combineRows <- function() {
+  checkException(rbind(sw[,1:2], sw), silent = TRUE)
+  other <- sw
+  colnames(other)[1] <- "foo"
+  checkException(rbind(other, sw), silent = TRUE)
+}
+
+test_DataFrame_combineRows <- function() {
     X <- DataFrame(x=1)
     Y <- DataFrame(x=2, y="A")
     Z <- DataFrame(z=TRUE)
-    
+
+    checkIdentical(Y, combineRows(Y))
+
     out <- combineRows(X, Y, Z)
     checkIdentical(out$x, c(1,2,NA))
     checkIdentical(out$y, c(NA,"A",NA))
@@ -15,6 +57,17 @@ test_combineRows <- function() {
     checkIdentical(out$x, c(1,2))
     checkIdentical(out$y, c(NA,"A"))
     checkIdentical(out$z, c(NA,NA))
+
+    # A more complex situation.
+    x <- DataFrame(A=Rle(101:103, 3:1), A=letters[1:6], B=Rle(51:52, c(1, 5)),
+                   check.names=FALSE)
+    y <- DataFrame(B=Rle(c("a", "b")), A=runif(2))
+    target <- DataFrame(A=c(S4Vectors:::decodeRle(x[[1]]), y[[2]]),
+                        A=c(x[[2]], c(NA, NA)),
+                        B=c(x[[3]], y[[1]]),
+                        check.names=FALSE)
+    current <- combineRows(x, y)
+    checkIdentical(target, current)
 }
 
 test_combineCols <- function() {
@@ -52,7 +105,7 @@ test_combineUniqueCols <- function() {
     checkIdentical(colnames(out), c("x", "dup", "y", "z"))
     checkIdentical(out$dup, letters[1:3])
 
-    # Trying again with some more complexity. 
+    # Trying again with some more complexity.
     X <- DataFrame(x=1, dup=letters[1:3], row.names=c("foo", "bar", "whee"))
     Y <- DataFrame(y="A", dup=letters[1], row.names="foo")
     Z <- DataFrame(z=TRUE, dup=letters[3:4], row.names=c("whee", "zun"))
@@ -64,7 +117,7 @@ test_combineUniqueCols <- function() {
     checkIdentical(out$y, c("A", NA, NA, NA))
     checkIdentical(out$z, c(NA, NA, TRUE, TRUE))
 
-    # Fills in the offending column with NA's. 
+    # Fills in the offending column with NA's.
     AA <- DataFrame(aa=5:6, row.names=c("foo", "BLAH"))
     out <- combineUniqueCols(X, Y, Z, AA)
     checkIdentical(rownames(out), c("foo", "bar", "whee", "zun", "BLAH"))

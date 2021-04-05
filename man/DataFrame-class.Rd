@@ -59,15 +59,6 @@
 \alias{show,DataFrame-method}
 \alias{showAsCell,DataFrame-method}
 
-% combining
-\alias{bindROWS,DataFrame-method}
-\alias{c,DataFrame-method}
-\alias{cbind.DataFrame}
-\alias{cbind,DataFrame-method}
-\alias{combineCols,DataFrame-method}
-\alias{combineRows,DataFrame-method}
-\alias{combineUniqueCols}
-
 \title{DataFrame objects}
 
 \description{
@@ -219,79 +210,19 @@
   }
 }
 
-\section{Combining}{
-  In the following code snippets, \code{x}, \code{y} and all elements of
-  \code{...} are \code{DataFrame}s.
-
-  \describe{
-    \item{}{
-      \code{rbind(...)}: Creates a new \code{DataFrame} by
-      combining the rows of the \code{DataFrame} objects in
-      \code{...}. Very similar to \code{\link{rbind.data.frame}}, except
-      in the handling of row names. If all elements have row names, they
-      are concatenated and made unique. Otherwise, the result does not
-      have row names. The return value inherits its metadata from
-      the first argument.
-    }
-    \item{}{
-      \code{cbind(...)}: Creates a new \code{DataFrame} by
-      combining the columns of the \code{DataFrame} objects in
-      \code{...}. Very similar to \code{\link{cbind.data.frame}}. The
-      return value inherits its metadata from the first argument.
-    }
-    \item{}{
-      \code{combineRows(x, y, ...)}: Creates a new \code{DataFrame} by
-      combining the rows of the \code{DataFrame} objects. Unlike \code{rbind},
-      \code{combineRows} will handle cases involving differences in the
-      column names of its inputs. Missing columns in any individual input
-      \code{DataFrame} are filled with \code{NA}s, such that the column names
-      of the returned object are a union of the column names of the inputs.
-    }
-    \item{}{
-      \code{combineCols(x, y, ..., use.names=TRUE)}: Creates a new
-      \code{DataFrame} by combining the columns of the \code{DataFrame}
-      objects. Unlike \code{cbind}, \code{combineCols} will handle cases
-      involving differences in the number of the rows among its inputs. 
-
-      If \code{use.names=TRUE}, all objects are expected to have
-      non-\code{NULL}, non-duplicated row names. These row names do not have to
-      be the same, or even shared, across the input objects. Missing rows in
-      any individual input \code{DataFrame} are filled with \code{NA}s, such
-      that the row names of the returned object are a union of the row names of
-      the inputs.
-
-      If \code{use.names=FALSE}, all inputs are expected to have the same
-      number of rows, and this function behaves the same as \code{cbind}. The
-      row names of the returned object is set to \code{rownames(x)}. Differences
-      in the row names between input objects are ignored.
-    }
-    \item{}{
-      \code{combineUniqueCols(x, y, ..., use.names=TRUE)}: Same as 
-      \code{combineCols}, but this function will attempt to collapse multiple
-      columns with the same name across the input \code{DataFrame}s into
-      a single column in the output. This guarantees that the column names
-      in the output \code{DataFrame} are always unique.
-
-      When \code{use.names=TRUE}, collapsing is only performed if the
-      duplicated column has identical values for the shared rows in the
-      \code{DataFrame}s involved. Otherwise, the contents of the later
-      \code{DataFrame} is simply ignored with a warning. Similarly, if
-      \code{use.names=FALSE}, the duplicated columns must be identical for all
-      rows in the affected \code{DataFrame}s.
-    }
-  }
-}
-
 \author{Michael Lawrence}
 
 \seealso{
   \itemize{
-    \item \link{DataFrame-utils} for common operations on DataFrame objects.
+    \item \link{DataFrame-combine} for combining DataFrame objects.
+
+    \item \link{DataFrame-utils} for other common operations on DataFrame
+          objects.
+
+    \item \link{TransposedDataFrame} objects.
 
     \item \link{RectangularData} and \link{SimpleList} which DataFrame extends
           directly.
-
-    \item \link{TransposedDataFrame} objects.
   }
 }
 

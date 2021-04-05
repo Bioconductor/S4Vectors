@@ -95,6 +95,11 @@ stopifnot(identical(df, t(tdf)))
 
 tdf$aa <- 0.05 * tdf$aa
 
+x1 <- DataFrame(A=1:5, B=letters[1:5], C=11:15)
+y1 <- DataFrame(B=c(FALSE, NA, TRUE), C=c(FALSE, NA, TRUE), A=101:103)
+cbind(t(x1), t(y1))
+stopifnot(identical(t(rbind(x1, y1)), cbind(t(x1), t(y1))))
+
 ## A TransposedDataFrame object can be used in the assay() component of a
 ## SummarizedExperiment object if the transposed layout is needed i.e. if
 ## the rows and columns of the original DataFrame object need to be treated

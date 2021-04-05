@@ -127,6 +127,57 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### bindROWS2()
+###
+### A thin wrapper around bindROWS().
+###
+### NOT exported.
+###
+### If all the objects passed to bindROWS() have the same type, the result of
+### the binding will be an object of that type (endomorphism). But when the
+### objects passed to bindROWS() have mixed types, what bindROWS() will return
+### exactly is a little unpredictable.
+### The purpose of the wrapper below is to improve handling of mixed type
+### objects by pre-processing some of them before calling bindROWS().
+### More precisely, it tries to work around the 2 following problems that
+### direct use of bindROWS() on mixed type objects would pose:
+###  1) When the objects to bind are a mix of Rle and non-Rle objects,
+###     the type of the object returned by bindROWS() depends on the type
+###     of the 1st object. More precisely it's an Rle if and only if
+###     objects[[1]] is an Rle. The wrapper below **mitigate** this by
+###     decoding the Rle objects first. Note that this is a mitigation
+###     process only. For example it will help if Rle objects are mixed
+###     with atomic vectors or factors, but it won't help if objects[[1]]
+###     is an Rle and the other objects are IntegerList objects.
+###  2) When the objects to bind are a mix of atomic vectors and factors,
+###     bindROWS() would **always** return an atomic vector (whatever
+###     objects[[1]] is, i.e. atomic vector or factor). However we **always**
+###     want a factor. This is an intended deviation with respect to what
+###     rbind() does when concatenating the the columns of ordinary data
+###     frames where the 1st data frame passed to rbind() dictates what the
+###     result is going to be (i.e. a column in the result will be atomic
+###     vector or factor depending on what the corresponding column in the
+###     1st data frame is).
+bindROWS2 <- function(x, objects=list())
+{
+    all_objects <- c(list(x), objects)
+    is_Rle <- vapply(all_objects, is, logical(1L), "Rle")
+    if (any(is_Rle) && !all(is_Rle))
+        all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
+    is_factor <- vapply(all_objects, is.factor, logical(1L))
+    if (any(is_factor)) {
+        all_objects <- lapply(all_objects,
+                              function(object)
+                                  factor(object, levels=unique(object)))
+        all_levels <- unique(unlist(lapply(all_objects, levels),
+                                    use.names=FALSE))
+        all_objects <- lapply(all_objects, factor, all_levels)
+    }
+    bindROWS(all_objects[[1L]], all_objects[-1L])
+}
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### bindCOLS()
 ###
 ### A low-level generic function for binding objects along their 2nd dimension.
