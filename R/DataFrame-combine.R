@@ -268,34 +268,41 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
     combined <- combined[,!duplicated(colnames(combined)),drop=FALSE]
 
     all_df <- list(x, y, ...)
-    shared <- lapply(all_df, colnames)
-    indices <- rep(seq_along(shared), lengths(shared))
-    by.colname <- split(indices, unlist(shared))
-    dupped <- names(by.colname)[lengths(by.colname) > 1]
+    all_colnames <- lapply(all_df, colnames)
+    df_indices <- rep(seq_along(all_colnames), lengths(all_colnames))
+    col_indices <- sequence(lengths(all_colnames))
+
+    all_colnames <- unlist(all_colnames)
+    df_by_colname <- split(df_indices, all_colnames)
+    col_by_colname <- split(col_indices, all_colnames)
+    dupped <- names(df_by_colname)[lengths(df_by_colname) > 1]
 
     for (d in dupped) {
-        affected <- by.colname[[d]]
+        df_affected <- df_by_colname[[d]]
+        col_affected <- col_by_colname[[d]]
         reference <- combined[[d]]
+        first_df <- df_affected[1]
 
         if (use.names) {
-            filled <- rownames(combined) %in% rownames(all_df[[affected[1]]])
+            filled <- rownames(combined) %in% rownames(all_df[[first_df]])
 
-            for (i in affected[-1]) {
-                cur_df <- all_df[[i]]
+            for (i in seq_along(df_affected)[-1]) {
+                i_df <- df_affected[i]
+                i_col <- col_affected[i]
+                cur_df <- all_df[[i_df]]
+                replacements <- cur_df[[i_col]]
+
                 candidates <- match(rownames(cur_df), rownames(combined))
-
                 overlapped <- filled[candidates]
                 previous <- reference[candidates]
-                replacements <- cur_df[[d]]
 
                 # Only doing the replacement if the overlaps are identical.
                 # Incidentally, this also checks for the right type. We could
                 # be more aggressive and do a partial replacement, but
                 # something is probably already wrong if this warning fires.
                 if (!identical(previous[overlapped], replacements[overlapped])) {
-                    warning(wmsg("column '", d, "' is present in DataFrames ", affected[1], " and ", i,
-                        " but contains different values for the shared rows; ",
-                        "only values from the former will be reported"))
+                    warning(wmsg("different values for shared rows in multiple instances of column '",
+                        d, "', ignoring this column in DataFrame ", i_df))
                 } else {
                     reference[candidates] <- replacements
                     filled[candidates] <- TRUE
@@ -305,11 +312,13 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
             combined[[d]] <- reference
 
         } else {
-            for (i in affected[-1]) {
-                if (!identical(all_df[[i]][[d]], reference)) {
+            for (i in seq_along(df_affected)[-1]) {
+                i_df <- df_affected[i]
+                i_col <- col_affected[i]
+                if (!identical(all_df[[i_df]][[i_col]], reference)) {
                     # In this case, the warning is only emitted if they are not identical.
-                    warning(wmsg("column '", d, "' is present in DataFrames ", affected[1], " and ", i,
-                        " but contains different values; only values from the former will be reported"))
+                    warning(wmsg("different values in multiple instances of column '",
+                        d, "', ignoring this column in DataFrame ", i_df))
                 }
             }
         }
