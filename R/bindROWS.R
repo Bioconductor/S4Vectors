@@ -141,15 +141,20 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
 ### objects by pre-processing some of them before calling bindROWS().
 ### More precisely, it tries to work around the 2 following problems that
 ### direct use of bindROWS() on mixed type objects would pose:
-###  1) When the objects to bind are a mix of Rle and non-Rle objects,
-###     the type of the object returned by bindROWS() depends on the type
-###     of the 1st object. More precisely it's an Rle if and only if
+###  1) When the objects to bind are a mix of ordinary lists and other
+###     list-like objects like IntegerList, the type of the object returned
+###     by bindROWS() depends on the type of the 1st object. To avoid this
+###     undesirable effect, if one object to bind is an ordinary list then
+###     we pass all objects that are not ordinary lists thru as.list().
+###  2) When the objects to bind are a mix of Rle and non-Rle objects,
+###     the type of the object returned by bindROWS() also depends on the
+###     type of the 1st object. More precisely it's an Rle if and only if
 ###     objects[[1]] is an Rle. The wrapper below **mitigate** this by
 ###     decoding the Rle objects first. Note that this is a mitigation
 ###     process only. For example it will help if Rle objects are mixed
 ###     with atomic vectors or factors, but it won't help if objects[[1]]
 ###     is an Rle and the other objects are IntegerList objects.
-###  2) When the objects to bind are a mix of atomic vectors and factors,
+###  3) When the objects to bind are a mix of atomic vectors and factors,
 ###     bindROWS() would **always** return an atomic vector (whatever
 ###     objects[[1]] is, i.e. atomic vector or factor). However we **always**
 ###     want a factor. This is an intended deviation with respect to what
@@ -161,17 +166,24 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
 bindROWS2 <- function(x, objects=list())
 {
     all_objects <- c(list(x), objects)
-    is_Rle <- vapply(all_objects, is, logical(1L), "Rle")
-    if (any(is_Rle) && !all(is_Rle))
-        all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
-    is_factor <- vapply(all_objects, is.factor, logical(1L))
-    if (any(is_factor)) {
-        all_objects <- lapply(all_objects,
-                              function(object)
-                                  factor(object, levels=unique(object)))
-        all_levels <- unique(unlist(lapply(all_objects, levels),
-                                    use.names=FALSE))
-        all_objects <- lapply(all_objects, factor, all_levels)
+    is_list <- vapply(all_objects, is.list, logical(1L))
+    if (any(is_list)) {
+        coerce_idx <- which(!is_list)
+        if (length(coerce_idx) != 0L)
+            all_objects[coerce_idx] <- lapply(all_objects[coerce_idx], as.list)
+    } else {
+        is_Rle <- vapply(all_objects, is, logical(1L), "Rle")
+        if (any(is_Rle) && !all(is_Rle))
+            all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
+        is_factor <- vapply(all_objects, is.factor, logical(1L))
+        if (any(is_factor)) {
+            all_objects <- lapply(all_objects,
+                                  function(object)
+                                      factor(object, levels=unique(object)))
+            all_levels <- unique(unlist(lapply(all_objects, levels),
+                                        use.names=FALSE))
+            all_objects <- lapply(all_objects, factor, all_levels)
+        }
     }
     bindROWS(all_objects[[1L]], all_objects[-1L])
 }

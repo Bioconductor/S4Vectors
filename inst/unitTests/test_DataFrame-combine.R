@@ -1,3 +1,5 @@
+library(IRanges)  # for IntegerList
+
 test_DataFrame_rbind <- function() {
   data(swiss)
   rn <- rownames(swiss)
@@ -19,8 +21,21 @@ test_DataFrame_rbind <- function() {
   DF <- DataFrame(A=I(list(1:3)))
   df <- as.data.frame(DF)
   checkIdentical(as.data.frame(rbind(DF, DF)), rbind(df, df))
-  
-  ## combining factors
+
+  ## Combining ordinary lists with other list-like objects
+  DF1 <- DataFrame(A=I(list(11:12, 21:23)), B=IntegerList(101:105, 201))
+  target <- DataFrame(A=I(c(DF1[[1]], DF1[[1]])),
+                      B=I(c(DF1[[2]], DF1[[2]])))
+  checkIdentical(target, rbind(DF1, DF1))
+  DF2 <- DataFrame(A=IntegerList(31:34), B=I(list(301:302)))
+  target <- DataFrame(A=I(c(DF1[[1]], as.list(DF2[[1]]))),
+                      B=I(c(as.list(DF1[[2]]), DF2[[2]])))
+  checkIdentical(target, rbind(DF1, DF2))
+  target <- DataFrame(A=I(c(as.list(DF2[[1]]), DF1[[1]])),
+                      B=I(c(DF2[[2]], as.list(DF1[[2]]))))
+  checkIdentical(target, rbind(DF2, DF1))
+
+  ## Combining factors
   df1 <- data.frame(species = c("Mouse", "Chicken"), n = c(5, 6))
   DF1 <- DataFrame(df1)
   df2 <- data.frame(species = c("Human", "Chimp"), n = c(1, 2))
