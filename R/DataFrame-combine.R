@@ -39,7 +39,7 @@
         if (strict.colnames) {
             if (length(colnames) != ncol(ans) || length(unmapped_idx) != 0L)
                 stop(wmsg("the ", what, " to combine ",
-                          "must have the same colnames"))
+                          "must have the same column names"))
         }
         mapped_idx <- which(!is.na(colnames_map))
         colnames_revmap <- rep.int(NA_integer_, ncol(ans))
