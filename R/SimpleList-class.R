@@ -24,6 +24,25 @@ setMethod("parallel_slot_names", "SimpleList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### updateObject()
+###
+
+setMethod("updateObject", "SimpleList",
+    function(object, ..., verbose=FALSE)
+    {
+        object@listData <- lapply(object@listData,
+            function(x) {
+                if (is(x, "Vector"))
+                    x <- updateObject(x, ..., verbose=verbose)
+                x
+            }
+        )
+        callNextMethod()
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Accessor methods
 ###
 

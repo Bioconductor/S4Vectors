@@ -67,7 +67,6 @@ setMethod("updateObject", "DataFrame",
                         "is current.\n",
                         "[updateObject] Nothing to update.")
         }
-
         callNextMethod()
     }
 )

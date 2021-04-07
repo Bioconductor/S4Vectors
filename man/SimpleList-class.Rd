@@ -7,6 +7,8 @@
 
 \alias{parallel_slot_names,SimpleList-method}
 
+\alias{updateObject,SimpleList-method}
+
 % accessors
 \alias{names,SimpleList-method}
 \alias{names<-,SimpleList-method}
