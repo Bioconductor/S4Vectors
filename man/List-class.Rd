@@ -66,38 +66,60 @@
 }
 
 \section{Construction}{
-  List objects are typically constructed using one of the 3 following methods:
-  \itemize{
-    \item Use of a constructor function. Many constructor functions are
-          provided for List objects e.g. \code{List},
-          \code{\link[IRanges]{IntegerList}}, \code{\link[IRanges]{RleList}},
-          \code{\link[IRanges]{IntegerRangesList}},
-          \code{\link[GenomicRanges]{GRangesList}}, etc...
-          Which one to use depends on the particular type of List object
-          to construct. The name of a constructor function is always
-          the name of a valid class. If it's the name of a \emph{concrete}
-          class (e.g. the \code{\link[GenomicRanges]{GRangesList}} constructor
-          defined in the \pkg{GenomicRanges} package), then the constructor
-          function returns an instance of that class. If it's the name of a
-          \emph{virtual} class (e.g. the \code{List} constructor defined in
-          this package, or the \code{\link[IRanges]{IntegerList}} or
-          \code{\link[IRanges]{RleList}} or
-          \code{\link[IRanges]{IntegerRangesList}} constructors defined in the
-          \pkg{IRanges} package), then the returned object belongs to a
-          concrete subclass of that virtual class. Which subclass exactly
-          depends on each constructor function (see man page of a particular
-          constructor function for the details).
+  List objects and derivatives are typically constructed using one of the
+  following methods:
 
-    \item Coercion to List or to a List subclass. Many coercion methods are
-          provided to turn any object into a List object. One general and
-          convenient way to convert any vector-like object into a List is to
-          call \code{as(x, "List")}. This will typically yield an object from
-          a subclass of \link[IRanges]{CompressedList}.
+  \subsection{Use of a constructor function}{
+    Many constructor functions are provided in \pkg{S4Vectors} and other
+    Bioconductor packages for List objects and derivatives e.g.
+    \code{List()}, \code{\link[IRanges]{IntegerList}()},
+    \code{\link[IRanges]{RleList}()},
+    \code{\link[IRanges]{IntegerRangesList}()},
+    \code{\link[GenomicRanges]{GRangesList}()}, etc...
 
-    \item Use of \code{\link[IRanges]{extractList}}. This function, defined
-          in the \pkg{IRanges} package, extracts user-specified groups of
-          elements from a vector-like object and returns them in a List (or
-          sometimes list) object.
+    Which one to use depends on the particular type of List derivative
+    one wishes to construct e.g. use \code{\link[IRanges]{IntegerList}()}
+    to get an \link[IRanges]{IntegerList} object,
+    \code{\link[IRanges]{RleList}()} to get an \link[IRanges]{RleList}
+    object, etc...
+
+    Note that the name of a constructor function is always the name of
+    a valid class. See the man page of a particular constructor function
+    for the details.
+  }
+
+  \subsection{Coercion to List or to a List subclass}{
+    Many coercion methods are defined in \pkg{S4Vectors} and other
+    Bioconductor packages to turn all kinds of objects into List objects.
+
+    One general and convenient way to convert any vector-like object
+    \code{x} into a List is to call \code{as(x, "List")}. This will
+    yield an object from a subclass of List. Note that this subclass
+    will typically extend \link[IRanges]{CompressedList} but not necessarily
+    (see \code{?\link[IRanges]{CompressedList}} in the \pkg{IRanges}
+    package for more information about \link[IRanges]{CompressedList}
+    objects).
+
+    However, if a specific type of List derivative is desired (e.g.
+    \link[GenomicRanges]{CompressedGRangesList}), then coercing
+    explicitly to that class is preferrable as it is more robust
+    and more readable.
+  }
+
+  \subsection{Use of \code{splitAsList()}, \code{relist()},
+              or \code{extractList()}}{
+    \code{\link{splitAsList}()} behaves like \code{base::split()}
+    except that it returns a List derivative instead of an ordinary
+    list. See \code{?\link{splitAsList}} for more information.
+
+    The \code{\link[IRanges]{relist}()} methods for List objects and
+    derivatives, as well as the \code{\link[IRanges]{extractList}()}
+    function, are defined in the \pkg{IRanges} package.
+    They provide very efficient ways to construct a List derivative from
+    the vector-like object passed to their first argument (\code{flesh}
+    for \code{relist()} and \code{x} for \code{extractList()}).
+    See \code{?\link[IRanges]{extractList}} in the \pkg{IRanges}
+    package for more information.
   }
 }
 
@@ -237,6 +259,10 @@
     \item \link{splitAsList} for splitting a vector-like object into a
           List object.
 
+    \item \link[IRanges]{relist} and \link[IRanges]{extractList} in the
+          \pkg{IRanges} package for efficiently constructing a List
+          derivative from a vector-like object.
+
     \item \link{List-utils} for common operations on List objects.
 
     \item \link{Vector} objects for the parent class.
@@ -248,17 +274,89 @@
 
     \item The \link[IRanges]{IntegerList}, \link[IRanges]{RleList}, and
           \link[IRanges]{IRanges} classes and constructors defined in the
-          \pkg{IRanges} package for more examples of concrete List
-          subclasses.
-
-    \item The \link[IRanges]{extractList} function defined in the
-          \pkg{IRanges} package for grouping elements of a vector-like
-          object into a list-like object.
+          \pkg{IRanges} package for some examples of List derivatives.
   }
 }
 
 \examples{
 showClass("List")  # shows only the known subclasses define in this package
+
+## ---------------------------------------------------------------------
+## A. CONSTRUCTION
+## ---------------------------------------------------------------------
+x <- sample(500, 20)
+y0 <- splitAsList(x, x \%\% 4)
+y0
+
+levels <- paste0("G", 1:10)
+f1 <- factor(sample(levels, length(x), replace=TRUE), levels=levels)
+y1 <- splitAsList(x, f1)
+y1
+
+f2 <- factor(sample(levels, 26, replace=TRUE), levels=levels)
+y2 <- splitAsList(letters, f2)
+y2
+
+library(IRanges)  # for the NumericList() constructor and the
+                  # coercion to CompressedCharacterList
+
+NumericList(A=runif(10), B=NULL, C=runif(3))
+
+## Another way to obtain 'splitAsList(letters, f2)' but using
+## 'splitAsList()' should be preferred as it is a lot more efficient:
+y2b <- as(split(letters, f2), "CompressedCharacterList")  # inefficient!
+stopifnot(identical(y2, y2b))
+
+## ---------------------------------------------------------------------
+## B. SUBSETTING
+## ---------------------------------------------------------------------
+## Single-bracket and double-bracket subsetting behave like on ordinary
+## lists:
+y1[c(10, 1, 2, 2)]
+y1[c(-10, -1, -2)]
+y1[c(TRUE, FALSE)]
+y1[c("G8", "G1")]
+head(y1)
+tail(y1, n=3)
+y1[[2]]     # note the difference with y1[2]
+y1[["G2"]]  # note the difference with y1["G2"]
+
+y0[["3"]]
+y0[[3]]
+
+## In addition to all the forms of subscripting supported by ordinary
+## lists, List objects and derivatives accept a subscript that is a
+## list-like object. This form of subsetting is called "list-style
+## subsetting":
+i <- list(4:3, -2, 1)    # ordinary list
+y1[i]
+i <- y1 >= 200           # LogicalList object
+y1[i]
+
+## List-style subsetting also works with an RleList or IntegerRangesList
+## subscript:
+i <- RleList(y1 >= 200)  # RleList object
+y1[i]
+i <- IRangesList(RleList(y1 >= 200))  # IRangesList object
+y1[i]
+
+## ---------------------------------------------------------------------
+## C. THE "UNLIST -> TRANFORM -> RELIST" IDIOM
+## ---------------------------------------------------------------------
+## The "unlist -> transform -> relist" idiom is a very efficient way to
+## apply the same simple transformation to all the **inner elements** of
+## a list-like object (i.e. to all the elements of its list elements).
+## The result is another list-like object with the same shape as the
+## original object (but not necessarily the same class):
+relist(sqrt(unlist(y1)), y1)
+relist(toupper(unlist(y2)), y2)
+
+## However note that sqrt(), toupper(), and many other base functions,
+## can be used directly on a List derivative. This is because the IRanges
+## package defines methods for these functions that know how to handle
+## List objects:
+sqrt(y1)     # same as 'relist(sqrt(unlist(y1)), y1)'
+toupper(y2)  # same as 'relist(toupper(unlist(y2)), y2)'
 }
 
 \keyword{methods}
