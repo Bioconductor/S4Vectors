@@ -69,9 +69,11 @@
     \item{}{
       \code{combineUniqueCols(x, y, ..., use.names=TRUE)}: Same as 
       \code{combineCols}, but this function will attempt to collapse multiple
-      columns with the same name across the input \code{DataFrame}s into
-      a single column in the output. This guarantees that the column names
-      in the output \code{DataFrame} are always unique.
+      columns with the same name across the input \code{DataFrame}s into a
+      single column in the output. This guarantees that the column names in the
+      output \code{DataFrame} are always unique. The function works on any
+      rectangular objects that have colnames and for which \code{combineCols()}
+      works.
 
       When \code{use.names=TRUE}, collapsing is only performed if the
       duplicated column has identical values for the shared rows in the

@@ -365,7 +365,7 @@ export(
     ## FilterRules-class.R:
     FilterRules, FilterMatrix,
 
-    ## combine-methods.R:
+    ## DataFrame-combine.R:
     combineUniqueCols
 )
 

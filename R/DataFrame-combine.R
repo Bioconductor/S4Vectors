@@ -257,12 +257,11 @@ setMethod("combineCols", "DataFrame", function(x, y, ..., use.names=TRUE) {
 ### combineUniqueCols()
 ###
 
-# This breaks the combineCols contract by consolidating data together from
-# the same column name, such that the ncol() of combineCols's output is no
-# longer equal to the sum of the ncols() of its inputs. However, it's very
-# convenient for avoiding 2-3 copies of the same column during the merge,
-# so we still provide it. Note that we call combineCols so that we handle
-# other DataFrame representations that might have their own methods.
+# Will work on any rectangular objects that have colnames and for which
+# combineCols() works. Unlike with combineCols(), the ncol() of
+# combineUniqueCols's output is not equal to the sum of the ncols() of its
+# inputs. As such, it is a separate function rather than an option in
+# combineCols(). 
 combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
     combined <- combineCols(x, y, ..., use.names=use.names)
     combined <- combined[,!duplicated(colnames(combined)),drop=FALSE]
