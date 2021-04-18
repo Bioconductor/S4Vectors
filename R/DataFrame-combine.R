@@ -264,6 +264,10 @@ setMethod("combineCols", "DataFrame", function(x, y, ..., use.names=TRUE) {
 # combineCols(). 
 combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
     combined <- combineCols(x, y, ..., use.names=use.names)
+    if (is.null(colnames(combined))) {
+        return(combined)
+    }
+
     combined <- combined[,!duplicated(colnames(combined)),drop=FALSE]
 
     all_df <- list(x, y, ...)
@@ -301,7 +305,7 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
                 # something is probably already wrong if this warning fires.
                 if (!identical(previous[overlapped], replacements[overlapped])) {
                     warning(wmsg("different values for shared rows in multiple instances of column '",
-                        d, "', ignoring this column in DataFrame ", i_df))
+                        d, "', ignoring this column in ", class(all_df[[i_df]]), " ", i_df))
                 } else {
                     reference[candidates] <- replacements
                     filled[candidates] <- TRUE
@@ -317,7 +321,7 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
                 if (!identical(all_df[[i_df]][[i_col]], reference)) {
                     # In this case, the warning is only emitted if they are not identical.
                     warning(wmsg("different values in multiple instances of column '",
-                        d, "', ignoring this column in DataFrame ", i_df))
+                        d, "', ignoring this column in ", class(all_df[[i_df]]), " ", i_df))
                 }
             }
         }
