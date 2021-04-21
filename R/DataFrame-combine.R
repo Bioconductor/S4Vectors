@@ -218,6 +218,137 @@ setMethod("combineRows", c("missing", "DataFrame"),
     }
 )
 
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### combineCols()
+###
+
+setMethod("combineCols", c("DataFrame", "DataFrame"), function(x, y, ..., use.names=TRUE) {
+    all_df <- list(x, y, ...)
+    .combine_DFrame_cols(all_df, use.names=use.names)
+})
+
+.combine_DFrame_cols <- function(all_df, use.names=TRUE) {
+    # Either all DFs have rownames, or no DFs have rownames. 
+    if (use.names) {
+        all_names <- lapply(all_df, rownames)
+
+        checkNames <- function(x) {
+            !is.null(x) && anyDuplicated(x)==0L
+        }
+        if (!all(vapply(all_names, checkNames, TRUE))) {
+            stop(wmsg("DataFrames must have non-NULL, non-duplicated rownames when 'use.names=TRUE'"))
+        }
+
+        common <- Reduce(union, all_names)
+        all_df <- lapply(all_df, function(x) {
+            out <- x[common,,drop=FALSE]
+            rownames(out) <- common
+            out
+        })
+
+    } else {
+        out <- vapply(all_df, nrow, 0L)
+        if (length(unique(out))!=1L) {
+            stop(wmsg("DataFrames must have same number of rows when 'use.names=FALSE'"))
+        }
+    }
+
+    do.call(cbind, all_df)
+}
+
+setMethod("combineCols", c("DataFrame", "missing"), function(x, y, ..., use.names=TRUE) {
+    .combine_DFrame_cols(list(x, ...), use.names=use.names)
+})
+
+setMethod("combineCols", c("missing", "DataFrame"), function(x, y, ..., use.names=FALSE) {
+    .combine_DFrame_cols(list(y, ...), use.names=use.names)
+})
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### combineUniqueCols()
+###
+
+# Unlike with combineCols(), the ncol() of combineUniqueCols's output is not
+# equal to the sum of the ncols() of its inputs. As such, it is a separate
+# function rather than being an option in combineCols(). 
+combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
+    if (missing(y)) {
+        all_df <- list(x, ...)
+    } else if (missing(x)) {
+        all_df <- list(y, ...)
+    } else {
+        all_df <- list(x, y, ...)
+    }
+
+    combined <- do.call(combineCols, c(all_df, list(use.names=use.names)))
+    if (is.null(colnames(combined))) {
+        return(combined)
+    }
+
+    # Unnamed columns are never considered duplicates of each other.
+    retain <- !duplicated(colnames(combined)) | colnames(combined)==""
+    combined <- combined[,retain,drop=FALSE]
+
+    all_colnames <- lapply(all_df, colnames)
+    df_indices <- rep(seq_along(all_colnames), lengths(all_colnames))
+    col_indices <- sequence(lengths(all_colnames))
+
+    all_colnames <- unlist(all_colnames)
+    df_by_colname <- split(df_indices, all_colnames)
+    col_by_colname <- split(col_indices, all_colnames)
+    dupped <- names(df_by_colname)[lengths(df_by_colname) > 1]
+
+    dupped <- setdiff(dupped, "")
+
+    for (d in dupped) {
+        df_affected <- df_by_colname[[d]]
+        col_affected <- col_by_colname[[d]]
+        reference <- combined[,d]
+        first_df <- df_affected[1]
+
+        if (use.names) {
+            filled <- rownames(combined) %in% rownames(all_df[[first_df]])
+
+            for (i in seq_along(df_affected)[-1]) {
+                i_df <- df_affected[i]
+                i_col <- col_affected[i]
+                cur_df <- all_df[[i_df]]
+                replacements <- cur_df[,i_col]
+
+                candidates <- match(rownames(cur_df), rownames(combined))
+                overlapped <- filled[candidates]
+                previous <- reference[candidates]
+
+                # Only doing the replacement if the overlaps are identical.
+                # Incidentally, this also checks for the right type. We could
+                # be more aggressive and do a partial replacement, but
+                # something is probably already wrong if this warning fires.
+                if (!identical(previous[overlapped], replacements[overlapped])) {
+                    warning(wmsg("different values for shared rows in multiple instances of column '",
+                        d, "', ignoring this column in ", class(all_df[[i_df]]), " ", i_df))
+                } else {
+                    reference[candidates] <- replacements
+                    filled[candidates] <- TRUE
+                }
+            }
+
+            combined[,d] <- reference
+
+        } else {
+            for (i in seq_along(df_affected)[-1]) {
+                i_df <- df_affected[i]
+                i_col <- col_affected[i]
+                if (!identical(all_df[[i_df]][,i_col], reference)) {
+                    # In this case, the warning is only emitted if they are not identical.
+                    warning(wmsg("different values in multiple instances of column '",
+                        d, "', ignoring this column in ", class(all_df[[i_df]]), " ", i_df))
+                }
+            }
+        }
+    }
+
+    combined
+}
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### cbind()

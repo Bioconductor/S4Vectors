@@ -278,7 +278,7 @@ exportMethods(
     xtabs,
     start, end, width,
     grep, grepl,
-    combineRows,
+    combineRows, combineCols,
     updateObject
 )
 
@@ -363,7 +363,10 @@ export(
     Pairs,
 
     ## FilterRules-class.R:
-    FilterRules, FilterMatrix
+    FilterRules, FilterMatrix,
+
+    ## DataFrame-combine.R:
+    combineUniqueCols
 )
 
 
