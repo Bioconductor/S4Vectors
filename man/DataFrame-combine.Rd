@@ -73,9 +73,9 @@
       \code{combineCols}, but this function will attempt to collapse multiple
       columns with the same name across the input \code{DataFrame}s into a
       single column in the output. This guarantees that the column names in the
-      output \code{DataFrame} are always unique. The function works on any
-      rectangular objects for which \code{combineCols()} works; if any of the
-      objects do not have column names, no collapsing is performed.
+      output \code{DataFrame} are always unique. The only exception is for 
+      unnamed columns, which are not collapsed. The function works on any
+      rectangular objects for which \code{combineCols()} works.
 
       When \code{use.names=TRUE}, collapsing is only performed if the
       duplicated column has identical values for the shared rows in the
