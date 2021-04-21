@@ -281,15 +281,15 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
     }
 
     combined <- do.call(combineCols, c(all_df, list(use.names=use.names)))
-
-    all_colnames <- lapply(all_df, colnames)
-    no_colnames <- vapply(all_colnames, is.null, TRUE)
-    if (any(no_colnames)) {
+    if (is.null(colnames(combined))) {
         return(combined)
     }
 
-    combined <- combined[,!duplicated(colnames(combined)),drop=FALSE]
+    # Unnamed columns are never considered duplicates of each other.
+    retain <- !duplicated(colnames(combined)) | colnames(combined)==""
+    combined <- combined[,retain,drop=FALSE]
 
+    all_colnames <- lapply(all_df, colnames)
     df_indices <- rep(seq_along(all_colnames), lengths(all_colnames))
     col_indices <- sequence(lengths(all_colnames))
 
@@ -297,6 +297,8 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
     df_by_colname <- split(df_indices, all_colnames)
     col_by_colname <- split(col_indices, all_colnames)
     dupped <- names(df_by_colname)[lengths(df_by_colname) > 1]
+
+    dupped <- setdiff(dupped, "")
 
     for (d in dupped) {
         df_affected <- df_by_colname[[d]]

@@ -137,3 +137,22 @@ test_combineUniqueCols <- function() {
     checkIdentical(combineUniqueCols(x=X), X)
     checkIdentical(combineUniqueCols(y=X), X)
 }
+
+test_combineUniqueCols_unnamed <- function() {
+    # Incidentally, this also checks that we use the 2D API.
+    setMethod("combineCols", "matrix", function(x, y, ..., use.names=TRUE) cbind(x, y, ...))
+    m1 <- m2 <- matrix(1:12, ncol=3)
+
+    # Handles unnamed inputs.
+    out <- combineUniqueCols(m1, m2)
+    checkIdentical(out, cbind(m1, m2))
+
+    # Supports mixed named/unnamed inputs.
+    colnames(m2) <- LETTERS[1:3]
+    out <- combineUniqueCols(m1, m2)
+    checkIdentical(out, cbind(m1, m2))
+
+    # Duplicate named columns are removed.
+    out <- combineUniqueCols(m1, m2, m1, m2)
+    checkIdentical(out, cbind(m1, m2, m1))
+}
