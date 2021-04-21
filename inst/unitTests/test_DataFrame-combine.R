@@ -89,6 +89,10 @@ test_combineCols <- function() {
     checkIdentical(out$x, c(1, NA))
     checkIdentical(out$y, LETTERS[1:2])
     checkIdentical(out$z, c(NA, TRUE))
+
+    # Unary cases work correctly.
+    checkIdentical(combineCols(x=X), X)
+    checkIdentical(combineCols(y=X), X)
 }
 
 test_combineUniqueCols <- function() {
@@ -124,7 +128,12 @@ test_combineUniqueCols <- function() {
     checkIdentical(out$dup, c(letters[1:4], NA))
     checkIdentical(out$aa, c(5L, NA, NA, NA, 6L))
 
+    # This should trigger a warning.
     Y$dup <- "bobbity"
-    out <- combineUniqueCols(X, Y, Z) # should trigger a warning.
+    out <- combineUniqueCols(X, Y, Z) 
     checkIdentical(out$dup, letters[1:4])
+
+    # Unary case works correctly.
+    checkIdentical(combineUniqueCols(x=X), X)
+    checkIdentical(combineUniqueCols(y=X), X)
 }

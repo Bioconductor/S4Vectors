@@ -222,10 +222,13 @@ setMethod("combineRows", c("missing", "DataFrame"),
 ### combineCols()
 ###
 
-setMethod("combineCols", "DataFrame", function(x, y, ..., use.names=TRUE) {
+setMethod("combineCols", c("DataFrame", "DataFrame"), function(x, y, ..., use.names=TRUE) {
     all_df <- list(x, y, ...)
+    .combine_DFrame_cols(all_df, use.names=use.names)
+})
 
-    # Either all DFs have names, or no DFs have names. 
+.combine_DFrame_cols <- function(all_df, use.names=TRUE) {
+    # Either all DFs have rownames, or no DFs have rownames. 
     if (use.names) {
         all_names <- lapply(all_df, rownames)
 
@@ -251,27 +254,42 @@ setMethod("combineCols", "DataFrame", function(x, y, ..., use.names=TRUE) {
     }
 
     do.call(cbind, all_df)
+}
+
+setMethod("combineCols", c("DataFrame", "missing"), function(x, y, ..., use.names=TRUE) {
+    .combine_DFrame_cols(list(x, ...), use.names=use.names)
+})
+
+setMethod("combineCols", c("missing", "DataFrame"), function(x, y, ..., use.names=FALSE) {
+    .combine_DFrame_cols(list(y, ...), use.names=use.names)
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### combineUniqueCols()
 ###
 
-# Will work on any rectangular objects that have colnames and for which
-# combineCols() works. Unlike with combineCols(), the ncol() of
-# combineUniqueCols's output is not equal to the sum of the ncols() of its
-# inputs. As such, it is a separate function rather than an option in
-# combineCols(). 
+# Unlike with combineCols(), the ncol() of combineUniqueCols's output is not
+# equal to the sum of the ncols() of its inputs. As such, it is a separate
+# function rather than being an option in combineCols(). 
 combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
-    combined <- combineCols(x, y, ..., use.names=use.names)
-    if (is.null(colnames(combined))) {
+    if (missing(y)) {
+        all_df <- list(x, ...)
+    } else if (missing(x)) {
+        all_df <- list(y, ...)
+    } else {
+        all_df <- list(x, y, ...)
+    }
+
+    combined <- do.call(combineCols, c(all_df, list(use.names=use.names)))
+
+    all_colnames <- lapply(all_df, colnames)
+    no_colnames <- vapply(all_colnames, is.null, TRUE)
+    if (any(no_colnames)) {
         return(combined)
     }
 
     combined <- combined[,!duplicated(colnames(combined)),drop=FALSE]
 
-    all_df <- list(x, y, ...)
-    all_colnames <- lapply(all_df, colnames)
     df_indices <- rep(seq_along(all_colnames), lengths(all_colnames))
     col_indices <- sequence(lengths(all_colnames))
 
@@ -283,7 +301,7 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
     for (d in dupped) {
         df_affected <- df_by_colname[[d]]
         col_affected <- col_by_colname[[d]]
-        reference <- combined[[d]]
+        reference <- combined[,d]
         first_df <- df_affected[1]
 
         if (use.names) {
@@ -293,7 +311,7 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
                 i_df <- df_affected[i]
                 i_col <- col_affected[i]
                 cur_df <- all_df[[i_df]]
-                replacements <- cur_df[[i_col]]
+                replacements <- cur_df[,i_col]
 
                 candidates <- match(rownames(cur_df), rownames(combined))
                 overlapped <- filled[candidates]
@@ -312,13 +330,13 @@ combineUniqueCols <- function(x, y, ..., use.names=TRUE) {
                 }
             }
 
-            combined[[d]] <- reference
+            combined[,d] <- reference
 
         } else {
             for (i in seq_along(df_affected)[-1]) {
                 i_df <- df_affected[i]
                 i_col <- col_affected[i]
-                if (!identical(all_df[[i_df]][[i_col]], reference)) {
+                if (!identical(all_df[[i_df]][,i_col], reference)) {
                     # In this case, the warning is only emitted if they are not identical.
                     warning(wmsg("different values in multiple instances of column '",
                         d, "', ignoring this column in ", class(all_df[[i_df]]), " ", i_df))

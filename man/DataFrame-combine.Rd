@@ -10,7 +10,9 @@
 \alias{combineRows,DataFrame,DataFrame-method}
 \alias{combineRows,DataFrame,missing-method}
 \alias{combineRows,missing,DataFrame-method}
-\alias{combineCols,DataFrame-method}
+\alias{combineCols,DataFrame,DataFrame-method}
+\alias{combineCols,missing,DataFrame-method}
+\alias{combineCols,DataFrame,missing-method}
 \alias{combineUniqueCols}
 \alias{merge,DataFrame,DataFrame-method}
 \alias{merge,data.frame,DataFrame-method}
@@ -72,8 +74,8 @@
       columns with the same name across the input \code{DataFrame}s into a
       single column in the output. This guarantees that the column names in the
       output \code{DataFrame} are always unique. The function works on any
-      rectangular objects for which \code{combineCols()} works; if the objects
-      do not have column names, no collapsing is performed.
+      rectangular objects for which \code{combineCols()} works; if any of the
+      objects do not have column names, no collapsing is performed.
 
       When \code{use.names=TRUE}, collapsing is only performed if the
       duplicated column has identical values for the shared rows in the
@@ -131,6 +133,40 @@ y4 <- DataFrame(B=Rle(c("a", "b")), C=runif(2))
 combineRows(x2, y4)
 combineRows(y4, x2)
 combineRows(y4, x2, DataFrame(D=letters[1:3], B=301:303))
+
+## ---------------------------------------------------------------------
+## combineCols()
+## ---------------------------------------------------------------------
+
+X <- DataFrame(x=1)
+Y <- DataFrame(y="A")
+Z <- DataFrame(z=TRUE)
+
+combineCols(X, Y, Z, use.names=FALSE)
+
+Y <- DataFrame(y=LETTERS[1:2])
+rownames(X) <- "foo"
+rownames(Y) <- c("foo", "bar")
+rownames(Z) <- "bar"
+
+combineCols(X, Y, Z)
+
+## ---------------------------------------------------------------------
+## combineUniqueCols()
+## ---------------------------------------------------------------------
+
+X <- DataFrame(x=1)
+Y <- DataFrame(y=LETTERS[1:2], dup=1:2)
+Z <- DataFrame(z=TRUE, dup=2L)
+
+rownames(X) <- "foo"
+rownames(Y) <- c("foo", "bar")
+rownames(Z) <- "bar"
+
+combineUniqueCols(X, Y, Z)
+
+Z$dup <- 3
+combineUniqueCols(X, Y, Z)
 
 ## ---------------------------------------------------------------------
 ## merge()
