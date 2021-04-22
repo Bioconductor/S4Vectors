@@ -27,31 +27,55 @@
 
 \description{
   RectangularData is a virtual class with no slots to be extended by
-  classes that aim at representing objects with a rectangular shape.
-  Current RectangularData derivatives are \link{DataFrame},
-  \link[DelayedArray]{DelayedMatrix},
-  \link[SummarizedExperiment]{SummarizedExperiment}, and
-  \link[SummarizedExperiment]{Assays} objects.
+  classes that aim at representing objects with a 2D rectangular shape.
 
-  RectangularData derivatives are expected to support the 2D API: at least
-  \code{dim()}, but also typically \code{dimnames}, \code{[} (the 2D form
-  \code{x[i, j]}), \code{bindROWS()}, and \code{bindCOLS()}.
+  Some examples of RectangularData extensions are:
+  \itemize{
+    \item The \link{DataFrame} class defined in this package (\pkg{S4Vectors}).
+    \item The \link[DelayedArray]{DelayedMatrix} class defined in the
+          \pkg{DelayedArray} package.
+    \item The \link[SummarizedExperiment]{SummarizedExperiment} and
+          \link[SummarizedExperiment]{Assays} classes defined in the
+          \pkg{SummarizedExperiment} package.
+  }
+}
+
+\details{
+  Any object that belongs to a class that extends RectangularData is called
+  a \emph{RectangularData derivative}. Users should be able to access a
+  RectangularData derivative via the standard \emph{2D API} defined in
+  base R, that is, via things like \code{dim()}, \code{dimnames()}, and the
+  2D form of \code{[} (\code{x[i, j]}).
+
+  Not all RectangularData derivatives will necessarily support the full
+  2D API but they must support at least \code{dim()}, \code{nrow(x)},
+  \code{ncol(x)}, \code{NROW(x)}, and \code{NCOL(x)}. And of course,
+  \code{dim()} is required to return an integer vector of length 2 on
+  these objects.
+
+  Developers who implement RectangularData extensions should also make
+  sure that they support low-level operations \code{bindROWS()} and
+  \code{bindCOLS()}.
 }
 
 \section{Accessors}{
   In the following code snippets, \code{x} is a RectangularData derivative.
+  Not all RectangularData derivatives will support all these accessors.
   \describe{
+    \item{}{
+      \code{dim(x)}:
+      Length two integer vector defined as \code{c(nrow(x), ncol(x))}.
+      Must work on any RectangularData derivative.
+    }
     \item{}{
       \code{nrow(x)}, \code{ncol(x)}:
       Get the number of rows and columns, respectively.
+      Must work on any RectangularData derivative.
     }
     \item{}{
       \code{NROW(x)}, \code{NCOL(x)}:
       Same as \code{nrow(x)} and \code{ncol(x)}, respectively.
-    }
-    \item{}{
-      \code{dim(x)}:
-      Length two integer vector defined as \code{c(nrow(x), ncol(x))}.
+      Must work on any RectangularData derivative.
     }
     \item{}{
       \code{rownames(x)}, \code{colnames(x)}:
@@ -134,7 +158,7 @@
   \itemize{
     \item \link{DataFrame} for an implementation that mimics \code{data.frame}.
 
-    \item \link{data.frame}
+    \item \link{data.frame} objecds in base R.
   }
 }
 
