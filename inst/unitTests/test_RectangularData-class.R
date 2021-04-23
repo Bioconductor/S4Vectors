@@ -64,13 +64,12 @@ test_combineUniqueCols <- function() {
     checkIdentical(out$dup, letters[1:4])
 
     # Unary case works correctly.
-    checkIdentical(combineUniqueCols(x=X), X)
-    checkIdentical(combineUniqueCols(y=X), X)
+    checkIdentical(combineUniqueCols(X), X)
 }
 
 test_combineUniqueCols_unnamed <- function() {
     # Incidentally, this also checks that we use the 2D API.
-    setMethod("combineCols", "matrix", function(x, y, ..., use.names=TRUE) cbind(x, y, ...))
+    setMethod("combineCols", "matrix", function(x, ..., use.names=TRUE) cbind(x, ...))
     m1 <- m2 <- matrix(1:12, ncol=3)
 
     # Handles unnamed inputs.

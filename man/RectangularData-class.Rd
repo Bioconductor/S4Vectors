@@ -159,7 +159,7 @@
       aggregating the columns of the input objects.
     }
     \item{}{
-      \code{combineRows(x, y, ...)}: Creates a new RectangularData derivative
+      \code{combineRows(x, ...)}: Creates a new RectangularData derivative
       (of the same class as \code{x}) by aggregating the rows of the input
       objects. Unlike \code{rbind()}, \code{combineRows()} will handle cases
       involving differences in the column names of the input objects by
@@ -174,7 +174,7 @@
       for \link{DataFrame} objects and other RectangularData derivatives.
     }
     \item{}{
-      \code{combineCols(x, y, ..., use.names=TRUE)}: Creates a new
+      \code{combineCols(x, ..., use.names=TRUE)}: Creates a new
       RectangularData derivative (of the same class as \code{x}) by
       aggregating the columns of the input objects. Unlike \code{cbind()},
       \code{combineCols()} will handle cases involving differences in the
@@ -199,7 +199,7 @@
       for \link{DataFrame} objects and other RectangularData derivatives.
     }
     \item{}{
-      \code{combineUniqueCols(x, y, ..., use.names=TRUE)}: Same as
+      \code{combineUniqueCols(x, ..., use.names=TRUE)}: Same as
       \code{combineCols()}, but this function will attempt to collapse
       multiple columns with the same name across the input objects into a
       single column in the output. This guarantees that the column names

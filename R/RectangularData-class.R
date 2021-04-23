@@ -120,11 +120,11 @@ setMethod("cbind", "RectangularData", cbind.RectangularData)
 ### the missing rows or columns and filling them with NAs.
 
 setGeneric("combineRows",
-    function(x, y, ...) standardGeneric("combineRows")
+    function(x, ...) standardGeneric("combineRows")
 )
 
 setGeneric("combineCols",
-    function(x, y, ..., use.names=TRUE) standardGeneric("combineCols")
+    function(x, ..., use.names=TRUE) standardGeneric("combineCols")
 )
 
 ### Finally, a more specialized function by Aaron Lun. Implemented on top
@@ -133,14 +133,12 @@ setGeneric("combineCols",
 ### Unlike with combineCols(), the ncol() of combineUniqueCols's output is not
 ### equal to the sum of the ncols() of its inputs. As such, it is a separate
 ### function rather than being an option in combineCols().
-combineUniqueCols <- function(x, y, ..., use.names=TRUE)
+combineUniqueCols <- function(x, ..., use.names=TRUE)
 {
-    if (missing(y)) {
-        all_objects <- list(x, ...)
-    } else if (missing(x)) {
-        all_objects <- list(y, ...)
+    if (missing(x)) {
+        all_objects <- list(...)
     } else {
-        all_objects <- list(x, y, ...)
+        all_objects <- list(x, ...)
     }
 
     combined <- do.call(combineCols, c(all_objects, list(use.names=use.names)))

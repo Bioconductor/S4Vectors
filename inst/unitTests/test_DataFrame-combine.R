@@ -106,7 +106,6 @@ test_combineCols <- function() {
     checkIdentical(out$z, c(NA, TRUE))
 
     # Unary cases work correctly.
-    checkIdentical(combineCols(x=X), X)
-    checkIdentical(combineCols(y=X), X)
+    checkIdentical(combineCols(X), X)
 }
 

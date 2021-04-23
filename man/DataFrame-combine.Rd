@@ -49,21 +49,21 @@
       \code{combineRows()}.
     }
     \item{}{
-      \code{combineRows(x, y, ...)}: \code{combineRows()} is a generic
+      \code{combineRows(x, ...)}: \code{combineRows()} is a generic
       function documented in the man page for \link{RectangularData}
       objects (see \code{?\link{RectangularData}}).
       The method for \link{DataFrame} objects behaves as documented in
       that man page.
     }
     \item{}{
-      \code{combineCols(x, y, ..., use.names=TRUE)}: \code{combineCols()}
+      \code{combineCols(x, ..., use.names=TRUE)}: \code{combineCols()}
       is a generic function documented in the man page for
       \link{RectangularData} objects (see \code{?\link{RectangularData}}).
       The method for \link{DataFrame} objects behaves as documented in
       that man page.
     }
     \item{}{
-      \code{combineUniqueCols(x, y, ..., use.names=TRUE)}: This function
+      \code{combineUniqueCols(x, ..., use.names=TRUE)}: This function
       is documented in the man page for \link{RectangularData} objects
       (see \code{?\link{RectangularData}}).
     }

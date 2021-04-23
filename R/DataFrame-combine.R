@@ -194,27 +194,11 @@ setMethod("bindROWS", "DataFrame", .bindROWS_DFrame_objects)
 ### combineRows()
 ###
 
-setMethod("combineRows", c("DataFrame", "DataFrame"),
-    function(x, y, ...)
-    {
-        objects <- list(y, ...)
-        .combine_DFrame_rows(x, objects, strict.colnames=FALSE)
-    }
-)
-
-setMethod("combineRows", c("DataFrame", "missing"),
-    function(x, y, ...)
+setMethod("combineRows", "DataFrame",
+    function(x, ...)
     {
         objects <- list(...)
         .combine_DFrame_rows(x, objects, strict.colnames=FALSE)
-    }
-)
-
-setMethod("combineRows", c("missing", "DataFrame"),
-    function(x, y, ...)
-    {
-        objects <- list(...)
-        .combine_DFrame_rows(y, objects, strict.colnames=FALSE)
     }
 )
 
@@ -252,26 +236,10 @@ setMethod("combineRows", c("missing", "DataFrame"),
     do.call(cbind, all_df)
 }
 
-setMethod("combineCols", c("DataFrame", "DataFrame"),
-    function(x, y, ..., use.names=TRUE)
-    {
-        all_df <- list(x, y, ...)
-        .combine_DFrame_cols(all_df, use.names=use.names)
-    }
-)
-
-setMethod("combineCols", c("DataFrame", "missing"),
-    function(x, y, ..., use.names=TRUE)
+setMethod("combineCols", "DataFrame",
+    function(x, ..., use.names=TRUE)
     {
         all_df <- list(x, ...)
-        .combine_DFrame_cols(all_df, use.names=use.names)
-    }
-)
-
-setMethod("combineCols", c("missing", "DataFrame"),
-    function(x, y, ..., use.names=FALSE)
-    {
-        all_df <- list(y, ...)
         .combine_DFrame_cols(all_df, use.names=use.names)
     }
 )
