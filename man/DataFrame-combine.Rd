@@ -7,12 +7,8 @@
 \alias{c,DataFrame-method}
 \alias{cbind.DataFrame}
 \alias{cbind,DataFrame-method}
-\alias{combineRows,DataFrame,DataFrame-method}
-\alias{combineRows,DataFrame,missing-method}
-\alias{combineRows,missing,DataFrame-method}
-\alias{combineCols,DataFrame,DataFrame-method}
-\alias{combineCols,missing,DataFrame-method}
-\alias{combineCols,DataFrame,missing-method}
+\alias{combineRows,DataFrame-method}
+\alias{combineCols,DataFrame-method}
 \alias{merge,DataFrame,DataFrame-method}
 \alias{merge,data.frame,DataFrame-method}
 \alias{merge,DataFrame,data.frame-method}
