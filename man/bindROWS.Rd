@@ -6,7 +6,7 @@
 
 \alias{bindCOLS}
 
-\title{Combine objects by ROWS or COLS}
+\title{Combine objects along their ROWS or COLS}
 
 \description{
   \code{bindROWS} and \code{bindCOLS} are low-level generic functions
@@ -14,6 +14,7 @@
   1st or 2nd dimension. They are the workhorses behind higher-level
   operations like \code{c()}, \code{rbind()}, or \code{cbind()} on
   most vector-like or rectangular objects defined in Bioconductor.
+
   They are not intended to be used directly by the end user.
 }
 

@@ -114,6 +114,105 @@ cbind.RectangularData <- function(..., deparse.level=1)
 }
 setMethod("cbind", "RectangularData", cbind.RectangularData)
 
+### Two additional generic functions to bind rectangular objects by rows
+### or columns. Unlike rbind() or cbind(), these will handle cases involving
+### differences in the colnames or rownames of their input objects by adding
+### the missing rows or columns and filling them with NAs.
+
+setGeneric("combineRows",
+    function(x, y, ...) standardGeneric("combineRows")
+)
+
+setGeneric("combineCols",
+    function(x, y, ..., use.names=TRUE) standardGeneric("combineCols")
+)
+
+### Finally, a more specialized function by Aaron Lun. Implemented on top
+### of combineCols() and expected to work on any input objects for which
+### combineCols() works.
+### Unlike with combineCols(), the ncol() of combineUniqueCols's output is not
+### equal to the sum of the ncols() of its inputs. As such, it is a separate
+### function rather than being an option in combineCols().
+combineUniqueCols <- function(x, y, ..., use.names=TRUE)
+{
+    if (missing(y)) {
+        all_objects <- list(x, ...)
+    } else if (missing(x)) {
+        all_objects <- list(y, ...)
+    } else {
+        all_objects <- list(x, y, ...)
+    }
+
+    combined <- do.call(combineCols, c(all_objects, list(use.names=use.names)))
+    if (is.null(colnames(combined))) {
+        return(combined)
+    }
+
+    # Unnamed columns are never considered duplicates of each other.
+    retain <- !duplicated(colnames(combined)) | colnames(combined)==""
+    combined <- combined[,retain,drop=FALSE]
+
+    all_colnames <- lapply(all_objects, colnames)
+    object_indices <- rep(seq_along(all_colnames), lengths(all_colnames))
+    col_indices <- sequence(lengths(all_colnames))
+
+    all_colnames <- unlist(all_colnames)
+    objects_by_colname <- split(object_indices, all_colnames)
+    col_by_colname <- split(col_indices, all_colnames)
+    dupped <- names(objects_by_colname)[lengths(objects_by_colname) > 1]
+
+    dupped <- setdiff(dupped, "")
+
+    for (d in dupped) {
+        object_affected <- objects_by_colname[[d]]
+        col_affected <- col_by_colname[[d]]
+        reference <- combined[,d]
+        first_object <- object_affected[1]
+
+        if (use.names) {
+            filled <- rownames(combined) %in% rownames(all_objects[[first_object]])
+
+            for (i in seq_along(object_affected)[-1]) {
+                i_object <- object_affected[i]
+                i_col <- col_affected[i]
+                cur_object <- all_objects[[i_object]]
+                replacements <- cur_object[,i_col]
+
+                candidates <- match(rownames(cur_object), rownames(combined))
+                overlapped <- filled[candidates]
+                previous <- reference[candidates]
+
+                # Only doing the replacement if the overlaps are identical.
+                # Incidentally, this also checks for the right type. We could
+                # be more aggressive and do a partial replacement, but
+                # something is probably already wrong if this warning fires.
+                if (!identical(previous[overlapped], replacements[overlapped])) {
+                    warning(wmsg("different values for shared rows in multiple instances of column '",
+                        d, "', ignoring this column in ", class(all_objects[[i_object]]), " ", i_object))
+                } else {
+                    reference[candidates] <- replacements
+                    filled[candidates] <- TRUE
+                }
+            }
+
+            combined[,d] <- reference
+
+        } else {
+            for (i in seq_along(object_affected)[-1]) {
+                i_object <- object_affected[i]
+                i_col <- col_affected[i]
+                if (!identical(all_objects[[i_object]][,i_col], reference)) {
+                    # In this case, the warning is only emitted if they are not identical.
+                    warning(wmsg("different values in multiple instances of column '",
+                        d, "', ignoring this column in ", class(all_objects[[i_object]]), " ", i_object))
+                }
+            }
+        }
+    }
+
+    combined
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### make_rownames_for_RectangularData_display()

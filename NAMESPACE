@@ -278,7 +278,6 @@ exportMethods(
     xtabs,
     start, end, width,
     grep, grepl,
-    combineRows, combineCols,
     updateObject
 )
 
@@ -330,6 +329,9 @@ export(
     safeExplode,
     svn.time,
 
+    ## RectangularData-class.R:
+    combineUniqueCols,
+
     ## Hits-class.R:
     queryHits, subjectHits,
     queryLength, subjectLength,
@@ -363,15 +365,12 @@ export(
     Pairs,
 
     ## FilterRules-class.R:
-    FilterRules, FilterMatrix,
-
-    ## DataFrame-combine.R:
-    combineUniqueCols
+    FilterRules, FilterMatrix
 )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Export S4 generics defined in S4Vectors + export corresponding methods
+### Export S4 generics defined in S4Vectors, and corresponding methods
 ###
 
 export(
@@ -396,6 +395,7 @@ export(
     ## RectangularData-class.R:
     vertical_slot_names, horizontal_slot_names,
     ROWNAMES,
+    combineRows, combineCols,
 
     ## Annotated-class.R:
     metadata, "metadata<-",
@@ -473,6 +473,7 @@ exportMethods(
     unstrsplit,
     vertical_slot_names, horizontal_slot_names,
     ROWNAMES,
+    combineRows, combineCols,
     metadata, "metadata<-",
     parallel_slot_names, parallelVectorNames,
     elementMetadata, mcols, values,

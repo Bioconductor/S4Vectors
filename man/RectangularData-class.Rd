@@ -23,6 +23,10 @@
 \alias{cbind.RectangularData}
 \alias{cbind,RectangularData-method}
 
+\alias{combineRows}
+\alias{combineCols}
+\alias{combineUniqueCols}
+
 \title{RectangularData objects}
 
 \description{
@@ -42,16 +46,18 @@
 
 \details{
   Any object that belongs to a class that extends RectangularData is called
-  a \emph{RectangularData derivative}. Users should be able to access a
-  RectangularData derivative via the standard \emph{2D API} defined in
-  base R, that is, via things like \code{dim()}, \code{dimnames()}, and the
-  2D form of \code{[} (\code{x[i, j]}).
+  a \emph{RectangularData derivative}.
+
+  Users should be able to access and manipulate RectangularData derivatives
+  via the \emph{standard 2D API} defined in base R, that is, using things like
+  \code{dim()}, \code{nrow()}, \code{ncol()}, \code{dimnames()}, the 2D form
+  of \code{[} (\code{x[i, j]}), \code{rbind()}, \code{cbind()}, etc...
 
   Not all RectangularData derivatives will necessarily support the full
   2D API but they must support at least \code{dim()}, \code{nrow(x)},
   \code{ncol(x)}, \code{NROW(x)}, and \code{NCOL(x)}. And of course,
-  \code{dim()} is required to return an integer vector of length 2 on
-  these objects.
+  \code{dim()} must return an integer vector of length 2 on any of these
+  objects.
 
   Developers who implement RectangularData extensions should also make
   sure that they support low-level operations \code{bindROWS()} and
@@ -78,13 +84,13 @@
       Must work on any RectangularData derivative.
     }
     \item{}{
-      \code{rownames(x)}, \code{colnames(x)}:
-      Get the names of the rows and columns, respectively.
-    }
-    \item{}{
       \code{dimnames(x)}:
       Length two list of character vectors defined as
       \code{list(rownames(x), colnames(x))}.
+    }
+    \item{}{
+      \code{rownames(x)}, \code{colnames(x)}:
+      Get the names of the rows and columns, respectively.
     }
   }
 }
@@ -141,24 +147,95 @@
 }
 
 \section{Combining}{
-  In the code snippets below, \code{x} is a RectangularData derivative.
+  In the code snippets below, all the input objects are expected to be
+  RectangularData derivatives.
   \describe{
     \item{}{
       \code{rbind(...)}: Creates a new RectangularData derivative by
-      combining the rows of the RectangularData derivatives in \code{...}.
+      aggregating the rows of the input objects.
     }
     \item{}{
       \code{cbind(...)}: Creates a new RectangularData derivative by
-      combining the columns of the RectangularData derivatives in \code{...}.
+      aggregating the columns of the input objects.
+    }
+    \item{}{
+      \code{combineRows(x, y, ...)}: Creates a new RectangularData derivative
+      (of the same class as \code{x}) by aggregating the rows of the input
+      objects. Unlike \code{rbind()}, \code{combineRows()} will handle cases
+      involving differences in the column names of the input objects by
+      adding the missing columns to them, and filling these
+      columns with \code{NA}s. The column names of the returned object are a
+      union of the column names of the input objects.
+
+      Behaves like an \emph{endomorphism} with respect to its first argument
+      i.e. returns an object of the same class as \code{x}.
+
+      Finally note that this is a generic function with methods defined
+      for \link{DataFrame} objects and other RectangularData derivatives.
+    }
+    \item{}{
+      \code{combineCols(x, y, ..., use.names=TRUE)}: Creates a new
+      RectangularData derivative (of the same class as \code{x}) by
+      aggregating the columns of the input objects. Unlike \code{cbind()},
+      \code{combineCols()} will handle cases involving differences in the
+      number of rows of the input objects.
+
+      If \code{use.names=TRUE}, all objects are expected to have
+      non-\code{NULL}, non-duplicated row names. These row names do not have
+      to be the same, or even shared, across the input objects. Missing rows
+      in any individual input object are filled with \code{NA}s, such
+      that the row names of the returned object are a union of the row names
+      of the input objects.
+
+      If \code{use.names=FALSE}, all objects are expected to have the same
+      number of rows, and this function behaves the same as \code{cbind()}.
+      The row names of the returned object is set to \code{rownames(x)}.
+      Differences in the row names between input objects are ignored.
+
+      Behaves like an \emph{endomorphism} with respect to its first argument
+      i.e. returns an object of the same class as \code{x}.
+
+      Finally note that this is a generic function with methods defined
+      for \link{DataFrame} objects and other RectangularData derivatives.
+    }
+    \item{}{
+      \code{combineUniqueCols(x, y, ..., use.names=TRUE)}: Same as
+      \code{combineCols()}, but this function will attempt to collapse
+      multiple columns with the same name across the input objects into a
+      single column in the output. This guarantees that the column names
+      in the output object are always unique. The only exception is for
+      unnamed columns, which are not collapsed. The function works on any
+      rectangular objects for which \code{combineCols()} works.
+
+      When \code{use.names=TRUE}, collapsing is only performed if the
+      duplicated column has identical values for the shared rows in the
+      input objects involved. Otherwise, the contents of the later
+      input object is simply ignored with a warning. Similarly, if
+      \code{use.names=FALSE}, the duplicated columns must be identical
+      for all rows in the affected input objects.
+
+      Behaves like an \emph{endomorphism} with respect to its first argument
+      i.e. returns an object of the same class as \code{x}.
+
+      Finally note that this function is implemented on top of
+      \code{combineCols()} and is expected to work on any RectangularData
+      derivatives for which \code{combineCols()} works.
     }
   }
 }
 
+\author{Hervé Pagès and Aaron Lun}
+
 \seealso{
   \itemize{
-    \item \link{DataFrame} for an implementation that mimics \code{data.frame}.
+    \item \link{DataFrame} for a RectangularData extension that mimics
+          \code{data.frame} objects from base R.
 
-    \item \link{data.frame} objecds in base R.
+    \item \link{DataFrame-combine} for \code{combineRows()},
+          \code{combineCols()}, and \code{combineUniqueCols()} examples
+          involving \link{DataFrame} objects.
+
+    \item \link{data.frame} objects in base R.
   }
 }
 
