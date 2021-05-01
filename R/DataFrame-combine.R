@@ -177,7 +177,11 @@
         return(all_objects[[which(has_cols)[[1L]]]])
     }
     all_objects <- all_objects[has_rows]
-    .combine_DFrame_rows(all_objects[[1L]], all_objects[-1L],
+    x <- all_objects[[1L]]
+    if (!is(x, "DFrame"))
+        x <- as(x, "DFrame")
+    objects <- all_objects[-1L]
+    .combine_DFrame_rows(x, objects,
                          strict.colnames=TRUE,
                          use.names=use.names, check=check)
 }
