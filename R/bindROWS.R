@@ -177,12 +177,14 @@ bindROWS2 <- function(x, objects=list())
             all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
         is_factor <- vapply(all_objects, is.factor, logical(1L))
         if (any(is_factor)) {
-            all_objects <- lapply(all_objects,
-                                  function(object)
-                                      factor(object, levels=unique(object)))
+            all_objects[!is_factor] <- lapply(all_objects[!is_factor],
+                function(object) {
+                    object <- as.character(object)
+                    factor(object, levels=unique(object))
+                })
             all_levels <- unique(unlist(lapply(all_objects, levels),
                                         use.names=FALSE))
-            all_objects <- lapply(all_objects, factor, all_levels)
+            all_objects <- lapply(all_objects, factor, levels=all_levels)
         }
     }
     bindROWS(all_objects[[1L]], all_objects[-1L])

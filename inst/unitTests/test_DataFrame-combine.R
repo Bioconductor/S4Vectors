@@ -36,13 +36,19 @@ test_DataFrame_rbind <- function() {
   checkIdentical(target, rbind(DF2, DF1))
 
   ## Combining factors
-  df1 <- data.frame(species = c("Mouse", "Chicken"), n = c(5, 6))
+  df1 <- data.frame(species = factor(c("Z", "Y"), levels = LETTERS),
+                    n = c(5, 6))
   DF1 <- DataFrame(df1)
-  df2 <- data.frame(species = c("Human", "Chimp"), n = c(1, 2))
+  df2 <- data.frame(species = c("Human", "Chimp"),
+                    n = c(1, 2))
   DF2 <- DataFrame(df2)
   df12 <- rbind(df1, df2)
   rownames(df12) <- NULL
   checkIdentical(as.data.frame(rbind(DF1, DF2)), df12)
+  DF21 <- rbind(DF2, DF1)  # deviates from base::rbind.data.frame()
+  target_species <- c(factor(DF2$species, levels=unique(DF2$species)),
+                      DF1$species)
+  checkIdentical(target_species, DF21$species)
  
   checkIdentical(rownames(rbind(sw, DataFrame(swiss))),
                  c(rownames(swiss), rownames(swiss)))
