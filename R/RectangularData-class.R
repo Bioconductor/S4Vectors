@@ -67,7 +67,7 @@ setMethod("ROWNAMES", "ANY",
 
 setMethod("ROWNAMES", "RectangularData", function(x) rownames(x))
 
-setGeneric("ROWNAMES<-", function(x, value) standardGeneric("ROWNAMES"))
+setGeneric("ROWNAMES<-", function(x, value) standardGeneric("ROWNAMES<-"))
 
 setReplaceMethod("ROWNAMES", "ANY",
                  function (x, value) {
