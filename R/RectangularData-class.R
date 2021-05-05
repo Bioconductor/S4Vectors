@@ -79,6 +79,7 @@ setReplaceMethod("ROWNAMES", "ANY",
 
 setReplaceMethod("ROWNAMES", "RectangularData", function(x, value) {
     rownames(x) <- value
+    x
 })
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
