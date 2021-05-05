@@ -11,6 +11,9 @@
 \alias{ROWNAMES}
 \alias{ROWNAMES,ANY-method}
 \alias{ROWNAMES,RectangularData-method}
+\alias{ROWNAMES<-}
+\alias{ROWNAMES<-,ANY-method}
+\alias{ROWNAMES<-,RectangularData-method}
 
 \alias{head.RectangularData}
 \alias{head,RectangularData-method}

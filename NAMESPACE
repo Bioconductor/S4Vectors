@@ -394,7 +394,7 @@ export(
 
     ## RectangularData-class.R:
     vertical_slot_names, horizontal_slot_names,
-    ROWNAMES,
+    ROWNAMES, "ROWNAMES<-",
     combineRows, combineCols,
 
     ## Annotated-class.R:
@@ -472,7 +472,7 @@ exportMethods(
     getListElement, setListElement,
     unstrsplit,
     vertical_slot_names, horizontal_slot_names,
-    ROWNAMES,
+    ROWNAMES, "ROWNAMES<-",
     combineRows, combineCols,
     metadata, "metadata<-",
     parallel_slot_names, parallelVectorNames,

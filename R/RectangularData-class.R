@@ -67,6 +67,19 @@ setMethod("ROWNAMES", "ANY",
 
 setMethod("ROWNAMES", "RectangularData", function(x) rownames(x))
 
+setGeneric("ROWNAMES<-", function(x) standardGeneric("ROWNAMES"))
+
+setReplaceMethod("ROWNAMES", "ANY",
+                 function (x, value) {
+                     if (length(dim(x)) != 0L)
+                         rownames(x) <- value
+                     else names(x) <- value
+                     x
+                 })
+
+setReplaceMethod("ROWNAMES", "RectangularData", function(x, value) {
+    rownames(x) <- value
+})
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
