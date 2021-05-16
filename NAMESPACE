@@ -30,7 +30,8 @@ exportClasses(
     HitsList, SortedByQueryHitsList,
     DataFrame, DFrame, TransposedDataFrame,
     Pairs,
-    expression_OR_function, FilterRules, FilterMatrix
+    expression_OR_function, FilterRules, FilterMatrix,
+    DataFrameFactor
 )
 
 
@@ -365,7 +366,10 @@ export(
     Pairs,
 
     ## FilterRules-class.R:
-    FilterRules, FilterMatrix
+    FilterRules, FilterMatrix,
+
+    ## DataFrameFactor-class:
+    DataFrameFactor
 )
 
 

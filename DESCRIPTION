@@ -55,6 +55,7 @@ Collate: S4-utils.R
 	DataFrame-combine.R
 	DataFrame-comparison.R
 	DataFrame-utils.R
+    DataFrameFactor-class.R
 	TransposedDataFrame-class.R
 	Pairs-class.R
 	FilterRules-class.R
