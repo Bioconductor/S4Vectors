@@ -1,3 +1,33 @@
+CHANGES IN VERSION 0.30.0
+-------------------------
+
+NEW FEATURES
+
+    o Add combineRows(), combineCols(), and combineUniqueCols() for DataFrame
+      objects. These are flexible versions of rbind() and cbind() that don't
+      the objects to combine to have the same columns or rows.
+
+    o Add unname() generic and a method for Vector objects.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove parallelSlotNames(). Was deprecated in BioC 3.11 and defunct in
+      BioC 3.12.
+
+BUG FIXES
+
+    o Fix long-standing bug in rbind() method for DataFrame objects. The bug
+      was causing rbind() to return an incorrect result when the columns of
+      the DataFrame objects to combine were a mix of ordinary lists and other
+      list-like objects like IntegerList objects (defined in the IRanges
+      package).
+
+    o Fix issues in DataFrame printing (commits 735c6b7f and 89b045e7).
+
+    o Fix bug in expand() when the DataFrame object to expand has one or none
+      unselected columns (commit a8f839bb).
+
+
 CHANGES IN VERSION 0.28.0
 -------------------------
 
