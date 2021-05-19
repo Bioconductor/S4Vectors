@@ -4,8 +4,8 @@ CHANGES IN VERSION 0.30.0
 NEW FEATURES
 
     o Add combineRows(), combineCols(), and combineUniqueCols() for DataFrame
-      objects. These are flexible versions of rbind() and cbind() that don't
-      require the objects to combine to have the same columns or rows.
+      objects. These are more flexible versions of rbind() and cbind() that
+      don't require the objects to combine to have the same columns or rows.
 
     o Add unname() generic and a method for Vector objects.
 
