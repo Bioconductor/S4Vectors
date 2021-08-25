@@ -11,7 +11,7 @@ Description: The S4Vectors package defines the Vector and List virtual classes
 biocViews: Infrastructure, DataRepresentation
 URL: https://bioconductor.org/packages/S4Vectors
 BugReports: https://github.com/Bioconductor/S4Vectors/issues
-Version: 0.31.1
+Version: 0.31.2
 License: Artistic-2.0
 Encoding: UTF-8
 Author: H. Pagès, M. Lawrence and P. Aboyoun
