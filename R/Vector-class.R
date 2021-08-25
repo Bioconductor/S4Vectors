@@ -499,9 +499,6 @@ setMethod("[", "Vector",
 setMethod("extractROWS", "Vector",
     function(x, i)
     {
-        ## Fix old objects on-the-fly (e.g. old GRanges or GAlignments
-        ## instances).
-        x <- updateObject(x, check=FALSE)
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         x_pslotnames <- parallel_slot_names(x)
         ans_pslots <- lapply(setNames(x_pslotnames, x_pslotnames),
@@ -611,9 +608,6 @@ setMethod("replaceROWS", c("Vector", "ANY"),
 subset.Vector <- function(x, ...) subset(x, ...)
 subset_Vector <- function(x, subset, select, drop=FALSE, ...)
 {
-    ## Fix old objects on-the-fly (e.g. old GRanges, GRangesList, or
-    ## GAlignments instances).
-    x <- updateObject(x, check=FALSE)
     i <- evalqForSubset(subset, x, ...)
     x_mcols <- mcols(x, use.names=FALSE)
     if (!is.null(x_mcols)) {
