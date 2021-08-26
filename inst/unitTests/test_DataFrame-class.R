@@ -150,9 +150,14 @@ test_DataFrame_subset <- function() {
   ##               swiss[c(1, NA, 1:2, NA),])
 
   checkIdentical(as.data.frame(sw["Courtelary",]), swiss["Courtelary",])
+
   subswiss <- swiss[1:5,1:4]
   subsw <- sw[1:5,1:4]
-  checkIdentical(as.data.frame(subsw["C",]), subswiss["C",]) # partially matches
+
+  ## Starting with S4Vectors 0.31.3, we no longer support partial matching on
+  ## the rownames of a DataFrame.
+  #checkIdentical(as.data.frame(subsw["C",]), subswiss["C",]) # partially matches
+
   ## NOTE: NA subsetting not yet supported for XVectors
   ##checkIdentical(as.data.frame(subsw["foo",]), # bad row name
   ##               subswiss["foo",]) 

@@ -403,7 +403,7 @@ setReplaceMethod("[[", "DataFrame",
 setMethod("extractROWS", "DataFrame",
     function(x, i)
     {
-        i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, allow.NAs=TRUE,
+        i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE,
                                              as.NSBS=TRUE)
         slot(x, "listData", check=FALSE) <- lapply(as.list(x), extractROWS, i)
         slot(x, "nrows", check=FALSE) <- length(i)

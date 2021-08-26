@@ -70,12 +70,17 @@
 \details{
   On the whole, the \code{DataFrame} behaves very similarly to
   \code{data.frame}, in terms of construction, subsetting, splitting,
-  combining, etc. The most notable exception is that the row names are
-  optional. This means calling \code{rownames(x)} will return
-  \code{NULL} if there are no row names. Of course, it could return
-  \code{seq_len(nrow(x))}, but returning \code{NULL} informs, for
-  example, combination functions that no row names are desired (they are
-  often a luxury when dealing with large data).
+  combining, etc. The most notable exceptions have to do with handling
+  of the row names:
+  \enumerate{
+    \item The row names are optional. This means calling \code{rownames(x)}
+          will return \code{NULL} if there are no row names. Of course, it
+          could return \code{seq_len(nrow(x))}, but returning \code{NULL}
+          informs, for example, combination functions that no row names are
+          desired (they are often a luxury when dealing with large data).
+    \item The row names are not required to be unique.
+    \item Subsetting by row names does not use partial matching.
+  }
 
   As \code{DataFrame} derives from \code{\linkS4class{Vector}}, it is
   possible to set an \code{annotation} string. Also, another
@@ -286,7 +291,7 @@ sw[c(1, 1:2),]
 ## indexing by row names  
 sw["Courtelary",]
 subsw <- sw[1:5,1:4]
-subsw["C",] # partially matches
+subsw["C",] # no partial match (unlike with data.frame)
 
 ## row and column names
 cn <- paste("X", seq_len(ncol(swiss)), sep = ".")
