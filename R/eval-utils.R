@@ -44,7 +44,7 @@ missingArg <- function(arg, where=parent.frame()) {
 
 evalqForSubset <- function(expr, envir, ...) {
   if (missingArg(substitute(expr), parent.frame())) {
-    TRUE
+    rep(TRUE, NROW(envir))
   } else {
     i <- evalArg(substitute(expr), envir, ..., where=parent.frame())
     normSubsetIndex(i)
