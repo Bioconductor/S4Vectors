@@ -136,10 +136,22 @@ setMethod("isConstant", "array", function(x) isConstant(as.vector(x)))
 ###        [1] TRUE
 ###      Common sense would expect to have less objects that are "strictly
 ###      something" than objects that are "just something".
+###
+### Update (Sep 30, 2021): Even though commit 80981 to R trunk (to become
+### R 4.2.0) now passes the 'na.rm' argument to '.Internal(is.unsorted())',
+### NAs are still not handled in C. So the huge inefficiency in is.unsorted()
+### remains! Anyways, we modified our hack to pass three arguments instead
+### of two to '.Internal(is.unsorted)' if R >= 4.2.0.
 
 ..Internal <- .Internal  # a silly trick to keep 'R CMD check' quiet
-isNotSorted <- function(x) ..Internal(is.unsorted(x, FALSE))
-isNotStrictlySorted <- function(x) ..Internal(is.unsorted(x, TRUE))
+.R_fullversion <- paste(R.version$major, R.version$minor, sep=".")
+if (compareVersion(.R_fullversion, "4.2.0") >= 0L) {
+    isNotSorted <- function(x) ..Internal(is.unsorted(x, FALSE, FALSE))
+    isNotStrictlySorted <- function(x) ..Internal(is.unsorted(x, FALSE, TRUE))
+} else {
+    isNotSorted <- function(x) ..Internal(is.unsorted(x, FALSE))
+    isNotStrictlySorted <- function(x) ..Internal(is.unsorted(x, TRUE))
+}
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
