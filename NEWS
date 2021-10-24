@@ -1,3 +1,12 @@
+CHANGES IN VERSION 0.32.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Subsetting a DataFrame object by row names no longer uses partial
+      matching.
+
+
 CHANGES IN VERSION 0.30.0
 -------------------------
 
