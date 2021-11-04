@@ -291,7 +291,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
       if (is(listData[[i]], "AsIs")) {
         listData[[i]] <- drop_AsIs(listData[[i]])
       } else {
-        if ((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
+        if ((ncol(element) > 1L) || (length(dim(listData[[i]])) > 1L) ||
              is.list(listData[[i]]))
           {
             if (is.null(varnames[[i]]))
