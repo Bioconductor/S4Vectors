@@ -281,24 +281,33 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
     varnames[dotnames == ""] <- list(NULL)
     nrows <- ncols <- integer(length(varnames))
     for (i in seq_along(listData)) {
-      element <- try(as(listData[[i]], "DFrame"), silent = TRUE)
+      var <- listData[[i]]
+      element <- try(as(var, "DFrame"), silent = TRUE)
       if (inherits(element, "try-error"))
-        stop("cannot coerce class \"", class(listData[[i]])[1L],
-             "\" to a DataFrame")
+        stop("cannot coerce class \"", class(var)[1L], "\" to a DataFrame")
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
       varlist[[i]] <- element
-      if (is(listData[[i]], "AsIs")) {
-        listData[[i]] <- drop_AsIs(listData[[i]])
+      if (is(var, "AsIs")) {
+        listData[[i]] <- drop_AsIs(var)
       } else {
-        if ((ncol(element) > 1L) || (length(dim(listData[[i]])) > 1L) ||
-             is.list(listData[[i]]))
-          {
-            if (is.null(varnames[[i]]))
-              varnames[[i]] <- colnames(element)
-            else
-              varnames[[i]] <- paste(varnames[[i]], colnames(element), sep = ".")
-          }
+        ## The only reason we use suppressWarnings() here is to suppress the
+        ## deprecation warning we get at the moment (BioC 3.14) when calling
+        ## dim() on a DataFrameList derivative. Remove when the dim() method
+        ## for DataFrameList derivatives is gone (note that when this happens,
+        ## dim() will return NULL on a DataFrameList derivative).
+        var_dim <- suppressWarnings(dim(var))
+        var_dims <- try(dims(var), silent=TRUE)
+        if (inherits(var_dims, "try-error"))
+            var_dims <- NULL
+        if (ncol(element) > 1L || is.list(var) ||
+            length(var_dim) > 1L || length(var_dims) > 1L)
+        {
+          if (is.null(varnames[[i]]))
+            varnames[[i]] <- colnames(element)
+          else
+            varnames[[i]] <- paste(varnames[[i]], colnames(element), sep = ".")
+        }
       }
       if (is.null(varnames[[i]])) {
           varnames[[i]] <- deparse(qargs[[i]])[1L]
