@@ -4,41 +4,40 @@
 
 ## A data.frame-like interface for S4 objects that implement length() and `[`
 
+setClass("DataFrame",
+    contains=c("RectangularData", "List"),
+    representation("VIRTUAL")
+)
+
+## Add DataFrame to the DataFrame_OR_NULL union.
+setIs("DataFrame", "DataFrame_OR_NULL")
+
 ## NOTE: Normal data.frames always have rownames (sometimes as integers),
 ## but we allow the rownames to be NULL for efficiency. This means that we
 ## need to store the number of rows (nrows).
-setClass("DataFrame",
-         representation(
-                        rownames = "character_OR_NULL",
-                        nrows = "integer"
-                        ),
-         prototype(rownames = NULL,
-                   nrows = 0L,
-                   listData = structure(list(), names = character())),
-         contains = c("RectangularData", "SimpleList"))
-
-### Add DataFrame to the DataFrame_OR_NULL union.
-setIs("DataFrame", "DataFrame_OR_NULL")
-
-## Just a direct DataFrame extension with no additional slot for now. Once all
-## serialized DataFrame instances are replaced with DFrame instances (which
-## will take several BioC release cycles) we'll be able to move the DataFrame
-## slots from the DataFrame class definition to the DFrame class definition.
-## The final goal is to have DataFrame become a virtual class with no slots
-## that only extends RectangularData, and DFrame a concrete DataFrame and
-## SimpleList subclass that has the same slots as the current DataFrame class.
-setClass("DFrame", contains="DataFrame")
+setClass("DFrame",
+    contains=c("DataFrame", "SimpleList"),
+    representation(
+        rownames="character_OR_NULL",
+        nrows="integer"
+    ),
+    prototype(
+        rownames=NULL,
+        nrows=0L,
+        listData = structure(list(), names=character())
+    )
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### vertical_slot_names() and horizontal_slot_names()
 ###
 
-setMethod("vertical_slot_names", "DataFrame",
+setMethod("vertical_slot_names", "DFrame",
     function(x) "rownames"
 )
 
-setMethod("horizontal_slot_names", "DataFrame",
+setMethod("horizontal_slot_names", "DFrame",
     function(x) parallel_slot_names(x)
 )
 
@@ -76,13 +75,13 @@ setMethod("updateObject", "DataFrame",
 ### Accessors
 ###
 
-setMethod("nrow", "DataFrame", function(x) x@nrows)
+setMethod("nrow", "DFrame", function(x) x@nrows)
 
 setMethod("ncol", "DataFrame", function(x) length(x))
 
 setMethod("dim", "DataFrame", function(x) c(nrow(x), ncol(x)))
 
-setMethod("rownames", "DataFrame",
+setMethod("rownames", "DFrame",
           function(x, do.NULL = TRUE, prefix = "row")
           {
             rn <- x@rownames
@@ -96,7 +95,7 @@ setMethod("rownames", "DataFrame",
             rn
           })
 
-setMethod("colnames", "DataFrame",
+setMethod("colnames", "DFrame",
           function(x, do.NULL = TRUE, prefix = "col")
           {
             if (!identical(do.NULL, TRUE)) warning("do.NULL arg is ignored ",
@@ -114,7 +113,7 @@ setMethod("dimnames", "DataFrame",
     function(x) list(rownames(x), colnames(x))
 )
 
-setReplaceMethod("rownames", "DataFrame",
+setReplaceMethod("rownames", "DFrame",
                  function(x, value)
                  {
                    if (!is.null(value)) {
@@ -157,16 +156,6 @@ setReplaceMethod("dimnames", "DataFrame",
 ### Validity
 ###
 
-.valid.DataFrame.dim <- function(x)
-{
-  nr <- dim(x)[1L]
-  if (!length(nr) == 1)
-    return("length of 'nrows' slot must be 1")
-  if (nr < 0)
-    return("number of rows must be non-negative")
-  NULL
-}
-
 .valid.DataFrame.rownames <- function(x)
 {
   if (is.null(rownames(x)))
@@ -199,12 +188,23 @@ setReplaceMethod("dimnames", "DataFrame",
   ##   https://stat.ethz.ch/pipermail/r-devel/2019-August/078337.html
   #if (class(x) == "DataFrame")
   #  return(paste(.OLD_DATAFRAME_INSTANCE_MSG, collapse=""))
-  c(.valid.DataFrame.dim(x),
-    .valid.DataFrame.rownames(x),
+  c(.valid.DataFrame.rownames(x),
     .valid.DataFrame.names(x))
 }
 
 setValidity2("DataFrame", .valid.DataFrame)
+
+.valid.DFrame.nrow <- function(x)
+{
+  nr <- nrow(x)
+  if (!length(nr) == 1)
+    return("length of 'nrows' slot must be 1")
+  if (nr < 0)
+    return("number of rows must be non-negative")
+  NULL
+}
+
+setValidity2("DFrame", .valid.DFrame.nrow)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -373,7 +373,7 @@ make_zero_col_DataFrame <- make_zero_col_DFrame
 ### Subsetting
 ###
 
-setMethod("[[", "DataFrame", function(x, i, j, ...)
+setMethod("[[", "DFrame", function(x, i, j, ...)
 {
     if (!missing(j)) {
         x[[j, ...]][[i]]
@@ -382,7 +382,7 @@ setMethod("[[", "DataFrame", function(x, i, j, ...)
     }
 })
 
-setReplaceMethod("[[", "DataFrame",
+setReplaceMethod("[[", "DFrame",
                  function(x, i, j,..., value)
                  {
                    nrx <- nrow(x)
@@ -409,7 +409,7 @@ setReplaceMethod("[[", "DataFrame",
                    callNextMethod(x, i, value=value)
                  })
 
-setMethod("extractROWS", "DataFrame",
+setMethod("extractROWS", "DFrame",
     function(x, i)
     {
         i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE,
@@ -422,7 +422,7 @@ setMethod("extractROWS", "DataFrame",
     }
 )
 
-setMethod("extractCOLS", "DataFrame", function(x, i) {
+setMethod("extractCOLS", "DFrame", function(x, i) {
     if (missing(i))
         return(x)
     if (!is(i, "IntegerRanges")) {
@@ -516,7 +516,7 @@ setMethod("[", "DataFrame",
     x
 }
 
-setMethod("replaceROWS", c("DataFrame", "ANY"),
+setMethod("replaceROWS", c("DFrame", "ANY"),
           function(x, i, value)
           {
               nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
@@ -526,7 +526,7 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
               .subassign_columns(x, nsbs, value)
           })
 
-setMethod("mergeROWS", c("DataFrame", "ANY"),
+setMethod("mergeROWS", c("DFrame", "ANY"),
     function(x, i, value)
     {
         nsbs <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
@@ -568,10 +568,7 @@ setMethod("mergeROWS", c("DataFrame", "ANY"),
     x
 }
 
-### Not a real default replaceCOLS() method for DataFrame objects (it actually
-### assumes that 'x' derives from SimpleList i.e. that 'x' is a DFrame object
-### or derivative).
-setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
+setMethod("replaceCOLS", c("DFrame", "ANY"), function(x, i, value) {
     stopifnot(is.null(value) || is(value, "DataFrame"))
     sl <- as(x, "SimpleList")
     value_sl <- if (!is.null(value)) as(value, "SimpleList")
@@ -640,7 +637,7 @@ hasS3Method <- function(f, signature) {
   !is.null(getS3method(f, signature, optional=TRUE))
 }
 
-droplevels.DataFrame <- function(x, except=NULL) {
+droplevels.DFrame <- function(x, except=NULL) {
   canDropLevels <- function(xi) {
     hasNonDefaultMethod(droplevels, class(xi)[1L]) ||
       hasS3Method("droplevels", class(xi))
@@ -651,7 +648,7 @@ droplevels.DataFrame <- function(x, except=NULL) {
   x@listData[drop.levels] <- lapply(x@listData[drop.levels], droplevels)
   x
 }
-setMethod("droplevels", "DataFrame", droplevels.DataFrame)
+setMethod("droplevels", "DFrame", droplevels.DFrame)
 
 setMethod("rep", "DataFrame", function(x, ...) {
   x[rep(seq_len(nrow(x)), ...),,drop=FALSE]
@@ -728,7 +725,6 @@ setMethod("as.matrix", "DataFrame", function(x) {
   m
 })
 
-## take data.frames to DataFrames
 setAs("data.frame", "DFrame",
       function(from) {
         rn <- attributes(from)[["row.names"]]
@@ -768,7 +764,7 @@ setAs("xtabs", "DFrame",
         as(from, "DFrame")
       })
 
-.defaultAsDataFrame <- function(from) {
+.defaultAsDFrame <- function(from) {
   if (length(dim(from)) == 2L) {
     df <- as.data.frame(from, stringsAsFactors=FALSE)
     if (0L == ncol(from))
@@ -782,16 +778,13 @@ setAs("xtabs", "DFrame",
   }
 }
 
-setAs("ANY", "DFrame", .defaultAsDataFrame)
+setAs("ANY", "DFrame", .defaultAsDFrame)
 
 setAs("ANY", "DataFrame", function(from) as(from, "DFrame"))
 setAs("SimpleList", "DataFrame", function(from) as(from, "DFrame"))
 
-## Only temporarily needed (until we make DataFrame VIRTUAL).
-setAs("DFrame", "DataFrame", function(from) from)
-
-.VectorAsDataFrame <- function(from) {
-  ans <- .defaultAsDataFrame(from)
+.VectorAsDFrame <- function(from) {
+  ans <- .defaultAsDFrame(from)
   from_mcols <- mcols(from, use.names=FALSE)
   if (!is.null(from_mcols))
     ans <- cbind(ans, from_mcols)
@@ -799,8 +792,8 @@ setAs("DFrame", "DataFrame", function(from) from)
 }
 
 ## overriding the default inheritance-based coercion from methods package
-setAs("SimpleList", "DFrame", .VectorAsDataFrame)
-setAs("Vector", "DFrame", .VectorAsDataFrame)
+setAs("SimpleList", "DFrame", .VectorAsDFrame)
+setAs("Vector", "DFrame", .VectorAsDFrame)
 
 ## note that any element named 'row.names' will be interpreted differently
 ## is this a bug or a feature?

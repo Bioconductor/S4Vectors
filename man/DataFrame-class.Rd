@@ -8,19 +8,19 @@
 \alias{DFrame-class}
 \alias{DFrame}
 
-\alias{vertical_slot_names,DataFrame-method}
-\alias{horizontal_slot_names,DataFrame-method}
+\alias{vertical_slot_names,DFrame-method}
+\alias{horizontal_slot_names,DFrame-method}
 
 \alias{updateObject,DataFrame-method}
 
 % accessor
-\alias{nrow,DataFrame-method}
+\alias{nrow,DFrame-method}
 \alias{ncol,DataFrame-method}
 \alias{dim,DataFrame-method}
-\alias{rownames,DataFrame-method}
-\alias{colnames,DataFrame-method}
+\alias{rownames,DFrame-method}
+\alias{colnames,DFrame-method}
 \alias{dimnames,DataFrame-method}
-\alias{rownames<-,DataFrame-method}
+\alias{rownames<-,DFrame-method}
 \alias{colnames<-,DataFrame-method}
 \alias{dimnames<-,DataFrame-method}
 
@@ -30,28 +30,34 @@
 
 % subsetting
 \alias{[,DataFrame-method}
-\alias{replaceROWS,DataFrame,ANY-method}
-\alias{mergeROWS,DataFrame,ANY-method}
+\alias{[[,DFrame-method}
+\alias{extractROWS,DFrame,ANY-method}
+\alias{extractCOLS,DFrame-method}
+\alias{replaceROWS,DFrame-method}
+\alias{mergeROWS,DFrame-method}
+\alias{replaceCOLS,DFrame-method}
 \alias{[<-,DataFrame-method}
-\alias{[[<-,DataFrame-method}
+\alias{[[<-,DFrame-method}
 \alias{[[,DataFrame-method}
+\alias{droplevels,DFrame-method}
+\alias{rep,DataFrame-method}
 
 % coercion
 \alias{as.data.frame,DataFrame-method}
 \alias{as.matrix,DataFrame-method}
-\alias{coerce,list,DFrame-method}
-\alias{coerce,Vector,DFrame-method}
 \alias{coerce,data.frame,DFrame-method}
 \alias{coerce,data.table,DFrame-method}
-\alias{coerce,NULL,DFrame-method}
 \alias{coerce,table,DFrame-method}
-\alias{coerce,AsIs,DFrame-method}
 \alias{coerce,xtabs,DFrame-method}
 \alias{coerce,ANY,DFrame-method}
 \alias{coerce,ANY,DataFrame-method}
 \alias{coerce,SimpleList,DataFrame-method}
-\alias{coerce,DFrame,DataFrame-method}
 \alias{coerce,SimpleList,DFrame-method}
+\alias{coerce,Vector,DFrame-method}
+\alias{coerce,list,DFrame-method}
+\alias{coerce,NULL,DFrame-method}
+\alias{coerce,AsIs,DFrame-method}
+\alias{coerce,ANY,DataFrame_OR_NULL-method}
 
 % display
 \alias{classNameForDisplay,DFrame-method}
