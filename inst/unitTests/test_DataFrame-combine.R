@@ -79,6 +79,12 @@ test_DataFrame_combineRows <- function() {
     checkIdentical(out$y, c(NA,"A"))
     checkIdentical(out$z, c(NA,NA))
 
+    # A slightly tricky situation.
+    DF1 <- DataFrame()
+    DF2 <- DataFrame(ref=IRanges(1:2, 10))
+    checkIdentical(DF2, combineRows(DF1, DF2))
+    checkIdentical(DF2, combineRows(DF2, DF1))
+
     # A more complex situation.
     x <- DataFrame(A=Rle(101:103, 3:1), A=letters[1:6], B=Rle(51:52, c(1, 5)),
                    check.names=FALSE)
