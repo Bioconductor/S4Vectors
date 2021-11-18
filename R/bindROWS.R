@@ -187,6 +187,12 @@ bindROWS2 <- function(x, objects=list())
             all_objects <- lapply(all_objects, factor, levels=all_levels)
         }
     }
+    nonempty_idx <- which(vapply(all_objects, NROW, integer(1L)) != 0L)
+    if (length(nonempty_idx) == 0L)
+        return(all_objects[[1L]])
+    all_objects <- all_objects[nonempty_idx]
+    if (length(all_objects) == 1L)
+        return(all_objects[[1L]])
     bindROWS(all_objects[[1L]], all_objects[-1L])
 }
 
