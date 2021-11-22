@@ -2,7 +2,6 @@
 ### DataFrame objects
 ### -------------------------------------------------------------------------
 
-## A data.frame-like interface for S4 objects that implement length() and `[`
 
 setClass("DataFrame",
     contains=c("RectangularData", "List"),
@@ -12,6 +11,10 @@ setClass("DataFrame",
 ## Add DataFrame to the DataFrame_OR_NULL union.
 setIs("DataFrame", "DataFrame_OR_NULL")
 
+
+## DFrame is a concrete DataFrame subclass for representation of in-memory
+## DataFrame objects. It inherits the "listData" slot from the SimpleList
+## class, as well as some of its methods e.g. names(), as.list() and lapply().
 ## NOTE: Normal data.frames always have rownames (sometimes as integers),
 ## but we allow the rownames to be NULL for efficiency. This means that we
 ## need to store the number of rows (nrows).
@@ -75,13 +78,43 @@ setMethod("updateObject", "DataFrame",
 ### Accessors
 ###
 
-setMethod("nrow", "DFrame", function(x) x@nrows)
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### We only define this method for backward compatibility with old serialized
+### DataFrame instances (which have the "listData" slot). Without this method,
+### length() (and therefore ncol() and dim()) are broken on these objects.
+setMethod("length", "DataFrame", function(x) length(x@listData))
+
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "nrows" slot in general, only DFrame
+### objects have it. So the nrow() method below only makes sense for DFrame
+### objects. However, we still define it for DataFrame objects for backward
+### compatibility with old serialized DataFrame instances (which have the
+### "nrows" slot). If we don't do this, we get an infinite recursion when
+### calling nrow() on these objects:
+###   > nrow(x)
+###   Error: C stack usage  7979284 is too close to the limit
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
+setMethod("nrow", "DataFrame", function(x) x@nrows)
 
 setMethod("ncol", "DataFrame", function(x) length(x))
 
 setMethod("dim", "DataFrame", function(x) c(nrow(x), ncol(x)))
 
-setMethod("rownames", "DFrame",
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "rownames" slot in general, only
+### DFrame objects have it. So the rownames() method below only makes sense
+### for DFrame objects. However, we still define it for DataFrame
+### objects for backward compatibility with old serialized DataFrame
+### instances (which have the "rownames" slot). If we don't do this, we
+### get an infinite recursion when calling rownames() these objects:
+###   > rownames(x)
+###   Error: C stack usage  7975540 is too close to the limit
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
+setMethod("rownames", "DataFrame",
           function(x, do.NULL = TRUE, prefix = "row")
           {
             rn <- x@rownames
@@ -373,6 +406,21 @@ make_zero_col_DataFrame <- make_zero_col_DFrame
 ### Subsetting
 ###
 
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### We define the 2 methods below only to make getListElement() and `[[` work
+### on the old DataFrame instances.
+setMethod("getListElement", "DataFrame",
+    function(x, i, exact=TRUE) getListElement(x@listData, i, exact=exact)
+)
+setMethod("[[", "DataFrame", function(x, i, j, ...)
+{
+    if (!missing(j)) {
+        x[[j, ...]][[i]]
+    } else {
+        selectMethod("[[", "SimpleList")(x, i, j, ...)
+    }
+})
+
 setMethod("[[", "DFrame", function(x, i, j, ...)
 {
     if (!missing(j)) {
@@ -409,11 +457,23 @@ setReplaceMethod("[[", "DFrame",
                    callNextMethod(x, i, value=value)
                  })
 
-setMethod("extractROWS", "DFrame",
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "listData", "nrows", or "rownames"
+### slots in general, only DFrame objects have them. So the extractROWS()
+### method below only makes sense for DFrame objects. However, we still
+### define it for DataFrame objects for backward compatibility with
+### old serialized DataFrame instances (which have all these slots). If we
+### don't do this, calling extractROWS() on these objects will actually
+### call the method for Vector derivatives which is a no-op on these objects.
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
+setMethod("extractROWS", "DataFrame",
     function(x, i)
     {
         i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE,
                                              as.NSBS=TRUE)
+        x <- updateObject(x, check=FALSE)
         slot(x, "listData", check=FALSE) <- lapply(as.list(x), extractROWS, i)
         slot(x, "nrows", check=FALSE) <- length(i)
         if (!is.null(rownames(x)))
