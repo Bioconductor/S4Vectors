@@ -3,6 +3,10 @@
 ### -------------------------------------------------------------------------
 
 
+### TransposedDataFrame extends List and the List elements are considered to
+### be the rows of the TransposedDataFrame object. This means that the length
+### of a TransposedDataFrame object which is the length of its underlying
+### List is its number of rows.
 setClass("TransposedDataFrame",
     contains=c("RectangularData", "List"),
     slots=c(data="DataFrame")
@@ -11,6 +15,13 @@ setClass("TransposedDataFrame",
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Transposition
+###
+### Note that transposing a DataFrame derivative is currently the only way
+### to construct a TransposedDataFrame object. We don't provide a dedicated
+### constructor function.
+###
+### An important property of transposition is that it preserves the length
+### and names of the object.
 ###
 
 ### S3/S4 combo for t.DataFrame
@@ -39,12 +50,32 @@ setMethod("t", "TransposedDataFrame", t.TransposedDataFrame)
 ### Getters
 ###
 
-setMethod("dim", "TransposedDataFrame", function(x) rev(dim(x@data)))
-setMethod("length", "TransposedDataFrame", function(x) ncol(x@data))
+setMethod("nrow", "TransposedDataFrame", function(x) ncol(x@data))
+setMethod("ncol", "TransposedDataFrame", function(x) nrow(x@data))
 
-### base::rownames() and base::colnames() work as long as dimnames() works.
-setMethod("dimnames", "TransposedDataFrame", function(x) rev(dimnames(x@data)))
-setMethod("names", "TransposedDataFrame", function(x) colnames(x@data))
+setMethod("rownames", "TransposedDataFrame",
+    function(x, do.NULL=TRUE, prefix="row")
+    {
+        if (!(identical(do.NULL, TRUE) && identical(prefix, "row")))
+            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
+        colnames(x@data)
+    }
+)
+setMethod("colnames", "TransposedDataFrame",
+    function(x, do.NULL=TRUE, prefix="col")
+    {
+        if (!(identical(do.NULL, TRUE) && identical(prefix, "col")))
+            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
+        rownames(x@data)
+    }
+)
+
+### For a TransposedDataFrame object, the length is the number of rows
+### and the names are the rownames. Note that 'length(x)' and 'names(x)'
+### will ultimately end up calling 'length(x@data)' and 'names(x@data)',
+### repectively.
+setMethod("length", "TransposedDataFrame", function(x) nrow(x))
+setMethod("names", "TransposedDataFrame", function(x) rownames(x))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

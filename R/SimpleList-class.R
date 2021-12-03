@@ -43,16 +43,16 @@ setMethod("updateObject", "SimpleList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Accessor methods
+### Setters
 ###
 
-setMethod("names", "SimpleList", function(x) names(as.list(x)))
-
 setReplaceMethod("names", "SimpleList",
-                 function(x, value) {
-                     names(x@listData) <- value
-                     x
-                 })
+    function(x, value)
+    {
+        names(x@listData) <- value
+        x
+    }
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

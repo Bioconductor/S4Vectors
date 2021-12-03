@@ -10,9 +10,11 @@
 \alias{t.TransposedDataFrame}
 \alias{t,TransposedDataFrame-method}
 
-\alias{dim,TransposedDataFrame-method}
+\alias{nrow,TransposedDataFrame-method}
+\alias{ncol,TransposedDataFrame-method}
+\alias{rownames,TransposedDataFrame-method}
+\alias{colnames,TransposedDataFrame-method}
 \alias{length,TransposedDataFrame-method}
-\alias{dimnames,TransposedDataFrame-method}
 \alias{names,TransposedDataFrame-method}
 
 \alias{dimnames<-,TransposedDataFrame-method}

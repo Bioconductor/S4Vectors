@@ -3,6 +3,9 @@
 ### -------------------------------------------------------------------------
 
 
+### DataFrame extends List and the List elements are considered to be the
+### columns of the DataFrame object. This follows the data.frame/list model
+### from base R.
 setClass("DataFrame",
     contains=c("RectangularData", "List"),
     representation("VIRTUAL")
@@ -78,11 +81,29 @@ setMethod("updateObject", "DataFrame",
 ### Accessors
 ###
 
+### Note that DataFrame extends List so the length of a DataFrame derivative
+### is the length of its underlying List.
+setMethod("ncol", "DataFrame", function(x) length(x))
+
+### Note that DataFrame extends List so the names of a DataFrame derivative
+### are the names of its underlying List.
+setMethod("colnames", "DataFrame",
+    function(x, do.NULL=TRUE, prefix="col")
+    {
+        if (!(identical(do.NULL, TRUE) && identical(prefix, "col")))
+            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
+        names(x)
+    }
+)
+
 ### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
-### We only define this method for backward compatibility with old serialized
-### DataFrame instances (which have the "listData" slot). Without this method,
-### length() (and therefore ncol() and dim()) are broken on these objects.
+### We shouldn't need this! We define these 2 methods only for backward
+### compatibility with old serialized DataFrame instances (which have
+### the "listData" slot). Without these methods, length() and names() (and
+### therefore ncol(), dim(), colnames(), and dimnames()) are broken on
+### these objects.
 setMethod("length", "DataFrame", function(x) length(x@listData))
+setMethod("names", "DataFrame", function(x) names(x@listData))
 
 ### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
 ### DataFrame derivatives don't have the "nrows" slot in general, only DFrame
@@ -97,10 +118,6 @@ setMethod("length", "DataFrame", function(x) length(x@listData))
 ### laying around have been updated with updateObject(). This might take
 ### years (best case scenario) or forever (worst case scenario).
 setMethod("nrow", "DataFrame", function(x) x@nrows)
-
-setMethod("ncol", "DataFrame", function(x) length(x))
-
-setMethod("dim", "DataFrame", function(x) c(nrow(x), ncol(x)))
 
 ### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
 ### DataFrame derivatives don't have the "rownames" slot in general, only
@@ -127,24 +144,6 @@ setMethod("rownames", "DataFrame",
             }
             rn
           })
-
-setMethod("colnames", "DFrame",
-          function(x, do.NULL = TRUE, prefix = "col")
-          {
-            if (!identical(do.NULL, TRUE)) warning("do.NULL arg is ignored ",
-                "in this method")
-            cn <- names(x@listData)
-            if (!is.null(cn))
-                return(cn)
-            if (length(x@listData) != 0L)
-                stop("DataFrame object with NULL colnames, please fix it ",
-                     "with colnames(x) <- value")
-            return(character(0))
-          })
-
-setMethod("dimnames", "DataFrame",
-    function(x) list(rownames(x), colnames(x))
-)
 
 setReplaceMethod("rownames", "DFrame",
                  function(x, value)
@@ -173,14 +172,14 @@ setReplaceMethod("colnames", "DataFrame",
                    x
                  })
 
+### Only difference with the "dimnames<-" method for RectangularData
+### objects is that the replacement value is not allowed to be NULL.
 setReplaceMethod("dimnames", "DataFrame",
     function(x, value)
     {
         if (!(is.list(value) && length(value) == 2L))
-            stop("dimnames replacement value must be a list of length 2")
-        rownames(x) <- value[[1L]]
-        colnames(x) <- value[[2L]]
-        x
+            stop(wmsg("dimnames replacement value must be a list of length 2"))
+        callNextMethod()  # call method for RectangularData objects
     }
 )
 
@@ -463,8 +462,8 @@ setReplaceMethod("[[", "DFrame",
 ### method below only makes sense for DFrame objects. However, we still
 ### define it for DataFrame objects for backward compatibility with
 ### old serialized DataFrame instances (which have all these slots). If we
-### don't do this, calling extractROWS() on these objects will actually
-### call the method for Vector derivatives which is a no-op on these objects.
+### don't do this, calling extractROWS() on these objects will actually call
+### the method for Vector derivatives which is a no-op on these objects.
 ### TODO: Remove this hack once all the old serialized DataFrame instances
 ### laying around have been updated with updateObject(). This might take
 ### years (best case scenario) or forever (worst case scenario).
@@ -482,7 +481,22 @@ setMethod("extractROWS", "DataFrame",
     }
 )
 
-setMethod("extractCOLS", "DFrame", function(x, i) {
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "listData" slot in general, only
+### DFrame objects have it. So the extractCOLS() method below only makes
+### sense for DFrame objects. However, we still define it for DataFrame
+### objects for backward compatibility with old serialized DataFrame
+### instances (which have all these slots). If we don't do this,
+### calling extractCOLS() on these objects will actually call the
+### method for Vector derivatives which is a no-op on these objects.
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
+setMethod("extractCOLS", "DataFrame", function(x, i) {
+    ## Remove this call to updateObject() when the signature of this
+    ## extractCOLS() method is changed from DataFrame to DFrame.
+    if (class(x)[[1L]] == "DataFrame")
+        x <- updateObject(x, check=FALSE)
     if (missing(i))
         return(x)
     if (!is(i, "IntegerRanges")) {
@@ -491,8 +505,9 @@ setMethod("extractCOLS", "DFrame", function(x, i) {
     }
     new_listData <- extractROWS(x@listData, i)
     new_mcols <- extractROWS(mcols(x, use.names=FALSE), i)
-    x <- initialize(x, listData=new_listData,
-                    elementMetadata=new_mcols)
+    x <- BiocGenerics:::replaceSlots(x, listData=new_listData,
+                                        elementMetadata=new_mcols,
+                                        check=FALSE)
     if (anyDuplicated(names(x)))
         names(x) <- make.unique(names(x))
     x
@@ -894,7 +909,7 @@ setMethod("coerce2", "DataFrame",
             validObject(ans)
             return(ans)
         }
-        ## Some objects like SplitDataFrameList have a "dim" method that
+        ## Some objects like SplitDataFrameList have a dim() method that
         ## returns a non-MULL object (a matrix!) even though they don't have
         ## an array-like (or matrix-like) semantic.
         from_dim <- dim(from)

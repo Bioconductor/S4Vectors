@@ -8,6 +8,13 @@
 \alias{vertical_slot_names}
 \alias{horizontal_slot_names}
 
+\alias{dim,RectangularData-method}
+
+\alias{rownames,RectangularData-method}
+\alias{colnames,RectangularData-method}
+\alias{dimnames,RectangularData-method}
+\alias{dimnames<-,RectangularData-method}
+
 \alias{ROWNAMES}
 \alias{ROWNAMES,ANY-method}
 \alias{ROWNAMES,RectangularData-method}

@@ -231,8 +231,6 @@ exportMethods(
     length, names, "names<-",
     dim, nrow, ncol,
     dimnames, "dimnames<-",
-    rownames, "rownames<-",
-    colnames, "colnames<-",
     is.na, anyNA,
     as.logical, as.integer, as.numeric,
     as.complex, as.character, as.raw, as.factor,
@@ -269,6 +267,8 @@ exportMethods(
     summary,
 
     ## Methods for generics defined in the BiocGenerics package:
+    rownames, "rownames<-",
+    colnames, "colnames<-",
     rbind, cbind,
     lapply, sapply,
     Reduce, Filter,

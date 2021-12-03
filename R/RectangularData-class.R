@@ -59,6 +59,59 @@ setGeneric("horizontal_slot_names",
 ### Accessors
 ###
 
+setMethod("dim", "RectangularData", function(x) c(nrow(x), ncol(x)))
+
+setMethod("rownames", "RectangularData",
+    function(x, do.NULL=TRUE, prefix="row")
+    {
+        if (!(identical(do.NULL, TRUE) && identical(prefix, "row")))
+            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
+        NULL
+    }
+)
+
+setMethod("colnames", "RectangularData",
+    function(x, do.NULL=TRUE, prefix="col")
+    {
+        if (!(identical(do.NULL, TRUE) && identical(prefix, "col")))
+            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
+        NULL
+    }
+)
+
+simplify_NULL_dimnames <- function(dimnames)
+{
+    if (all(sapply_isNULL(dimnames)))
+        return(NULL)
+    dimnames
+}
+
+setMethod("dimnames", "RectangularData",
+    function(x)
+    {
+        ans <- list(rownames(x), colnames(x))
+        simplify_NULL_dimnames(ans)
+    }
+)
+
+setReplaceMethod("dimnames", "RectangularData",
+    function(x, value)
+    {
+        if (is.null(value)) {
+            new_rownames <- new_colnames <- NULL
+        } else {
+            if (!(is.list(value) && length(value) == 2L))
+                stop(wmsg("dimnames replacement value must ",
+                          "be NULL or a list of length 2"))
+            new_rownames <- value[[1L]]
+            new_colnames <- value[[2L]]
+        }
+        rownames(x) <- new_rownames
+        colnames(x) <- new_colnames
+        x
+    }
+)
+
 setGeneric("ROWNAMES", function(x) standardGeneric("ROWNAMES"))
 
 setMethod("ROWNAMES", "ANY",
@@ -81,6 +134,7 @@ setReplaceMethod("ROWNAMES", "RectangularData", function(x, value) {
     rownames(x) <- value
     x
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting

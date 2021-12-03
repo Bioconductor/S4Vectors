@@ -14,13 +14,12 @@
 \alias{updateObject,DataFrame-method}
 
 % accessor
-\alias{length,DataFrame-method}
-\alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
-\alias{dim,DataFrame-method}
+\alias{colnames,DataFrame-method}
+\alias{length,DataFrame-method}
+\alias{names,DataFrame-method}
+\alias{nrow,DataFrame-method}
 \alias{rownames,DataFrame-method}
-\alias{colnames,DFrame-method}
-\alias{dimnames,DataFrame-method}
 \alias{rownames<-,DFrame-method}
 \alias{colnames<-,DataFrame-method}
 \alias{dimnames<-,DataFrame-method}
@@ -34,7 +33,7 @@
 \alias{[[,DataFrame-method}
 \alias{[[,DFrame-method}
 \alias{extractROWS,DataFrame,ANY-method}
-\alias{extractCOLS,DFrame-method}
+\alias{extractCOLS,DataFrame-method}
 \alias{[,DataFrame-method}
 \alias{replaceROWS,DFrame-method}
 \alias{mergeROWS,DFrame-method}
