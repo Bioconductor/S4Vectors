@@ -61,24 +61,6 @@ setGeneric("horizontal_slot_names",
 
 setMethod("dim", "RectangularData", function(x) c(nrow(x), ncol(x)))
 
-setMethod("rownames", "RectangularData",
-    function(x, do.NULL=TRUE, prefix="row")
-    {
-        if (!(identical(do.NULL, TRUE) && identical(prefix, "row")))
-            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
-        NULL
-    }
-)
-
-setMethod("colnames", "RectangularData",
-    function(x, do.NULL=TRUE, prefix="col")
-    {
-        if (!(identical(do.NULL, TRUE) && identical(prefix, "col")))
-            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
-        NULL
-    }
-)
-
 simplify_NULL_dimnames <- function(dimnames)
 {
     if (all(sapply_isNULL(dimnames)))

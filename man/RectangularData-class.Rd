@@ -9,9 +9,6 @@
 \alias{horizontal_slot_names}
 
 \alias{dim,RectangularData-method}
-
-\alias{rownames,RectangularData-method}
-\alias{colnames,RectangularData-method}
 \alias{dimnames,RectangularData-method}
 \alias{dimnames<-,RectangularData-method}
 
