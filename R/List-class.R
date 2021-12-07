@@ -26,9 +26,6 @@ setGeneric("elementType", function(x, ...) standardGeneric("elementType"))
 setMethod("elementType", "List", function(x) x@elementType)
 setMethod("elementType", "vector", function(x) storage.mode(x))
 
-### Will work on any List derivative for which as.list() works.
-setMethod("names", "List", function(x) names(as.list(x)))
-
 setGeneric("elementNROWS", function(x) standardGeneric("elementNROWS"))
 
 setMethod("elementNROWS", "ANY", sapply_NROW)

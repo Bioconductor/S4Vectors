@@ -43,8 +43,10 @@ setMethod("updateObject", "SimpleList",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Setters
+### Accessors
 ###
+
+setMethod("names", "SimpleList", function(x) names(x@listData))
 
 setReplaceMethod("names", "SimpleList",
     function(x, value)

@@ -9,7 +9,8 @@
 
 \alias{updateObject,SimpleList-method}
 
-% setters
+% accessors
+\alias{names,SimpleList-method}
 \alias{names<-,SimpleList-method}
 
 % coercion

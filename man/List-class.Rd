@@ -13,7 +13,6 @@
 \alias{elementType}
 \alias{elementType,List-method}
 \alias{elementType,vector-method}
-\alias{names,List-method}
 \alias{elementNROWS}
 \alias{elementNROWS,ANY-method}
 \alias{elementNROWS,List-method}
