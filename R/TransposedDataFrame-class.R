@@ -145,6 +145,31 @@ setMethod("getListElement", "TransposedDataFrame",
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### Subassignment
+###
+
+setMethod("normalizeSingleBracketReplacementValue", "TransposedDataFrame",
+    function(value, x)
+    {
+        is_empty_list <- is(value, "list_OR_List") && length(value) == 0L
+        if (is.null(value) || is_empty_list)
+            return(NULL)
+        as(value, class(x), strict=FALSE)
+    }
+)
+
+setReplaceMethod("[", "TransposedDataFrame",
+    function(x, i, j, ..., value)
+    {
+        value <- normalizeSingleBracketReplacementValue(value, x)
+        if (!is.null(value))
+            value <- t(value)
+        t(callGeneric(t(x), j, i, ..., value=value))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercions
 ###
 
@@ -159,7 +184,7 @@ setMethod("as.list", "TransposedDataFrame",
     function(x, use.names=TRUE) as.list(x@data, use.names=use.names)
 )
 
-setAs("list", "TransposedDataFrame", function(from) t(as(from, "DataFrame")))
+setAs("ANY", "TransposedDataFrame", function(from) t(as(from, "DataFrame")))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

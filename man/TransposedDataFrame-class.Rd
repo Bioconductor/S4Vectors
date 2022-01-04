@@ -25,11 +25,14 @@
 \alias{[,TransposedDataFrame-method}
 \alias{getListElement,TransposedDataFrame-method}
 
+\alias{normalizeSingleBracketReplacementValue,TransposedDataFrame-method}
+\alias{[<-,TransposedDataFrame-method}
+
 \alias{coerce,DataFrame,TransposedDataFrame-method}
 \alias{coerce,TransposedDataFrame,DataFrame-method}
 \alias{as.matrix,TransposedDataFrame-method}
 \alias{as.list,TransposedDataFrame-method}
-\alias{coerce,list,TransposedDataFrame-method}
+\alias{coerce,ANY,TransposedDataFrame-method}
 
 \alias{makeNakedCharacterMatrixForDisplay,TransposedDataFrame-method}
 \alias{show,TransposedDataFrame-method}
