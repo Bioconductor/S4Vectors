@@ -215,6 +215,7 @@ setMethod("makeNakedCharacterMatrixForDisplay", "TransposedDataFrame",
         "\n", sep="")
     if (x_nrow != 0L && x_ncol != 0L) {
         x_rownames <- rownames(x)
+        classinfo <- make_class_info_for_DataFrame_display(x@data)
         if (x_nrow <= nhead + ntail + 1L) {
             m <- makeNakedCharacterMatrixForDisplay(x)
             if (!is.null(x_rownames))
@@ -226,11 +227,10 @@ setMethod("makeNakedCharacterMatrixForDisplay", "TransposedDataFrame",
             rownames(m) <- make_rownames_for_RectangularData_display(
                                              x_rownames, x_nrow,
                                              nhead, ntail)
+            classinfo <- make_rownames_for_RectangularData_display(
+                                             classinfo, x_nrow,
+                                             nhead, ntail)
         }
-        classinfo <- make_class_info_for_DataFrame_display(x@data)
-        classinfo <- make_rownames_for_RectangularData_display(
-                                       classinfo, x_nrow,
-                                       nhead, ntail)
         rownames(m) <- paste(format(rownames(m)), classinfo)
         print(m, quote=FALSE, right=TRUE)
     }
