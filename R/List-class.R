@@ -61,7 +61,7 @@ setMethod("isEmpty", "ANY",
               ## Recursive definition
               if (length(x) == 0L)
                   return(TRUE)
-              all(vapply(x, function(xx) isEmpty(xx), logical(1L)))
+              all(vapply(x, isEmpty, logical(1L)))
           })
 ### A List object is considered empty iff all its elements are empty.
 setMethod("isEmpty", "List", function(x) all(elementNROWS(x) == 0L))
