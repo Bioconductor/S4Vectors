@@ -228,22 +228,22 @@ combineUniqueCols <- function(x, ..., use.names=TRUE)
 
                 candidates <- match(rownames(cur_object), rownames(combined))
                 overlapped <- filled[candidates]
-                previous <- reference[candidates]
+                previous <- extractROWS(reference, candidates)
 
                 # Only doing the replacement if the overlaps are identical.
                 # Incidentally, this also checks for the right type. We could
                 # be more aggressive and do a partial replacement, but
                 # something is probably already wrong if this warning fires.
-                if (!identical(previous[overlapped], replacements[overlapped])) {
+                if (!identical(extractROWS(previous, overlapped), extractROWS(replacements, overlapped))) {
                     warning(wmsg("different values for shared rows in multiple instances of column '",
                         d, "', ignoring this column in ", class(all_objects[[i_object]]), " ", i_object))
                 } else {
-                    reference[candidates] <- replacements
+                    reference <- replaceROWS(reference, candidates, replacements)
                     filled[candidates] <- TRUE
                 }
             }
 
-            combined[,d] <- reference
+            combined[[d]] <- reference
 
         } else {
             for (i in seq_along(object_affected)[-1]) {

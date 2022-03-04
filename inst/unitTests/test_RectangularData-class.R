@@ -65,6 +65,18 @@ test_combineUniqueCols <- function() {
 
     # Unary case works correctly.
     checkIdentical(combineUniqueCols(X), X)
+
+    # Handles nested DFs properly.
+    x <- DataFrame(X=I(DataFrame(A=1:5)), row.names=1:5)
+    y <- DataFrame(X=I(DataFrame(A=1:5)), row.names=1:5)
+    out <- combineUniqueCols(x, y)
+    checkIdentical(out$X$A, 1:5)
+
+    y2 <- DataFrame(X=I(DataFrame(A=2:6, B=letters[1:5])), row.names=2:6)
+    out <- combineUniqueCols(x, y2) # should trigger a warning where X$B is effectively dropped.
+    checkIdentical(colnames(out), "X")
+    checkIdentical(colnames(out$X), "A")
+    checkIdentical(out$X$A, c(1:5, NA))
 }
 
 test_combineUniqueCols_unnamed <- function() {
