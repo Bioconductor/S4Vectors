@@ -67,8 +67,11 @@ test_DataFrame_construction <- function() {
                  data.frame(score = score, swiss = swiss[1:3,]))
 
   ## identity
-  df <- DataFrame(A=I(list(1:3)))
-  checkIdentical(as.data.frame(df), data.frame(A=I(list(1:3))))
+  DF <- DataFrame(A=I(list(1:3)), B=I(list(1:4)))
+  DF[[2]] <- I(DF[[2]])
+  df <- data.frame(A=I(list(1:3)), B=I(list(1:4)))
+  df[[1]] <- unclass(df[[1]])
+  checkIdentical(as.data.frame(DF), df)
   
   ## recycling
   DF <- DataFrame(1, score)

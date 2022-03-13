@@ -778,9 +778,12 @@ setMethod("rep", "DataFrame", function(x, ...) {
             ## one row per list element.
             if (is(col, "List") && pcompareRecursively(col))
                 col <- as.list(col)
-            if (is.list(col))
-                col <- I(col)
+            protect <- is.list(col) && !is(col, "AsIs")
+            if (protect)
+                col <- I(col)  # set AsIs class to protect column
             df <- as.data.frame(col, optional=optional)
+            if (protect)
+                df[[1L]] <- unclass(df[[1L]])  # drop AsIs class
             if (is.null(colnames(col)) && ncol(df) == 1L)
                 colnames(df) <- x_colnames[[j]]
             df
