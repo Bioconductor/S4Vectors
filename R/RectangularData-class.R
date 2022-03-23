@@ -243,7 +243,17 @@ combineUniqueCols <- function(x, ..., use.names=TRUE)
                 }
             }
 
-            combined[[d]] <- reference
+            # Can't use 'combined[ , j] <- col' to replace the column of a
+            # data-frame-like object!
+            # See https://github.com/Bioconductor/S4Vectors/issues/100
+            if (is.data.frame(combined) || is(combined, "DataFrame")) {
+                combined[[d]] <- reference
+            } else {
+                # Expected to work on any rectangular object (e.g. matrix,
+                # dgCMatrix, DelayedMatrix, SummarizedExperiment, etc...)
+                # except data-frame-like objects.
+                combined[ , d] <- reference
+            }
 
         } else {
             for (i in seq_along(object_affected)[-1]) {
