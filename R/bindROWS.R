@@ -163,6 +163,32 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
 ###     result is going to be (i.e. a column in the result will be atomic
 ###     vector or factor depending on what the corresponding column in the
 ###     1st data frame is).
+
+### The set of harmonized levels does NOT depend on the order of the objects
+### passed thru 'all_objects'. However, the exact order of the harmonized
+### levels DOES depend on the order of the objects. This is a feature!
+### That's because there's no clear/consensual notion of natural or canonical
+### order for the levels (note that sort() is locale/system dependent) and we
+### purposedly stay away from the business of introducing one, at least for
+### now.
+.harmonize_factor_levels <- function(all_objects)
+{
+    is_factor <- vapply(all_objects, is.factor, logical(1L))
+    if (!any(is_factor))
+        return(all_objects)
+    ## Force any non-factor object into a factor object.
+    all_objects[!is_factor] <- lapply(all_objects[!is_factor],
+        function(object) {
+            object <- as.character(object)
+            factor(object, levels=unique(object))
+        })
+    ## Collect and combine all levels.
+    harmonized_levels <- unique(unlist(lapply(all_objects, levels),
+                                       use.names=FALSE))
+    ## Set harmonized levels on all objects.
+    lapply(all_objects, factor, levels=harmonized_levels)
+}
+
 bindROWS2 <- function(x, objects=list())
 {
     all_objects <- c(list(x), objects)
@@ -173,18 +199,18 @@ bindROWS2 <- function(x, objects=list())
             all_objects[coerce_idx] <- lapply(all_objects[coerce_idx], as.list)
     } else {
         is_Rle <- vapply(all_objects, is, logical(1L), "Rle")
-        if (any(is_Rle) && !all(is_Rle))
-            all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
-        is_factor <- vapply(all_objects, is.factor, logical(1L))
-        if (any(is_factor)) {
-            all_objects[!is_factor] <- lapply(all_objects[!is_factor],
-                function(object) {
-                    object <- as.character(object)
-                    factor(object, levels=unique(object))
+        if (all(is_Rle)) {
+            run_values <- lapply(all_objects, slot, "values")
+            run_values <- .harmonize_factor_levels(run_values)
+            all_objects <- lapply(seq_along(all_objects),
+                function(i) {
+                    BiocGenerics:::replaceSlots(all_objects[[i]],
+                                                values=run_values[[i]])
                 })
-            all_levels <- unique(unlist(lapply(all_objects, levels),
-                                        use.names=FALSE))
-            all_objects <- lapply(all_objects, factor, levels=all_levels)
+        } else {
+            if (any(is_Rle))
+                all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
+            all_objects <- .harmonize_factor_levels(all_objects)
         }
     }
     nonempty_idx <- which(vapply(all_objects, NROW, integer(1L)) != 0L)
