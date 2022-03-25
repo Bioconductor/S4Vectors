@@ -335,25 +335,26 @@ setMethod("sd", signature = c(x = "Rle"),
 
 ### S3/S4 combo for median.Rle
 ### FIXME: code duplication needed for S3 / S4 dispatch
-### drop NA's here, so dropRle==TRUE allows x[FALSE][NA] in median.default
-### FIXME: Remove these methods in R 3.5
+### We intercept the case where a single NA must be returned because
+### median.default() wouldn't be able to handle it (would choke on
+### x[NA_integer_] because Rle objects don't support that).
 median.Rle <- function(x, na.rm = FALSE, ...)
 {
-    if (na.rm)
-        x <- x[!is.na(x)]
-    oldOption <- getOption("dropRle")
-    options("dropRle" = TRUE)
-    on.exit(options("dropRle" = oldOption))
+    if (!isTRUEorFALSE(na.rm))
+        stop(wmsg("'na.rm' must be TRUE or FALSE"))
+    is_na <- is.na(x)
+    if ((na.rm && all(is_na)) || (!na.rm && any(is_na)))
+        return(runValue(x)[NA_integer_])
     NextMethod("median", na.rm=FALSE)
 }
 setMethod("median", "Rle", 
     function(x, na.rm = FALSE)
 {
-    if (na.rm)
-        x <- x[!is.na(x)]
-    oldOption <- getOption("dropRle")
-    options("dropRle" = TRUE)
-    on.exit(options("dropRle" = oldOption))
+    if (!isTRUEorFALSE(na.rm))
+        stop(wmsg("'na.rm' must be TRUE or FALSE"))
+    is_na <- is.na(x)
+    if ((na.rm && all(is_na)) || (!na.rm && any(is_na)))
+        return(runValue(x)[NA_integer_])
     callNextMethod(x=x, na.rm=FALSE)
 })
 
