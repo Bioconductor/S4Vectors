@@ -345,7 +345,10 @@ median.Rle <- function(x, na.rm = FALSE, ...)
     is_na <- is.na(x)
     if ((na.rm && all(is_na)) || (!na.rm && any(is_na)))
         return(runValue(x)[NA_integer_])
-    NextMethod("median")
+    ans <- NextMethod("median")
+    if (is(ans, "Rle"))
+        ans <- decodeRle(ans)
+    ans
 }
 setMethod("median", "Rle", 
     function(x, na.rm = FALSE)
@@ -355,7 +358,10 @@ setMethod("median", "Rle",
     is_na <- is.na(x)
     if ((na.rm && all(is_na)) || (!na.rm && any(is_na)))
         return(runValue(x)[NA_integer_])
-    callNextMethod()
+    ans <- callNextMethod()
+    if (is(ans, "Rle"))
+        ans <- decodeRle(ans)
+    ans
 })
 
 ### FIXME: Remove this in R 3.5
