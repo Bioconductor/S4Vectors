@@ -64,28 +64,57 @@ sapply_NROW <- function(x)
 ###   matrix, data.frame          "ANY"
 ###   character,list              "ANY"
 ###
-lowestListElementClass <- function(x)
+### If the class to return is an S4 class, make sure to return it with
+### its "package" attribute!
+
+.unique_classes <- function(classes)
 {
-    stopifnot(is.list(x))
-    if (length(x) == 0L)
+    stopifnot(is.list(classes))
+
+    classnames <- vapply(classes,
+        function(cl) cl[[1L]],
+        character(1), USE.NAMES=FALSE)
+
+    pkgs <- vapply(classes,
+        function(cl) {
+            pkg <- attr(cl, "package")
+            if (is.null(pkg)) "" else pkg
+        }, character(1), USE.NAMES=FALSE)
+
+    is_dup <- duplicatedIntegerPairs(selfmatch(classnames),
+                                     selfmatch(pkgs))
+    classes[!is_dup]
+}
+
+lowestListElementClass <- function(objects)
+{
+    stopifnot(is.list(objects))
+
+    if (length(objects) == 0L)
         return("ANY")
-    all_classes <- unique(vapply(x, function(x_elt) class(x_elt)[[1L]],
-                                 character(1), USE.NAMES=FALSE))
-    nclasses <- length(all_classes)
-    if (nclasses == 1L)
-        return(all_classes)
-    ## If all the classes in 'all_classes' have a common ancestor **among**
-    ## 'all_classes', then return it. Otherwise return "ANY".
-    ans <- all_classes[[1L]]
-    for (i in 2:nclasses) {
-        class <- all_classes[[i]]
-        if (extends(class, ans))
-            next
-        if (!extends(ans, class))
-            return("ANY")
-        ans <- class
+
+    all_classes <- lapply(objects, class)
+    unique_classes <- .unique_classes(all_classes)
+    n <- length(unique_classes)
+    if (n == 1L)
+        return(unique_classes[[1L]])
+
+    ## Find common ancestor candidate.
+    ans <- unique_classes[[1L]]
+    for (i in 2:n) {
+        cl <- unique_classes[[i]]
+        if (extends(ans, cl))
+            ans <- cl
     }
-    ans
+
+    ## Do all classes extend 'ans'?
+    for (i in seq_len(n)) {
+        cl <- unique_classes[[i]]
+        if (!extends(cl, ans))
+            return("ANY")  # no
+    }
+
+    ans  # yes!
 }
 
 
