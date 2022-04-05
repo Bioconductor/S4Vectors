@@ -93,7 +93,11 @@ lowestListElementClass <- function(objects)
     if (length(objects) == 0L)
         return("ANY")
 
-    all_classes <- lapply(objects, class)
+    all_classes <- lapply(objects,
+        function(object) {
+            cl <- class(object)
+            if (is.null(attr(cl, "package"))) cl[[1L]] else cl
+        })
     unique_classes <- .unique_classes(all_classes)
     n <- length(unique_classes)
     if (n == 1L)
