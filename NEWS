@@ -1,3 +1,32 @@
+CHANGES IN VERSION 0.34.0
+-------------------------
+
+NEW FEATURES
+
+    o Implement subassignment of TransposedDataFrame objects.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o DataFrame is now a virtual class! This completes the replacement of
+      DataFrame with DFrame announced in September 2019. See:
+      https://www.bioconductor.org/help/course-materials/2019/BiocDevelForum/02-DataFrame.pdf
+
+BUG FIXES
+
+    o Avoid spurious warnings when DataFrame() is supplied a DataFrameList.
+
+    o Fix bug in combineRows(DataFrame(), DataFrame(ref=IRanges(1:2, 10))).
+
+    o Fix display of TransposedDataFrame objects with more than 11 rows.
+
+    o Fix isEmpty() on ordinary lists and derivatives.
+
+    o Fix handling of nested DataFrames in combineUniqueCols().
+
+    o Make sure internal helper lowestListElementClass() does not lose
+      the "package" attribute of the returned class (fixes issue #103).
+
+
 CHANGES IN VERSION 0.32.0
 -------------------------
 
