@@ -505,12 +505,9 @@ setMethod("extractCOLS", "DataFrame", function(x, i) {
     }
     new_listData <- extractROWS(x@listData, i)
     new_mcols <- extractROWS(mcols(x, use.names=FALSE), i)
-    x <- BiocGenerics:::replaceSlots(x, listData=new_listData,
-                                        elementMetadata=new_mcols,
-                                        check=FALSE)
-    if (anyDuplicated(names(x)))
-        names(x) <- make.unique(names(x))
-    x
+    BiocGenerics:::replaceSlots(x, listData=new_listData,
+                                   elementMetadata=new_mcols,
+                                   check=FALSE)
 })
 
 setMethod("[", "DataFrame",
@@ -629,7 +626,6 @@ setMethod("mergeROWS", c("DFrame", "ANY"),
             newcn <- paste0("V", i[appended])
         }
         names(x)[i[appended]] <- newcn
-        names(x) <- make.unique(names(x))
     }
     names(x)
 }
