@@ -1,6 +1,10 @@
 \name{Factor-class}
 \docType{class}
 
+\alias{class:integer_OR_raw}
+\alias{integer_OR_raw-class}
+\alias{integer_OR_raw}
+
 \alias{class:Factor}
 \alias{Factor-class}
 \alias{Factor}

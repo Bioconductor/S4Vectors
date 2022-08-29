@@ -4,14 +4,20 @@
 ###
 ### The Factor class serves a similar role as factor in base R except that
 ### the levels of a Factor object can be any vector-like object.
+### Note that Factor objects don't support NAs at the moment!
 ###
+
+setClassUnion("integer_OR_raw", c("integer", "raw"))
 
 setClass("Factor",
     contains="Vector",
     representation(
-        levels="vector_OR_Vector",  # will also accept a factor! (see
+        levels="vector_OR_Vector",  # Will also accept a factor! (see
                                     # Vector-class.R)
-        index="integer"
+        index="integer_OR_raw"      # No NAs for now.
+    ),
+    prototype(
+        index=raw(0)
     )
 )
 
@@ -41,17 +47,22 @@ setMethod("parallel_slot_names", "Factor",
         return("'levels' slot contains duplicates")
 
     ## 'index' slot
-    if (!is.integer(x@index))
-        return("'index' slot must be an integer vector")
+    if (!(is.integer(x@index) || is.raw(x@index)))
+        return("'index' slot must be an integer vector or raw vector")
     if (length(x@index) != 0L) {
-        ## Strangely, calling min() and max() separately is much faster
+        nlevels <- NROW(x@levels)
+        x_index <- x@index
+        if (is.raw(x_index))
+            x_index <- as.integer(x_index)
+        ## Surprisingly, calling min() and max() separately is much faster
         ## than using range().
-        index_min <- min(x@index)
+        index_min <- min(x_index)
         ## Factor objects don't support NAs at the moment.
         if (is.na(index_min))
-            return("'index' slot contains NAs")
-        index_max <- max(x@index)
-        if (index_min < 1L || index_max > NROW(x@levels))
+            return(c("'index' slot contains NAs (but Factor ",
+                     "objects don't support NAs at the moment)"))
+        index_max <- max(x_index)
+        if (index_min < 1L || index_max > nlevels)
             return("'index' slot contains out-of-bounds indices")
     }
 
@@ -69,18 +80,32 @@ setValidity2("Factor", .validate_Factor)
 ### ugly names, I know :-/
 ### TODO: Maybe rename these generics class_after_relist() and
 ### class_after_Factor()? Or target_class_for_relist() and
-### target_class_for_Factor()? Or simply relist_as() and Factor_as()?
+### target_class_for_Factor()?
 setGeneric("FactorToClass", function(x) standardGeneric("FactorToClass"))
 
 setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
 
-.Factor_as <- function(x, levels)
+.infer_Factor_class <- function(x, levels)
 {
     if (!missing(levels))
         return(FactorToClass(levels))
     if (!missing(x))
         return(FactorToClass(x))
     stop(wmsg("at least 'x' or 'levels' must be specified"))
+}
+
+### Preserves the names.
+.set_index_storage_mode <- function(index, levels)
+{
+    ## We use `storage.mode<-` instead of as.*(), to preserve the names.
+    if (NROW(levels) <= 255L) {
+        if (storage.mode(index) != "raw")
+            storage.mode(index) <- "raw"
+    } else {
+        if (storage.mode(index) != "integer")
+            storage.mode(index) <- "integer"
+    }
+    index
 }
 
 .encode_as_Factor <- function(x, levels, mcols=NULL, Class="Factor")
@@ -93,7 +118,9 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
     }
     index <- match(x, levels)
     if (check && anyNA(index))
-        stop(wmsg("all the elements in 'x' must be represented in 'levels'"))
+        stop(wmsg("Factor objects don't support NAs at the moment so ",
+                  "every element in 'x' must be represented in 'levels'"))
+    index <- .set_index_storage_mode(index, levels)
     x_names <- ROWNAMES(x)
     if (!is.null(x_names))
         names(index) <- x_names
@@ -115,7 +142,7 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
             return(ans)
         }
         ## Factor(levels=levels)
-        index <- integer(0)
+        index <- .set_index_storage_mode(raw(0), levels)
     } else {
         ## 'index' is specified.
         if (!missing(x)) {
@@ -125,18 +152,22 @@ setMethod("FactorToClass", "vector_OR_Vector", function(x) "Factor")
             ## Factor(x, index=index)
             levels <- x
         }
-        if (!is.numeric(index))
-            stop(wmsg("'index' must be an integer vector"))
-        if (!is.integer(index))
-            index <- as.integer(index)
+        if (!is.raw(index)) {
+            if (!is.numeric(index))
+                stop(wmsg("'index' must be an integer vector or raw vector"))
+            ## We use `storage.mode<-` instead of as.integer(), to preserve
+            ## the names.
+            if (storage.mode(index) != "integer")
+                storage.mode(index) <- "integer"
+        }
     }
     mcols <- normarg_mcols(mcols, Class, length(index))
-    new2(Class, levels=levels, index=index, elementMetadata=mcols)
+    new2(Class, levels=levels, index=index, elementMetadata=mcols, check=TRUE)
 }
 
 Factor <- function(x, levels, index=NULL, ...)
 {
-    Class <- .Factor_as(x, levels)
+    Class <- .infer_Factor_class(x, levels)
     if (length(list(...)) == 0L) {
         mcols <- NULL
     } else {
@@ -223,7 +254,7 @@ setMethod("unfactor", "Factor",
             stop(wmsg("'use.names' must be TRUE or FALSE"))
         if (!isTRUEorFALSE(ignore.mcols))
             stop(wmsg("'ignore.mcols' must be TRUE or FALSE"))
-        ans <- extractROWS(x@levels, x@index)
+        ans <- extractROWS(x@levels, as.integer(x@index))
         if (use.names)
             ans <- .set_names_on_unfactor_ans(ans, names(x))
         if (!ignore.mcols && is(ans, "Vector"))
@@ -237,7 +268,7 @@ setMethod("unfactor", "Factor",
 ### Coercion
 ###
 
-### 'as(x, "Factor")' is the same as 'Factor(x)' with 2 IMPORTANT EXCEPTIONS:
+### 'as(x, "Factor")' is the same as 'Factor(x)' WITH 2 IMPORTANT EXCEPTIONS:
 ###   (1) If 'x' is an ordinary factor, 'as(x, "Factor")' returns a Factor
 ###       with the same levels, encoding, and names, as 'x'.
 ###       Note that after coercing an ordinary factor to Factor, going back
@@ -253,18 +284,43 @@ setAs("vector_OR_Vector", "Factor",
 ### Implement exception (1) (see above).
 setAs("factor", "Factor",
     function(from)
+    {
+        if (anyNA(from))
+            stop(wmsg("coercing an ordinary factor with NAs to Factor ",
+                      "is not supported at the moment"))
+        ans_levels <- levels(from)
+        ans_index <- .set_index_storage_mode(as.integer(from), ans_levels)
+        names(ans_index) <- names(from)
         ## In order to be as fast as possible and skip validation, we
-        ## don't use 'Factor(levels=levels(from), index=as.integer(from))'.
-        new2("Factor", levels=levels(from),
-                       index=as.integer(from),
-                       check=FALSE)
+        ## don't use 'Factor(levels=ans_levels, index=ans_index)'.
+        new2("Factor", levels=ans_levels, index=ans_index, check=FALSE)
+    }
 )
 
-setMethod("as.integer", "Factor", function(x) x@index)
+### Propagates the names. Note that this is a slight inconsistency with
+### what as.integer() does on an ordinary factor.
+setMethod("as.integer", "Factor",
+    function(x)
+    {
+        index <- x@index
+        ## We use `storage.mode<-` instead of as.integer(), to preserve
+        ## the names.
+        if (storage.mode(index) != "integer")
+            storage.mode(index) <- "integer"
+        index
+    }
+)
 
+### Propagates the names.
 setMethod("as.factor", "Factor",
     function(x)
-        structure(x@index, levels=as.character(levels(x)), class="factor")
+    {
+        ans <- as.integer(x)
+        attributes(ans) <- list(levels=as.character(levels(x)),
+                                class="factor",
+                                names=names(x))
+        ans
+    }
 )
 
 setMethod("as.character", "Factor",
@@ -314,10 +370,11 @@ setMethod("showAsCell", "Factor",
 
 ### Returns TRUE if Factor objects 'x' and 'y' have the same levels in
 ### the same order.
-### Note that using identical(x@levels, y@levels) for this would be too
-### strigent and identical() is not reliable anyway (can produce false
-### positives on objects that use external pointers internally like
-### DNAStringSet objects).
+### Note that using 'identical(x@levels, y@levels)' for this would be too
+### strigent e.g. it would also compare the names or/and metadata columns
+### of 'x@levels' and 'y@levels'. Furthermore, identical() is not reliable
+### in general e.g. it can produce false positives on objects that use
+### external pointers internally like DNAStringSet objects.
 .same_levels <- function(x_levels, y_levels)
 {
     if (class(x_levels) != class(y_levels))
@@ -326,7 +383,7 @@ setMethod("showAsCell", "Factor",
     y_levels_dim <- dim(y_levels)
     if (!identical(x_levels_dim, y_levels_dim))
         return(FALSE)
-    if (is.null(x_levels_dim) && length(x_levels) != length(y_levels))
+    if (is.null(x_levels_dim) && NROW(x_levels) != NROW(y_levels))
         return(FALSE)
     all(x_levels == y_levels)
 }
@@ -340,27 +397,30 @@ setMethod("showAsCell", "Factor",
 
     ## Use bindROWS_Vector_objects() to concatenate parallel slots "index"
     ## and "elementMetadata". Note that the resulting 'ans' can be an invalid
-    ## Factor instance (e.g. some indices in 'ans@index' can be wrong).
+    ## Factor instance e.g. some indices in 'ans@index' can be wrong if
+    ## 'x' and 'y' don't have the same levels. We'll fix this in 4. below.
     ans <- bindROWS_Vector_objects(x, list(y), use.names=FALSE,
                                                ignore.mcols=ignore.mcols,
                                                check=FALSE)
 
-    ## 2. Take care of slot "levels"
+    ## 2. Expedite a common situation
 
-    ## Expedite a common situation.
     if (.same_levels(x@levels, y@levels))
         return(ans)  # all indices in 'ans@index' are correct
 
-    ## Prepare 'ans_levels'.
+    ## 3. Combine levels of 'x' and 'y'
+
     m <- match(y@levels, x@levels)
     na_idx <- which(is.na(m))
     ans_levels <- bindROWS(x@levels, list(extractROWS(y@levels, na_idx)))
 
-    ## Prepare 'ans_index'.
-    m[na_idx] <- NROW(x@levels) + seq_along(na_idx)
-    new_y_index <- m[y@index]
+    ## 4. Compute 'ans_index'
 
-    x_index <- x@index
+    m[na_idx] <- NROW(x@levels) + seq_along(na_idx)
+    new_y_index <- m[as.integer(y@index)]
+
+    x_index <- .set_index_storage_mode(x@index, ans_levels)
+    new_y_index <- .set_index_storage_mode(new_y_index, ans_levels)
     if (use.names) {
         names(new_y_index) <- names(y@index)
     } else {
@@ -449,5 +509,5 @@ setMethod("selfmatch", "Factor",
     }
 )
 
-setMethod("xtfrm", "Factor", function(x) xtfrm(x@levels)[x@index])
+setMethod("xtfrm", "Factor", function(x) xtfrm(x@levels)[as.integer(x@index)])
 
