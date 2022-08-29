@@ -5,8 +5,8 @@ Description: The S4Vectors package defines the Vector and List virtual classes
 	vectors and lists in R. Package developers can easily implement
 	vector-like or list-like objects as concrete subclasses of Vector or
 	List. In addition, a few low-level concrete subclasses of general
-	interest (e.g. DataFrame, Rle, and Hits) are implemented in the
-	S4Vectors package itself (many more are implemented in the IRanges
+	interest (e.g. DataFrame, Rle, Factor, and Hits) are implemented in
+	the S4Vectors package itself (many more are implemented in the IRanges
 	package and in other Bioconductor infrastructure packages).
 biocViews: Infrastructure, DataRepresentation
 URL: https://bioconductor.org/packages/S4Vectors
