@@ -38,11 +38,30 @@ test_Factor_constructor <- function()
     checkIdentical(as.integer(f2), as.integer(F2))
 }
 
+test_Factor_droplevels <- function()
+{
+    F0 <- Factor(levels=paste0("L", 500:1), index=c(9:1, 248:255, 1:9))
+    names(F0) <- letters
+
+    F0pruned <- droplevels(F0)
+    checkTrue(validObject(F0pruned))
+    checkIdentical(unfactor(F0), unfactor(F0pruned))
+    checkIdentical(droplevels(as.factor(F0)), as.factor(F0pruned))
+    checkTrue(is.raw(F0pruned@index))
+
+    F1 <- Factor(levels=levels(F0), index=as.raw(F0))
+    F1pruned <- droplevels(F1)
+    checkTrue(validObject(F1pruned))
+    checkIdentical(unfactor(F1), unfactor(F1pruned))
+    checkIdentical(droplevels(as.factor(F1)), as.factor(F1pruned))
+    checkTrue(is.raw(F1pruned@index))
+}
+
 test_Factor_coercion <- function()
 {
     f0 <- factor()
     F0 <- as(f0, "Factor")
-    checkTrue(validObject(F0)) 
+    checkTrue(validObject(F0))
     checkIdentical(levels(f0), levels(F0))
     checkTrue(is.raw(F0@index))
     checkIdentical(f0, as.factor(F0))

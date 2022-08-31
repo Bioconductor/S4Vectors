@@ -38,34 +38,53 @@ setMethod("parallel_slot_names", "Factor",
 ### Validity
 ###
 
-.validate_Factor <- function(x)
+.validate_levels_slot <- function(x)
 {
-    ## 'levels' slot
     if (!is(x@levels, "vector_OR_Vector"))
         return("'levels' slot must be a vector_OR_Vector derivative")
     if (anyDuplicated(x@levels))
         return("'levels' slot contains duplicates")
+    TRUE
+}
 
-    ## 'index' slot
+.validate_index_slot <- function(x)
+{
     if (!(is.integer(x@index) || is.raw(x@index)))
         return("'index' slot must be an integer vector or raw vector")
-    if (length(x@index) != 0L) {
-        nlevels <- NROW(x@levels)
-        x_index <- x@index
-        if (is.raw(x_index))
-            x_index <- as.integer(x_index)
-        ## Surprisingly, calling min() and max() separately is much faster
-        ## than using range().
-        index_min <- min(x_index)
-        ## Factor objects don't support NAs at the moment.
-        if (is.na(index_min))
-            return(c("'index' slot contains NAs (but Factor ",
-                     "objects don't support NAs at the moment)"))
-        index_max <- max(x_index)
-        if (index_min < 1L || index_max > nlevels)
-            return("'index' slot contains out-of-bounds indices")
-    }
+    if (length(x@index) == 0L)
+        return(TRUE)
 
+    ## Check that all values in 'index' are >= 1 and <= nlevels.
+    ## We will compute 'min(index)' and 'max(index)' for that
+    ## which is slightly more efficient than doing something
+    ## like 'all(index >= 1L) && all(index <= nlevels)'.
+    ## Also, surprisingly, calling min() and max() separately is much
+    ## faster than using range().
+
+    nlevels <- NROW(x@levels)
+    x_index <- x@index
+    ## min() and max() don't work on raw vectors.
+    if (is.raw(x_index))
+        x_index <- as.integer(x_index)
+    index_min <- min(x_index)
+    ## Factor objects don't support NAs at the moment.
+    if (is.na(index_min))
+        return(c("'index' slot contains NAs (but Factor ",
+                 "objects don't support NAs at the moment)"))
+    index_max <- max(x_index)
+    if (index_min < 1L || index_max > nlevels)
+        return("'index' slot contains out-of-bounds indices")
+    TRUE
+}
+
+.validate_Factor <- function(x)
+{
+    msg <- .validate_levels_slot(x)
+    if (!isTRUE(msg))
+        return(msg)
+    msg <- .validate_index_slot(x)
+    if (!isTRUE(msg))
+        return(msg)
     TRUE
 }
 
@@ -192,17 +211,49 @@ setReplaceMethod("names", "Factor",
 )
 
 ### base::levels() works out-of-the-box but base::`levels<-` does NOT.
-
+### Unlike base::`levels<-`, the method below supports reduction of the number
+### of levels.
 setReplaceMethod("levels", "Factor",
     function(x, value)
     {
         x@levels <- value
+        ## We must validate 'x' **before** calling .set_index_storage_mode().
+        ## This will validate the supplied levels, and, in case the number of
+        ## levels went down, will ensure that it remains >= 'max(x@index)'.
         validObject(x)
+        x@index <- .set_index_storage_mode(x@index, x@levels)
         x
     }
 )
 
+### base::nlevels(x) returns 'length(levels(x))' so we need to override it.
 setMethod("nlevels", "Factor", function(x) NROW(x@levels))
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### droplevels()
+###
+
+.droplevels.Factor <- function(x)
+{
+    x_nlevels <- nlevels(x)
+    lvl_ranks <- seq_len(x_nlevels)
+    x_index <- .set_index_storage_mode(x@index, lvl_ranks)
+    if (is.raw(x_index))
+        lvl_ranks <- as.raw(lvl_ranks)
+    keep_ix <- which(lvl_ranks %in% x_index)
+    new_levels <- x@levels[keep_ix]
+    new_index <- match(x_index, keep_ix)
+    new_index <- .set_index_storage_mode(new_index, new_levels)
+    names(new_index) <- names(x@index)
+    BiocGenerics:::replaceSlots(x, levels=new_levels,
+                                   index=new_index,
+                                   check=FALSE)
+}
+
+### S3/S4 combo for droplevels.Factor
+droplevels.Factor <- function(x, ...) .droplevels.Factor(x, ...)
+setMethod("droplevels", "Factor", droplevels.Factor)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -297,6 +348,18 @@ setAs("factor", "Factor",
     }
 )
 
+### Propagates the names.
+setMethod("as.factor", "Factor",
+    function(x)
+    {
+        ans <- as.integer(x)
+        attributes(ans) <- list(levels=as.character(levels(x)),
+                                class="factor",
+                                names=names(x))
+        ans
+    }
+)
+
 ### Propagates the names. Note that this is a slight inconsistency with
 ### what as.integer() does on an ordinary factor.
 setMethod("as.integer", "Factor",
@@ -311,15 +374,17 @@ setMethod("as.integer", "Factor",
     }
 )
 
-### Propagates the names.
-setMethod("as.factor", "Factor",
+### Propagates the names. Note that this is a slight inconsistency with
+### what as.raw() does on an ordinary factor.
+setMethod("as.raw", "Factor",
     function(x)
     {
-        ans <- as.integer(x)
-        attributes(ans) <- list(levels=as.character(levels(x)),
-                                class="factor",
-                                names=names(x))
-        ans
+        index <- x@index
+        ## We use `storage.mode<-` instead of as.raw(), to preserve
+        ## the names.
+        if (storage.mode(index) != "raw")
+            storage.mode(index) <- "raw"
+        index
     }
 )
 
@@ -428,8 +493,8 @@ setMethod("showAsCell", "Factor",
     }
     ans_index <- c(x_index, new_y_index)
 
-    BiocGenerics:::replaceSlots(ans, index=ans_index,
-                                     levels=ans_levels,
+    BiocGenerics:::replaceSlots(ans, levels=ans_levels,
+                                     index=ans_index,
                                      check=FALSE)
 }
 
