@@ -285,10 +285,6 @@ setMethod("classNameForDisplay", "ANY",
    }
 )
 
-setMethod("classNameForDisplay", "AsIs",
-    function(x) classNameForDisplay(drop_AsIs(x))
-)
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### showAsCell()

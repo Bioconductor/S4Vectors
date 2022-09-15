@@ -108,6 +108,8 @@ test_Rle_numerical <- function() {
     checkEqualsNumeric(cor(x, y, use = "complete"), cor(xRle, yRle, use = "complete"))
     checkIdentical(sd(x), sd(xRle))
     checkEqualsNumeric(sd(x, na.rm = TRUE), sd(xRle, na.rm = TRUE))
+    checkIdentical(8, median(Rle(8)))
+    checkIdentical(8L, median(Rle(8L)))
     checkIdentical(median(x), median(xRle))
     checkIdentical(median(x, na.rm = TRUE), median(xRle, na.rm = TRUE))
     checkIdentical(quantile(x, na.rm = TRUE), quantile(xRle, na.rm = TRUE))

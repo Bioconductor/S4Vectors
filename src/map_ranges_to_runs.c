@@ -349,7 +349,7 @@ static const char *ranges_mapper2(
 			break;
 	}
 	free(run_breakpoints);
-	return errmsg; 
+	return errmsg;
 }
 
 static const char *positions_mapper2(
@@ -370,7 +370,7 @@ static const char *positions_mapper2(
 			break;
 	}
 	free(run_breakpoints);
-	return errmsg; 
+	return errmsg;
 }
 
 
@@ -390,7 +390,7 @@ static const char *ranges_mapper3(
 		int *mapped_range_Ltrim,
 		int *mapped_range_Rtrim)
 {
-	int SEbuf_len, *SEbuf, *SEorder, *SEbuf2, SE, i, j, k, SE_run;
+	int SEbuf_len, *SEbuf, *SEorder, *SEbuf2, SE, i, ret, j, k, SE_run;
 	unsigned int breakpoint;
 
 	SEbuf_len = 2 * nranges;
@@ -413,7 +413,10 @@ static const char *ranges_mapper3(
 	/* Use radix sort to find order of values in 'SEbuf'. */
 	for (i = 0; i < SEbuf_len; i++)
 		SEorder[i] = i;
-	_sort_ints(SEorder, SEbuf_len, SEbuf, 0, 1, NULL, NULL);
+	ret = _sort_ints(SEorder, SEbuf_len, SEbuf, 0, 1, NULL, NULL);
+	if (ret != 0)
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "ranges_mapper3: memory allocation failed");
 
 	breakpoint = j = 0;
 	for (k = 0; k < SEbuf_len; k++) {
@@ -467,7 +470,7 @@ static const char *ranges_mapper3(
 	}
 	free(SEbuf);
 	free(SEorder);
-	return NULL; 
+	return NULL;
 }
 
 /* Sort the positions in ascending order before mapping them to the runs. */
@@ -475,7 +478,7 @@ static const char *positions_mapper3(
 		const int *run_lengths, int nrun,
 		const int *pos, int npos, int *mapped_pos)
 {
-	int *POSorder, POS, i, j, k, POS_run;
+	int *POSorder, ret, POS, i, j, k, POS_run;
 	unsigned int breakpoint;
 
 	POSorder = (int *) malloc(sizeof(int) * npos);
@@ -488,7 +491,10 @@ static const char *positions_mapper3(
 	/* Use radix sort to find order of values in 'pos'. */
 	for (i = 0; i < npos; i++)
 		POSorder[i] = i;
-	_sort_ints(POSorder, npos, pos, 0, 1, NULL, NULL);
+	ret = _sort_ints(POSorder, npos, pos, 0, 1, NULL, NULL);
+	if (ret != 0)
+		snprintf(errmsg_buf, sizeof(errmsg_buf),
+			 "positions_mapper3: memory allocation failed");
 
 	breakpoint = j = 0;
 	for (k = 0; k < npos; k++) {
@@ -517,7 +523,7 @@ static const char *positions_mapper3(
 		mapped_pos[i] = POS_run;
 	}
 	free(POSorder);
-	return NULL; 
+	return NULL;
 }
 
 

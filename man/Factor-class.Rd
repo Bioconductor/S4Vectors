@@ -1,6 +1,10 @@
 \name{Factor-class}
 \docType{class}
 
+\alias{class:integer_OR_raw}
+\alias{integer_OR_raw-class}
+\alias{integer_OR_raw}
+
 \alias{class:Factor}
 \alias{Factor-class}
 \alias{Factor}
@@ -18,14 +22,18 @@
 \alias{nlevels}
 \alias{nlevels,Factor-method}
 
+\alias{droplevels.Factor}
+\alias{droplevels,Factor-method}
+
 \alias{unfactor}
 \alias{unfactor,factor-method}
 \alias{unfactor,Factor-method}
 
 \alias{coerce,vector_OR_Vector,Factor-method}
 \alias{coerce,factor,Factor-method}
-\alias{as.integer,Factor-method}
 \alias{as.factor,Factor-method}
+\alias{as.integer,Factor-method}
+\alias{as.raw,Factor-method}
 \alias{as.character,Factor-method}
 
 \alias{show,Factor-method}

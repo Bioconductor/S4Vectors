@@ -24,7 +24,7 @@ exportClasses(
     Vector, vector_OR_Vector,
     Hits, SelfHits, SortedByQueryHits, SortedByQuerySelfHits,
     Rle,
-    Factor,
+    integer_OR_raw, Factor,
     List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
@@ -68,8 +68,9 @@ S3method(cbind, DataFrame)
 
 S3method(diff, Rle)
 
-S3method(droplevels, List)
 S3method(droplevels, Rle)
+S3method(droplevels, Factor)
+S3method(droplevels, List)
 
 S3method(duplicated, Vector)
 S3method(duplicated, DataFrame)
@@ -162,6 +163,7 @@ export(
     diff.Rle,
 
     droplevels.Rle,
+    droplevels.Factor,
     droplevels.List,
 
     duplicated.Vector,
@@ -232,8 +234,6 @@ exportMethods(
     length, names, "names<-",
     dim, nrow, ncol,
     dimnames, "dimnames<-",
-    rownames, "rownames<-",
-    colnames, "colnames<-",
     is.na, anyNA,
     as.logical, as.integer, as.numeric,
     as.complex, as.character, as.raw, as.factor,
@@ -270,6 +270,8 @@ exportMethods(
     summary,
 
     ## Methods for generics defined in the BiocGenerics package:
+    rownames, "rownames<-",
+    colnames, "colnames<-",
     rbind, cbind,
     lapply, sapply,
     Reduce, Filter,

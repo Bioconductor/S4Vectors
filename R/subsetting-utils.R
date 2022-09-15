@@ -216,7 +216,12 @@ setMethod("NSBS", "logical",
 {
     x_NROW <- NROW(x)
     x_ROWNAMES <- ROWNAMES(x)
-    what <- if (length(dim(x)) != 0L) "rownames" else "names"
+    ## The only reason we use suppressWarnings() here is to suppress the
+    ## deprecation warning we get at the moment (BioC 3.14) when calling dim()
+    ## on a DataFrameList derivative. Remove when the method is gone (when
+    ## this happens, dim() will return NULL on a DataFrameList derivative).
+    x_dim <- suppressWarnings(dim(x))
+    what <- if (length(x_dim) != 0L) "rownames" else "names"
     if (is.null(x_ROWNAMES)) {
         if (strict.upper.bound)
             .subscript_error("cannot subset by character when ", what,

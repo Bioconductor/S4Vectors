@@ -2,43 +2,48 @@
 ### DataFrame objects
 ### -------------------------------------------------------------------------
 
-## A data.frame-like interface for S4 objects that implement length() and `[`
 
+### DataFrame extends List and the List elements are considered to be the
+### columns of the DataFrame object. This follows the data.frame/list model
+### from base R.
+setClass("DataFrame",
+    contains=c("RectangularData", "List"),
+    representation("VIRTUAL")
+)
+
+## Add DataFrame to the DataFrame_OR_NULL union.
+setIs("DataFrame", "DataFrame_OR_NULL")
+
+
+## DFrame is a concrete DataFrame subclass for representation of in-memory
+## DataFrame objects. It inherits the "listData" slot from the SimpleList
+## class, as well as some of its methods e.g. names(), as.list() and lapply().
 ## NOTE: Normal data.frames always have rownames (sometimes as integers),
 ## but we allow the rownames to be NULL for efficiency. This means that we
 ## need to store the number of rows (nrows).
-setClass("DataFrame",
-         representation(
-                        rownames = "character_OR_NULL",
-                        nrows = "integer"
-                        ),
-         prototype(rownames = NULL,
-                   nrows = 0L,
-                   listData = structure(list(), names = character())),
-         contains = c("RectangularData", "SimpleList"))
-
-### Add DataFrame to the DataFrame_OR_NULL union.
-setIs("DataFrame", "DataFrame_OR_NULL")
-
-## Just a direct DataFrame extension with no additional slot for now. Once all
-## serialized DataFrame instances are replaced with DFrame instances (which
-## will take several BioC release cycles) we'll be able to move the DataFrame
-## slots from the DataFrame class definition to the DFrame class definition.
-## The final goal is to have DataFrame become a virtual class with no slots
-## that only extends RectangularData, and DFrame a concrete DataFrame and
-## SimpleList subclass that has the same slots as the current DataFrame class.
-setClass("DFrame", contains="DataFrame")
+setClass("DFrame",
+    contains=c("DataFrame", "SimpleList"),
+    representation(
+        rownames="character_OR_NULL",
+        nrows="integer"
+    ),
+    prototype(
+        rownames=NULL,
+        nrows=0L,
+        listData = structure(list(), names=character())
+    )
+)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### vertical_slot_names() and horizontal_slot_names()
 ###
 
-setMethod("vertical_slot_names", "DataFrame",
+setMethod("vertical_slot_names", "DFrame",
     function(x) "rownames"
 )
 
-setMethod("horizontal_slot_names", "DataFrame",
+setMethod("horizontal_slot_names", "DFrame",
     function(x) parallel_slot_names(x)
 )
 
@@ -76,12 +81,56 @@ setMethod("updateObject", "DataFrame",
 ### Accessors
 ###
 
-setMethod("nrow", "DataFrame", function(x) x@nrows)
-
+### Note that DataFrame extends List so the length of a DataFrame derivative
+### is the length of its underlying List.
 setMethod("ncol", "DataFrame", function(x) length(x))
 
-setMethod("dim", "DataFrame", function(x) c(nrow(x), ncol(x)))
+### Note that DataFrame extends List so the names of a DataFrame derivative
+### are the names of its underlying List.
+setMethod("colnames", "DataFrame",
+    function(x, do.NULL=TRUE, prefix="col")
+    {
+        if (!(identical(do.NULL, TRUE) && identical(prefix, "col")))
+            stop(wmsg("argument 'do.NULL' and 'prefix' are not supported"))
+        names(x)
+    }
+)
 
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### We shouldn't need this! We define these 2 methods only for backward
+### compatibility with old serialized DataFrame instances (which have
+### the "listData" slot). Without these methods, length() and names() (and
+### therefore ncol(), dim(), colnames(), and dimnames()) are broken on
+### these objects.
+setMethod("length", "DataFrame", function(x) length(x@listData))
+setMethod("names", "DataFrame", function(x) names(x@listData))
+
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "nrows" slot in general, only DFrame
+### objects have it. So the nrow() method below only makes sense for DFrame
+### objects. However, we still define it for DataFrame objects for backward
+### compatibility with old serialized DataFrame instances (which have the
+### "nrows" slot). If we don't do this, we get an infinite recursion when
+### calling nrow() on these objects:
+###   > nrow(x)
+###   Error: C stack usage  7979284 is too close to the limit
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
+setMethod("nrow", "DataFrame", function(x) x@nrows)
+
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "rownames" slot in general, only
+### DFrame objects have it. So the rownames() method below only makes sense
+### for DFrame objects. However, we still define it for DataFrame
+### objects for backward compatibility with old serialized DataFrame
+### instances (which have the "rownames" slot). If we don't do this, we
+### get an infinite recursion when calling rownames() these objects:
+###   > rownames(x)
+###   Error: C stack usage  7975540 is too close to the limit
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
 setMethod("rownames", "DataFrame",
           function(x, do.NULL = TRUE, prefix = "row")
           {
@@ -96,25 +145,7 @@ setMethod("rownames", "DataFrame",
             rn
           })
 
-setMethod("colnames", "DataFrame",
-          function(x, do.NULL = TRUE, prefix = "col")
-          {
-            if (!identical(do.NULL, TRUE)) warning("do.NULL arg is ignored ",
-                "in this method")
-            cn <- names(x@listData)
-            if (!is.null(cn))
-                return(cn)
-            if (length(x@listData) != 0L)
-                stop("DataFrame object with NULL colnames, please fix it ",
-                     "with colnames(x) <- value")
-            return(character(0))
-          })
-
-setMethod("dimnames", "DataFrame",
-    function(x) list(rownames(x), colnames(x))
-)
-
-setReplaceMethod("rownames", "DataFrame",
+setReplaceMethod("rownames", "DFrame",
                  function(x, value)
                  {
                    if (!is.null(value)) {
@@ -141,14 +172,14 @@ setReplaceMethod("colnames", "DataFrame",
                    x
                  })
 
+### Only difference with the "dimnames<-" method for RectangularData
+### objects is that the replacement value is not allowed to be NULL.
 setReplaceMethod("dimnames", "DataFrame",
     function(x, value)
     {
         if (!(is.list(value) && length(value) == 2L))
-            stop("dimnames replacement value must be a list of length 2")
-        rownames(x) <- value[[1L]]
-        colnames(x) <- value[[2L]]
-        x
+            stop(wmsg("dimnames replacement value must be a list of length 2"))
+        callNextMethod()  # call method for RectangularData objects
     }
 )
 
@@ -156,16 +187,6 @@ setReplaceMethod("dimnames", "DataFrame",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Validity
 ###
-
-.valid.DataFrame.dim <- function(x)
-{
-  nr <- dim(x)[1L]
-  if (!length(nr) == 1)
-    return("length of 'nrows' slot must be 1")
-  if (nr < 0)
-    return("number of rows must be non-negative")
-  NULL
-}
 
 .valid.DataFrame.rownames <- function(x)
 {
@@ -199,12 +220,23 @@ setReplaceMethod("dimnames", "DataFrame",
   ##   https://stat.ethz.ch/pipermail/r-devel/2019-August/078337.html
   #if (class(x) == "DataFrame")
   #  return(paste(.OLD_DATAFRAME_INSTANCE_MSG, collapse=""))
-  c(.valid.DataFrame.dim(x),
-    .valid.DataFrame.rownames(x),
+  c(.valid.DataFrame.rownames(x),
     .valid.DataFrame.names(x))
 }
 
 setValidity2("DataFrame", .valid.DataFrame)
+
+.valid.DFrame.nrow <- function(x)
+{
+  nr <- nrow(x)
+  if (!length(nr) == 1)
+    return("length of 'nrows' slot must be 1")
+  if (nr < 0)
+    return("number of rows must be non-negative")
+  NULL
+}
+
+setValidity2("DFrame", .valid.DFrame.nrow)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -281,24 +313,33 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
     varnames[dotnames == ""] <- list(NULL)
     nrows <- ncols <- integer(length(varnames))
     for (i in seq_along(listData)) {
-      element <- try(as(listData[[i]], "DFrame"), silent = TRUE)
+      var <- listData[[i]]
+      element <- try(as(var, "DFrame"), silent = TRUE)
       if (inherits(element, "try-error"))
-        stop("cannot coerce class \"", class(listData[[i]])[1L],
-             "\" to a DataFrame")
+        stop("cannot coerce class \"", class(var)[1L], "\" to a DataFrame")
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
       varlist[[i]] <- element
-      if (is(listData[[i]], "AsIs")) {
-        listData[[i]] <- drop_AsIs(listData[[i]])
+      if (is(var, "AsIs")) {
+        listData[[i]] <- drop_AsIs(var)
       } else {
-        if ((length(dim(listData[[i]])) > 1L) || (ncol(element) > 1L) ||
-             is.list(listData[[i]]))
-          {
-            if (is.null(varnames[[i]]))
-              varnames[[i]] <- colnames(element)
-            else
-              varnames[[i]] <- paste(varnames[[i]], colnames(element), sep = ".")
-          }
+        ## The only reason we use suppressWarnings() here is to suppress the
+        ## deprecation warning we get at the moment (BioC 3.14) when calling
+        ## dim() on a DataFrameList derivative. Remove when the dim() method
+        ## for DataFrameList derivatives is gone (note that when this happens,
+        ## dim() will return NULL on a DataFrameList derivative).
+        var_dim <- suppressWarnings(dim(var))
+        var_dims <- try(dims(var), silent=TRUE)
+        if (inherits(var_dims, "try-error"))
+            var_dims <- NULL
+        if (ncol(element) > 1L || is.list(var) ||
+            length(var_dim) > 1L || length(var_dims) > 1L)
+        {
+          if (is.null(varnames[[i]]))
+            varnames[[i]] <- colnames(element)
+          else
+            varnames[[i]] <- paste(varnames[[i]], colnames(element), sep = ".")
+        }
       }
       if (is.null(varnames[[i]])) {
           varnames[[i]] <- deparse(qargs[[i]])[1L]
@@ -364,7 +405,22 @@ make_zero_col_DataFrame <- make_zero_col_DFrame
 ### Subsetting
 ###
 
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### We define the 2 methods below only to make getListElement() and `[[` work
+### on the old DataFrame instances.
+setMethod("getListElement", "DataFrame",
+    function(x, i, exact=TRUE) getListElement(x@listData, i, exact=exact)
+)
 setMethod("[[", "DataFrame", function(x, i, j, ...)
+{
+    if (!missing(j)) {
+        x[[j, ...]][[i]]
+    } else {
+        selectMethod("[[", "SimpleList")(x, i, j, ...)
+    }
+})
+
+setMethod("[[", "DFrame", function(x, i, j, ...)
 {
     if (!missing(j)) {
         x[[j, ...]][[i]]
@@ -373,7 +429,7 @@ setMethod("[[", "DataFrame", function(x, i, j, ...)
     }
 })
 
-setReplaceMethod("[[", "DataFrame",
+setReplaceMethod("[[", "DFrame",
                  function(x, i, j,..., value)
                  {
                    nrx <- nrow(x)
@@ -400,11 +456,23 @@ setReplaceMethod("[[", "DataFrame",
                    callNextMethod(x, i, value=value)
                  })
 
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "listData", "nrows", or "rownames"
+### slots in general, only DFrame objects have them. So the extractROWS()
+### method below only makes sense for DFrame objects. However, we still
+### define it for DataFrame objects for backward compatibility with
+### old serialized DataFrame instances (which have all these slots). If we
+### don't do this, calling extractROWS() on these objects will actually call
+### the method for Vector derivatives which is a no-op on these objects.
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
 setMethod("extractROWS", "DataFrame",
     function(x, i)
     {
-        i <- normalizeSingleBracketSubscript(i, x, exact=FALSE, allow.NAs=TRUE,
+        i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE,
                                              as.NSBS=TRUE)
+        x <- updateObject(x, check=FALSE)
         slot(x, "listData", check=FALSE) <- lapply(as.list(x), extractROWS, i)
         slot(x, "nrows", check=FALSE) <- length(i)
         if (!is.null(rownames(x)))
@@ -413,7 +481,22 @@ setMethod("extractROWS", "DataFrame",
     }
 )
 
+### BACKWARD COMPATIBILITY WITH OLD DataFrame INSTANCES:
+### DataFrame derivatives don't have the "listData" slot in general, only
+### DFrame objects have it. So the extractCOLS() method below only makes
+### sense for DFrame objects. However, we still define it for DataFrame
+### objects for backward compatibility with old serialized DataFrame
+### instances (which have all these slots). If we don't do this,
+### calling extractCOLS() on these objects will actually call the
+### method for Vector derivatives which is a no-op on these objects.
+### TODO: Remove this hack once all the old serialized DataFrame instances
+### laying around have been updated with updateObject(). This might take
+### years (best case scenario) or forever (worst case scenario).
 setMethod("extractCOLS", "DataFrame", function(x, i) {
+    ## Remove this call to updateObject() when the signature of this
+    ## extractCOLS() method is changed from DataFrame to DFrame.
+    if (class(x)[[1L]] == "DataFrame")
+        x <- updateObject(x, check=FALSE)
     if (missing(i))
         return(x)
     if (!is(i, "IntegerRanges")) {
@@ -422,11 +505,9 @@ setMethod("extractCOLS", "DataFrame", function(x, i) {
     }
     new_listData <- extractROWS(x@listData, i)
     new_mcols <- extractROWS(mcols(x, use.names=FALSE), i)
-    x <- initialize(x, listData=new_listData,
-                    elementMetadata=new_mcols)
-    if (anyDuplicated(names(x)))
-        names(x) <- make.unique(names(x))
-    x
+    BiocGenerics:::replaceSlots(x, listData=new_listData,
+                                   elementMetadata=new_mcols,
+                                   check=FALSE)
 })
 
 setMethod("[", "DataFrame",
@@ -507,7 +588,7 @@ setMethod("[", "DataFrame",
     x
 }
 
-setMethod("replaceROWS", c("DataFrame", "ANY"),
+setMethod("replaceROWS", c("DFrame", "ANY"),
           function(x, i, value)
           {
               nsbs <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
@@ -517,7 +598,7 @@ setMethod("replaceROWS", c("DataFrame", "ANY"),
               .subassign_columns(x, nsbs, value)
           })
 
-setMethod("mergeROWS", c("DataFrame", "ANY"),
+setMethod("mergeROWS", c("DFrame", "ANY"),
     function(x, i, value)
     {
         nsbs <- normalizeSingleBracketSubscript(i, x, allow.append=TRUE,
@@ -545,7 +626,6 @@ setMethod("mergeROWS", c("DataFrame", "ANY"),
             newcn <- paste0("V", i[appended])
         }
         names(x)[i[appended]] <- newcn
-        names(x) <- make.unique(names(x))
     }
     names(x)
 }
@@ -559,10 +639,7 @@ setMethod("mergeROWS", c("DataFrame", "ANY"),
     x
 }
 
-### Not a real default replaceCOLS() method for DataFrame objects (it actually
-### assumes that 'x' derives from SimpleList i.e. that 'x' is a DFrame object
-### or derivative).
-setMethod("replaceCOLS", c("DataFrame", "ANY"), function(x, i, value) {
+setMethod("replaceCOLS", c("DFrame", "ANY"), function(x, i, value) {
     stopifnot(is.null(value) || is(value, "DataFrame"))
     sl <- as(x, "SimpleList")
     value_sl <- if (!is.null(value)) as(value, "SimpleList")
@@ -631,7 +708,7 @@ hasS3Method <- function(f, signature) {
   !is.null(getS3method(f, signature, optional=TRUE))
 }
 
-droplevels.DataFrame <- function(x, except=NULL) {
+droplevels.DFrame <- function(x, except=NULL) {
   canDropLevels <- function(xi) {
     hasNonDefaultMethod(droplevels, class(xi)[1L]) ||
       hasS3Method("droplevels", class(xi))
@@ -642,7 +719,7 @@ droplevels.DataFrame <- function(x, except=NULL) {
   x@listData[drop.levels] <- lapply(x@listData[drop.levels], droplevels)
   x
 }
-setMethod("droplevels", "DataFrame", droplevels.DataFrame)
+setMethod("droplevels", "DFrame", droplevels.DFrame)
 
 setMethod("rep", "DataFrame", function(x, ...) {
   x[rep(seq_len(nrow(x)), ...),,drop=FALSE]
@@ -697,9 +774,12 @@ setMethod("rep", "DataFrame", function(x, ...) {
             ## one row per list element.
             if (is(col, "List") && pcompareRecursively(col))
                 col <- as.list(col)
-            if (is.list(col))
-                col <- I(col)
+            protect <- is.list(col) && !is(col, "AsIs")
+            if (protect)
+                col <- I(col)  # set AsIs class to protect column
             df <- as.data.frame(col, optional=optional)
+            if (protect)
+                df[[1L]] <- unclass(df[[1L]])  # drop AsIs class
             if (is.null(colnames(col)) && ncol(df) == 1L)
                 colnames(df) <- x_colnames[[j]]
             df
@@ -719,7 +799,6 @@ setMethod("as.matrix", "DataFrame", function(x) {
   m
 })
 
-## take data.frames to DataFrames
 setAs("data.frame", "DFrame",
       function(from) {
         rn <- attributes(from)[["row.names"]]
@@ -759,7 +838,7 @@ setAs("xtabs", "DFrame",
         as(from, "DFrame")
       })
 
-.defaultAsDataFrame <- function(from) {
+.defaultAsDFrame <- function(from) {
   if (length(dim(from)) == 2L) {
     df <- as.data.frame(from, stringsAsFactors=FALSE)
     if (0L == ncol(from))
@@ -773,16 +852,13 @@ setAs("xtabs", "DFrame",
   }
 }
 
-setAs("ANY", "DFrame", .defaultAsDataFrame)
+setAs("ANY", "DFrame", .defaultAsDFrame)
 
 setAs("ANY", "DataFrame", function(from) as(from, "DFrame"))
 setAs("SimpleList", "DataFrame", function(from) as(from, "DFrame"))
 
-## Only temporarily needed (until we make DataFrame VIRTUAL).
-setAs("DFrame", "DataFrame", function(from) from)
-
-.VectorAsDataFrame <- function(from) {
-  ans <- .defaultAsDataFrame(from)
+.VectorAsDFrame <- function(from) {
+  ans <- .defaultAsDFrame(from)
   from_mcols <- mcols(from, use.names=FALSE)
   if (!is.null(from_mcols))
     ans <- cbind(ans, from_mcols)
@@ -790,8 +866,8 @@ setAs("DFrame", "DataFrame", function(from) from)
 }
 
 ## overriding the default inheritance-based coercion from methods package
-setAs("SimpleList", "DFrame", .VectorAsDataFrame)
-setAs("Vector", "DFrame", .VectorAsDataFrame)
+setAs("SimpleList", "DFrame", .VectorAsDFrame)
+setAs("Vector", "DFrame", .VectorAsDFrame)
 
 ## note that any element named 'row.names' will be interpreted differently
 ## is this a bug or a feature?
@@ -832,7 +908,7 @@ setMethod("coerce2", "DataFrame",
             validObject(ans)
             return(ans)
         }
-        ## Some objects like SplitDataFrameList have a "dim" method that
+        ## Some objects like SplitDataFrameList have a dim() method that
         ## returns a non-MULL object (a matrix!) even though they don't have
         ## an array-like (or matrix-like) semantic.
         from_dim <- dim(from)

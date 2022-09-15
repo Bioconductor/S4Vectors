@@ -67,8 +67,11 @@ test_DataFrame_construction <- function() {
                  data.frame(score = score, swiss = swiss[1:3,]))
 
   ## identity
-  df <- DataFrame(A=I(list(1:3)))
-  checkIdentical(as.data.frame(df), data.frame(A=I(list(1:3))))
+  DF <- DataFrame(A=I(list(1:3)), B=I(list(1:4)))
+  DF[[2]] <- I(DF[[2]])
+  df <- data.frame(A=I(list(1:3)), B=I(list(1:4)))
+  df[[1]] <- unclass(df[[1]])
+  checkIdentical(as.data.frame(DF), df)
   
   ## recycling
   DF <- DataFrame(1, score)
@@ -150,9 +153,14 @@ test_DataFrame_subset <- function() {
   ##               swiss[c(1, NA, 1:2, NA),])
 
   checkIdentical(as.data.frame(sw["Courtelary",]), swiss["Courtelary",])
+
   subswiss <- swiss[1:5,1:4]
   subsw <- sw[1:5,1:4]
-  checkIdentical(as.data.frame(subsw["C",]), subswiss["C",]) # partially matches
+
+  ## Starting with S4Vectors 0.31.3, we no longer support partial matching on
+  ## the rownames of a DataFrame.
+  #checkIdentical(as.data.frame(subsw["C",]), subswiss["C",]) # partially matches
+
   ## NOTE: NA subsetting not yet supported for XVectors
   ##checkIdentical(as.data.frame(subsw["foo",]), # bad row name
   ##               subswiss["foo",]) 

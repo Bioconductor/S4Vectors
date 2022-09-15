@@ -59,6 +59,41 @@ setGeneric("horizontal_slot_names",
 ### Accessors
 ###
 
+setMethod("dim", "RectangularData", function(x) c(nrow(x), ncol(x)))
+
+simplify_NULL_dimnames <- function(dimnames)
+{
+    if (all(sapply_isNULL(dimnames)))
+        return(NULL)
+    dimnames
+}
+
+setMethod("dimnames", "RectangularData",
+    function(x)
+    {
+        ans <- list(rownames(x), colnames(x))
+        simplify_NULL_dimnames(ans)
+    }
+)
+
+setReplaceMethod("dimnames", "RectangularData",
+    function(x, value)
+    {
+        if (is.null(value)) {
+            new_rownames <- new_colnames <- NULL
+        } else {
+            if (!(is.list(value) && length(value) == 2L))
+                stop(wmsg("dimnames replacement value must ",
+                          "be NULL or a list of length 2"))
+            new_rownames <- value[[1L]]
+            new_colnames <- value[[2L]]
+        }
+        rownames(x) <- new_rownames
+        colnames(x) <- new_colnames
+        x
+    }
+)
+
 setGeneric("ROWNAMES", function(x) standardGeneric("ROWNAMES"))
 
 setMethod("ROWNAMES", "ANY",
@@ -81,6 +116,7 @@ setReplaceMethod("ROWNAMES", "RectangularData", function(x, value) {
     rownames(x) <- value
     x
 })
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Subsetting
@@ -192,22 +228,32 @@ combineUniqueCols <- function(x, ..., use.names=TRUE)
 
                 candidates <- match(rownames(cur_object), rownames(combined))
                 overlapped <- filled[candidates]
-                previous <- reference[candidates]
+                previous <- extractROWS(reference, candidates)
 
                 # Only doing the replacement if the overlaps are identical.
                 # Incidentally, this also checks for the right type. We could
                 # be more aggressive and do a partial replacement, but
                 # something is probably already wrong if this warning fires.
-                if (!identical(previous[overlapped], replacements[overlapped])) {
+                if (!identical(extractROWS(previous, overlapped), extractROWS(replacements, overlapped))) {
                     warning(wmsg("different values for shared rows in multiple instances of column '",
                         d, "', ignoring this column in ", class(all_objects[[i_object]]), " ", i_object))
                 } else {
-                    reference[candidates] <- replacements
+                    reference <- replaceROWS(reference, candidates, replacements)
                     filled[candidates] <- TRUE
                 }
             }
 
-            combined[,d] <- reference
+            # Can't use 'combined[ , j] <- col' to replace the column of a
+            # data-frame-like object!
+            # See https://github.com/Bioconductor/S4Vectors/issues/100
+            if (is.data.frame(combined) || is(combined, "DataFrame")) {
+                combined[[d]] <- reference
+            } else {
+                # Expected to work on any rectangular object (e.g. matrix,
+                # dgCMatrix, DelayedMatrix, SummarizedExperiment, etc...)
+                # except data-frame-like objects.
+                combined[ , d] <- reference
+            }
 
         } else {
             for (i in seq_along(object_affected)[-1]) {

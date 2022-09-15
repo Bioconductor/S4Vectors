@@ -10,9 +10,11 @@
 \alias{t.TransposedDataFrame}
 \alias{t,TransposedDataFrame-method}
 
-\alias{dim,TransposedDataFrame-method}
+\alias{nrow,TransposedDataFrame-method}
+\alias{ncol,TransposedDataFrame-method}
+\alias{rownames,TransposedDataFrame-method}
+\alias{colnames,TransposedDataFrame-method}
 \alias{length,TransposedDataFrame-method}
-\alias{dimnames,TransposedDataFrame-method}
 \alias{names,TransposedDataFrame-method}
 
 \alias{dimnames<-,TransposedDataFrame-method}
@@ -23,11 +25,14 @@
 \alias{[,TransposedDataFrame-method}
 \alias{getListElement,TransposedDataFrame-method}
 
+\alias{normalizeSingleBracketReplacementValue,TransposedDataFrame-method}
+\alias{[<-,TransposedDataFrame-method}
+
 \alias{coerce,DataFrame,TransposedDataFrame-method}
 \alias{coerce,TransposedDataFrame,DataFrame-method}
 \alias{as.matrix,TransposedDataFrame-method}
 \alias{as.list,TransposedDataFrame-method}
-\alias{coerce,list,TransposedDataFrame-method}
+\alias{coerce,ANY,TransposedDataFrame-method}
 
 \alias{makeNakedCharacterMatrixForDisplay,TransposedDataFrame-method}
 \alias{show,TransposedDataFrame-method}

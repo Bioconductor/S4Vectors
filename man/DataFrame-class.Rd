@@ -8,19 +8,19 @@
 \alias{DFrame-class}
 \alias{DFrame}
 
-\alias{vertical_slot_names,DataFrame-method}
-\alias{horizontal_slot_names,DataFrame-method}
+\alias{vertical_slot_names,DFrame-method}
+\alias{horizontal_slot_names,DFrame-method}
 
 \alias{updateObject,DataFrame-method}
 
 % accessor
-\alias{nrow,DataFrame-method}
 \alias{ncol,DataFrame-method}
-\alias{dim,DataFrame-method}
-\alias{rownames,DataFrame-method}
 \alias{colnames,DataFrame-method}
-\alias{dimnames,DataFrame-method}
-\alias{rownames<-,DataFrame-method}
+\alias{length,DataFrame-method}
+\alias{names,DataFrame-method}
+\alias{nrow,DataFrame-method}
+\alias{rownames,DataFrame-method}
+\alias{rownames<-,DFrame-method}
 \alias{colnames<-,DataFrame-method}
 \alias{dimnames<-,DataFrame-method}
 
@@ -29,29 +29,37 @@
 \alias{make_zero_col_DFrame}
 
 % subsetting
-\alias{[,DataFrame-method}
-\alias{replaceROWS,DataFrame,ANY-method}
-\alias{mergeROWS,DataFrame,ANY-method}
-\alias{[<-,DataFrame-method}
-\alias{[[<-,DataFrame-method}
+\alias{getListElement,DataFrame-method}
 \alias{[[,DataFrame-method}
+\alias{[[,DFrame-method}
+\alias{extractROWS,DataFrame,ANY-method}
+\alias{extractCOLS,DataFrame-method}
+\alias{[,DataFrame-method}
+\alias{replaceROWS,DFrame-method}
+\alias{mergeROWS,DFrame-method}
+\alias{replaceCOLS,DFrame-method}
+\alias{[<-,DataFrame-method}
+\alias{[[<-,DFrame-method}
+\alias{[[,DataFrame-method}
+\alias{droplevels,DFrame-method}
+\alias{rep,DataFrame-method}
 
 % coercion
 \alias{as.data.frame,DataFrame-method}
 \alias{as.matrix,DataFrame-method}
-\alias{coerce,list,DFrame-method}
-\alias{coerce,Vector,DFrame-method}
 \alias{coerce,data.frame,DFrame-method}
 \alias{coerce,data.table,DFrame-method}
-\alias{coerce,NULL,DFrame-method}
 \alias{coerce,table,DFrame-method}
-\alias{coerce,AsIs,DFrame-method}
 \alias{coerce,xtabs,DFrame-method}
 \alias{coerce,ANY,DFrame-method}
 \alias{coerce,ANY,DataFrame-method}
 \alias{coerce,SimpleList,DataFrame-method}
-\alias{coerce,DFrame,DataFrame-method}
 \alias{coerce,SimpleList,DFrame-method}
+\alias{coerce,Vector,DFrame-method}
+\alias{coerce,list,DFrame-method}
+\alias{coerce,NULL,DFrame-method}
+\alias{coerce,AsIs,DFrame-method}
+\alias{coerce,ANY,DataFrame_OR_NULL-method}
 
 % display
 \alias{classNameForDisplay,DFrame-method}
@@ -70,12 +78,17 @@
 \details{
   On the whole, the \code{DataFrame} behaves very similarly to
   \code{data.frame}, in terms of construction, subsetting, splitting,
-  combining, etc. The most notable exception is that the row names are
-  optional. This means calling \code{rownames(x)} will return
-  \code{NULL} if there are no row names. Of course, it could return
-  \code{seq_len(nrow(x))}, but returning \code{NULL} informs, for
-  example, combination functions that no row names are desired (they are
-  often a luxury when dealing with large data).
+  combining, etc. The most notable exceptions have to do with handling
+  of the row names:
+  \enumerate{
+    \item The row names are optional. This means calling \code{rownames(x)}
+          will return \code{NULL} if there are no row names. Of course, it
+          could return \code{seq_len(nrow(x))}, but returning \code{NULL}
+          informs, for example, combination functions that no row names are
+          desired (they are often a luxury when dealing with large data).
+    \item The row names are not required to be unique.
+    \item Subsetting by row names does not use partial matching.
+  }
 
   As \code{DataFrame} derives from \code{\linkS4class{Vector}}, it is
   possible to set an \code{annotation} string. Also, another
@@ -286,7 +299,7 @@ sw[c(1, 1:2),]
 ## indexing by row names  
 sw["Courtelary",]
 subsw <- sw[1:5,1:4]
-subsw["C",] # partially matches
+subsw["C",] # no partial match (unlike with data.frame)
 
 ## row and column names
 cn <- paste("X", seq_len(ncol(swiss)), sep = ".")

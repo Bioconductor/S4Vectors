@@ -1,3 +1,71 @@
+CHANGES IN VERSION 0.34.0
+-------------------------
+
+NEW FEATURES
+
+    o Implement subassignment of TransposedDataFrame objects.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o DataFrame is now a virtual class! This completes the replacement of
+      DataFrame with DFrame announced in September 2019. See:
+      https://www.bioconductor.org/help/course-materials/2019/BiocDevelForum/02-DataFrame.pdf
+
+BUG FIXES
+
+    o Avoid spurious warnings when DataFrame() is supplied a DataFrameList.
+
+    o Fix bug in combineRows(DataFrame(), DataFrame(ref=IRanges(1:2, 10))).
+
+    o Fix display of TransposedDataFrame objects with more than 11 rows.
+
+    o Fix isEmpty() on ordinary lists and derivatives.
+
+    o Fix handling of nested DataFrames in combineUniqueCols().
+
+    o Make sure internal helper lowestListElementClass() does not lose
+      the "package" attribute of the returned class (fixes issue #103).
+
+
+CHANGES IN VERSION 0.32.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Subsetting a DataFrame object by row names no longer uses partial
+      matching.
+
+
+CHANGES IN VERSION 0.30.0
+-------------------------
+
+NEW FEATURES
+
+    o Add combineRows(), combineCols(), and combineUniqueCols() for DataFrame
+      objects. These are more flexible versions of rbind() and cbind() that
+      don't require the objects to combine to have the same columns or rows.
+
+    o Add unname() generic and a method for Vector objects.
+
+DEPRECATED AND DEFUNCT
+
+    o Remove parallelSlotNames(). Was deprecated in BioC 3.11 and defunct in
+      BioC 3.12.
+
+BUG FIXES
+
+    o Fix long-standing bug in rbind() method for DataFrame objects. The bug
+      was causing rbind() to return an incorrect result when the columns of
+      the DataFrame objects to combine were a mix of ordinary lists and other
+      list-like objects like IntegerList objects (defined in the IRanges
+      package).
+
+    o Fix issues in DataFrame printing (commits 735c6b7f and 89b045e7).
+
+    o Fix bug in expand() when the DataFrame object to expand has one or none
+      unselected columns (commit a8f839bb).
+
+
 CHANGES IN VERSION 0.28.0
 -------------------------
 
