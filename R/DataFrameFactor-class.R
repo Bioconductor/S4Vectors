@@ -1,6 +1,6 @@
 setClass("DataFrameFactor", contains="Factor", slots=c(levels="DataFrame"))
 
-DataFrameFactor <- function (x, levels, index = NULL, ...) {
+DataFrameFactor <- function(x, levels, index = NULL, ...) {
     if (is.null(index)) {
         levels <- sort(unique(x))
         index <- match(x, levels) 
@@ -23,7 +23,7 @@ setMethod("[", "DataFrameFactor", function(x, i, j, ..., drop=TRUE) {
     if (!missing(i)) {
         x <- callNextMethod()
     } 
-    
+
     if (!missing(j)) {
         x@levels <- levels(x)[,j,drop=FALSE]
     }

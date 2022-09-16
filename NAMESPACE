@@ -28,10 +28,9 @@ exportClasses(
     List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
-    DataFrame, DFrame, TransposedDataFrame,
+    DataFrame, DFrame, DataFrameFactor, TransposedDataFrame,
     Pairs,
-    expression_OR_function, FilterRules, FilterMatrix,
-    DataFrameFactor
+    expression_OR_function, FilterRules, FilterMatrix
 )
 
 
@@ -364,14 +363,14 @@ export(
     ## DataFrame-class.R:
     DataFrame, make_zero_col_DFrame,
 
+    ## DataFrameFactor-class:
+    DataFrameFactor,
+
     ## Pairs-class.R:
     Pairs,
 
     ## FilterRules-class.R:
-    FilterRules, FilterMatrix,
-
-    ## DataFrameFactor-class:
-    DataFrameFactor
+    FilterRules, FilterMatrix
 )
 
 
