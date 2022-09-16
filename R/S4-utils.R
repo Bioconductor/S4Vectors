@@ -256,7 +256,7 @@ setMethods <- function(f, signatures=list(), definition,
 ### setReplaceAs()
 ###
 ### Supplying a "coerce<-" method to the 'replace' argument of setAs() is
-### optional but not supplying a "coerce" method (thru the 'def' argument).
+### optional but supplying a "coerce" method (thru the 'def' argument) is not.
 ### However there are legitimate situations where we want to define a
 ### "coerce<-" method only. setReplaceAs() can be used for that.
 ###

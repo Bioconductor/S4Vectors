@@ -3,7 +3,7 @@ setClass("DataFrameFactor", contains="Factor", slots=c(levels="DataFrame"))
 DataFrameFactor <- function(x, levels, index = NULL, ...) {
     if (is.null(index)) {
         levels <- sort(unique(x))
-        index <- match(x, levels) 
+        index <- match(x, levels)
         names(index) <- rownames(x)
     }
     out <- Factor(levels=seq_len(nrow(levels)), index=index, ...)
@@ -20,7 +20,7 @@ setMethod("$", "DataFrameFactor", function(x, name) levels(x)[as.integer(x),name
 setMethod("[", "DataFrameFactor", function(x, i, j, ..., drop=TRUE) {
     if (!missing(i)) {
         x <- callNextMethod()
-    } 
+    }
 
     if (!missing(j)) {
         x@levels <- levels(x)[,j,drop=FALSE]

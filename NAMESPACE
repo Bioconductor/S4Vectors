@@ -28,7 +28,9 @@ exportClasses(
     List, list_OR_List,
     SimpleList,
     HitsList, SortedByQueryHitsList,
-    DataFrame, DFrame, DataFrameFactor, TransposedDataFrame,
+    DataFrame, DFrame,
+    DataFrameFactor,
+    TransposedDataFrame,
     Pairs,
     expression_OR_function, FilterRules, FilterMatrix
 )

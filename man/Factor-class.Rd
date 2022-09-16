@@ -212,9 +212,10 @@ Factor(x, levels, index=NULL, ...)  # constructor function
 }
 
 \section{Comparing & Ordering}{
-  Comparing (e.g. \code{==}, \code{!=}, \code{<=}, \code{<}, \code{match()})
-  and ordering (e.g. \code{order()}, \code{sort()}, \code{rank()}) Factor
-  objects is supported and behave like on the \emph{unfactored} objects.
+  Factor objects support comparing (e.g. \code{==}, \code{!=}, \code{<=},
+  \code{<}, \code{match()}) and ordering (e.g. \code{order()}, \code{sort()},
+  \code{rank()}) operations. All these operations behave like they would
+  on the \emph{unfactored} versions of their operands.
 
   For example \code{F1 <= F2}, \code{match(F1, F2)}, and \code{sort(F1)},
   are equivalent to \code{unfactor(F1) <= unfactor(F2)},
