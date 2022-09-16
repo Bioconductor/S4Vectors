@@ -59,9 +59,6 @@ DataFrameFactor(x, levels, index=NULL, ...)  # constructor function
   \code{\link{unfactor}(x)}.
 
   \itemize{
-    \item \code{x[[i]]} will return column \code{i} from
-    \code{\link{levels}(x)} and expand it according to the indices in \code{x}.
-
     \item \code{x$name} will return column \code{name} from
     \code{\link{levels}(x)} and expand it according to the indices in \code{x}.
 
@@ -101,7 +98,6 @@ dffac <- DataFrameFactor(df)
 dffac
 
 dffac$X
-dffac[["X"]]
 dffac[,c("Y", "X")]
 dffac[1:10,"X"]
 colnames(dffac)

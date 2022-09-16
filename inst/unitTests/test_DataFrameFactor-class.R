@@ -6,7 +6,7 @@ test_DataFrameFactor <- function() {
      checkIdentical(dimnames(dffac), dimnames(df))
 
      checkIdentical(dffac$X, df$X)
-     checkIdentical(dffac[["X"]], df$X)
+     checkIdentical(dffac[,"X"], df$X)
 
      checkIdentical(unfactor(dffac[,c("Y", "X")]), df[,c("Y", "X")])
      checkIdentical(dffac[1:10,"X"], df$X[1:10])

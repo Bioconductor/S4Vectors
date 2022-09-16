@@ -15,9 +15,7 @@ setMethod("dim", "DataFrameFactor", function(x) c(length(x), ncol(levels(x))))
 
 setMethod("dimnames", "DataFrameFactor", function(x) list(names(x), colnames(levels(x))))
 
-setMethod("[[", "DataFrameFactor", function(x, i, j, ...) levels(x)[as.integer(x),i])
-
-setMethod("$", "DataFrameFactor", function(x, name) x[[name]])
+setMethod("$", "DataFrameFactor", function(x, name) levels(x)[as.integer(x),name])
 
 setMethod("[", "DataFrameFactor", function(x, i, j, ..., drop=TRUE) {
     if (!missing(i)) {
