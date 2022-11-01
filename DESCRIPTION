@@ -19,9 +19,19 @@ Authors@R: c(
 		email="hpages.on.github@gmail.com"),
 	person("Michael", "Lawrence", role="aut"),
 	person("Patrick", "Aboyoun", role="aut"),
-	person("Aaron", "Lun", role="ctb"))
+	person("Aaron", "Lun", role="ctb"),
+	person("Beryl", "Kanali", role = "ctb",
+        	comment = "Converted 'S4VectorOverview' vignette from Sweave to RMarkdown.")
+	,
+    person(
+        "Bioconductor Package Maintainer",
+        role = "cre",
+        email = "maintainer@bioconductor.org"
+    ))
+	
 Depends: R (>= 4.0.0), methods, utils, stats, stats4, BiocGenerics (>= 0.37.0)
-Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle
+Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle, knitr
+VignetteBuilder: knitr
 Collate: S4-utils.R
 	show-utils.R
 	utils.R
