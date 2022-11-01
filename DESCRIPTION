@@ -11,11 +11,15 @@ Description: The S4Vectors package defines the Vector and List virtual classes
 biocViews: Infrastructure, DataRepresentation
 URL: https://bioconductor.org/packages/S4Vectors
 BugReports: https://github.com/Bioconductor/S4Vectors/issues
-Version: 0.35.4
+Version: 0.35.5
 License: Artistic-2.0
 Encoding: UTF-8
-Author: H. Pagès, M. Lawrence and P. Aboyoun
-Maintainer: Bioconductor Package Maintainer <maintainer@bioconductor.org>
+Authors@R: c(
+	person("Hervé", "Pagès", role=c("aut", "cre"),
+		email="hpages.on.github@gmail.com"),
+	person("Michael", "Lawrence", role="aut"),
+	person("Patrick", "Aboyoun", role="aut"),
+	person("Aaron", "Lun", role="ctb"))
 Depends: R (>= 4.0.0), methods, utils, stats, stats4, BiocGenerics (>= 0.37.0)
 Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle
 Collate: S4-utils.R
