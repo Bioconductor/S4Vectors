@@ -4,14 +4,15 @@ author:
 - name: "Patrick Aboyoun"
 - name: "Michael Lawrence"
 - name: "Hervé Pagès"
-- name: "Beryl Kanali"
-  affiliation: "Converted 'S4VectorOverview' vignette from Sweave to RMarkdown."
-date: "`r format(Sys.time(), '%d %B, %Y')`"
+
+Edited: February 2018; Compiled: "`r format(Sys.time(), '%B %d , %Y')`"
 package: S4Vectors
 vignette: >
   %\VignetteIndexEntry{An Overview of the S4Vectors package}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteKeywords{Vector,Hits,Rle,List,DataFrame}
+  %\VignettePackage{S4Vectors}
 output:
   BiocStyle::html_document
 editor_options: 
@@ -29,9 +30,9 @@ and *List*, and a set of generic functions that extend the semantic of
 ordinary vectors and lists in *R*. Package developers can easily
 implement vector-like or list-like objects as *Vector* and/or *List*
 derivatives. A few low-level *Vector* and *List* derivatives are
-implemented in the S4Vectors package itself e.g. *Hits*, *Rle*, and
-*DataFrame*). Many more are implemented in the *IRanges* and
-*GenomicRanges* infrastructure packages, and in many other Bioconductor
+implemented in the [*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html) package itself e.g. *Hits*, *Rle*, and
+*DataFrame*). Many more are implemented in the [*IRanges*](http://bioconductor.org/packages/release/bioc/html/IRanges.html) and
+[*GenomicRanges*](http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) infrastructure packages, and in many other Bioconductor
 packages.
 
 In this vignette, we will rely on simple, illustrative example datasets,
@@ -45,7 +46,7 @@ realistic examples.
 The
 [*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
 package is available at bioconductor.org and can be downloaded via
-`{BiocManager::install}`:
+`BiocManager::install`:
 
 ```{r install, eval=FALSE}
 if (!require("BiocManager")) 
@@ -96,10 +97,6 @@ package is used to represent a run-length encoded (compressed) sequence
 of *logical*, *integer*, *numeric*, *complex*, *character*, *raw*, or
 *factor* values. Note that the *Rle* class extends the *Vector* virtual
 class:
-
-```{r message=FALSE}
-library(S4Vectors)
-```
 
 ```{r Rle-extends-Vector}
 showClass("Rle")
@@ -201,8 +198,8 @@ append(xSnippet, xSnippet, after=3)
 
 In *R*, \Rfunction{for} looping can be an expensive operation. To
 compensate for this,
-the[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-package provides `aggregate` and `shiftApply` methods `shiftApply` is a
+the [*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
+package provides `aggregate` and `shiftApply` methods (`shiftApply` is a
 new generic function defined in
 [*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html))
 to perform calculations over subsequences of vector-like objects.
@@ -237,7 +234,7 @@ shifts <- seq(235, 265, by=3)
 corrs  <- shiftApply(shifts, yRle, xRle, FUN=cor)
 ```
 
-```{r figshiftcorrs, fig=TRUE, eps=FALSE, width=5,fig.align = 'center', height=5, fig.cap='Correlation between *xRle* and *yRle* for various shifts'}
+```{r figshiftcorrs, fig=TRUE, eps=FALSE, width=5,fig.align = 'center', height=5, fig.cap='Correlation between `xRle` and `yRle` for various shifts'}
 plot(shifts, corrs)
 ```
 The result is shown in Fig.\@ref(fig:figshiftcorrs)
@@ -245,8 +242,8 @@ The result is shown in Fig.\@ref(fig:figshiftcorrs)
 ### More on *Rle* objects
 
 When there are lots of consecutive repeats, the memory savings through
-an RLE can be quite dramatic. For example, the *xRle* object occupies
-less than one third of the space of the original *xVector* object, while
+an RLE can be quite dramatic. For example, the `xRle` object occupies
+less than one third of the space of the original `xVector` object, while
 storing the same information:
 
 ```{r Rle-vector-compare}
@@ -332,7 +329,7 @@ endoapply(df, `+`, 0.5)
 For more information on *DataFrame* objects, consult the *DataFrame* man
 page.
 
-See the \`\`An Overview of the
+See the "An Overview of the
 [*IRanges*](http://bioconductor.org/packages/release/bioc/html/IRanges.html)
 package'' vignette in the
 [*IRanges*](http://bioconductor.org/packages/release/bioc/html/IRanges.html)
