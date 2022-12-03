@@ -579,7 +579,7 @@ test_Rle_runq_integer <- function() {
     x <- Rle(x0)
     k <- 3 
     for (i in 1:3) {
-        target1 <- unlist(.naive_runq(x0, k, i, na.rm=TRUE))
+        target1 <- as.integer(unlist(.naive_runq(x0, k, i, na.rm=TRUE)))
         current <- as.vector(runq(x, k, i, na.rm=TRUE))
         checkIdentical(unname(target1), current)
 
@@ -592,7 +592,7 @@ test_Rle_runq_integer <- function() {
     x <- Rle(x0)
     i <- 1
     for (k in 1:6) {
-        target1 <- unlist(.naive_runq(x0, k, i, na.rm=TRUE))
+        target1 <- as.integer(unlist(.naive_runq(x0, k, i, na.rm=TRUE)))
         current <- as.vector(runq(x, k, i, na.rm=TRUE))
         checkIdentical(target1, current)
 
