@@ -517,15 +517,19 @@ setGeneric("replaceCOLS", signature=c("x", "i"),
 
 default_extractROWS <- function(x, i)
 {
-  if (is.null(x) || missing(i))
-    return(x)
-  ## dynamically call [i,,,..,drop=FALSE] with as many "," as length(dim)-1
-  ndim <- max(length(dim(x)), 1L)
-  i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE, allow.append=TRUE)
-  args <- rep.int(list(quote(expr=)), ndim)
-  args[[1]] <- i
-  args <- c(list(x), args, list(drop=FALSE))
-  do.call(`[`, args)
+    if (is.null(x) || missing(i))
+        return(x)
+    i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE,
+                                               allow.append=TRUE)
+    x_dim <- dim(x)
+    if (is.null(x_dim))
+        return(x[i])
+    ## Call x[i,,,..,drop=FALSE] with as many "," as 'ndim'.
+    ndim <- max(length(x_dim), 1L)
+    args <- rep.int(list(quote(expr=)), ndim)
+    args[[1L]] <- i
+    args <- c(list(x), args, list(drop=FALSE))
+    do.call(`[`, args)
 }
 
 default_replaceROWS <- function(x, i, value)

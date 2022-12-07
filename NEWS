@@ -1,3 +1,22 @@
+CHANGES IN VERSION 0.36.0
+-------------------------
+
+NEW FEATURES
+
+    o Implement DataFrameFactor objects. See '?DataFrameFactor'.
+
+    o Add droplevels() method for Factor objects.
+
+    o Factor objects now use a raw vector instead of an integer vector to store
+      their internal index when they have 255 levels or less. This greatly
+      reduces their memory footprint.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Subsetting a DataFrame object no longer tries to keep its colnames
+      unique.
+
+
 CHANGES IN VERSION 0.34.0
 -------------------------
 
