@@ -4,7 +4,7 @@ author:
 - name: "Patrick Aboyoun"
 - name: "Michael Lawrence"
 - name: "Hervé Pagès"
-date: "February 2018; compiled: `r format(Sys.time(), '%B %d , %Y')`"
+date: "Edited: February 2018; compiled: `r format(Sys.time(), '%B %d , %Y')`"
 package: S4Vectors
 vignette: >
   %\VignetteIndexEntry{An Overview of the S4Vectors package}
@@ -24,30 +24,24 @@ editor_options:
 
 # Introduction
 
-The
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-package provides a framework for representing vector-like and list-like
+The `r Biocpkg("S4Vectors")` package provides a framework for representing vector-like and list-like
 objects as S4 objects. It defines two central virtual classes, *Vector*
 and *List*, and a set of generic functions that extend the semantic of
 ordinary vectors and lists in *R*. Package developers can easily
 implement vector-like or list-like objects as *Vector* and/or *List*
 derivatives. A few low-level *Vector* and *List* derivatives are
-implemented in the [*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html) package itself e.g. *Hits*, *Rle*, and
-*DataFrame*). Many more are implemented in the [*IRanges*](http://bioconductor.org/packages/release/bioc/html/IRanges.html) and
-[*GenomicRanges*](http://bioconductor.org/packages/release/bioc/html/GenomicRanges.html) infrastructure packages, and in many other Bioconductor
+implemented in the `r Biocpkg("S4Vectors")` package itself e.g. *Hits*, *Rle*, and
+*DataFrame*). Many more are implemented in the `r Biocpkg("IRanges")` and 
+`r Biocpkg("GenomicRanges")` infrastructure packages, and in many other Bioconductor
 packages.
 
 In this vignette, we will rely on simple, illustrative example datasets,
 rather than large, real-world data, so that each data structure and
 algorithm can be explained in an intuitive, graphical manner. We expect
-that packages that apply
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-to a particular problem domain will provide vignettes with relevant,
+that packages that apply `r Biocpkg("S4Vectors")` to a particular problem domain will provide vignettes with relevant,
 realistic examples.
 
-The
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-package is available at bioconductor.org and can be downloaded via
+The `r Biocpkg("S4Vectors")` package is available at bioconductor.org and can be downloaded via
 `BiocManager::install`:
 
 ```{r install, eval=FALSE}
@@ -61,8 +55,7 @@ library(S4Vectors)
 
 # Vector-like and list-like objects
 
-In the context of the
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
+In the context of the `r Biocpkg("S4Vectors")`
 package, a vector-like object is an ordered finite collection of
 elements. All vector-like objects have three main properties: (1) a
 notion of length or number of elements, (2) the ability to extract
@@ -76,9 +69,7 @@ using them.
 Some vector-like objects can also have a list-like semantic, which means
 that individual elements can be extracted with `[[`.
 
-In
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-and many other Bioconductor packages, vector-like and list-like objects
+In `r Biocpkg("S4Vectors")` and many other Bioconductor packages, vector-like and list-like objects
 derive from the *Vector* and *List* virtual classes, respectively. Note
 that *List* is a subclass of *Vector*.
 
@@ -95,9 +86,7 @@ a data value is paired with a run length. For example, the sequence {1,
 1, 1, 2, 3, 3} can be represented as values = {1, 2, 3}, run lengths =
 {3, 1, 2}.
 
-The *Rle* class defined in the
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-package is used to represent a run-length encoded (compressed) sequence
+The *Rle* class defined in the `r Biocpkg("S4Vectors")` package is used to represent a run-length encoded (compressed) sequence
 of *logical*, *integer*, *numeric*, *complex*, *character*, *raw*, or
 *factor* values. Note that the *Rle* class extends the *Vector* virtual
 class:
@@ -135,8 +124,7 @@ reorder the elements being extracted, the result is called a
 *subsequence*. In general, the `[` function can be used to construct a
 new sequence or extract a subsequence, but its interface is often
 inconvenient and not amenable to optimization. To compensate for this,
-the
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
+the `r Biocpkg("S4Vectors") 
 package supports seven additional functions for sequence extraction:
 
 1.`window` - Extracts a subsequence over a specified region.
@@ -168,9 +156,7 @@ subset(xSnippet, xSnippet >= 5L)
 
 ### Concatenating vector-like objects
 
-The
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-package uses two generic functions, `c` and `append`, for concatenating
+The `r Biocpkg("S4Vectors")` package uses two generic functions, `c` and `append`, for concatenating
 two *Vector* derivatives. The methods for *Vector* objects follow the
 definition that these two functions are given the
 [*base*](http://bioconductor.org/about/removed-packages/) package.
@@ -184,11 +170,8 @@ append(xSnippet, xSnippet, after=3)
 
 In *R*, `for` looping can be an expensive operation. To
 compensate for this,
-the [*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
-package provides `aggregate` and `shiftApply` methods (`shiftApply` is a
-new generic function defined in
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html))
-to perform calculations over subsequences of vector-like objects.
+the `r Biocpkg("S4Vectors")` package provides `aggregate` and `shiftApply` methods (`shiftApply` is a
+new generic function defined in `r Biocpkg("S4Vectors")` to perform calculations over subsequences of vector-like objects.
 
 The `aggregate` function combines sequence extraction functionality of
 the `window` function with looping capabilities of the `sapply`
@@ -283,8 +266,7 @@ Just as with ordinary *R* *List* objects, *List*-derived objects support
 many *R* users since they are the standard functions for looping over
 the elements of an *R* *list* object.
 
-In addition, the
-[*S4Vectors*](http://bioconductor.org/packages/release/bioc/html/S4Vectors.html)
+In addition, the `r Biocpkg("S4Vectors")` 
 package introduces the `endoapply` function to perform an endomorphism
 equivalent to `lapply`, i.e. it returns a *List* derivative of the same
 class as the input rather than a *list* object.
@@ -309,11 +291,7 @@ endoapply(df, `+`, 0.5)
 For more information on *DataFrame* objects, consult the *DataFrame* man
 page.
 
-See the "An Overview of the
-[*IRanges*](http://bioconductor.org/packages/release/bioc/html/IRanges.html)
-package'' vignette in the
-[*IRanges*](http://bioconductor.org/packages/release/bioc/html/IRanges.html)
-package for many more examples of *List* derivatives.
+See the "An Overview of the `r Biocpkg("IRanges")` package'' vignette in the `r Biocpkg("IRanges")` package for many more examples of *List* derivatives.
 
 # DataFrame and DataFrameList objects
 
