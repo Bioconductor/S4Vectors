@@ -13,7 +13,7 @@ vignette: >
   %\VignetteKeywords{Vector,Hits,Rle,List,DataFrame}
   %\VignettePackage{S4Vectors}
 output:
-  BiocStyle::html_document
+  BiocStyle::html_document:
         number_sections: true
         toc: true
         toc_depth: 4
