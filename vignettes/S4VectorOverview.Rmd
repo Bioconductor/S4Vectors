@@ -124,7 +124,7 @@ reorder the elements being extracted, the result is called a
 *subsequence*. In general, the `[` function can be used to construct a
 new sequence or extract a subsequence, but its interface is often
 inconvenient and not amenable to optimization. To compensate for this,
-the `r Biocpkg("S4Vectors") 
+the `r Biocpkg("S4Vectors")`
 package supports seven additional functions for sequence extraction:
 
 1.`window` - Extracts a subsequence over a specified region.
