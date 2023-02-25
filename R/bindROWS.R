@@ -137,40 +137,17 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
 ### the binding will be an object of that type (endomorphism). But when the
 ### objects passed to bindROWS() have mixed types, what bindROWS() will return
 ### exactly is a little unpredictable.
-### The purpose of the wrapper below is to improve handling of mixed type
-### objects by pre-processing some of them before calling bindROWS().
-### More precisely, it tries to work around the 2 following problems that
-### direct use of bindROWS() on mixed type objects would pose:
-###  1) When the objects to bind are a mix of ordinary lists and other
-###     list-like objects like IntegerList, the type of the object returned
-###     by bindROWS() depends on the type of the 1st object. To avoid this
-###     undesirable effect, if one object to bind is an ordinary list then
-###     we pass all objects that are not ordinary lists thru as.list().
-###  2) When the objects to bind are a mix of Rle and non-Rle objects,
-###     the type of the object returned by bindROWS() also depends on the
-###     type of the 1st object. More precisely it's an Rle if and only if
-###     objects[[1]] is an Rle. The wrapper below **mitigate** this by
-###     decoding the Rle objects first. Note that this is a mitigation
-###     process only. For example it will help if Rle objects are mixed
-###     with atomic vectors or factors, but it won't help if objects[[1]]
-###     is an Rle and the other objects are IntegerList objects.
-###  3) When the objects to bind are a mix of atomic vectors and factors,
-###     bindROWS() would **always** return an atomic vector (whatever
-###     objects[[1]] is, i.e. atomic vector or factor). However we **always**
-###     want a factor. This is an intended deviation with respect to what
-###     rbind() does when concatenating the the columns of ordinary data
-###     frames where the 1st data frame passed to rbind() dictates what the
-###     result is going to be (i.e. a column in the result will be atomic
-###     vector or factor depending on what the corresponding column in the
-###     1st data frame is).
+### The purpose of bindROWS2() is to improve handling of mixed type objects
+### by pre-processing them before passing them to bindROWS(). See helper
+### function .preprocess_objects_to_bind() below for more information.
 
-### The set of harmonized levels does NOT depend on the order of the objects
-### passed thru 'all_objects'. However, the exact order of the harmonized
-### levels DOES depend on the order of the objects. This is a feature!
-### That's because there's no clear/consensual notion of natural or canonical
-### order for the levels (note that sort() is locale/system dependent) and we
-### purposedly stay away from the business of introducing one, at least for
-### now.
+### The **set** of harmonized levels does NOT depend on the order of the
+### objects passed thru 'all_objects'. However, the exact order of the
+### harmonized levels DOES depend on the order of the objects. This is a
+### feature! The reason for doing this is that there's no clear/consensual
+### notion of natural or canonical order for the levels (note that sort()
+### is locale/system dependent) and we purposedly stay away from the business
+### of introducing one, at least for now.
 .harmonize_factor_levels <- function(all_objects)
 {
     is_factor <- vapply(all_objects, is.factor, logical(1L))
@@ -189,37 +166,87 @@ setMethod("bindROWS", "ANY", .default_bindROWS)
     lapply(all_objects, factor, levels=harmonized_levels)
 }
 
-bindROWS2 <- function(x, objects=list())
+### The pre-processing implemented by this helper function addresses 4 of the
+### 5 following problems that we face when using bindROWS() directly on mixed
+### type objects:
+###  1. When the objects to bind are a mix of ordinary lists and other
+###     list-like objects like IntegerList, the type of the object returned
+###     by bindROWS() depends on the type of the 1st object. To avoid this
+###     undesirable effect, if one object to bind is an ordinary list then
+###     we pass all objects that are not ordinary lists thru as.list().
+###  2. When the objects to bind are a mix of Rle and non-Rle objects,
+###     the type of the object returned by bindROWS() also depends on the
+###     type of the 1st object. More precisely it's an Rle if and only if
+###     objects[[1]] is an Rle. The pre-processing below addresses this by
+###     decoding the Rle objects first.
+###  3. When the objects to bind are a mix of atomic vectors and factors,
+###     bindROWS() would **always** return an atomic vector (whatever
+###     objects[[1]] is, i.e. atomic vector or factor). However we **always**
+###     want a factor. This is an intended deviation with respect to what
+###     rbind() does when concatenating the columns of ordinary data frames
+###     where the 1st data frame passed to rbind() dictates what the
+###     result is going to be (i.e. a column in the result will be atomic
+###     vector or factor depending on what the corresponding column in the
+###     1st data frame is).
+###  4. When at least one of the objects to bind is a List derivative (and
+###     no other object is an ordinary list, in which case we do 1. above),
+###     bindROWS() can either be plain broken (e.g. if objects[[1]] is an
+###     atomic vector and objects[[2]] a List derivative), or do the right
+###     thing (e.g. if objects[[1]] is a List derivative and objects[[2]]
+###     an atomic vector). To address the former we coerce all objects to
+###     List with as(. , "List").
+###  5. Note that even after coercing all objects to List in situation 4.
+###     we're still facing the issue that the type of the object returned
+###     by bindROWS2() depends on the type of the 1st object. For example if
+###     objects[[1]] is an integer vector then it will return an IntegerList
+###     object, but if it's a character vector then it will return a
+###     CharacterList object, etc... We just live with this for now!
+.preprocess_objects_to_bind <- function(objects)
 {
-    all_objects <- c(list(x), objects)
-    is_list <- vapply(all_objects, is.list, logical(1L))
+    is_list <- vapply(objects, is.list, logical(1L))
     if (any(is_list)) {
         coerce_idx <- which(!is_list)
         if (length(coerce_idx) != 0L)
-            all_objects[coerce_idx] <- lapply(all_objects[coerce_idx], as.list)
-    } else {
-        is_Rle <- vapply(all_objects, is, logical(1L), "Rle")
-        if (all(is_Rle)) {
-            run_values <- lapply(all_objects, slot, "values")
-            run_values <- .harmonize_factor_levels(run_values)
-            all_objects <- lapply(seq_along(all_objects),
-                function(i) {
-                    BiocGenerics:::replaceSlots(all_objects[[i]],
-                                                values=run_values[[i]])
-                })
-        } else {
-            if (any(is_Rle))
-                all_objects[is_Rle] <- lapply(all_objects[is_Rle], decodeRle)
-            all_objects <- .harmonize_factor_levels(all_objects)
-        }
+            objects[coerce_idx] <- lapply(objects[coerce_idx], as.list)
+        return(objects)
     }
-    nonempty_idx <- which(vapply(all_objects, NROW, integer(1L)) != 0L)
+    is_Rle <- vapply(objects, is, logical(1L), "Rle")
+    if (all(is_Rle)) {
+        run_values <- lapply(objects, slot, "values")
+        run_values <- .harmonize_factor_levels(run_values)
+        objects <- lapply(seq_along(objects),
+            function(i) {
+                BiocGenerics:::replaceSlots(objects[[i]],
+                                            values=run_values[[i]])
+            })
+        return(objects)
+    }
+    if (any(is_Rle))
+        objects[is_Rle] <- lapply(objects[is_Rle], decodeRle)
+    objects <- .harmonize_factor_levels(objects)
+    is_List <- vapply(objects, is, logical(1L), "List")
+    if (any(is_List)) {
+        coerce_idx <- which(!is_List)
+        if (length(coerce_idx) != 0L)
+            objects[coerce_idx] <- lapply(objects[coerce_idx], as, "List")
+        return(objects)
+    }
+    objects
+}
+
+bindROWS2 <- function(x, objects=list())
+{
+    all_objects <- .preprocess_objects_to_bind(c(list(x), objects))
+    all_NROWs <- vapply(all_objects, NROW, integer(1L))
+    nonempty_idx <- which(all_NROWs != 0L)
     if (length(nonempty_idx) == 0L)
         return(all_objects[[1L]])
     all_objects <- all_objects[nonempty_idx]
     if (length(all_objects) == 1L)
         return(all_objects[[1L]])
-    bindROWS(all_objects[[1L]], all_objects[-1L])
+    ans <- bindROWS(all_objects[[1L]], all_objects[-1L])
+    stopifnot(NROW(ans) == sum(all_NROWs))  # sanity check
+    ans
 }
 
 
