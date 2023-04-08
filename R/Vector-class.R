@@ -450,8 +450,9 @@ setMethod("as.env", "Vector", function(x, enclos, tform = identity) {
   addSelfRef(x, makeFixedColumnEnv(x, parent, tform))
 })
 
-as.list.Vector <- function(x, ...) as.list(x, ...)
-setMethod("as.list", "Vector", function(x, ...) as.list(as(x, "List"), ...))
+### S3/S4 combo for as.list.Vector
+as.list.Vector <- function(x, ...) as.list(as(x, "List"), ...)
+setMethod("as.list", "Vector", as.list.Vector)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

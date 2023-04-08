@@ -27,6 +27,7 @@
 \alias{as.vector.Rle}
 \alias{as.factor,Rle-method}
 \alias{as.data.frame,Rle-method}
+\alias{as.list.Rle}
 \alias{as.list,Rle-method}
 \alias{coerce,Rle,list-method}
 \alias{coerce,ANY,Rle-method}

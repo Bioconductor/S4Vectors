@@ -216,6 +216,7 @@ setMethod("coerce2", "SimpleList",
     }
 )
 
+### S3/S4 combo for as.list.SimpleList
 .as.list.SimpleList <- function(x, use.names=TRUE)
 {
     if (!isTRUEorFALSE(use.names))
@@ -225,7 +226,8 @@ setMethod("coerce2", "SimpleList",
         names(ans) <- NULL
     ans
 }
-setMethod("as.list", "SimpleList", .as.list.SimpleList)
+as.list.SimpleList <- function(x, ...) .as.list.SimpleList(x, ...)
+setMethod("as.list", "SimpleList", as.list.SimpleList)
 
 ### NOT exported but used in IRanges.
 coerceToSimpleList <- function(from, element.type)

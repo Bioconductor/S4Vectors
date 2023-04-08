@@ -31,6 +31,7 @@
 \alias{coerce,DataFrame,TransposedDataFrame-method}
 \alias{coerce,TransposedDataFrame,DataFrame-method}
 \alias{as.matrix,TransposedDataFrame-method}
+\alias{as.list.TransposedDataFrame}
 \alias{as.list,TransposedDataFrame-method}
 \alias{coerce,ANY,TransposedDataFrame-method}
 

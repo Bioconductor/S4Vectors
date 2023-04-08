@@ -53,6 +53,9 @@ S3method(as.data.frame, Hits)
 
 S3method(as.integer, LLint)
 
+S3method(as.list, Rle)
+S3method(as.list, SimpleList)
+S3method(as.list, TransposedDataFrame)
 S3method(as.list, Vector)
 
 S3method(as.logical, LLint)
@@ -147,6 +150,9 @@ export(
 
     as.integer.LLint,
 
+    as.list.Rle,
+    as.list.SimpleList,
+    as.list.TransposedDataFrame,
     as.list.Vector,
 
     as.logical.LLint,

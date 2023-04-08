@@ -149,8 +149,9 @@ asFactorOrFactorRle <- function(x) {
   }
 }
 
-.as.list.Rle <- function(x) as.list(as.vector(x))
-setMethod("as.list", "Rle", .as.list.Rle)
+### S3/S4 combo for as.list.Rle
+as.list.Rle <- function(x, ...) as.list(as.vector(x), ...)
+setMethod("as.list", "Rle", as.list.Rle)
 
 setGeneric("decode", function(x, ...) standardGeneric("decode"))
 setMethod("decode", "ANY", identity)

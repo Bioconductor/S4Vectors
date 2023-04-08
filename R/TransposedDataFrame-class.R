@@ -180,8 +180,13 @@ setMethod("as.matrix", "TransposedDataFrame",
     function(x, ...) t(as.matrix(x@data, ...))
 )
 
-setMethod("as.list", "TransposedDataFrame",
+### S3/S4 combo for as.list.TransposedDataFrame
+.as.list.TransposedDataFrame <-
     function(x, use.names=TRUE) as.list(x@data, use.names=use.names)
+as.list.TransposedDataFrame <-
+    function(x, ...) .as.list.TransposedDataFrame(x, ...)
+setMethod("as.list", "TransposedDataFrame",
+    as.list.TransposedDataFrame
 )
 
 setAs("ANY", "TransposedDataFrame", function(from) t(as(from, "DataFrame")))
