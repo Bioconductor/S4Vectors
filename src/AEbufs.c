@@ -11,9 +11,12 @@
 /* IMPORTANT: Keep MAX_BUFLENGTH <= R_XLEN_T_MAX (i.e. 2^52, see Rinternals.h)
    otherwise casting a buffer length (size_t) to R_xlen_t will not do the
    right thing (undefined behavior).
-   For now we set MAX_BUFLENGTH to 4294967296 only (i.e. 2^32). This is big
-   enough to support buffers of the length of the human genome. */
-#define MAX_BUFLENGTH (128ULL * MAX_BUFLENGTH_INC)  // 2^32
+   Furthermore, on some architectures (e.g. 32-bit), the max value for size_t
+   is 2^32 - 1 so we set MAX_BUFLENGTH to this value. This guarantees that
+   the value returned by _increase_buflength() will always fit in a size_t.
+   This MAX_BUFLENGTH value is big enough to support buffers of the length
+   of the human genome. */
+#define MAX_BUFLENGTH (128ULL * MAX_BUFLENGTH_INC - 1)  // 2^32 - 1
 
 /* Guaranteed to return a value > 'buflength', or to raise an error. */
 size_t _increase_buflength(size_t buflength)
