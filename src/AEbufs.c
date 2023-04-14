@@ -21,6 +21,8 @@
 /* Guaranteed to return a value > 'buflength', or to raise an error. */
 size_t _increase_buflength(size_t buflength)
 {
+	unsigned long long new_len;
+
 	if (buflength >= MAX_BUFLENGTH)
 		error("S4Vectors internal error in _increase_buflength(): "
 		      "MAX_BUFLENGTH reached");
@@ -28,10 +30,10 @@ size_t _increase_buflength(size_t buflength)
 		return 128;
 	if (buflength <= MAX_BUFLENGTH_INC)
 		return 2 * buflength;
-	buflength += MAX_BUFLENGTH_INC;
-	if (buflength <= MAX_BUFLENGTH)
-		return buflength;
-	return MAX_BUFLENGTH;
+	new_len = (unsigned long long) buflength + MAX_BUFLENGTH_INC;
+	if (new_len > MAX_BUFLENGTH)
+		new_len = MAX_BUFLENGTH;
+	return (size_t) new_len;
 }
 
 
