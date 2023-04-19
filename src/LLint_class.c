@@ -344,6 +344,7 @@ static void from_llints_to_STRSXP(const long long int *from, SEXP to)
 	long long int from_elt;
 	/* LLONG_MAX is 19 digits + sign + terminating null byte */
 	char val_buf[21];
+	int ret;
 	SEXP to_elt;
 
 	n = XLENGTH(to);
@@ -353,12 +354,13 @@ static void from_llints_to_STRSXP(const long long int *from, SEXP to)
 			SET_STRING_ELT(to, i, NA_STRING);
 			continue;
 		}
-		/* sprintf() should always succeed here but we check for an
-		   error anyway, just to be safe. */
-		if (sprintf(val_buf, "%lld", from_elt) < 0)
+		/* Even though 'val_buf' should be big enough, we still check
+		   for a potentially truncated output, just to be safe. */
+		ret = snprintf(val_buf, sizeof(val_buf), "%lld", from_elt);
+		if (ret >= sizeof(val_buf))
 			error("S4Vectors internal error in "
 			      "from_llints_to_STRSXP(): "
-			      "sprintf() returned a negative value");
+			      "output of snprintf() got truncated");
 		PROTECT(to_elt = mkChar(val_buf));
 		SET_STRING_ELT(to, i, to_elt);
 		UNPROTECT(1);

@@ -77,6 +77,15 @@ test_DataFrame_construction <- function() {
   DF <- DataFrame(1, score)
   checkIdentical(DF[[1]], rep(1, 3)) 
   checkIdentical(DF[[2]], score) 
+
+  ## Non-S4 columns for which is.object() is TRUE (a.k.a. S3-typed columns)
+  foo <- package_version(c("3.4.99", "5.2", "2.0"))
+  bar <- as.POSIXlt(c(123123, 124235235, 96546546))
+  DF <- DataFrame(foo=foo, bar=bar)
+  checkTrue(validObject(DF))
+  checkIdentical(dim(DF), c(3L, 2L))
+  checkIdentical(colnames(DF), c("foo", "bar"))
+  checkIdentical(as.data.frame(DF), data.frame(foo=foo, bar=bar))
 }
 
 test_DataFrame_coerce <- function() {
@@ -312,6 +321,21 @@ test_DataFrame_replace <- function() {
   checkIdentical(mcols(sw1, use.names=TRUE),
                  DataFrame(id = c(seq_len(ncol(sw1)-1), NA),
                            row.names = colnames(sw1)))
+
+  ## Non-S4 columns for which is.object() is TRUE (a.k.a. S3-typed columns)
+  foo <- package_version(c("3.4.99", "5.2", "2.0"))
+  bar <- as.POSIXlt(c(123123, 124235235, 96546546))
+  DF <- DataFrame(normal=1:3, foo=foo, bar=bar)
+  DF$normal <- letters[1:3]
+  checkTrue(validObject(DF))
+  checkIdentical(DF$foo, foo)
+  checkIdentical(DF$bar, bar)
+  DF$foo <- rev(foo)
+  checkTrue(validObject(DF))
+  checkIdentical(DF$foo, rev(foo))
+  DF$bar <- bar
+  checkTrue(validObject(DF))
+  checkIdentical(DF$bar, bar)
 }
 
 test_DataFrame_looping <- function() {

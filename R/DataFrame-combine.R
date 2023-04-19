@@ -91,24 +91,24 @@
     ## Compute 'ans_listData'.
     ans_listData <- lapply(setNames(seq_along(ans_colnames), ans_colnames),
         function(j) {
-             all_cols <- lapply(seq_along(all_objects),
-                 function(i) {
-                     j2 <- colmap[i, j]
-                     if (is.na(j2)) {
-                         Rle(NA, all_nrows[[i]])
-                     } else {
-                         all_objects[[i]][[j2]]
-                     }
-                 }
-             )
-             tryCatch(
-                 bindROWS2(all_cols[[1L]], all_cols[-1L]),
-                 error=function(err) {
+            all_cols <- lapply(seq_along(all_objects),
+                function(i) {
+                    j2 <- colmap[i, j]
+                    if (is.na(j2)) {
+                        Rle(NA, all_nrows[[i]])
+                    } else {
+                        all_objects[[i]][[j2]]
+                    }
+                }
+            )
+            tryCatch(
+                bindROWS2(all_cols[[1L]], all_cols[-1L]),
+                error=function(err) {
                     stop(wmsg("failed to rbind column '", ans_colnames[[j]],
                               "' across DataFrame objects:\n  ",
                               conditionMessage(err)))
-                 }
-             )
+                }
+            )
         }
     )
 

@@ -60,15 +60,22 @@ static int get_NROW(SEXP x)
 		return 0;
 	if (!IS_VECTOR(x))
 		error("get_NROW() defined only on a vector (or NULL)");
+	x_dim = GET_DIM(x);
+	if (x_dim != R_NilValue && LENGTH(x_dim) != 0)
+		return INTEGER(x_dim)[0];  /* return nrow(x) */
 	/* A data.frame doesn't have a "dim" attribute but the dimensions can
 	   be inferred from the "names" and "row.names" attributes. */
 	x_rownames = getAttrib(x, R_RowNamesSymbol);
 	if (x_rownames != R_NilValue)
 		return LENGTH(x_rownames);
-	x_dim = GET_DIM(x);
-	if (x_dim == R_NilValue || LENGTH(x_dim) == 0)
-		return LENGTH(x);
-	return INTEGER(x_dim)[0];
+	/* Vectors for which is.object() is TRUE might define their own
+	   length. For example, a POSIXlt object is always a list with 11
+	   elements, but the length of the object is considered to be the
+	   length of the first element in the list. */
+	if (isObject(x))
+		error("get_NROW() does not support vectors "
+		      "for which is.object() is TRUE");
+	return LENGTH(x);
 }
 
 /*

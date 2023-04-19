@@ -316,7 +316,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
       var <- listData[[i]]
       element <- try(as(var, "DFrame"), silent = TRUE)
       if (inherits(element, "try-error"))
-        stop("cannot coerce class \"", class(var)[1L], "\" to a DataFrame")
+        stop("cannot coerce class \"", class(var)[[1L]], "\" to a DataFrame")
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
       varlist[[i]] <- element
@@ -332,8 +332,10 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
         var_dims <- try(dims(var), silent=TRUE)
         if (inherits(var_dims, "try-error"))
             var_dims <- NULL
-        if (ncol(element) > 1L || is.list(var) ||
-            length(var_dim) > 1L || length(var_dims) > 1L)
+        if (ncol(element) > 1L ||
+            is.list(var) && !is.object(var) ||
+            length(var_dim) > 1L ||
+            length(var_dims) > 1L)
         {
           if (is.null(varnames[[i]]))
             varnames[[i]] <- colnames(element)
@@ -630,33 +632,75 @@ setMethod("mergeROWS", c("DFrame", "ANY"),
     names(x)
 }
 
-.fill_short_columns <- function(x, max_len) {
-    short <- lengths(x) < max_len
-    x[short] <- SimpleList(lapply(x[short], function(xi) {
-        length(xi) <- max_len
-        xi
-    }))
-    x
+.append_NAs_to_list_elts <- function(x, na.count=0L)
+{
+    ## Use same trick as in .combine_DFrame_rows().
+    NAs <- Rle(NA, na.count)
+    lapply(setNames(seq_along(x), names(x)),
+        function(i) {
+            tryCatch(
+                bindROWS2(x[[i]], list(NAs)),
+                error=function(err) {
+                    stop(wmsg("failed to append NAs to column ",
+                              "'", names(x)[[i]], "':\n  ",
+                              conditionMessage(err)))
+                }
+            )
+        }
+    )
 }
 
-setMethod("replaceCOLS", c("DFrame", "ANY"), function(x, i, value) {
+### Note that:
+### 1. Despite its name, this method can do more than just replacing
+###    existing columns. It can also append new columns (when 'i' contains
+###    indices > 'ncol(x)') or remove columns (when 'value' is NULL).
+### 2. The method usually preserves 'nrow(x)' and 'rownames(x)', except
+###    when 'nrow(value)' > 'nrow(x)', in which case rows of NAs are
+###    added to 'x' to match the number of rows in 'value'.
+.replaceCOLS_DFrame <- function(x, i, value)
+{
     stopifnot(is.null(value) || is(value, "DataFrame"))
+    new_nrow <- x_nrow <- nrow(x)
+    new_rownames <- rownames(x)
     sl <- as(x, "SimpleList")
-    value_sl <- if (!is.null(value)) as(value, "SimpleList")
-    if (missing(i))
-        sl[] <- value_sl
-    else sl[i] <- value_sl
-    max_len <- max(lengths(sl), nrow(x))
-    sl <- .fill_short_columns(sl, max_len)
-    names(sl) <- .make_colnames(sl, i, length(x), value)
-    ri <- seq_len(max_len)
-    ## Assumes that 'x' has a "listData" slot i.e. that 'x' is a DFrame object
-    ## or derivative.
+    if (!is.null(value)) {
+        value_nrow <- nrow(value)
+        if (value_nrow > x_nrow) {
+            ## Add rows of NAs to 'x'.
+            sl@listData <- .append_NAs_to_list_elts(sl@listData,
+                                                    value_nrow - x_nrow)
+            ri <- seq_len(value_nrow)
+            new_nrow <- value_nrow
+            new_rownames <- .make_rownames(x, ri, ri, value)
+        } else if (x_nrow < value_nrow) {
+            if (value_nrow == 0L || x_nrow %% value_nrow != 0L)
+                stop(wmsg("replacement has ", value_nrow, " rows, ",
+                          "data has ", x_nrow))
+            ## Add rows to 'value' by recycling its columns.
+            k <- x_nrow %/% value_nrow
+            value <- extractROWS(value, rep.int(seq_len(value_nrow), k))
+        }
+        value <- as(value, "SimpleList")
+    }
+    ## Note that this subassignment operation on SimpleList object 'sl' could
+    ## modify its length (e.g. if 'i' contains indices > 'ncol(x)' or 'value'
+    ## is NULL). In this case, the mcols() on 'sl' will get automatically
+    ## adjusted to stay parallel to 'sl'.
+    if (missing(i)) {
+        sl[] <- value
+    } else {
+        sl[i] <- value
+    }
+    if (!is.null(value))
+        names(sl@listData) <- .make_colnames(sl@listData, i, length(x), value)
     BiocGenerics:::replaceSlots(x, listData=sl@listData,
                                    elementMetadata=sl@elementMetadata,
-                                   rownames=.make_rownames(x, ri, ri, value),
-                                   nrows=max_len)
-})
+                                   nrows=new_nrow,
+                                   rownames=new_rownames,
+                                   check=FALSE)
+}
+
+setMethod("replaceCOLS", c("DFrame", "ANY"), .replaceCOLS_DFrame)
 
 setMethod("normalizeSingleBracketReplacementValue", "DataFrame",
           function(value, x)
@@ -710,8 +754,8 @@ hasS3Method <- function(f, signature) {
 
 droplevels.DFrame <- function(x, except=NULL) {
   canDropLevels <- function(xi) {
-    hasNonDefaultMethod(droplevels, class(xi)[1L]) ||
-      hasS3Method("droplevels", class(xi))
+    hasNonDefaultMethod(droplevels, class(xi)[[1L]]) ||
+      hasS3Method("droplevels", class(xi)[[1L]])
   }
   drop.levels <- vapply(x, canDropLevels, NA)
   if (!is.null(except))
@@ -774,7 +818,7 @@ setMethod("rep", "DataFrame", function(x, ...) {
             ## one row per list element.
             if (is(col, "List") && pcompareRecursively(col))
                 col <- as.list(col)
-            protect <- is.list(col) && !is(col, "AsIs")
+            protect <- !is(col, "AsIs") && is.list(col) && !is.object(col)
             if (protect)
                 col <- I(col)  # set AsIs class to protect column
             df <- as.data.frame(col, optional=optional)
@@ -888,8 +932,9 @@ setAs("ANY", "DataFrame_OR_NULL", function(from) as(from, "DFrame"))
 setMethod("coerce2", "DataFrame",
     function(from, to)
     {
-        to_class <- class(to)
-        if (class(from) == "list") {
+        to_class <- class(to)[[1L]]
+        ## Is this test equivalent to is.list(from) && !is.object(from)?
+        if (class(from)[[1L]] == "list") {
             ## Turn an ordinary list into a DataFrame in the most possibly
             ## straightforward way.
             ans <- new_DataFrame(from, what="list elements")
@@ -917,8 +962,8 @@ setMethod("coerce2", "DataFrame",
                 return(from)
             ans <- as(from, to_class, strict=FALSE)
             if (!identical(dim(ans), from_dim))
-                stop(wmsg("coercion of ", class(from), " object to ", to_class,
-                          " didn't preserve its dimensions"))
+                stop(wmsg("coercion of ", class(from)[[1L]], " object ",
+                          "to ", to_class, " didn't preserve its dimensions"))
             ## Try to restore the dimnames if they were lost or altered.
             from_dimnames <- dimnames(from)
             if (!identical(dimnames(ans), from_dimnames)) {
