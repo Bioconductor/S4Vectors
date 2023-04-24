@@ -1,3 +1,17 @@
+CHANGES IN VERSION 0.38.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o The RleTricks vignette was converted from Rnw to Rmd (thanks to
+      Beryl Kanali and Jen Wokaty for this conversion).
+
+BUG FIXES
+
+    o Improve support of DFrame objects with S3-typed columns (commit 3b83d5f).
+
+    o Fix bug in internal helper bindROWS2() (commit 05cfd3c).
+
 CHANGES IN VERSION 0.36.0
 -------------------------
 
