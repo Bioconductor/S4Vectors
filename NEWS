@@ -12,6 +12,7 @@ BUG FIXES
 
     o Fix bug in internal helper bindROWS2() (commit 05cfd3c).
 
+
 CHANGES IN VERSION 0.36.0
 -------------------------
 
