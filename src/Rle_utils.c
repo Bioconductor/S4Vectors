@@ -698,12 +698,13 @@ SEXP Rle_real_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 				stat = NA_REAL;
 			} else {
 				/* NA handling */
-				if (count_na != 0)
+				if (count_na != 0) {
 					window_len_na = window_len - count_na;
 					q_index = roundingScale(window_len_na,
 							constw, constk);
-					if (q_index >0)
+					if (q_index > 0)
 						q_index = q_index - 1;
+				}
 				/* If window shrank to 0, return NA. */
 				if (window_len_na == 0) {
 					stat = NA_REAL;
