@@ -133,45 +133,45 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 \section{Accessors}{
   In the code snippets below, \code{x} is a Hits object.
   \describe{
-    \item{}{\code{length(x)}: get the number of hits}
-    \item{}{\code{from(x)}: Equivalent to \code{as.data.frame(x)[[1]]}.}
-    \item{}{\code{to(x)}: Equivalent to \code{as.data.frame(x)[[2]]}.}
-    \item{}{\code{nLnode(x)}, \code{nrow(x)}: get the number of left nodes}
-    \item{}{\code{nRnode(x)}, \code{ncol(x)}: get the number of right nodes}
-    \item{}{\code{countLnodeHits(x)}: Counts the number of hits for
+    \item{\code{length(x)}:}{ get the number of hits}
+    \item{\code{from(x)}:}{ Equivalent to \code{as.data.frame(x)[[1]]}.}
+    \item{\code{to(x)}:}{ Equivalent to \code{as.data.frame(x)[[2]]}.}
+    \item{\code{nLnode(x)}, \code{nrow(x)}:}{ get the number of left nodes}
+    \item{\code{nRnode(x)}, \code{ncol(x)}:}{ get the number of right nodes}
+    \item{\code{countLnodeHits(x)}:}{ Counts the number of hits for
       each left node, returning an integer vector.
     }
-    \item{}{\code{countRnodeHits(x)}: Counts the number of hits for
+    \item{\code{countRnodeHits(x)}:}{ Counts the number of hits for
       each right node, returning an integer vector.
     }
   }
 
   The following accessors are just aliases for the above accessors:
   \describe{
-    \item{}{\code{queryHits(x)}: alias for \code{from(x)}.}
-    \item{}{\code{subjectHits(x)}: alias for \code{to(x)}.}
-    \item{}{\code{queryLength(x)}: alias for \code{nLnode(x)}.}
-    \item{}{\code{subjectLength(x)}: alias for \code{nRnode(x)}.}
-    \item{}{\code{countQueryHits(x)}: alias for \code{countLnodeHits(x)}.}
-    \item{}{\code{countSubjectHits(x)}: alias for \code{countRnodeHits(x)}.}
+    \item{\code{queryHits(x)}:}{ alias for \code{from(x)}.}
+    \item{\code{subjectHits(x)}:}{ alias for \code{to(x)}.}
+    \item{\code{queryLength(x)}:}{ alias for \code{nLnode(x)}.}
+    \item{\code{subjectLength(x)}:}{ alias for \code{nRnode(x)}.}
+    \item{\code{countQueryHits(x)}:}{ alias for \code{countLnodeHits(x)}.}
+    \item{\code{countSubjectHits(x)}:}{ alias for \code{countRnodeHits(x)}.}
   }
 }
 
 \section{Coercion}{
   In the code snippets below, \code{x} is a Hits object.
   \describe{
-    \item{}{\code{as.matrix(x)}: Coerces \code{x} to a two
+    \item{\code{as.matrix(x)}:}{ Coerces \code{x} to a two
       column integer matrix, with each row representing a hit
       between a left node (first column) and a right node (second
       column).
     }
-    \item{}{\code{as.table(x)}: Counts the number of hits for
+    \item{\code{as.table(x)}:}{ Counts the number of hits for
       each left node in \code{x} and outputs the counts as a \code{table}.
     }
-    \item{}{\code{as(x, "DataFrame")}: Creates a \link{DataFrame} by
+    \item{\code{as(x, "DataFrame")}:}{ Creates a \link{DataFrame} by
       combining the result of \code{as.matrix(x)} with \code{mcols(x)}.
     }
-    \item{}{\code{as.data.frame(x)}: Attempts to coerce the result of
+    \item{\code{as.data.frame(x)}:}{ Attempts to coerce the result of
       \code{as(x, "DataFrame")} to a \code{data.frame}.
     }
   }
@@ -180,17 +180,14 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 \section{Subsetting}{
   In the code snippets below, \code{x} is a Hits object.
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Return a new Hits object made of the elements selected by \code{i}.
     }
-    \item{}{
-      \code{x[i, j]}:
+    \item{\code{x[i, j]}:}{
       Like the above, but allow the user to conveniently subset the metadata
       columns thru \code{j}.
     }
-    \item{}{
-      \code{x[i] <- value}:
+    \item{\code{x[i] <- value}:}{
       Replacement version of \code{x[i]}.
     }
   }
@@ -201,8 +198,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 
 \section{Concatenation}{
   \describe{
-    \item{}{
-      \code{c(x, ..., ignore.mcols=FALSE)}:
+    \item{\code{c(x, ..., ignore.mcols=FALSE)}:}{
       Concatenate Hits object \code{x} and the Hits objects in
       \code{...} together.
       See \code{?\link[S4Vectors]{c}} in this package (the \pkg{S4Vectors}
@@ -214,13 +210,13 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
 \section{Other transformations}{
   In the code snippets below, \code{x} is a Hits object.
   \describe{
-    \item{}{\code{t(x)}:
+    \item{\code{t(x)}:}{
       Transpose \code{x} by interchanging the left and right nodes. This
       allows, for example, counting the number of hits for each right node
       using \code{as.table}.
     }
-    \item{}{\code{remapHits(x, Lnodes.remapping=NULL, new.nLnode=NA,
-                               Rnodes.remapping=NULL, new.nRnode=NA)}:
+    \item{\code{remapHits(x, Lnodes.remapping=NULL, new.nLnode=NA,
+                               Rnodes.remapping=NULL, new.nRnode=NA)}:}{
       Only supports SortedByQueryHits objects at the moment.
 
       Remaps the left and/or right nodes in \code{x}. The left nodes are
@@ -257,7 +253,7 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
       of the hits, so, in that case, step (3) is also a no-op (but is still
       performed).
     }
-    \item{}{\code{breakTies(x, method=c("first", "last"), rank)}: Restrict the
+    \item{\code{breakTies(x, method=c("first", "last"), rank)}:}{ Restrict the
       hits so that every left node maps to at most one right node. If
       \code{method} is \dQuote{first}, for each left node, select the
       edge with the first (lowest rank) right node, if any. If
@@ -281,11 +277,11 @@ SelfHits(from=integer(0), to=integer(0), nnode=0L, ...,
   We also provide two little utilities to operate on a SelfHits object
   \code{x}:
   \describe{
-    \item{}{\code{isSelfHit(x)}: A \emph{self hit} is an edge from a node to
+    \item{\code{isSelfHit(x)}:}{ A \emph{self hit} is an edge from a node to
       itself. \code{isSelfHit(x)} returns a logical vector \emph{parallel}
       to \code{x} indicating which elements in \code{x} are self hits.
     }
-    \item{}{\code{isRedundantHit(x)}: When there is more than 1 edge between
+    \item{\code{isRedundantHit(x)}:}{ When there is more than 1 edge between
       2 given nodes (regardless of orientation), the extra edges are considered
       to be \emph{redundant hits}. \code{isRedundantHit(x)} returns a logical
       vector \emph{parallel} to \code{x} indicating which elements in \code{x}

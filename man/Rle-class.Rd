@@ -110,8 +110,7 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{Rle(values, lengths)}:
+    \item{\code{Rle(values, lengths)}:}{
       This constructor creates an Rle instance out of an atomic
       vector or factor object \code{values} and an integer or numeric vector
       \code{lengths} with all positive elements that represent how many times
@@ -126,28 +125,22 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{runLength(x)}:
+    \item{\code{runLength(x)}:}{
       Returns the run lengths for \code{x}.
     }
-    \item{}{
-      \code{runValue(x)}:
+    \item{\code{runValue(x)}:}{
       Returns the run values for \code{x}.
     }
-    \item{}{
-      \code{nrun(x)}:
+    \item{\code{nrun(x)}:}{
       Returns the number of runs in \code{x}.
     }
-    \item{}{
-      \code{start(x)}:
+    \item{\code{start(x)}:}{
       Returns the starts of the runs for \code{x}.
     }
-    \item{}{
-      \code{end(x)}:
+    \item{\code{end(x)}:}{
       Returns the ends of the runs for \code{x}.
     }
-    \item{}{
-      \code{width(x)}:
+    \item{\code{width(x)}:}{
       Same as \code{runLength(x)}.
     }
   }
@@ -157,13 +150,11 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{runLength(x) <- value}:
+    \item{\code{runLength(x) <- value}:}{
       Replaces \code{x} with a new Rle object using run values
       \code{runValue(x)} and run lengths \code{value}.
     }
-    \item{}{
-      \code{runValue(x) <- value}:
+    \item{\code{runValue(x) <- value}:}{
       Replaces \code{x} with a new Rle object using run values
       \code{value} and run lengths \code{runLength(x)}.
     }
@@ -174,8 +165,7 @@
   \subsection{From atomic vector to Rle}{
     In the code snippets below, \code{from} is an atomic vector:
     \describe{
-      \item{}{
-        \code{as(from, "Rle")}:
+      \item{\code{as(from, "Rle")}:}{
         This coercion creates an Rle instances out of an atomic
         vector \code{from}.
       }
@@ -184,24 +174,20 @@
   \subsection{From Rle to other objects}{
     In the code snippets below, \code{x} and \code{from} are Rle objects:
     \describe{
-      \item{}{
-        \code{as.vector(x, mode="any")}, \code{as(from, "vector")}:
+      \item{\code{as.vector(x, mode="any")}, \code{as(from, "vector")}:}{
         Creates an atomic vector based on the values contained in
         \code{x}. The vector will be coerced to the requested \code{mode},
         unless \code{mode} is "any", in which case the most appropriate
         type is chosen.
       }
-      \item{}{
-        \code{as.factor(x)}, \code{as(from, "factor")}: Creates a factor object
+      \item{\code{as.factor(x)}, \code{as(from, "factor")}:}{ Creates a factor object
         based on the values contained in \code{x}.
       }
-      \item{}{
-        \code{as.data.frame(x)}, \code{as(from, "data.frame")}: Creates
+      \item{\code{as.data.frame(x)}, \code{as(from, "data.frame")}:}{ Creates
         a \code{data.frame} with a single column holding the result of
         \code{as.vector(x)}.
       }
-      \item{}{
-        \code{decode(x)}: Converts an Rle to its native form, such as an
+      \item{\code{decode(x)}:}{ Converts an Rle to its native form, such as an
         atomic vector or factor. Calling \code{decode} on a non-Rle will
         return \code{x} by default, so it is generally safe for ensuring
         that an object is native.
@@ -214,8 +200,7 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{x[i, drop=getOption("dropRle", default=FALSE)]}:
+    \item{\code{x[i, drop=getOption("dropRle", default=FALSE)]}:}{
       Subsets \code{x} by index \code{i}, where \code{i} can be positive
       integers, negative integers, a logical vector of the same length as
       \code{x}, an Rle object of the same length as \code{x}
@@ -223,26 +208,22 @@
       When \code{drop=FALSE} returns an Rle object. When \code{drop=TRUE},
       returns an atomic vector.
     }
-    \item{}{
-      \code{x[i] <- value}:
+    \item{\code{x[i] <- value}:}{
       Replaces elements in \code{x} specified by \code{i} with corresponding
       elements in \code{value}. Supports the same types for \code{i} as
       \code{x[i]}.
     }
-    \item{}{
-      \code{x \%in\% table}:
+    \item{\code{x \%in\% table}:}{
       Returns a logical Rle representing set membership in
       \code{table}.
     }
-    \item{}{
-      \code{c(x, ..., ignore.mcols=FALSE)}:
+    \item{\code{c(x, ..., ignore.mcols=FALSE)}:}{
       Concatenate Rle object \code{x} and the Rle objects in
       \code{...} together.
       See \code{?\link[S4Vectors]{c}} in this package (the \pkg{S4Vectors}
       package) for more information about concatenating Vector derivatives.
     }
-    \item{}{
-      \code{append(x, values, after = length(x))}:
+    \item{\code{append(x, values, after = length(x))}:}{
       Insert one Rle into another Rle.
       \describe{
         \item{\code{values}}{the Rle to insert.}
@@ -250,39 +231,32 @@
           are to be inserted.}
       }
     }
-    \item{}{
-      \code{findRun(x, vec)}:
+    \item{\code{findRun(x, vec)}:}{
       Returns an integer vector indicating the run indices in Rle \code{vec}
       that are referenced by the indices in the integer vector \code{x}.
     }
-    \item{}{
-      \code{head(x, n = 6L)}:
+    \item{\code{head(x, n = 6L)}:}{
       If \code{n} is non-negative, returns the first n elements of \code{x}.
       If \code{n} is negative, returns all but the last \code{abs(n)} elements
       of \code{x}.
     }
-    \item{}{
-      \code{is.na(x)}:
+    \item{\code{is.na(x)}:}{
       Returns a logical Rle indicating which values are \code{NA}.
     }
-    \item{}{
-      \code{is.finite(x)}:
+    \item{\code{is.finite(x)}:}{
       Returns a logical Rle indicating which values are finite.
     }
-    \item{}{
-      \code{is.unsorted(x, na.rm = FALSE, strictly = FALSE)}:
+    \item{\code{is.unsorted(x, na.rm = FALSE, strictly = FALSE)}:}{
       Returns a logical value specifying if \code{x} is unsorted.
       \describe{
         \item{\code{na.rm}}{remove missing values from check.}
         \item{\code{strictly}}{check for _strictly_ increasing values.}
       }
     }
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       Returns the underlying vector length of \code{x}.
     }
-    \item{}{
-      \code{match(x, table, nomatch = NA_integer_, incomparables = NULL)}:
+    \item{\code{match(x, table, nomatch = NA_integer_, incomparables = NULL)}:}{
       Matches the values in \code{x} to \code{table}:
       \describe{
         \item{\code{table}}{the values to be matched against.}
@@ -293,8 +267,7 @@
           the \code{nomatch} value.}
       }
     }
-    \item{}{
-      \code{rep(x, times, length.out, each)}, \code{rep.int(x, times)}:
+    \item{\code{rep(x, times, length.out, each)}, \code{rep.int(x, times)}:}{
       Repeats the values in \code{x} through one of the following conventions:
       \describe{
         \item{\code{times}}{Vector giving the number of times to repeat each
@@ -306,22 +279,18 @@
           repeated \code{each} times.}
       }
     }
-    \item{}{
-      \code{rev(x)}:
+    \item{\code{rev(x)}:}{
       Reverses the order of the values in \code{x}.
     }
-    \item{}{
-      \code{show(object)}:
+    \item{\code{show(object)}:}{
       Prints out the Rle object in a user-friendly way.
     }
-    \item{}{
-      \code{order(..., na.last=TRUE, decreasing=FALSE, method=c("auto", "shell", "radix"))}:
+    \item{\code{order(..., na.last=TRUE, decreasing=FALSE, method=c("auto", "shell", "radix"))}:}{
       Returns a permutation which rearranges its first argument
       into ascending or descending order, breaking ties by further
       arguments. See \code{\link[BiocGenerics]{order}}.
     }
-    \item{}{
-      \code{sort(x, decreasing=FALSE, na.last=NA)}:
+    \item{\code{sort(x, decreasing=FALSE, na.last=NA)}:}{
       Sorts the values in \code{x}.
       \describe{
         \item{\code{decreasing}}{If \code{TRUE}, sort values in decreasing
@@ -331,30 +300,25 @@
           removed.}
       }
     }
-    \item{}{
-      \code{subset(x, subset)}:
+    \item{\code{subset(x, subset)}:}{
       Returns a new Rle object made of the subset using logical vector
       \code{subset}.
     }
-    \item{}{
-      \code{table(...)}:
+    \item{\code{table(...)}:}{
       Returns a table containing the counts of the unique values. Supported
       arguments include \code{useNA} with values of `no' and `ifany'.
       Multiple Rle's must be concatenated with \code{c()} before calling
       \code{table}.
     }
-    \item{}{
-      \code{tabulate(bin, nbins = max(bin, 1L, na.rm = TRUE))}:
+    \item{\code{tabulate(bin, nbins = max(bin, 1L, na.rm = TRUE))}:}{
       Just like \code{\link{tabulate}}, except optimized for Rle.
     }
-    \item{}{
-      \code{tail(x, n = 6L)}:
+    \item{\code{tail(x, n = 6L)}:}{
       If \code{n} is non-negative, returns the last n elements of \code{x}.
       If \code{n} is negative, returns all but the first \code{abs(n)} elements
       of \code{x}.
     }
-    \item{}{
-      \code{unique(x, incomparables = FALSE, ...)}:
+    \item{\code{unique(x, incomparables = FALSE, ...)}:}{
       Returns the unique run values. The \code{incomparables} argument takes a
       vector of values that cannot be compared with \code{FALSE} being a special
       value that means that all values can be compared. 
@@ -366,16 +330,13 @@
   In the code snippets below, \code{x} and \code{y} are Rle object or
   some other vector-like object:
   \describe{
-    \item{}{
-      \code{setdiff(x, y)}: Returns the unique elements in
+    \item{\code{setdiff(x, y)}:}{ Returns the unique elements in
       \code{x} that are not in \code{y}.
     }
-    \item{}{
-      \code{union(x, y)}:
+    \item{\code{union(x, y)}:}{
       Returns the unique elements in either \code{x} or \code{y}.
     }
-    \item{}{
-      \code{intersect(x, y)}:
+    \item{\code{intersect(x, y)}:}{
       Returns the unique elements in both \code{x} and \code{y}.
     }
   }

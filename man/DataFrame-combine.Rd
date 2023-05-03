@@ -24,8 +24,7 @@
   In the code snippets below, all the input objects are expected to be
   \link{DataFrame} objects.
   \describe{
-    \item{}{
-      \code{rbind(...)}: Creates a new \link{DataFrame} object by
+    \item{\code{rbind(...)}:}{ Creates a new \link{DataFrame} object by
       aggregating the rows of the input objects.
       Very similar to \code{\link{rbind.data.frame}()}, except
       in the handling of row names. If all elements have row names, they
@@ -34,8 +33,7 @@
       The returned \link{DataFrame} object inherits its metadata and
       metadata columns from the first input object.
     }
-    \item{}{
-      \code{cbind(...)}: Creates a new \link{DataFrame} object by
+    \item{\code{cbind(...)}:}{ Creates a new \link{DataFrame} object by
       aggregating the columns of the input objects.
       Very similar to \code{\link{cbind.data.frame}()}.
       The returned \link{DataFrame} object inherits its metadata from
@@ -44,27 +42,23 @@
       obtained by combining the metadata columns of the input object with
       \code{combineRows()}.
     }
-    \item{}{
-      \code{combineRows(x, ...)}: \code{combineRows()} is a generic
+    \item{\code{combineRows(x, ...)}:}{ \code{combineRows()} is a generic
       function documented in the man page for \link{RectangularData}
       objects (see \code{?\link{RectangularData}}).
       The method for \link{DataFrame} objects behaves as documented in
       that man page.
     }
-    \item{}{
-      \code{combineCols(x, ..., use.names=TRUE)}: \code{combineCols()}
+    \item{\code{combineCols(x, ..., use.names=TRUE)}:}{ \code{combineCols()}
       is a generic function documented in the man page for
       \link{RectangularData} objects (see \code{?\link{RectangularData}}).
       The method for \link{DataFrame} objects behaves as documented in
       that man page.
     }
-    \item{}{
-      \code{combineUniqueCols(x, ..., use.names=TRUE)}: This function
+    \item{\code{combineUniqueCols(x, ..., use.names=TRUE)}:}{ This function
       is documented in the man page for \link{RectangularData} objects
       (see \code{?\link{RectangularData}}).
     }
-    \item{}{
-      \code{merge(x, y, ...)}: Merges two \link{DataFrame} objects
+    \item{\code{merge(x, y, ...)}:}{ Merges two \link{DataFrame} objects
       \code{x} and \code{y}, with arguments in \code{...} being
       the same as those allowed by the base \code{\link{merge}()}. It is
       allowed for either \code{x} or \code{y} to be a \code{data.frame}.

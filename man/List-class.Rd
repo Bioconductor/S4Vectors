@@ -127,31 +127,25 @@
   In the following code snippets, \code{x} is a List object.
 
   \describe{
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       Get the number of list elements in \code{x}.
     }
-    \item{}{
-      \code{names(x)}, \code{names(x) <- value}:
+    \item{\code{names(x)}, \code{names(x) <- value}:}{
       Get or set the names of the elements in the List.
     }
-    \item{}{
-      \code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:
+    \item{\code{mcols(x, use.names=FALSE)}, \code{mcols(x) <- value}:}{
       Get or set the metadata columns. See \link{Vector} man page for
       more information.
     }
-    \item{}{
-      \code{elementType(x)}:
+    \item{\code{elementType(x)}:}{
       Get the scalar string naming the class from which all elements must
       derive.
     }
-    \item{}{
-      \code{elementNROWS(x)}:
+    \item{\code{elementNROWS(x)}:}{
       Get the length (or nb of row for a matrix-like object) of each of
       the elements. Equivalent to \code{sapply(x, NROW)}.
     }
-    \item{}{
-      \code{isEmpty(x)}:
+    \item{\code{isEmpty(x)}:}{
       Returns a logical indicating either if the sequence has no elements
       or if all its elements are empty.
     }
@@ -161,8 +155,7 @@
 \section{Coercion}{
   To List.
   \describe{
-    \item{}{
-      \code{as(x, "List")}: Converts a vector-like object into a
+    \item{\code{as(x, "List")}:}{ Converts a vector-like object into a
       List, usually a \link[IRanges]{CompressedList} derivative.
       One notable exception is when \code{x} is an ordinary list,
       in which case \code{as(x, "List")} returns a \link{SimpleList}
@@ -180,19 +173,16 @@
 
   From List. In the code snippets below, \code{x} is a List object.
   \describe{
-    \item{}{
-      \code{as.list(x, ...)}, \code{as(from, "list")}:
+    \item{\code{as.list(x, ...)}, \code{as(from, "list")}:}{
       Turns \code{x} into an ordinary list.
     }
-    \item{}{
-      \code{unlist(x, recursive=TRUE, use.names=TRUE)}:
+    \item{\code{unlist(x, recursive=TRUE, use.names=TRUE)}:}{
       Concatenates the elements of \code{x} into a single vector-like
       object (of class \code{elementType(x)}).
     }
-    \item{}{
-      \code{as.data.frame(x, row.names=NULL, optional=FALSE ,
+    \item{\code{as.data.frame(x, row.names=NULL, optional=FALSE ,
                           value.name="value", use.outer.mcols=FALSE,
-                          group_name.as.factor=FALSE, ...)}:
+                          group_name.as.factor=FALSE, ...)}:}{
       Coerces a \code{List} to a \code{data.frame}. The result has the
       same length as unlisted \code{x} with two additional columns,
       \code{group} and \code{group_name}. \code{group} is an \code{integer}
@@ -219,8 +209,7 @@
   In the code snippets below, \code{x} is a List object.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       Return a new List object made of the list elements selected by
       subscript \code{i}. Subscript \code{i} can be of any type supported
       by subsetting of a Vector object (see \link{Vector} man page for the
@@ -231,21 +220,17 @@
       Those additional types perform subsetting within the list elements
       rather than across them.
     }
-    \item{}{
-      \code{x[i] <- value}:
+    \item{\code{x[i] <- value}:}{
       Replacement version of \code{x[i]}.
     }
-    \item{}{
-      \code{x[[i]]}:
+    \item{\code{x[[i]]}:}{
       Return the selected list element \code{i}, where \code{i} is an
       numeric or character vector of length 1.
     }
-    \item{}{
-      \code{x[[i]] <- value}:
+    \item{\code{x[[i]] <- value}:}{
       Replacement version of \code{x[[i]]}.
     }
-    \item{}{
-      \code{x$name}, \code{x$name <- value}:
+    \item{\code{x$name}, \code{x$name <- value}:}{
       Similar to \code{x[[name]]} and \code{x[[name]] <- value}, but
       \code{name} is taken literally as an element name.
     }

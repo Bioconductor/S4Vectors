@@ -54,8 +54,7 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{Pairs(first, second, ..., names = NULL, hits = NULL)}:
+    \item{\code{Pairs(first, second, ..., names = NULL, hits = NULL)}:}{
       Constructs a Pairs object by aligning the vectors \code{first} and
       \code{second}. The vectors must have the same length, unless
       \code{hits} is specified. Arguments in \code{\dots} are combined
@@ -71,22 +70,22 @@
 \section{Accessors}{
   In the code snippets below, \code{x} is a \code{Pairs} object.
   \describe{
-    \item{}{\code{names(x)}, \code{names(x) <- value}:
+    \item{\code{names(x)}, \code{names(x) <- value}:}{
       get or set the names}
-    \item{}{\code{first(x)}, \code{first(x) <- value}:
+    \item{\code{first(x)}, \code{first(x) <- value}:}{
       get or set the first member of each pair}
-    \item{}{\code{second(x)}, \code{second(x) <- value}:
+    \item{\code{second(x)}, \code{second(x) <- value}:}{
       get or set the second member of each pair}
   }
 }
 
 \section{Coercion}{
   \describe{
-    \item{}{\code{zipup(x)}: Interleaves the \code{Pairs} object
+    \item{\code{zipup(x)}:}{ Interleaves the \code{Pairs} object
       \code{x} into a list, where each element is composed of a
       pair. The type of list depends on the type of the elements.
     }
-    \item{}{\code{zipdown(x)}: The inverse of \code{zipup()}. Converts
+    \item{\code{zipdown(x)}:}{ The inverse of \code{zipup()}. Converts
       \code{x}, a list where every element is of length 2, to a
       \code{Pairs} object, by assuming that each element of the list
       represents a pair.
@@ -97,7 +96,7 @@
 \section{Subsetting}{
   In the code snippets below, \code{x} is a \code{Pairs} object.
   \describe{
-    \item{}{\code{x[i]}: Subset the Pairs object.}
+    \item{\code{x[i]}:}{ Subset the Pairs object.}
   }
 }
 

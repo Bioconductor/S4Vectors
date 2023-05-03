@@ -107,9 +107,8 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{DataFrame(..., row.names = NULL, check.names = TRUE,
-                      stringsAsFactors)}
+    \item{\code{DataFrame(..., row.names = NULL, check.names = TRUE,
+                      stringsAsFactors)}:}{
 
       Constructs a \code{DataFrame} in similar fashion to
       \code{\link{data.frame}}. Each argument in \code{...} is coerced to
@@ -129,8 +128,7 @@
       column arguments to DataFrame determines whether strings
       become factors.
     }
-    \item{}{
-      \code{make_zero_col_DFrame(nrow)}
+    \item{\code{make_zero_col_DFrame(nrow)}:}{
 
       Constructs a zero-column DFrame object with \code{nrow} rows.
       Intended for developers to use in other packages and typically
@@ -142,11 +140,11 @@
 \section{Accessors}{
   In the following code snippets, \code{x} is a \code{DataFrame}.
   \describe{
-    \item{}{\code{dim(x)}:
+    \item{\code{dim(x)}:}{
       Get the length two integer vector indicating in the first and
       second element the number of rows and columns, respectively.
     }
-    \item{}{\code{dimnames(x)}, \code{dimnames(x) <- value}:
+    \item{\code{dimnames(x)}, \code{dimnames(x) <- value}:}{
       Get and set the two element list containing the row names
       (character vector of length \code{nrow(x)} or \code{NULL})
       and the column names (character vector of length \code{ncol(x)}).
@@ -156,7 +154,7 @@
 
 \section{Coercion}{
   \describe{
-    \item{}{\code{as(from, "DataFrame")}:
+    \item{\code{as(from, "DataFrame")}:}{
       By default, constructs a new \code{DataFrame} with \code{from} as
       its only column. If \code{from} is a \code{matrix} or
       \code{data.frame}, all of its columns become columns in the new
@@ -167,10 +165,10 @@
       \code{length}. It is recommended to use the \code{DataFrame} 
       constructor, rather than this interface.
     }
-    \item{}{\code{as.list(x)}: Coerces \code{x}, a \code{DataFrame},
+    \item{\code{as.list(x)}:}{ Coerces \code{x}, a \code{DataFrame},
       to a \code{list}.
     }
-    \item{}{\code{as.data.frame(x, row.names=NULL, optional=FALSE)}:
+    \item{\code{as.data.frame(x, row.names=NULL, optional=FALSE)}:}{
       Coerces \code{x}, a \code{DataFrame}, to a \code{data.frame}.
       Each column is coerced to a \code{data.frame} and then column
       bound together. If \code{row.names} is \code{NULL}, they are
@@ -181,13 +179,13 @@
       supported if \code{x} contains any \code{list}, \code{SimpleList},
       or \code{CompressedList} columns.
     }
-    \item{}{\code{as(from, "data.frame")}: Coerces a \code{DataFrame}
+    \item{\code{as(from, "data.frame")}:}{ Coerces a \code{DataFrame}
       to a \code{data.frame} by calling \code{as.data.frame(from)}.
     }
-    \item{}{\code{as.matrix(x)}: Coerces the \code{DataFrame} to a
+    \item{\code{as.matrix(x)}:}{ Coerces the \code{DataFrame} to a
       \code{matrix}, if possible.
     }
-    \item{}{\code{as.env(x, enclos = parent.frame())}:
+    \item{\code{as.env(x, enclos = parent.frame())}:}{
       Creates an environment from \code{x} with a symbol for each
       \code{colnames(x)}. The values are not actually copied into the
       environment. Rather, they are dynamically bound using
@@ -202,21 +200,21 @@
 \section{Subsetting}{
   In the following code snippets, \code{x} is a \code{DataFrame}.
   \describe{
-    \item{}{\code{x[i,j,drop]}: Behaves very similarly to the
+    \item{\code{x[i,j,drop]}:}{ Behaves very similarly to the
       \code{\link{[.data.frame}} method, except \code{i} can be a
       logical \code{Rle} object and subsetting by \code{matrix} indices
       is not supported. Indices containing \code{NA}'s are also not
       supported.
     }
-    \item{}{\code{x[i,j] <- value}: Behaves very similarly to the
+    \item{\code{x[i,j] <- value}:}{ Behaves very similarly to the
       \code{\link{[<-.data.frame}} method.
     }
-    \item{}{\code{x[[i]]}: Behaves very similarly to the
+    \item{\code{x[[i]]}:}{ Behaves very similarly to the
       \code{\link{[[.data.frame}} method, except arguments \code{j}
       and \code{exact} are not supported. Column name matching is
       always exact. Subsetting by matrices is not supported.
     }
-    \item{}{\code{x[[i]] <- value}: Behaves very similarly to the
+    \item{\code{x[[i]] <- value}:}{ Behaves very similarly to the
       \code{\link{[[<-.data.frame}} method, except argument \code{j}
       is not supported.
     }

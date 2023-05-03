@@ -34,7 +34,7 @@
   In the code snippets below, \code{x} is a \code{FilterMatrix} object.
 
   \describe{
-    \item{}{\code{filterRules(x)}: Get the \code{FilterRules}
+    \item{\code{filterRules(x)}:}{ Get the \code{FilterRules}
       corresponding to the columns of the matrix.
     }
   }
@@ -42,8 +42,7 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{FilterMatrix(matrix, filterRules)}: Constructs a
+    \item{\code{FilterMatrix(matrix, filterRules)}:}{ Constructs a
       \code{FilterMatrix}, from a given \code{matrix} and
       \code{filterRules}. Not usually called by the user, see
       \code{\link{evalSeparately}}.
@@ -53,8 +52,7 @@
 
 \section{Utilities}{
   \describe{
-    \item{}{
-      \code{summary(object, discarded = FALSE, percent = FALSE)}:
+    \item{\code{summary(object, discarded = FALSE, percent = FALSE)}:}{
       Returns a numeric vector containing the total number of records
       (\code{nrow}), the number passed by each filter, and the number of
       records that passed every filter. If \code{discarded} is

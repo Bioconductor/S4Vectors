@@ -136,12 +136,10 @@
   In the following code snippets, \code{x} is a Vector object.
   
   \describe{
-    \item{}{
-      \code{length(x)}:
+    \item{\code{length(x)}:}{
       Get the number of elements in \code{x}.
     }
-    \item{}{
-      \code{lengths(x, use.names=TRUE)}:
+    \item{\code{lengths(x, use.names=TRUE)}:}{
       Get the length of each of the elements.
 
       Note: The \code{lengths} method for Vector objects is currently
@@ -149,33 +147,27 @@
       of the \code{use.names} argument), so is equivalent to
       \code{sapply(x, NROW)}, not to \code{sapply(x, length)}.
     }
-    \item{}{
-      \code{NROW(x)}:
+    \item{\code{NROW(x)}:}{
       Equivalent to either \code{nrow(x)} or \code{length(x)}, depending on
       whether \code{x} has dimensions (i.e. \code{dim(x)} is not \code{NULL})
       or not (i.e. \code{dim(x)} is \code{NULL}).
     }
-    \item{}{
-      \code{names(x)}, \code{names(x) <- value}:
+    \item{\code{names(x)}, \code{names(x) <- value}:}{
       Get or set the names of the elements in the Vector.
     }
-    \item{}{
-      \code{rename(x, value, ...)}:
+    \item{\code{rename(x, value, ...)}:}{
       Replace the names of \code{x} according to a mapping defined by a named
       character vector, formed by concatenating \code{value} with any
       arguments in \code{...}. The names of the character vector
       indicate the source names, and the corresponding values the
       destination names. This also works on a plain old \code{vector}.
     }
-    \item{}{
-      \code{unname(x)}: removes the names from \code{x}, if any.
+    \item{\code{unname(x)}:}{ removes the names from \code{x}, if any.
     }
-    \item{}{
-      \code{nlevels(x)}:
+    \item{\code{nlevels(x)}:}{
       Returns the number of factor levels.
     }
-    \item{}{
-      \code{mcols(x, use.names=TRUE)}, \code{mcols(x) <- value}:
+    \item{\code{mcols(x, use.names=TRUE)}, \code{mcols(x) <- value}:}{
       Get or set the metadata columns.
       If \code{use.names=TRUE} and the metadata columns are not \code{NULL},
       then the names of \code{x} are propagated as the row names of the
@@ -183,11 +175,10 @@
       When setting the metadata columns, the supplied value must be \code{NULL}
       or a \link{DataFrame} object holding element-wise metadata.
     }
-    \item{}{
-       \code{elementMetadata(x, use.names=FALSE)},
+    \item{\code{elementMetadata(x, use.names=FALSE)},
        \code{elementMetadata(x) <- value},
        \code{values(x, use.names=FALSE)},
-       \code{values(x) <- value}:
+       \code{values(x) <- value}:}{
        Alternatives to \code{mcols} functions. Their use is discouraged.
     }
   }
@@ -195,14 +186,14 @@
 
 \section{Coercion}{
   \describe{
-    \item{}{\code{as(from, "data.frame")}, \code{as.data.frame(from)}:
+    \item{\code{as(from, "data.frame")}, \code{as.data.frame(from)}:}{
       Coerces \code{from}, a \code{Vector}, to a \code{data.frame} by
       first coercing the \code{Vector} to a \code{vector} via
       \code{as.vector}. Note that many \code{Vector} derivatives do not
       support \code{as.vector}, so this coercion is possible only for
       certain types.
     }
-    \item{}{\code{as.env(x)}:
+    \item{\code{as.env(x)}:}{
       Constructs an environment object containing the elements of
       \code{mcols(x)}.
     }
@@ -213,15 +204,13 @@
   In the code snippets below, \code{x} is a Vector object.
 
   \describe{
-    \item{}{
-      \code{x[i]}:
+    \item{\code{x[i]}:}{
       When supported, return a new Vector object of the same class as \code{x}
       made of the elements selected by \code{i}. \code{i} can be missing;
       an NA-free logical, numeric, or character vector or factor (as ordinary
       vector or \link{Rle} object); or a \link[IRanges]{IntegerRanges} object.
     }
-    \item{}{
-      \code{x[i, j]}:
+    \item{\code{x[i, j]}:}{
       Like the above, but allow the user to conveniently subset the metadata
       columns thru \code{j}.
 
@@ -233,8 +222,7 @@
       this reason this feature should preferrably be used \emph{interactively}
       only.
     }
-    \item{}{
-      \code{x[i] <- value}:
+    \item{\code{x[i] <- value}:}{
       Replacement version of \code{x[i]}.
     }
   }
@@ -244,14 +232,12 @@
   In the code snippets below, \code{x} is a Vector object.
 
   \describe{
-    \item{}{
-      \code{subset(x, subset, select, drop=FALSE, ...)}:
+    \item{\code{subset(x, subset, select, drop=FALSE, ...)}:}{
       Return a new Vector object made of the subset using logical vector
       \code{subset}, where missing values are taken as FALSE.
       TODO: Document \code{select}, \code{drop}, and \code{...}.
     }
-    \item{}{
-      \code{window(x, start=NA, end=NA, width=NA)}:
+    \item{\code{window(x, start=NA, end=NA, width=NA)}:}{
       Extract the subsequence from \code{x} that corresponds to the window
       defined by \code{start}, \code{end}, and \code{width}.
       At most 2 of \code{start}, \code{end}, and \code{width} can be set
@@ -267,27 +253,23 @@
               integer value and the other one to \code{NA}.
       }
     }
-    \item{}{
-      \code{head(x, n=6L)}:
+    \item{\code{head(x, n=6L)}:}{
       If \code{n} is non-negative, returns the first n elements of the Vector
       object.
       If \code{n} is negative, returns all but the last \code{abs(n)} elements
       of the Vector object.
     }
-    \item{}{
-      \code{tail(x, n=6L)}:
+    \item{\code{tail(x, n=6L)}:}{
       If \code{n} is non-negative, returns the last n elements of the Vector
       object.
       If \code{n} is negative, returns all but the first \code{abs(n)} elements
       of the Vector object.
     }
-    \item{}{
-      \code{rev(x)}:
+    \item{\code{rev(x)}:}{
       Return a new Vector object made of the original elements in the reverse
       order.
     }
-    \item{}{
-      \code{rep(x, times, length.out, each)} and \code{rep.int(x, times)}:
+    \item{\code{rep(x, times, length.out, each)}:}{ and \code{rep.int(x, times)}:
       Repeats the values in \code{x} through one of the following conventions:
       \itemize{
         \item \code{times}: Vector giving the number of times to repeat each
@@ -306,8 +288,7 @@
   In the code snippets below, \code{x} is a Vector object.
 
   \describe{
-    \item{}{
-      \code{c(x, ..., ignore.mcols=FALSE)}:
+    \item{\code{c(x, ..., ignore.mcols=FALSE)}:}{
       Concatenate \code{x} and the Vector objects in \code{...} together.
       Any object in \code{...} should belong to the same class as \code{x}
       or to one of its subclasses. If not, then an attempt will be made to
@@ -337,13 +318,12 @@
       make sure that \code{args} is an \emph{unnamed} list when using
       \code{do.call(c, args)} to concatenate a list of objects together.
     }
-    \item{}{
-      \code{append(x, values, after=length(x))}:
+    \item{\code{append(x, values, after=length(x))}:}{
       Insert the \code{Vector} \code{values} onto \code{x} at the position
       given by \code{after}. \code{values} must have an \code{elementType}
       that extends that of \code{x}.
     }
-    \item{}{\code{expand.grid(...)}: Find cartesian product of every
+    \item{\code{expand.grid(...)}:}{ Find cartesian product of every
       vector in \code{\dots} and return a data.frame, each column of
       which corresponds to an argument.
       See \code{\link[base]{expand.grid}}.

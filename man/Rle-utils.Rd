@@ -91,8 +91,7 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{summary(object, ..., digits = max(3, getOption("digits") - 3))}:
+    \item{\code{summary(object, ..., digits = max(3, getOption("digits") - 3))}:}{
       Summarizes the Rle object using an atomic vector convention. The
       \code{digits} argument is used for number formatting with
       \code{signif()}.
@@ -104,12 +103,10 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{!x}:
+    \item{\code{!x}:}{
        Returns logical negation (NOT) of \code{x}.
     }
-    \item{}{
-      \code{which(x)}:
+    \item{\code{which(x)}:}{
        Returns an integer vector representing the \code{TRUE} indices of
        \code{x}.
      }
@@ -120,8 +117,7 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{diff(x, lag = 1, differences = 1}:
+    \item{\code{diff(x, lag = 1, differences = 1}:}{
       Returns suitably lagged and iterated differences of \code{x}.
       \describe{
          \item{\code{lag}}{An integer indicating which lag to use.}
@@ -129,32 +125,26 @@
            difference.}
       }
     }
-    \item{}{
-       \code{pmax(..., na.rm = FALSE)}, \code{pmax.int(..., na.rm = FALSE)}:
+    \item{\code{pmax(..., na.rm = FALSE)}, \code{pmax.int(..., na.rm = FALSE)}:}{
        Parallel maxima of the Rle input values. Removes \code{NA}s when
        \code{na.rm = TRUE}.
     }
-    \item{}{
-       \code{pmin(..., na.rm = FALSE)}, \code{pmin.int(..., na.rm = FALSE)}:
+    \item{\code{pmin(..., na.rm = FALSE)}, \code{pmin.int(..., na.rm = FALSE)}:}{
        Parallel minima of the Rle input values. Removes \code{NA}s when
        \code{na.rm = TRUE}.
     }
-    \item{}{
-      \code{which.max(x)}: Returns the index of the first element matching
+    \item{\code{which.max(x)}:}{ Returns the index of the first element matching
       the maximum value of \code{x}.
     }
-    \item{}{
-      \code{mean(x, na.rm = FALSE)}:
+    \item{\code{mean(x, na.rm = FALSE)}:}{
       Calculates the mean of \code{x}. Removes \code{NA}s when
       \code{na.rm = TRUE}.
     }
-    \item{}{
-      \code{var(x, y = NULL, na.rm = FALSE)}:
+    \item{\code{var(x, y = NULL, na.rm = FALSE)}:}{
       Calculates the variance of \code{x} or covariance of \code{x} and \code{y}
       if both are supplied. Removes \code{NA}s when \code{na.rm = TRUE}.
     }
-    \item{}{
-      \code{cov(x, y, use = "everything")}, \code{cor(x, y, use = "everything")}:
+    \item{\code{cov(x, y, use = "everything")}, \code{cor(x, y, use = "everything")}:}{
       Calculates the covariance and correlation respectively of Rle objects
       \code{x} and \code{y}.
       The \code{use} argument is an optional character string giving a method for
@@ -163,18 +153,15 @@
       \code{"all.obs"}, \code{"complete.obs"}, \code{"na.or.complete"}, or
       \code{"pairwise.complete.obs"}.
     }
-    \item{}{
-      \code{sd(x, na.rm = FALSE)}:
+    \item{\code{sd(x, na.rm = FALSE)}:}{
       Calculates the standard deviation of \code{x}. Removes \code{NA}s
       when \code{na.rm = TRUE}.
     }
-    \item{}{
-      \code{median(x, na.rm = FALSE)}:
+    \item{\code{median(x, na.rm = FALSE)}:}{
       Calculates the median of \code{x}. Removes \code{NA}s when
       \code{na.rm = TRUE}.
     }
-    \item{}{
-      \code{quantile(x, probs = seq(0, 1, 0.25), na.rm = FALSE, names = TRUE, type = 7, ...)}:
+    \item{\code{quantile(x, probs = seq(0, 1, 0.25), na.rm = FALSE, names = TRUE, type = 7, ...)}:}{
       Calculates the specified quantiles of \code{x}.
       \describe{
         \item{\code{probs}}{A numeric vector of probabilities with values in
@@ -188,8 +175,7 @@
         \item{\dots}{Further arguments passed to or from other methods.}
       }
     }
-    \item{}{
-      \code{mad(x, center = median(x), constant = 1.4826, na.rm = FALSE, low = FALSE, high = FALSE)}:
+    \item{\code{mad(x, center = median(x), constant = 1.4826, na.rm = FALSE, low = FALSE, high = FALSE)}:}{
       Calculates the median absolute deviation of \code{x}.
       \describe{
         \item{\code{center}}{The center to calculate the deviation from.}
@@ -200,16 +186,14 @@
         \item{\code{high}}{If \code{TRUE}, compute the 'hi-median'.}
       }
     }
-    \item{}{
-      \code{IQR(x, na.rm = FALSE)}:
+    \item{\code{IQR(x, na.rm = FALSE)}:}{
       Calculates the interquartile range of \code{x}.
       \describe{
         \item{\code{na.rm}}{If \code{TRUE}, removes \code{NA}s from \code{x}
           before the IQR is computed.}
       }
     }
-    \item{}{
-      \code{smoothEnds(y, k = 3)}:
+    \item{\code{smoothEnds(y, k = 3)}:}{
       Smooth end points of an Rle \code{y} using subsequently smaller
       medians and Tukey's end point rule at the very end.
       \describe{
@@ -224,8 +208,7 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{nchar(x, type = "chars", allowNA = FALSE)}:
+    \item{\code{nchar(x, type = "chars", allowNA = FALSE)}:}{
       Returns an integer Rle representing the number of characters in the
       corresponding values of \code{x}.
       \describe{
@@ -234,14 +217,12 @@
            strings rather than throwing an error?}
       }
     }
-    \item{}{
-      \code{substr(x, start, stop)}, \code{substring(text, first, last = 1000000L)}:
+    \item{\code{substr(x, start, stop)}, \code{substring(text, first, last = 1000000L)}:}{
       Returns a character or factor Rle containing the specified substrings
       beginning at \code{start}/\code{first} and ending at
       \code{stop}/\code{last}.
     }
-    \item{}{
-      \code{chartr(old, new, x)}:
+    \item{\code{chartr(old, new, x)}:}{
       Returns a character or factor Rle containing a translated version of
       \code{x}.
       \describe{
@@ -250,32 +231,27 @@
          \item{\code{new}}{A character string specifying the translations.}
       }
     }
-    \item{}{
-      \code{tolower(x)}:
+    \item{\code{tolower(x)}:}{
       Returns a character or factor Rle containing a lower case version of
       \code{x}.
     }
-    \item{}{
-      \code{toupper(x)}:
+    \item{\code{toupper(x)}:}{
       Returns a character or factor Rle containing an upper case version of
       \code{x}.
     }
-    \item{}{
-      \code{sub(pattern, replacement, x, ignore.case = FALSE,
-                perl = FALSE, fixed = FALSE, useBytes = FALSE)}:
+    \item{\code{sub(pattern, replacement, x, ignore.case = FALSE,
+                perl = FALSE, fixed = FALSE, useBytes = FALSE)}:}{
       Returns a character or factor Rle containing replacements based on
       matches determined by regular expression matching. See \code{\link{sub}}
       for a description of the arguments.
     }
-    \item{}{
-      \code{gsub(pattern, replacement, x, ignore.case = FALSE,
-                 perl = FALSE, fixed = FALSE, useBytes = FALSE)}:
+    \item{\code{gsub(pattern, replacement, x, ignore.case = FALSE,
+                 perl = FALSE, fixed = FALSE, useBytes = FALSE)}:}{
       Returns a character or factor Rle containing replacements based on
       matches determined by regular expression matching. See \code{\link{gsub}}
       for a description of the arguments.
     }
-    \item{}{
-      \code{paste(..., sep = " ", collapse = NULL)}:
+    \item{\code{paste(..., sep = " ", collapse = NULL)}:}{
       Returns a character or factor Rle containing a concatenation of
       the values in \code{...}.
     }
@@ -286,16 +262,13 @@
   In the code snippets below, \code{x} is an Rle object:
 
   \describe{
-    \item{}{
-      \code{levels(x)}, \code{levels(x) <- value}:
+    \item{\code{levels(x)}, \code{levels(x) <- value}:}{
       Gets and sets the factor levels, respectively.
     }
-    \item{}{
-      \code{nlevels(x)}:
+    \item{\code{nlevels(x)}:}{
       Returns the number of factor levels.
     }
-    \item{}{
-      \code{droplevels(x)}:
+    \item{\code{droplevels(x)}:}{
       Drops unused factor levels.
     }
   }

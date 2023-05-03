@@ -24,7 +24,7 @@
 \section{Splitting}{
   In the code snippet below, \code{x} is a \link{DataFrame} object.
   \describe{
-    \item{}{\code{split(x, f, drop = FALSE)}:
+    \item{\code{split(x, f, drop = FALSE)}:}{
       Splits \code{x} into a \link[IRanges]{SplitDataFrameList}
       object, according to \code{f}, dropping elements corresponding
       to unrepresented levels if \code{drop} is \code{TRUE}.
@@ -35,8 +35,7 @@
 \section{Looping}{
   In the code snippet below, \code{x} is a \link{DataFrame} object.
   \describe{
-    \item{}{
-      \code{by(data, INDICES, FUN, ..., simplify = TRUE)}:
+    \item{\code{by(data, INDICES, FUN, ..., simplify = TRUE)}:}{
       Apply \code{FUN} to each group of \code{data}, a \link{DataFrame},
       formed by the factor (or list of factors) \code{INDICES}. Exactly
       the same contract as \code{\link{as.data.frame}}.
@@ -47,21 +46,17 @@
 \section{Subsetting based on NA content}{
   In the code snippets below, \code{x} is a \link{DataFrame} object.
   \describe{
-    \item{}{
-      \code{\link{na.omit}(object)}:
+    \item{\code{\link{na.omit}(object)}:}{
       Returns a subset with incomplete cases removed.
     }
-    \item{}{
-      \code{\link{na.exclude}(object)}:
+    \item{\code{\link{na.exclude}(object)}:}{
       Returns a subset with incomplete cases removed (but to be
       included with NAs in statistical results).
     }
-    \item{}{
-      \code{\link[base]{is.na}(x)}:
+    \item{\code{\link[base]{is.na}(x)}:}{
       Returns a logical matrix indicating which cells are missing.
     }
-    \item{}{
-      \code{\link{complete.cases}(x)}:
+    \item{\code{\link{complete.cases}(x)}:}{
       Returns a logical vector identifying which cases have no missing values.
     }
   }
@@ -70,8 +65,7 @@
 \section{Transforming}{
   In the code snippet below, \code{x} is a \link{DataFrame} object.
   \describe{
-    \item{}{
-      \code{transform(`_data`, ...)}: adds or replaces columns based on
+    \item{\code{transform(`_data`, ...)}:}{ adds or replaces columns based on
       expressions in \code{\dots}. See \code{\link{transform}}.
     }
   }
@@ -82,8 +76,8 @@
   procedures, such as model fitting, with \link{DataFrame} objects.
   \subsection{Tabulation}{
     \describe{
-      \item{}{\code{xtabs(formula = ~., data, subset, na.action,
-          exclude = c(NA, NaN), drop.unused.levels = FALSE)}:
+      \item{\code{xtabs(formula = ~., data, subset, na.action,
+          exclude = c(NA, NaN), drop.unused.levels = FALSE)}:}{
         Like the original \code{\link{xtabs}}, except \code{data} is a
         \link{DataFrame}.
       }

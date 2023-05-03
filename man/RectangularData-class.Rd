@@ -75,28 +75,23 @@
   In the following code snippets, \code{x} is a RectangularData derivative.
   Not all RectangularData derivatives will support all these accessors.
   \describe{
-    \item{}{
-      \code{dim(x)}:
+    \item{\code{dim(x)}:}{
       Length two integer vector defined as \code{c(nrow(x), ncol(x))}.
       Must work on any RectangularData derivative.
     }
-    \item{}{
-      \code{nrow(x)}, \code{ncol(x)}:
+    \item{\code{nrow(x)}, \code{ncol(x)}:}{
       Get the number of rows and columns, respectively.
       Must work on any RectangularData derivative.
     }
-    \item{}{
-      \code{NROW(x)}, \code{NCOL(x)}:
+    \item{\code{NROW(x)}, \code{NCOL(x)}:}{
       Same as \code{nrow(x)} and \code{ncol(x)}, respectively.
       Must work on any RectangularData derivative.
     }
-    \item{}{
-      \code{dimnames(x)}:
+    \item{\code{dimnames(x)}:}{
       Length two list of character vectors defined as
       \code{list(rownames(x), colnames(x))}.
     }
-    \item{}{
-      \code{rownames(x)}, \code{colnames(x)}:
+    \item{\code{rownames(x)}, \code{colnames(x)}:}{
       Get the names of the rows and columns, respectively.
     }
   }
@@ -105,8 +100,7 @@
 \section{Subsetting}{
   In the code snippets below, \code{x} is a RectangularData derivative.
   \describe{
-    \item{}{
-      \code{x[i, j, drop=TRUE]}:
+    \item{\code{x[i, j, drop=TRUE]}:}{
       Return a new RectangularData derivative of the same class as \code{x}
       made of the selected rows and columns.
 
@@ -126,22 +120,19 @@
       returns a \link[SummarizedExperiment]{SummarizedExperiment}
       derivative of the same class as \code{x}).
     }
-    \item{}{
-      \code{head(x, n=6L)}:
+    \item{\code{head(x, n=6L)}:}{
       If \code{n} is non-negative, returns the first n rows of the
       RectangularData derivative.
       If \code{n} is negative, returns all but the last \code{abs(n)}
       rows of the RectangularData derivative.
     }
-    \item{}{
-      \code{tail(x, n=6L)}:
+    \item{\code{tail(x, n=6L)}:}{
       If \code{n} is non-negative, returns the last n rows of the
       RectangularData derivative.
       If \code{n} is negative, returns all but the first \code{abs(n)}
       rows of the RectangularData derivative.
     }
-    \item{}{
-      \code{subset(x, subset, select, drop=FALSE)}:
+    \item{\code{subset(x, subset, select, drop=FALSE)}:}{
       Return a new RectangularData derivative using:
       \describe{
         \item{subset}{logical expression indicating rows to keep, where missing
@@ -157,16 +148,13 @@
   In the code snippets below, all the input objects are expected to be
   RectangularData derivatives.
   \describe{
-    \item{}{
-      \code{rbind(...)}: Creates a new RectangularData derivative by
+    \item{\code{rbind(...)}:}{ Creates a new RectangularData derivative by
       aggregating the rows of the input objects.
     }
-    \item{}{
-      \code{cbind(...)}: Creates a new RectangularData derivative by
+    \item{\code{cbind(...)}:}{ Creates a new RectangularData derivative by
       aggregating the columns of the input objects.
     }
-    \item{}{
-      \code{combineRows(x, ...)}: Creates a new RectangularData derivative
+    \item{\code{combineRows(x, ...)}:}{ Creates a new RectangularData derivative
       (of the same class as \code{x}) by aggregating the rows of the input
       objects. Unlike \code{rbind()}, \code{combineRows()} will handle cases
       involving differences in the column names of the input objects by
@@ -180,8 +168,7 @@
       Finally note that this is a generic function with methods defined
       for \link{DataFrame} objects and other RectangularData derivatives.
     }
-    \item{}{
-      \code{combineCols(x, ..., use.names=TRUE)}: Creates a new
+    \item{\code{combineCols(x, ..., use.names=TRUE)}:}{ Creates a new
       RectangularData derivative (of the same class as \code{x}) by
       aggregating the columns of the input objects. Unlike \code{cbind()},
       \code{combineCols()} will handle cases involving differences in the
@@ -205,8 +192,7 @@
       Finally note that this is a generic function with methods defined
       for \link{DataFrame} objects and other RectangularData derivatives.
     }
-    \item{}{
-      \code{combineUniqueCols(x, ..., use.names=TRUE)}: Same as
+    \item{\code{combineUniqueCols(x, ..., use.names=TRUE)}:}{ Same as
       \code{combineCols()}, but this function will attempt to collapse
       multiple columns with the same name across the input objects into a
       single column in the output. This guarantees that the column names

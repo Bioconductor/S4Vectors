@@ -75,8 +75,7 @@
   are consistent with this order.
 
   \describe{
-    \item{}{
-      \code{pcompare(x, y)}:
+    \item{\code{pcompare(x, y)}:}{
       Performs element-wise (aka "parallel") comparison of 2 \link{Hits}
       objects \code{x} and \code{y}, that is, returns an integer vector where
       the i-th element is less than, equal to, or greater than zero if
@@ -85,14 +84,12 @@
       how \code{x} or \code{y} is recycled when the 2 objects don't have the
       same length.
     }
-    \item{}{
-      \code{match(x, table, nomatch=NA_integer_, method=c("auto", "quick", "hash"))}:
+    \item{\code{match(x, table, nomatch=NA_integer_, method=c("auto", "quick", "hash"))}:}{
       Returns an integer vector of the length of \code{x}, containing the
       index of the first matching hit in \code{table} (or \code{nomatch} if
       there is no matching hit) for each hit in \code{x}.
     }
-    \item{}{
-      \code{order(...)}:
+    \item{\code{order(...)}:}{
       Returns a permutation which rearranges its first argument (a \link{Hits}
       object) into ascending order, breaking ties by further arguments (also
       \link{Hits} objects).

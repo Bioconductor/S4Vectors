@@ -79,13 +79,13 @@
   In the code snippets below, \code{x} is a \code{FilterRules} object.
 
   \describe{
-    \item{}{\code{active(x)}: Get the logical vector of length
+    \item{\code{active(x)}:}{ Get the logical vector of length
     \code{length(x)}, where \code{TRUE} for an element indicates that
     the corresponding rule in \code{x} is active (and inactive
     otherwise). Note that \code{names(active(x))} is equal to
     \code{names(x)}.}
   
-    \item{}{\code{active(x) <- value}: Replace the active state of the
+    \item{\code{active(x) <- value}:}{ Replace the active state of the
     filter rules. If \code{value} is a logical vector, it should be of
     length \code{length(x)} and indicate which rules are
     active. Otherwise, it can be either numeric or character vector, in which
@@ -96,8 +96,7 @@
 
 \section{Constructor}{
   \describe{
-    \item{}{
-      \code{FilterRules(exprs = list(), ..., active = TRUE)}:
+    \item{\code{FilterRules(exprs = list(), ..., active = TRUE)}:}{
       Constructs a \code{FilterRules} with the rules given in the list
       \code{exprs} or in \code{...}. The initial active state of the rules
       is given by \code{active}, which is recycled as
@@ -121,16 +120,13 @@
   In the code snippets below, \code{x} is a \code{FilterRules} object.
 
   \describe{
-    \item{}{
-      \code{x[i]}: Subsets the filter rules using the
+    \item{\code{x[i]}:}{ Subsets the filter rules using the
       same interface as for \code{\linkS4class{Vector}}.
     }
-    \item{}{
-      \code{x[[i]]}: Extracts an expression or function via the same
+    \item{\code{x[[i]]}:}{ Extracts an expression or function via the same
       interface as for \code{\linkS4class{List}}.
     }
-    \item{}{
-      \code{x[[i]] <- value}: The same interface as for
+    \item{\code{x[[i]] <- value}:}{ The same interface as for
       \code{\linkS4class{List}}. The default active state for new
       rules is \code{TRUE}.
     }
@@ -141,13 +137,13 @@
   In the code snippets below, \code{x} is a \code{FilterRules} object.
   
   \describe{
-    \item{}{\code{x & y}: Appends the rules in \code{y} to the rules in
+    \item{\code{x & y}:}{ Appends the rules in \code{y} to the rules in
       \code{x}.
     }
-    \item{}{\code{c(x, ..., recursive = FALSE)}: Concatenates the
+    \item{\code{c(x, ..., recursive = FALSE)}:}{ Concatenates the
       \code{FilterRule} instances in \code{...} onto the end of \code{x}.
     }
-    \item{}{\code{append(x, values, after = length(x))}: Appends the
+    \item{\code{append(x, values, after = length(x))}:}{ Appends the
       \code{values} \code{FilterRules} instance onto \code{x} at the
       index given by \code{after}.
     }
@@ -156,10 +152,9 @@
 
 \section{Evaluating}{
   \describe{
-    \item{}{
-      \code{eval(expr, envir = parent.frame(),
+    \item{\code{eval(expr, envir = parent.frame(),
         enclos = if (is.list(envir) || is.pairlist(envir))
-        parent.frame() else baseenv())}: 
+        parent.frame() else baseenv())}:}{ 
       Evaluates a \code{FilterRules} instance (passed as the
       \code{expr} argument). Expression rules are
       evaluated in \code{envir}, while function rules are invoked with
@@ -168,10 +163,9 @@
       evaluations are combined via the AND operation (i.e. \code{&}) so
       that a single logical vector is returned from \code{eval}.
     }
-    \item{}{
-      \code{evalSeparately(expr, envir = parent.frame(), enclos = if
+    \item{\code{evalSeparately(expr, envir = parent.frame(), enclos = if
         (is.list(envir) || is.pairlist(envir)) parent.frame() else
-        baseenv())}: Evaluates separately each rule in a
+        baseenv())}:}{ Evaluates separately each rule in a
       \code{FilterRules} instance (passed as the \code{expr}
       argument). Expression rules are evaluated in \code{envir}, while
       function rules are invoked with \code{envir} as their only
@@ -181,13 +175,12 @@
       essentially the parallel evaluator, while \code{eval} is the
       serial evaluator.
     }
-    \item{}{
-      \code{subsetByFilter(x, filter)}: Evaluates \code{filter} on
+    \item{\code{subsetByFilter(x, filter)}:}{ Evaluates \code{filter} on
       \code{x} and uses the result to subset \code{x}. The result
       contains only the elements in \code{x} for which \code{filter}
       evaluates to \code{TRUE}.
     }
-    \item{}{\code{summary(object, subject)}:
+    \item{\code{summary(object, subject)}:}{
       Returns an integer vector with the number of elements
       in \code{subject} that pass each rule in \code{object}, along with
       a count of the elements that pass all filters.
@@ -202,7 +195,7 @@
   \code{function}. When a \code{FilterClosure} filter is extracted,
   there are some accessors and utilities for manipulating it:
   \describe{
-    \item{}{\code{params}: Gets a named list of the objects that are
+    \item{\code{params}:}{ Gets a named list of the objects that are
       present in the enclosing environment (without inheritance). This
       assumes that a filter is constructed via a constructor function,
       and the objects in the frame of the constructor (typically, the

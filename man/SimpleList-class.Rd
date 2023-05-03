@@ -49,7 +49,7 @@
 
   The following constructor is provided for SimpleList objects:
   \describe{
-    \item{}{\code{SimpleList(...)}: Takes possibly named objects as elements
+    \item{\code{SimpleList(...)}:}{ Takes possibly named objects as elements
       for the new SimpleList object.
     }
   }

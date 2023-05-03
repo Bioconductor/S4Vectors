@@ -66,13 +66,13 @@
 
 \section{Accessors}{
   \describe{
-    \item{}{\code{queryHits(x)}: Equivalent to
+    \item{\code{queryHits(x)}:}{ Equivalent to
       \code{unname(as.matrix(x)[,1])}.
     }
-    \item{}{\code{subjectHits(x)}: Equivalent to
+    \item{\code{subjectHits(x)}:}{ Equivalent to
       \code{unname(as.matrix(x)[,2])}.
     }
-    \item{}{\code{space(x)}: gets the character vector naming the space
+    \item{\code{space(x)}:}{ gets the character vector naming the space
       in the query \link[IRanges]{IntegerRangesList} for each hit,
       or \code{NULL} if the query did not have any names.
     }
@@ -83,17 +83,17 @@
   In the code snippets below, \code{x} is a HitsList object.
   
   \describe{
-    \item{}{\code{as.matrix(x)}: calls \code{as.matrix} on each
+    \item{\code{as.matrix(x)}:}{ calls \code{as.matrix} on each
       \link{Hits}, combines them row-wise and offsets the
       indices so that they are aligned with the result of calling
       \code{unlist} on the query and subject.
     }
-    \item{}{\code{as.table(x)}: counts the number of hits for each
+    \item{\code{as.table(x)}:}{ counts the number of hits for each
       query element in \code{x} and outputs the counts as a \code{table},
       which is aligned with the result of calling \code{unlist}
       on the query.
     }
-    \item{}{\code{t(x)}: Interchange the query and subject in each space
+    \item{\code{t(x)}:}{ Interchange the query and subject in each space
       of \code{x}, returns a transposed HitsList object.}
   }
 }

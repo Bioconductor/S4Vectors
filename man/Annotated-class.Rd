@@ -24,7 +24,7 @@
   In the code snippet below, \code{x} is an Annotated object.
 
   \describe{
-    \item{}{\code{metadata(x)}, \code{metadata(x) <- value}: Get or set the list
+    \item{\code{metadata(x)}, \code{metadata(x) <- value}:}{ Get or set the list
       holding arbitrary R objects as annotations. May be, and often is, empty.
     }
   }
