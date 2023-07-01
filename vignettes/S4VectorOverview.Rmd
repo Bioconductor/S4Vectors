@@ -152,7 +152,7 @@ subset(xSnippet, xSnippet >= 5L)
 The `r Biocpkg("S4Vectors")` package uses two generic functions, `c` and
 `append`, for concatenating two *Vector* derivatives. The methods for *Vector*
 objects follow the definition that these two functions are given the
-`r Biocpkg("base")` package.
+`r Rpackage("base")` package.
 
 ```{r seq-concatenate}
 c(xSnippet, rev(xSnippet))
