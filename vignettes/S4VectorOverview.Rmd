@@ -4,7 +4,7 @@ author:
 - name: "Patrick Aboyoun"
 - name: "Michael Lawrence"
 - name: "Hervé Pagès"
-date: "Edited: February 2018; compiled: `r format(Sys.time(), '%B %d , %Y')`"
+date: "Edited: February 2018; Compiled: `r format(Sys.time(), '%B %d , %Y')`"
 package: S4Vectors
 vignette: >
   %\VignetteIndexEntry{An Overview of the S4Vectors package}
@@ -31,8 +31,8 @@ semantic of ordinary vectors and lists in *R*. Package developers can easily
 implement vector-like or list-like objects as *Vector* and/or *List*
 derivatives. A few low-level *Vector* and *List* derivatives are implemented in
 the `r Biocpkg("S4Vectors")` package itself e.g. *Hits*, *Rle*, and
-*DataFrame*). Many more are implemented in the `r Biocpkg("IRanges")` and `r
-Biocpkg("GenomicRanges")` infrastructure packages, and in many other
+*DataFrame*). Many more are implemented in the `r Biocpkg("IRanges")` and
+`r Biocpkg("GenomicRanges")` infrastructure packages, and in many other
 Bioconductor packages.
 
 In this vignette, we will rely on simple, illustrative example datasets, rather
@@ -151,8 +151,8 @@ subset(xSnippet, xSnippet >= 5L)
 
 The `r Biocpkg("S4Vectors")` package uses two generic functions, `c` and
 `append`, for concatenating two *Vector* derivatives. The methods for *Vector*
-objects follow the definition that these two functions are given the `r
-Rpackage("base")` package.
+objects follow the definition that these two functions are given the
+`r Biocpkg("base")` package.
 
 ```{r seq-concatenate}
 c(xSnippet, rev(xSnippet))
@@ -190,7 +190,7 @@ shifts <- seq(235, 265, by=3)
 corrs  <- shiftApply(shifts, yRle, xRle, FUN=cor)
 ```
 
-```{r figshiftcorrs, fig=TRUE, eps=FALSE, width=5,fig.align = 'center', height=5, fig.cap='Correlation between `xRle` and `yRle` for various shifts'}
+```{r figshiftcorrs, eps=FALSE, fig.align='center', fig.cap='Correlation between `xRle` and `yRle` for various shifts'}
 plot(shifts, corrs)
 ```
 The result is shown in Fig.\@ref(fig:figshiftcorrs)
