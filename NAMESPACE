@@ -6,6 +6,7 @@ importFrom(stats, cov, cor, median, quantile,
            smoothEnds, runmed, window, "window<-", aggregate,
            na.omit, na.exclude, complete.cases, setNames, terms)
 importFrom(stats4, summary, update)
+importFrom(ggplot2, fortify)
 
 import(BiocGenerics)
 
@@ -78,6 +79,8 @@ S3method(droplevels, List)
 
 S3method(duplicated, Vector)
 S3method(duplicated, DataFrame)
+
+S3method(fortify, DataFrame)
 
 S3method(head, LLint)
 S3method(head, RectangularData)

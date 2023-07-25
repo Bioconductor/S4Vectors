@@ -23,7 +23,7 @@ Authors@R: c(
 	person("Beryl", "Kanali", role="ctb",
 		comment="Converted 'RleTricks' vignette from Sweave to RMarkdown."))
 Depends: R (>= 4.0.0), methods, utils, stats, stats4, BiocGenerics (>= 0.37.0)
-Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle, knitr
+Suggests: IRanges, GenomicRanges, SummarizedExperiment, Matrix, DelayedArray, ShortRead, graph, data.table, RUnit, BiocStyle, knitr, ggplot2
 VignetteBuilder: knitr
 Collate: S4-utils.R
 	show-utils.R
@@ -63,6 +63,7 @@ Collate: S4-utils.R
 	DataFrame-comparison.R
 	DataFrame-utils.R
 	DataFrameFactor-class.R
+	fortify.R
 	TransposedDataFrame-class.R
 	Pairs-class.R
 	FilterRules-class.R
@@ -71,3 +72,4 @@ Collate: S4-utils.R
 	aggregate-methods.R
 	shiftApply-methods.R
 	zzz.R
+RoxygenNote: 7.2.3
