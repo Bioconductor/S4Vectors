@@ -13,7 +13,7 @@ BiocStyle::latex(use.unsrturl=FALSE)
 
 \title{An Overview of the \Biocpkg{S4Vectors} package}
 \author{Patrick Aboyoun, Michael Lawrence, Herv\'e Pag\`es}
-\date{Edited: February 2018; Compiled: \today}
+\date{Edited: Sep 2023; Compiled: \today}
 
 \begin{document}
 
@@ -322,14 +322,6 @@ For more information on \Rclass{DataFrame} objects, consult the
 See the ``An Overview of the \Biocpkg{IRanges} package'' vignette in the
 \Biocpkg{IRanges} package for many more examples of \Rclass{List} derivatives.
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{DataFrame and DataFrameList objects}
-
-TODO
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

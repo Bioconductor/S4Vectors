@@ -4,6 +4,7 @@
  ****************************************************************************/
 #include "S4Vectors.h"
 #include <stdlib.h>  /* for malloc, free, realloc */
+#include <string.h>  /* for memcpy */
 #include <limits.h>  /* for INT_MAX */
 
 
