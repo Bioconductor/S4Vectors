@@ -31,7 +31,7 @@ setClass("NSBS",
         ## 'subscript' is an object that represents a vector of integer
         ## values that are >= 1 and <= upper_bound, or NA_integer_ values.
         ## The precise type of the object depends on the NSBS subclass and
-        ## is specified via the in the definition of the subclass.
+        ## is specified via the definition of the subclass.
         subscript="ANY",
         upper_bound="integer",            # single integer >= 0
         upper_bound_is_strict="logical",  # TRUE or FALSE
