@@ -528,7 +528,7 @@ setReplaceMethod("[", "Vector",
         }
         value <- normalizeSingleBracketReplacementValue(value, x)
         if (is.null(value)) {
-            return(extractROWS(x, complement(nsbs)))
+            return(extractROWS(x, complementNSBS(nsbs)))
         }
         value <- recycleSingleBracketReplacementValue(value, x, nsbs)
         mergeROWS(x, i, value)
@@ -582,7 +582,7 @@ setMethod("replaceROWS", c("Vector", "ANY"),
         ## subscript to use in 'extractROWS(ans, idx)'. By wrapping it inside a
         ## NativeNSBS object, extractROWS() won't waste time checking it or
         ## trying to normalize it.
-        idx <- NativeNSBS(idx, NROW(ans), TRUE, FALSE)
+        idx <- NativeNSBS(idx, NROW(ans))
         ## We assume that extractROWS() works on an object of class 'class(x)'.
         ## For some objects (e.g. Hits), extractROWS() will take care of
         ## validating the returned object.

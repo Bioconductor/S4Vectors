@@ -28,10 +28,10 @@
 setClass("NSBS",
     representation(
         "VIRTUAL",
-        ## 'subscript' is an object that holds integer values >= 1 and
-        ## <= upper_bound, or NA_integer_ values. The precise type of the
-        ## object depends on the NSBS subclass and is specified in the
-        ## definition of the subclass.
+        ## 'subscript' is an object that represents a vector of integer
+        ## values that are >= 1 and <= upper_bound, or NA_integer_ values.
+        ## The precise type of the object depends on the NSBS subclass and
+        ## is specified via the in the definition of the subclass.
         subscript="ANY",
         upper_bound="integer",            # single integer >= 0
         upper_bound_is_strict="logical",  # TRUE or FALSE
@@ -45,12 +45,12 @@ setClass("NSBS",
 )
 
 ### There are currently 4 NSBS concrete subclasses:
-### - in S4Vectors:
-###     1) NativeNSBS: subscript slot is a vector of positive integers
-###     2) RangeNSBS:  subscript slot is c(start, end)
-###     3) RleNSBS:    subscript slot is an integer-Rle
-### - in IRanges:
-###     4) RangesNSBS: subscript slot is an IRanges
+### - defined in S4Vectors:
+###     1) NativeNSBS: 'subscript' slot is a vector of positive integers
+###     2) RangeNSBS:  'subscript' slot is c(start, end)
+###     3) RleNSBS:    'subscript' slot is an integer-Rle
+### - defined in IRanges:
+###     4) RangesNSBS: 'subscript' slot is an IRanges
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,17 +60,52 @@ setClass("NSBS",
 ###   - length()
 ###   - anyDuplicated()
 ###   - isStrictlySorted()
+###   - max()
+###   - complementNSBS() -- internal generic
+
+### Fallback methods.
+### The 5 fallback methods below will work out-of-the-box on any NSBS
+### derivative for which as.integer() works. However, concrete subclasses
+### RangeNSBS, RleNSBS, and RangesNSBS, should override them with more
+### efficient versions that avoid expanding 'x' into an integer vector.
+
+setMethod("length", "NSBS", function(x) length(as.integer(x)))
+
+## S3/S4 combo for anyDuplicated.NSBS
+anyDuplicated.NSBS <- function(x, incomparables=FALSE, ...)
+    anyDuplicated(as.integer(x), incomparables=incomparables, ...)
+setMethod("anyDuplicated", "NSBS", anyDuplicated.NSBS)
+
+setMethod("isStrictlySorted", "NSBS",
+    function(x) isStrictlySorted(as.integer(x))
+)
+
+setMethod("max", "NSBS",
+    function(x, ..., na.rm=FALSE) max(as.integer(x), ..., na.rm=na.rm)
+)
+
+### Not exported.
+### Must set the 'upper_bound_is_strict' and 'has_NAs' slots of the returned
+### NSBS derivative to their default values (TRUE and FALSE, respectively).
+setGeneric("complementNSBS", function(x) standardGeneric("complementNSBS"))
+
+setMethod("complementNSBS", "NSBS",
+    function(x)
+    {
+        subscript <- which(tabulate(as.integer(x), x@upper_bound) == 0L)
+        NativeNSBS(subscript, x@upper_bound)
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### NSBS() constructor
 ###
 
 setGeneric("NSBS", signature="i",
     function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
         standardGeneric("NSBS")
 )
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### Default methods.
-###
 
 ### Used in IRanges.
 ### We use 'call.=FALSE' to hide the function call because displaying it seems
@@ -93,37 +128,22 @@ setMethod("NSBS", "NSBS",
     }
 )
 
-### The 3 default methods below work out-of-the-box on NSBS objects for which
-### as.integer() works. However, concrete subclasses RangeNSBS, RleNSBS, and
-### RangesNSBS override some of them with more efficient versions that avoid
-### expanding 'x' into an integer vector.
-
-setMethod("length", "NSBS", function(x) length(as.integer(x)))
-
-## S3/S4 combo for anyDuplicated.NSBS
-anyDuplicated.NSBS <- function(x, incomparables=FALSE, ...)
-    anyDuplicated(x, incomparables=incomparables, ...)
-setMethod("anyDuplicated", "NSBS", function(x, incomparables=FALSE, ...)
-    anyDuplicated(as.integer(x)))
-
-setMethod("isStrictlySorted", "NSBS",
-    function(x) isStrictlySorted(as.integer(x))
+setMethod("NSBS", "ANY",
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
+    {
+        i_dim <- dim(i)
+        if (length(i_dim) != 1L)
+            .subscript_error("invalid subscript")
+        #warning(wmsg("subscript is an array or array-like object, ",
+        #             "passing it thru as.vector() first"))
+        i <- as.vector(i)
+        callGeneric()
+    }
 )
-
-setMethod("max", "NSBS", function (x, ..., na.rm = FALSE) {
-    max(x@subscript, ..., na.rm=na.rm)
-})
-
-setGeneric("complement", function(x) standardGeneric("complement"))
-
-setMethod("complement", "NSBS", function(x) {
-    subscript <- which(tabulate(as.integer(x), x@upper_bound) == 0L)
-    NativeNSBS(subscript, x@upper_bound, TRUE, FALSE)
-})
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### NativeNSBS objects.
+### NativeNSBS objects
 ###
 
 setClass("NativeNSBS",  # not exported
@@ -136,22 +156,184 @@ setClass("NativeNSBS",  # not exported
     )
 )
 
-### Construction.
+### Low-level constructor.
 ### Supplied arguments are trusted so we don't check them!
-
-NativeNSBS <- function(subscript, upper_bound, upper_bound_is_strict, has_NAs)
+NativeNSBS <- function(subscript, upper_bound,
+                       upper_bound_is_strict=TRUE, has_NAs=FALSE)
     new2("NativeNSBS", subscript=subscript,
                        upper_bound=upper_bound,
                        upper_bound_is_strict=upper_bound_is_strict,
                        has_NAs=has_NAs,
                        check=FALSE)
 
+setMethod("as.integer", "NativeNSBS", function(x) x@subscript)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### RangeNSBS objects
+###
+
+setClass("RangeNSBS",  # not exported
+    contains="NSBS",
+    representation(
+        subscript="integer"
+    ),
+    prototype(
+        subscript=c(1L, 0L)
+    )
+)
+
+### Low-level constructor.
+### Replacement for IRanges:::solveUserSEWForSingleSeq()
+### TODO: Get rid of IRanges:::solveUserSEWForSingleSeq() and use RangeNSBS()
+### instead.
+
+.normarg_range_start <- function(start, argname="start")
+{
+    if (!isSingleNumberOrNA(start))
+        .subscript_error("'", argname, "' must be a single number or NA")
+    if (!is.integer(start))
+        start <- as.integer(start)
+    start
+}
+
+RangeNSBS <- function(x, start=NA, end=NA, width=NA)
+{
+    x_NROW <- NROW(x)
+    start <- .normarg_range_start(start, "start")
+    end   <- .normarg_range_start(end, "end")
+    width <- .normarg_range_start(width, "width")
+    if (is.na(width)) {
+        if (is.na(start))
+            start <- 1L
+        if (is.na(end))
+            end <- x_NROW
+    } else if (is.na(start) != is.na(end)) {
+        if (is.na(start)) {
+            start <- end - width + 1L
+        } else {
+            end <- start + width - 1L
+        }
+    } else {
+        if (is.na(start) && is.na(end)) {
+            start <- 1L
+            end <- x_NROW
+        }
+        if (width != end - start + 1L)
+            stop("the supplied 'start', 'end', and 'width' are incompatible")
+    }
+    if (!(start >= 1L && start - 1L <= x_NROW && end <= x_NROW && end >= 0L))
+        stop("the specified range is out-of-bounds")
+    if (end < start - 1L)
+        stop("the specified range has a negative width")
+    new2("RangeNSBS", subscript=c(start, end),
+                      upper_bound=x_NROW,
+                      check=FALSE)
+}
+
+setMethod("as.integer", "RangeNSBS",
+    function(x)
+    {
+        range <- x@subscript
+        range_start <- range[[1L]]
+        range_end <- range[[2L]]
+        if (range_end < range_start)
+            return(integer(0))
+        seq.int(range_start, range_end)
+    }
+)
+
+### We override the fallback methods defined for NSBS objects with more
+### efficient ones.
+
+setMethod("length", "RangeNSBS",
+    function(x)
+    {
+        range <- x@subscript
+        range_start <- range[[1L]]
+        range_end   <- range[[2L]]
+        range_end - range_start + 1L
+    }
+)
+
+setMethod("anyDuplicated", "RangeNSBS",
+    function(x, incomparables=FALSE, ...) 0L
+)
+
+setMethod("isStrictlySorted", "RangeNSBS", function(x) TRUE)
+
+setMethod("max", "RangeNSBS",
+    function(x, ..., na.rm=FALSE) max(x@subscript[[2L]], ..., na.rm=na.rm)
+)
+
+### Can return a NativeNSBS, RangeNSBS, or RangesNSBS object.
+setMethod("complementNSBS", "RangeNSBS",
+    function(x)
+    {
+        range <- x@subscript
+        range_start <- range[[1L]]
+        range_end   <- range[[2L]]
+        if (range_start <= 1L) {
+            if (range_end >= x@upper_bound)
+                return(NativeNSBS(integer(0), x@upper_bound))
+            ## Complement has 1 range.
+            subscript <- c(range_end + 1L, x@upper_bound)
+        } else {
+            if (range_end < x@upper_bound) {
+                ## Complement has 2 ranges.
+                if (!requireNamespace("IRanges", quietly=TRUE))
+                    stop(wmsg("This operation requires the IRanges package. ",
+                              "Please install it and try again."))
+                starts <- c(1L, range_end + 1L)
+                ends   <- c(range_start - 1L, x@upper_bound)
+                subscript <- IRanges::IRanges(starts, ends)
+                ans <- new2("RangesNSBS", subscript=subscript,
+                                          upper_bound=x@upper_bound,
+                                          check=FALSE)
+                return(ans)
+            }
+            ## Complement has 1 range.
+            subscript <- c(1L, range_start - 1L)
+        }
+        new2("RangeNSBS", subscript=subscript,
+                          upper_bound=x@upper_bound,
+                          check=FALSE)
+    }
+)
+
+setMethod("show", "RangeNSBS",
+    function(object)
+    {
+        range <- object@subscript
+        range_start <- range[[1L]]
+        range_end   <- range[[2L]]
+        cat(sprintf("%d:%d%s / 1:%d%s\n",
+                    range_start, range_end,
+                    if (length(object) == 0L) " (empty)" else "",
+                    object@upper_bound,
+                    if (object@upper_bound == 0L) " (empty)" else ""))
+    }
+)
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+### More NSBS() constructor methods
+###
+
+setMethod("NSBS", "missing",
+    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
+    {
+        RangeNSBS(x, start=1L, end=NROW(x))
+    }
+)
+
+
 setMethod("NSBS", "NULL",
     function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         x_NROW <- NROW(x)
         i <- integer(0)
-        NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
+        NativeNSBS(i, x_NROW, strict.upper.bound)
     }
 )
 
@@ -207,7 +389,7 @@ setMethod("NSBS", "logical",
         if (li < x_NROW)
             i <- rep(i, length.out=x_NROW)
         i <- which(i)
-        NativeNSBS(i, x_NROW, strict.upper.bound, FALSE)
+        NativeNSBS(i, x_NROW, strict.upper.bound)
     }
 )
 
@@ -227,13 +409,13 @@ setMethod("NSBS", "logical",
             .subscript_error("cannot subset by character when ", what,
                              " are NULL")
         i <- x_NROW + seq_along(i)
-        return(NativeNSBS(i, x_NROW, FALSE, FALSE))
+        return(NativeNSBS(i, x_NROW, FALSE))
     }
     i <- .match_name(i, x_ROWNAMES, exact=exact)
     if (!strict.upper.bound) {
         na_idx <- which(is.na(i))
         i[na_idx] <- x_NROW + seq_along(na_idx)
-        return(NativeNSBS(i, x_NROW, FALSE, FALSE))
+        return(NativeNSBS(i, x_NROW, FALSE))
     }
     has_NAs <- anyNA(i)
     if (!allow.NAs && has_NAs)
@@ -244,139 +426,6 @@ setMethod("NSBS", "logical",
 setMethod("NSBS", "character", .NSBS.character_OR_factor)
 
 setMethod("NSBS", "factor", .NSBS.character_OR_factor)
-
-setMethod("NSBS", "array",
-    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
-    {
-        warning("subscript is an array, passing it thru as.vector() first")
-        i <- as.vector(i)
-        callGeneric()
-    }
-)
-
-### Other methods.
-
-### We override the "as.integer" default method for NSBS objects.
-setMethod("as.integer", "NativeNSBS", function(x) x@subscript)
-
-
-### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### RangeNSBS objects.
-###
-
-setClass("RangeNSBS",  # not exported
-    contains="NSBS",
-    representation(
-        subscript="integer"
-    ),
-    prototype(
-        subscript=c(1L, 0L)
-    )
-)
-
-### Construction.
-
-.normarg_range_start <- function(start, argname="start")
-{
-    if (!isSingleNumberOrNA(start))
-        .subscript_error("'", argname, "' must be a single number or NA")
-    if (!is.integer(start))
-        start <- as.integer(start)
-    start
-}
-
-### Replacement for IRanges:::solveUserSEWForSingleSeq()
-### TODO: Get rid of IRanges:::solveUserSEWForSingleSeq() and use RangeNSBS()
-### instead.
-RangeNSBS <- function(x, start=NA, end=NA, width=NA)
-{
-    x_NROW <- NROW(x)
-    start <- .normarg_range_start(start, "start")
-    end <- .normarg_range_start(end, "end")
-    width <- .normarg_range_start(width, "width")
-    if (is.na(width)) {
-        if (is.na(start))
-            start <- 1L
-        if (is.na(end))
-            end <- x_NROW
-    } else if (is.na(start) != is.na(end)) {
-        if (is.na(start)) {
-            start <- end - width + 1L
-        } else {
-            end <- start + width - 1L
-        }
-    } else {
-        if (is.na(start) && is.na(end)) {
-            start <- 1L
-            end <- x_NROW
-        }
-        if (width != end - start + 1L)
-            stop("the supplied 'start', 'end', and 'width' are incompatible")
-    }
-    if (!(start >= 1L && start - 1L <= x_NROW && end <= x_NROW && end >= 0L))
-        stop("the specified range is out-of-bounds")
-    if (end < start - 1L)
-        stop("the specified range has a negative width")
-    new2("RangeNSBS", subscript=c(start, end),
-                      upper_bound=x_NROW,
-                      check=FALSE)
-}
-
-setMethod("NSBS", "missing",
-    function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
-    {
-        RangeNSBS(x, start=1L, end=NROW(x))
-    }
-)
-
-
-### Other methods.
-
-### We override the "as.integer", "length", "anyDuplicated", and
-### "isStrictlySorted" default methods for NSBS objects with more
-### efficient ones.
-
-setMethod("as.integer", "RangeNSBS",
-    function(x)
-    {
-        range <- x@subscript
-        range_start <- range[[1L]]
-        range_end <- range[[2L]]
-        if (range_end < range_start)
-            return(integer(0))
-        seq.int(range_start, range_end)
-    }
-)
-
-setMethod("length", "RangeNSBS",
-    function(x)
-    {
-        range <- x@subscript
-        range_start <- range[[1L]]
-        range_end <- range[[2L]]
-        range_end - range_start + 1L
-    }
-)
-
-setMethod("anyDuplicated", "RangeNSBS",
-    function(x, incomparables=FALSE, ...) 0L
-)
-
-setMethod("isStrictlySorted", "RangeNSBS", function(x) TRUE)
-
-setMethod("show", "RangeNSBS",
-    function(object)
-    {
-        range <- object@subscript
-        range_start <- range[[1L]]
-        range_end <- range[[2L]]
-        cat(sprintf("%d:%d%s / 1:%d%s\n",
-                    range_start, range_end,
-                    if (length(object) == 0L) " (empty)" else "",
-                    object@upper_bound,
-                    if (object@upper_bound == 0L) " (empty)" else ""))
-    }
-)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -449,6 +498,7 @@ setMethod("normalizeSingleBracketReplacementValue", "List",
               callNextMethod()
           }
 )
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### recycleSingleBracketReplacementValue()

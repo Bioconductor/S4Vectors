@@ -9,16 +9,11 @@
 \alias{anyDuplicated.NSBS}
 \alias{anyDuplicated,NSBS-method}
 \alias{isStrictlySorted,NSBS-method}
+\alias{max,NSBS-method}
 
 \alias{NSBS}
 \alias{NSBS,NSBS-method}
-\alias{NSBS,missing-method}
-\alias{NSBS,NULL-method}
-\alias{NSBS,numeric-method}
-\alias{NSBS,logical-method}
-\alias{NSBS,character-method}
-\alias{NSBS,factor-method}
-\alias{NSBS,array-method}
+\alias{NSBS,ANY-method}
 
 \alias{as.integer,NativeNSBS-method}
 
@@ -26,7 +21,15 @@
 \alias{length,RangeNSBS-method}
 \alias{anyDuplicated,RangeNSBS-method}
 \alias{isStrictlySorted,RangeNSBS-method}
+\alias{max,RangeNSBS-method}
 \alias{show,RangeNSBS-method}
+
+\alias{NSBS,missing-method}
+\alias{NSBS,NULL-method}
+\alias{NSBS,numeric-method}
+\alias{NSBS,logical-method}
+\alias{NSBS,character-method}
+\alias{NSBS,factor-method}
 
 \alias{normalizeSingleBracketSubscript}
 \alias{normalizeSingleBracketReplacementValue}
