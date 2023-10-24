@@ -1,3 +1,21 @@
+CHANGES IN VERSION 0.40.0
+-------------------------
+
+NEW FEATURES
+
+    o Subscript now can be any 1D array-like object when subsetting a
+      Vector derivative.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Drop empty "DataFrame and DataFrameList objects" section from
+      S4VectorsOverview.Rnw vignette.
+
+BUG FIXES
+
+    o Fix incorrect C-level if statement in Rle_utils.c
+
+
 CHANGES IN VERSION 0.38.0
 -------------------------
 
