@@ -128,12 +128,17 @@ setMethod("NSBS", "NSBS",
     }
 )
 
+### Handle any array-like object with at most one effective dimension, and
+### turn it into a vector with as.vector().
 setMethod("NSBS", "ANY",
     function(i, x, exact=TRUE, strict.upper.bound=TRUE, allow.NAs=FALSE)
     {
         i_dim <- dim(i)
-        if (length(i_dim) != 1L)
+        if (length(i_dim) == 0L)
             .subscript_error("invalid subscript")
+        if (sum(i_dim != 1L) >= 2L)
+            .subscript_error("array-like subscript has more ",
+                             "than one effective dimension")
         #warning(wmsg("subscript is an array or array-like object, ",
         #             "passing it thru as.vector() first"))
         i <- as.vector(i)
