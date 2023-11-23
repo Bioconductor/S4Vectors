@@ -155,25 +155,44 @@ labeledLine <-
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-### get_showHeadLines() and get_showTailLines()
+### get_showHeadLines(), set_showHeadLines()
+### get_showTailLines(), set_showTailLines()
 ###
 
-### showHeadLines and showTailLines robust to NA, Inf and non-integer 
-.get_showLines <- function(default, option)
+### Guaranteed to return a non-negative integer.
+.get_showLines <- function(option, default=5L)
 {
-    opt <- getOption(option, default=default)
-    if (!is.infinite(opt))
-        opt <- as.integer(opt)
-    if (is.na(opt))
-        opt <- default
-    opt
+    n <- getOption(option, default=default)
+    if (!isSingleNumber(n) || n > .Machine$integer.max)
+        return(default)
+    if (n <= 0)
+        return(0L)
+    if (!is.integer(n))
+        n <- as.integer(n)
+    n
+}
+
+### Return the previous 'n' value.
+.set_showLines <- function(option, n)
+{
+    if (!isSingleNumber(n))
+        stop(wmsg("'n' must be a single number"))
+    if (n > .Machine$integer.max)
+        stop(wmsg("'n' is too big"))
+    if (n < 0)
+        stop(wmsg("'n' cannot be negative"))
+    prev <- .get_showLines(option)
+    if (!is.integer(n))
+        n <- as.integer(n)
+    do.call(options, setNames(list(n), option))
+    invisible(prev)
 }
 
 ### Exported!
-get_showHeadLines <- function() .get_showLines(5L, "showHeadLines")
-
-### Exported!
-get_showTailLines <- function() .get_showLines(5L, "showTailLines")
+get_showHeadLines <- function() .get_showLines("showHeadLines")
+set_showHeadLines <- function(n=5) .set_showLines("showHeadLines", n)
+get_showTailLines <- function() .get_showLines("showTailLines")
+set_showTailLines <- function(n=5) .set_showLines("showTailLines", n)
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -485,6 +504,7 @@ makePrettyMatrixForCompactPrinting <- function(x, makeNakedMat.FUN=NULL)
 ### makeClassinfoRowForCompactPrinting()
 ###
 
+### Exported!
 makeClassinfoRowForCompactPrinting <- function(x, col2class)
 {
     ans_names <- names(col2class)

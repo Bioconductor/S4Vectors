@@ -302,6 +302,9 @@ export(
 
     ## show-utils.R:
     coolcat,
+    get_showHeadLines, set_showHeadLines,
+    get_showTailLines, set_showTailLines,
+    printAtomicVectorInAGrid,
     cbind_mcols_for_display,
     makePrettyMatrixForCompactPrinting,
     makeClassinfoRowForCompactPrinting,
@@ -309,8 +312,6 @@ export(
     ## utils.R:
     wmsg,
     .Call2,
-    get_showHeadLines, get_showTailLines,
-    printAtomicVectorInAGrid,
 
     ## normarg-utils.R:
     isTRUEorFALSE, isSingleInteger, isSingleNumber, isSingleString,

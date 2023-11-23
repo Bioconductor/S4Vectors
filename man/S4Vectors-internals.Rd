@@ -19,9 +19,6 @@
 % Stuff from R/utils.R:
 \alias{wmsg}
 \alias{.Call2}
-\alias{get_showHeadLines}
-\alias{get_showTailLines}
-\alias{printAtomicVectorInAGrid}
 
 % Low-level helper functions from R/normarg-utils.R:
 \alias{isTRUEorFALSE}
