@@ -221,6 +221,13 @@
   }
 }
 
+\section{Displaying}{
+  The \code{show()} method for DataFrame objects obeys global options
+  \code{showHeadLines} and \code{showTailLines} for controlling the number
+  of head and tail rows to display.
+  See \code{?\link{get_showHeadLines}} for more information.
+}
+
 \author{Michael Lawrence}
 
 \seealso{
@@ -234,6 +241,9 @@
 
     \item \link{RectangularData} and \link{SimpleList} which DataFrame extends
           directly.
+
+    \item \code{\link{get_showHeadLines}} for controlling the number of
+          DataFrame rows to display.
   }
 }
 
