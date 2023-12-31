@@ -1133,7 +1133,7 @@ SEXP _subset_Rle_by_ranges(SEXP x,
 			mapped_range_Rtrim,
 			method);
 	if (errmsg != NULL)
-		error(errmsg);
+		error("%s", errmsg);
 	for (i = 0; i < nranges; i++)
 		mapped_range_start[i]++;  /* add 1 to get the starts */
 	return subset_Rle_by_mapped_ranges(x,
@@ -1158,7 +1158,7 @@ SEXP _subset_Rle_by_positions(SEXP x, const int *pos, int npos, int method)
 			mapped_pos,
 			method);
 	if (errmsg != NULL)
-		error(errmsg);
+		error("%s", errmsg);
 	return subset_Rle_by_mapped_pos(x, mapped_pos, npos);
 }
 
@@ -1187,7 +1187,7 @@ SEXP Rle_extract_range(SEXP x, SEXP start, SEXP end)
 				&mapped_range_Ltrim,
 				&mapped_range_Rtrim);
 	if (errmsg != NULL)
-		error(errmsg);
+		error("%s", errmsg);
 	mapped_range_offset++;  /* add 1 to get the start */
 	return extract_Rle_mapped_range(x_values, INTEGER(x_lengths),
 				mapped_range_offset,

@@ -679,7 +679,7 @@ SEXP map_ranges(SEXP run_lengths, SEXP start, SEXP width, SEXP method)
 			INTEGER(method)[0]);
 	if (errmsg != NULL) {
 		UNPROTECT(4);
-		error(errmsg);
+		error("%s", errmsg);
 	}
 	PROTECT(ans = NEW_LIST(4));
 	SET_VECTOR_ELT(ans, 0, mapped_range_offset);
@@ -706,7 +706,7 @@ SEXP map_positions(SEXP run_lengths, SEXP pos, SEXP method)
 			INTEGER(method)[0]);
 	if (errmsg != NULL) {
 		UNPROTECT(1);
-		error(errmsg);
+		error("%s", errmsg);
 	}
 	UNPROTECT(1);
 	return mapped_pos;
