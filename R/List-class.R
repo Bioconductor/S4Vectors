@@ -57,7 +57,7 @@ setMethod("isEmpty", "ANY",
                   return(length(x) == 0L)
               if (!is(x, "list_OR_List"))
                   stop("isEmpty() is not defined for objects of class ",
-                       class(x))
+                       class(x)[[1L]])
               ## Recursive definition
               if (length(x) == 0L)
                   return(TRUE)
@@ -143,7 +143,7 @@ set_unlisted_names <- function(unlisted_x, x)
     }
     if (is(res, "try-error"))
         warning("failed to set ", what, " on the ",
-                "unlisted ", class(x), " object")
+                "unlisted ", class(x)[[1L]], " object")
     unlisted_x
 }
 
