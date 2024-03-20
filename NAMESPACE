@@ -48,6 +48,7 @@ S3method(anyDuplicated, Rle)
 
 S3method(as.character, LLint)
 
+S3method(as.data.frame, DataFrame)
 S3method(as.data.frame, Vector)
 S3method(as.data.frame, Hits)
 
@@ -145,6 +146,7 @@ export(
 
     as.character.LLint,
 
+    as.data.frame.DataFrame,
     as.data.frame.Vector,
     as.data.frame.Hits,
 

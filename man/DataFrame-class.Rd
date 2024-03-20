@@ -45,6 +45,7 @@
 \alias{rep,DataFrame-method}
 
 % coercion
+\alias{as.data.frame.DataFrame}
 \alias{as.data.frame,DataFrame-method}
 \alias{as.matrix,DataFrame-method}
 \alias{coerce,data.frame,DFrame-method}
@@ -168,14 +169,26 @@
     \item{\code{as.list(x)}:}{ Coerces \code{x}, a \code{DataFrame},
       to a \code{list}.
     }
-    \item{\code{as.data.frame(x, row.names=NULL, optional=FALSE)}:}{
+    \item{\code{as.data.frame(x, row.names=NULL, optional=FALSE,
+                              make.names=TRUE)}:}{
       Coerces \code{x}, a \code{DataFrame}, to a \code{data.frame}.
       Each column is coerced to a \code{data.frame} and then column
       bound together. If \code{row.names} is \code{NULL}, they are
-      retrieved from \code{x}, if it has any. Otherwise, they are
+      propagated from \code{x}, if it has any. Otherwise, they are
       inferred by the \code{data.frame} constructor.
 
-      NOTE: conversion of \code{x} to a \code{data.frame} is not
+      Like the \code{as.data.frame()} method for class \code{matrix},
+      the method for class \code{DataFrame} supports the \code{make.names}
+      argument. \code{make.names} can be set to \code{TRUE} or \code{FALSE}
+      to indicate what should happen if the row names of \code{x} (or the
+      row names supplied via the \code{row.names} argument) are invalid
+      (e.g. contain duplicates). If they are invalid, and \code{make.names}
+      is \code{TRUE} (the default), they get "fixed" by going thru
+      \code{make.names(*, unique=TRUE)}. Otherwise (i.e. if \code{make.names}
+      is \code{FALSE}), an error is raised. Note that unlike the method
+      for class \code{matrix}, \code{make.names=NA} is not supported.
+
+      NOTE: Conversion of \code{x} to a \code{data.frame} is not
       supported if \code{x} contains any \code{list}, \code{SimpleList},
       or \code{CompressedList} columns.
     }

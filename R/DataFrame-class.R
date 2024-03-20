@@ -774,18 +774,33 @@ setMethod("rep", "DataFrame", function(x, ...) {
 ### Coercion
 ###
 
-.as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
-                                     stringsAsFactors=FALSE, ...)
+### S3/S4 combo for as.data.frame.DataFrame
+### Same arguments as as.data.frame.matrix().
+as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
+                                    make.names=TRUE, ...,
+                                    stringsAsFactors=FALSE)
 {
-    stopifnot(identical(stringsAsFactors, FALSE))
+    if (!isTRUEorFALSE(make.names))
+        stop("'make.names' must be TRUE or FALSE")
     if (length(list(...)))
-        warning("Arguments in '...' ignored")
+        warning("arguments in '...' ignored")
+    if (!identical(stringsAsFactors, FALSE))
+        stop("'stringsAsFactors' not supported")
     if (is.null(row.names)) {
         row.names <- rownames(x)
-        if (!is.null(row.names))
-            row.names <- make.unique(row.names)
-        else if (ncol(x) == 0L)
-            row.names <- seq_len(nrow(x))
+        if (is.null(row.names)) {
+            if (ncol(x) == 0L)
+                row.names <- seq_len(nrow(x))
+        } else {
+            if (make.names)
+                row.names <- make.unique(row.names)
+        }
+    } else {
+        row.names <- as.character(row.names)
+        if (make.names)
+            row.names <- make.names(row.names, unique=TRUE)
+        if (length(row.names) != nrow(x))
+            stop("row names supplied are of the wrong length")
     }
     old_option <- getOption("stringsAsFactors")
     options(stringsAsFactors=FALSE)
@@ -833,7 +848,7 @@ setMethod("rep", "DataFrame", function(x, ...) {
                             check.names=!optional,
                             stringsAsFactors=FALSE)))
 }
-setMethod("as.data.frame", "DataFrame", .as.data.frame.DataFrame)
+setMethod("as.data.frame", "DataFrame", as.data.frame.DataFrame)
 
 setMethod("as.matrix", "DataFrame", function(x) {
   if (length(x) == 0L)
