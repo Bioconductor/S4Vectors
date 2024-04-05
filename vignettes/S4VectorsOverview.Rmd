@@ -1,0 +1,316 @@
+---
+title: "An Overview of the S4Vectors package"
+author: 
+- name: "Patrick Aboyoun"
+- name: "Michael Lawrence"
+- name: "Hervé Pagès"
+date: "Edited: April 2024; Compiled: `r format(Sys.time(), '%B %d , %Y')`"
+package: S4Vectors
+vignette: >
+  %\VignetteIndexEntry{An Overview of the S4Vectors package}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteKeywords{Vector,Hits,Rle,List,DataFrame}
+  %\VignettePackage{S4Vectors}
+output:
+  BiocStyle::html_document:
+        number_sections: true
+        toc: true
+        toc_depth: 4
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+
+# Introduction
+
+The `r Biocpkg("S4Vectors")` package provides a framework for representing
+vector-like and list-like objects as S4 objects. It defines two central virtual
+classes, *Vector* and *List*, and a set of generic functions that extend the
+semantic of ordinary vectors and lists in *R*. Package developers can easily
+implement vector-like or list-like objects as *Vector* and/or *List*
+derivatives. A few low-level *Vector* and *List* derivatives are implemented in
+the `r Biocpkg("S4Vectors")` package itself e.g. *Hits*, *Rle*, and
+*DataFrame*). Many more are implemented in the `r Biocpkg("IRanges")` and
+`r Biocpkg("GenomicRanges")` infrastructure packages, and in many other
+Bioconductor packages.
+
+In this vignette, we will rely on simple, illustrative example datasets, rather
+than large, real-world data, so that each data structure and algorithm can be
+explained in an intuitive, graphical manner. We expect that packages that apply
+`r Biocpkg("S4Vectors")` to a particular problem domain will provide vignettes
+with relevant, realistic examples.
+
+The `r Biocpkg("S4Vectors")` package is available at bioconductor.org and can be
+downloaded via `BiocManager::install`:
+
+```{r install, eval=FALSE}
+if (!require("BiocManager")) 
+  install.packages("BiocManager")
+BiocManager::install("S4Vectors") 
+```
+```{r message=FALSE}
+library(S4Vectors)
+```
+
+
+# Vector-like and list-like objects
+
+In the context of the `r Biocpkg("S4Vectors")` package, a vector-like object is
+an ordered finite collection of elements. All vector-like objects have three
+main properties: (1) a notion of length or number of elements, (2) the ability
+to extract elements to create new vector-like objects, and (3) the ability to be
+concatenated with one or more vector-like objects to form larger vector-like
+objects. The main functions for these three operations are `length`, `[`, and
+`c`. Supporting these operations provide a great deal of power and many
+vector-like object manipulations can be constructed using them.
+
+Some vector-like objects can also have a list-like semantic, which means that
+individual elements can be extracted with `[[`.
+
+In `r Biocpkg("S4Vectors")` and many other Bioconductor packages, vector-like
+and list-like objects derive from the *Vector* and *List* virtual classes,
+respectively. Note that *List* is a subclass of *Vector*.
+The following subsections describe each in turn.
+
+## Vector-like objects
+
+As a first example of vector-like objects, we'll look at *Rle* objects. In *R*,
+atomic sequences are typically stored in atomic vectors. But there are times
+when these object become too large to manage in memory. When there are lots of
+consecutive repeats in the sequence, the data can be compressed and managed in
+memory through a run-length encoding where a data value is paired with a run
+length. For example, the sequence {1, 1, 1, 2, 3, 3} can be represented as
+values = {1, 2, 3}, run lengths = {3, 1, 2}.
+
+The *Rle* class defined in the `r Biocpkg("S4Vectors")` package is used to
+represent a run-length encoded (compressed) sequence of *logical*, *integer*,
+*numeric*, *complex*, *character*, *raw*, or *factor* values. Note that the
+*Rle* class extends the *Vector* virtual class:
+
+```{r Rle-extends-Vector}
+showClass("Rle")
+```
+
+One way to construct *Rle* objects is through the *Rle* constructor function:
+
+```{r initialize}
+set.seed(0)
+lambda <- c(rep(0.001, 4500), seq(0.001, 10, length=500),
+            seq(10, 0.001, length=500))
+xVector <- rpois(1e7, lambda)
+yVector <- rpois(1e7, lambda[c(251:length(lambda), 1:250)])
+xRle <- Rle(xVector)
+yRle <- Rle(yVector)
+```
+
+*Rle* objects are vector-like objects:
+
+```{r basic-ops}
+length(xRle)
+xRle[1]
+zRle <- c(xRle, yRle)
+```
+
+### Subsetting a vector-like object
+
+As with ordinary *R* atomic vectors, it is often necessary to subset one
+sequence from another. When this subsetting does not duplicate or reorder the
+elements being extracted, the result is called a *subsequence*. In general, the
+`[` function can be used to construct a new sequence or extract a subsequence,
+but its interface is often inconvenient and not amenable to optimization. To
+compensate for this, the `r Biocpkg("S4Vectors")` package supports seven
+additional functions for sequence extraction:
+
+1.`window` - Extracts a subsequence over a specified region.
+
+2.`subset` - Extracts the subsequence specified by a logical vector.
+
+3.`head` - Extracts a consecutive subsequence containing the first n
+elements.
+
+4.`tail` - Extracts a consecutive subsequence containing the last n
+elements.
+
+5.`rev` - Creates a new sequence with the elements in the reverse order.
+
+6.`rep` - Creates a new sequence by repeating sequence elements.
+
+The following code illustrates how these functions are used on an *Rle* vector:
+
+```{r seq-extraction}
+xSnippet <- window(xRle, 4751, 4760)
+xSnippet
+head(xSnippet)
+tail(xSnippet)
+rev(xSnippet)
+rep(xSnippet, 2)
+subset(xSnippet, xSnippet >= 5L)
+```
+
+### Concatenating vector-like objects
+
+The `r Biocpkg("S4Vectors")` package uses two generic functions, `c` and
+`append`, for concatenating two *Vector* derivatives. The methods for *Vector*
+objects follow the definition that these two functions are given the
+`r Rpackage("base")` package.
+
+```{r seq-concatenate}
+c(xSnippet, rev(xSnippet))
+append(xSnippet, xSnippet, after=3)
+```
+
+### Looping over subsequences of vector-like objects
+
+In *R*, `for` looping can be an expensive operation. To compensate for this, the
+`r Biocpkg("S4Vectors")` package provides `aggregate` and `shiftApply` methods
+(`shiftApply` is a new generic function defined in `r Biocpkg("S4Vectors")` to
+perform calculations over subsequences of vector-like objects.
+
+The `aggregate` function combines sequence extraction functionality of the
+`window` function with looping capabilities of the `sapply` function. For
+example, here is some code to compute medians across a moving window of width 3
+using the function `aggregate`:
+
+```{r aggregate}
+xSnippet
+aggregate(xSnippet, start=1:8, width=3, FUN=median)
+```
+
+The `shiftApply` function is a looping operation involving two vector-like
+objects whose elements are lined up via a positional shift operation. For
+example, the elements of `xRle` and `yRle` were simulated from Poisson
+distributions with the mean of element i from `yRle` being equivalent to the
+mean of element i + 250 from `xRle`. If we did not know the size of the shift,
+we could estimate it by finding the shift that maximizes the correlation between
+`xRle` and `yRle`.
+
+```{r shiftApply-cor}
+cor(xRle, yRle)
+shifts <- seq(235, 265, by=3)
+corrs  <- shiftApply(shifts, yRle, xRle, FUN=cor)
+```
+
+```{r figshiftcorrs, eps=FALSE, fig.align='center', fig.cap='Correlation between `xRle` and `yRle` for various shifts'}
+plot(shifts, corrs)
+```
+The result is shown in Fig.\@ref(fig:figshiftcorrs)
+
+### More on *Rle* objects
+
+When there are lots of consecutive repeats, the memory savings through an RLE
+can be quite dramatic. For example, the `xRle` object occupies less than one
+third of the space of the original `xVector` object, while storing the same
+information:
+
+```{r Rle-vector-compare}
+as.vector(object.size(xRle) / object.size(xVector))
+identical(as.vector(xRle), xVector)
+```
+
+The functions `runValue` and `runLength` extract the run values and run lengths
+from an *Rle* object respectively:
+
+```{r Rle-accessors}
+head(runValue(xRle))
+head(runLength(xRle))
+```
+
+The *Rle* class supports many of the basic methods associated with *R* atomic
+vectors including the Ops, Math, Math2, Summary, and Complex group generics.
+Here is a example of manipulating *Rle* objects using methods from the Ops
+group:
+
+```{r Rle-ops}
+xRle > 0
+xRle + yRle
+xRle > 0 | yRle > 0
+```
+
+Here are some from the Summary group:
+
+```{r Rle-summary}
+range(xRle)
+sum(xRle > 0 | yRle > 0)
+```
+
+And here is one from the Math group:
+
+```{r Rle-math}
+log1p(xRle)
+```
+
+As with atomic vectors, the `cor` and `shiftApply` functions operate on *Rle*
+objects:
+
+```{r Rle-cor}
+cor(xRle, yRle)
+shiftApply(249:251, yRle, xRle,
+           FUN=function(x, y) {var(x, y) / (sd(x) * sd(y))})
+```
+
+For more information on the methods supported by the *Rle* class, consult the
+`Rle` man page.
+
+## List-like objects
+
+Just as with ordinary *R* *List* objects, *List*-derived objects support `[[`
+for element extraction, `c` for concatenating, and `lapply`/`sapply` for
+looping. `lapply` and `sapply` are familiar to many *R* users since they are the
+standard functions for looping over the elements of an *R* *list* object.
+
+In addition, the `r Biocpkg("S4Vectors")` package introduces the `endoapply`
+function to perform an endomorphism equivalent to `lapply`, i.e. it returns a
+*List* derivative of the same class as the input rather than a *list* object.
+
+An example of *List* derivative is the *DataFrame* class:
+
+```{r DataFrame-extends-List}
+showClass("DataFrame")
+```
+
+One way to construct *DataFrame* objects is through the *DataFrame* constructor
+function:
+
+```{r DataFrame, warning=FALSE}
+df <- DataFrame(x=xRle, y=yRle)
+sapply(df, class)
+sapply(df, summary)
+sapply(as.data.frame(df), summary)
+endoapply(df, `+`, 0.5)
+```
+
+For more information on *DataFrame* objects, consult the *DataFrame* man page.
+
+See the "An Overview of the `r Biocpkg("IRanges")` package'' vignette in the 
+`r Biocpkg("IRanges")` package for many more examples of *List* derivatives.
+
+
+# Vector Annotations
+
+Often when one has a collection of objects, there is a need to attach metadata
+that describes the collection in some way. Two kinds of metadata can be attached
+to a *Vector* object:
+
+1.  Metadata about the object as a whole: this metadata is accessed via
+    the `metadata` accessor and is represented as an ordinary *list*;
+2.  Metadata about the individual elements of the object: this metadata
+    is accessed via the `mcols` accessor (`mcols` stands for *metadata
+    columns*) and is represented as a *DataFrame* object.This
+    *DataFrame* object can be thought of as the result of binding
+    together one or several vector-like objects (the metadata columns)
+    of the same length as the *Vector* object. Each row of the
+    *DataFrame* object annotates the corresponding element of the
+    *Vector* object.
+
+
+# Session Information
+
+Here is the output of `sessionInfo()` on the system on which this document was
+compiled:
+
+```{r SessionInfo, echo=FALSE}
+sessionInfo()
+```
+
