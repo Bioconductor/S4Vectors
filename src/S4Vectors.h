@@ -195,6 +195,18 @@ void _get_matches_of_ordered_int_quads(
 	int out_shift
 );
 
+int _sort_void_array(
+	int *base,
+	int base_len,
+	const void *x,
+	size_t elem_size,
+	int desc,
+	int use_double_compar,
+	int use_radix,
+	unsigned short int *rxbuf1,
+	int *rxbuf2
+);
+
 
 /* hash_utils.c */
 

@@ -85,6 +85,11 @@ DEFINE_CCALLABLE_STUB(int, sort_ints,
 	(     base,     base_len,            x,     desc,     use_radix,                     rxbuf1,      rxbuf2)
 )
 
+DEFINE_CCALLABLE_STUB(int, sort_void_array,
+	(int *base, int base_len, const void *x, size_t elem_size, int desc, int use_double_compar, int use_radix, unsigned short int *rxbuf1, int *rxbuf2),
+	(     base,     base_len,             x,        elem_size,     desc,     use_double_compar,     use_radix,                     rxbuf1,      rxbuf2)
+)
+
 DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_pairs,
 	(const int *a, const int *b, int nelt, int a_desc, int b_desc, int *out, int out_shift),
 	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift)

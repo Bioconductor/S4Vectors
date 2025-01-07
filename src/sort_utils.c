@@ -13,6 +13,8 @@
 
 static const int *aa, *bb, *cc, *dd;
 static int aa_desc, bb_desc, cc_desc, dd_desc;
+static size_t byte_elem_size;
+static const unsigned char *global_byte_array;
 
 #define	COMPARE_TARGET_INTS(target, i1, i2, desc) \
 	((desc) ? (target)[(i2)] - (target)[(i1)] \
@@ -86,11 +88,44 @@ static int compar4_stable(const void *p1, const void *p2)
 	return i1 - i2;
 }
 
+static int comparbyte_stable(const void *p1, const void *p2){
+	int i1, i2, ret;
+	i1 = *((const int *) p1);
+	i2 = *((const int *) p2);
+	ret = memcmp(&(global_byte_array[i1*byte_elem_size]), &(global_byte_array[i2*byte_elem_size]), byte_elem_size);
+	if(aa_desc) ret *= -1;
+	return ret == 0 ? i1 - i2 : ret;
+}
+
+static int compardouble_stable(const void *p1, const void *p2){
+	// can't use memcmp for doubles unfortunately
+	int i1, i2, ret;
+	i1 = *((const int *) p1);
+	i2 = *((const int *) p2);
+	double v1 = ((double*)global_byte_array)[i1];
+	double v2 = ((double*)global_byte_array)[i2];
+	ret = (v1 > v2) - (v1 < v2);
+	if(aa_desc) ret *= -1;
+	return ret == 0 ? i1 - i2 : ret;
+}
+
 static void qsort1(int *base, int base_len, const int *a, int a_desc)
 {
 	aa = a;
 	aa_desc = a_desc;
 	qsort(base, base_len, sizeof(int), compar1_stable);
+}
+
+static void qsort_void(int *base, int base_len, const void *a, size_t a_size,
+								int a_desc, int use_double_compar){
+	// have to cast to bytes so we can index
+	global_byte_array = (const unsigned char*)a;
+	aa_desc = a_desc;
+	byte_elem_size = a_size;
+	if(!use_double_compar)
+		qsort(base, base_len, sizeof(int), comparbyte_stable);
+	else
+		qsort(base, base_len, sizeof(int), compardouble_stable);
 }
 
 static void qsort2(int *base, int base_len,
@@ -1350,3 +1385,58 @@ void _get_matches_of_ordered_int_quads(
 	return;
 }
 
+/****************************************************************************
+ * Getting the order of a void* array using memcmp
+ *
+ */
+
+/* base: 0-based indices into 'x'.
+   rxbuf1, rxbuf2: NULL or user-allocated buffers of length 'base_len'.
+   Returns 0 if nothing to sort, that is, if 'base' is already sorted with
+   respect to 'x'. Otherwise returns 1, or a negative value if an error
+   occurred. Has a dedicated switch for sorting float/double...it's clunky,
+   but I couldn't think of a better way. Primary use-case is XRaw anyway,
+   so it should be a huge deal. */
+int _sort_void_array(int *base, int base_len,
+						       const void *x, size_t elem_size,
+						       int desc, int use_double_compar,
+						       int use_radix, unsigned short int *rxbuf1, int *rxbuf2)
+{
+	// will add this in eventually, not critical for functionality
+	/*
+	int qsort_cutoff, ret, auto_rxbuf1, auto_rxbuf2;
+
+	rxtargets[0] = x;
+	rxdescs[0] = desc;
+
+	qsort_cutoff = (use_radix && can_use_rxsort()) ? 1024 : base_len;
+	ret = lucky_sort_targets(base, base_len, rxtargets, rxdescs, 1, qsort_cutoff);
+	if (ret != 0)
+		return ret != 1;
+
+	auto_rxbuf1 = rxbuf1 == NULL;
+	if (auto_rxbuf1) {
+		rxbuf1 = alloc_rxbuf1(base_len);
+		if (rxbuf1 == NULL)
+			return -1;
+	}
+	auto_rxbuf2 = rxbuf2 == NULL;
+	if (auto_rxbuf2) {
+		rxbuf2 = alloc_rxbuf2(base_len, rxbuf1, auto_rxbuf1);
+		if (rxbuf2 == NULL)
+			return -2;
+	}
+
+	last_rxlevel = 1;
+	base_uidx_buf = rxbuf1;
+	rxsort_rec(base, base_len, rxbuf2, 0, 0);
+
+	if (auto_rxbuf2)
+		free(rxbuf2);
+	if (auto_rxbuf1)
+		free(rxbuf1);
+	*/
+
+	qsort_void(base, base_len, x, elem_size, desc, use_double_compar);
+	return 1;
+}

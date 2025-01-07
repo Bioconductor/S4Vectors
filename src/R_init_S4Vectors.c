@@ -129,6 +129,7 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_get_matches_of_ordered_int_pairs);
 	REGISTER_CCALLABLE(_get_order_of_int_quads);
 	REGISTER_CCALLABLE(_get_matches_of_ordered_int_quads);
+	REGISTER_CCALLABLE(_sort_void_array);
 
 /* hash_utils.c */
 	REGISTER_CCALLABLE(_new_htab);
