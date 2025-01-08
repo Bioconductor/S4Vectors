@@ -1396,7 +1396,7 @@ void _get_matches_of_ordered_int_quads(
    respect to 'x'. Otherwise returns 1, or a negative value if an error
    occurred. Has a dedicated switch for sorting float/double...it's clunky,
    but I couldn't think of a better way. Primary use-case is XRaw anyway,
-   so it should be a huge deal. */
+   so it shouldn't be a huge deal. */
 int _sort_void_array(int *base, int base_len,
 						       const void *x, size_t elem_size,
 						       int desc, int use_double_compar,
