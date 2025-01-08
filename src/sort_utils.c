@@ -1403,6 +1403,8 @@ int _sort_void_array(int *base, int base_len,
 						       int use_radix, unsigned short int *rxbuf1, int *rxbuf2)
 {
 	// will add this in eventually, not critical for functionality
+	// Below section is copied from _sort_int_array, will need to be adapted
+	// Until this is incorporated, use_radix, rxbuf1, and rxbuf2 are not used
 	/*
 	int qsort_cutoff, ret, auto_rxbuf1, auto_rxbuf2;
 

@@ -85,11 +85,6 @@ DEFINE_CCALLABLE_STUB(int, sort_ints,
 	(     base,     base_len,            x,     desc,     use_radix,                     rxbuf1,      rxbuf2)
 )
 
-DEFINE_CCALLABLE_STUB(int, sort_void_array,
-	(int *base, int base_len, const void *x, size_t elem_size, int desc, int use_double_compar, int use_radix, unsigned short int *rxbuf1, int *rxbuf2),
-	(     base,     base_len,             x,        elem_size,     desc,     use_double_compar,     use_radix,                     rxbuf1,      rxbuf2)
-)
-
 DEFINE_NOVALUE_CCALLABLE_STUB(get_order_of_int_pairs,
 	(const int *a, const int *b, int nelt, int a_desc, int b_desc, int *out, int out_shift),
 	(           a,            b,     nelt,     a_desc,     b_desc,      out,     out_shift)
@@ -118,6 +113,11 @@ DEFINE_CCALLABLE_STUB(int, sort_int_quads,
 DEFINE_NOVALUE_CCALLABLE_STUB(get_matches_of_ordered_int_quads,
 	(const int *a1, const int *b1, const int *c1, const int *d1, const int *o1, int nelt1, const int *a2, const int *b2, const int *c2, const int *d2, const int *o2, int nelt2, int nomatch, int *out, int out_shift),
 	(           a1,            b1,            c1,            d1,            o1,     nelt1,            a2,            b2,            c2,            d2,            o2,     nelt2,     nomatch,      out,     out_shift)
+)
+
+DEFINE_CCALLABLE_STUB(int, sort_void_array,
+	(int *base, int base_len, const void *x, size_t elem_size, int desc, int use_double_compar, int use_radix, unsigned short int *rxbuf1, int *rxbuf2),
+	(     base,     base_len,             x,        elem_size,     desc,     use_double_compar,     use_radix,                     rxbuf1,      rxbuf2)
 )
 
 /*

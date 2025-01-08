@@ -75,18 +75,6 @@ int sort_ints(
 	int *rxbuf2
 );
 
-int sort_void_array(
-	int *base,
-	int base_len,
-	const void *x,
-	size_t elem_size,
-	int desc,
-	int use_double_compar,
-	int use_radix,
-	unsigned short int *rxbuf1,
-	int *rxbuf2
-);
-
 void get_order_of_int_pairs(
 	const int *a,
 	const int *b,
@@ -169,6 +157,18 @@ void get_matches_of_ordered_int_quads(
 	int nomatch,
 	int *out,
 	int out_shift
+);
+
+int sort_void_array(
+	int *base,
+	int base_len,
+	const void *x,
+	size_t elem_size,
+	int desc,
+	int use_double_compar,
+	int use_radix,
+	unsigned short int *rxbuf1,
+	int *rxbuf2
 );
 
 /*
