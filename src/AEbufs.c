@@ -316,7 +316,8 @@ SEXP _new_INTEGER_from_IntAE(const IntAE *ae)
 	ae_nelt = _IntAE_get_nelt(ae);
 	/* ae_nelt <= R_XLEN_T_MAX so casting is safe. */
 	PROTECT(ans = NEW_INTEGER((R_xlen_t) ae_nelt));
-	memcpy(INTEGER(ans), ae->elts, ae_nelt * sizeof(int));
+	if (ae_nelt != 0)
+		memcpy(INTEGER(ans), ae->elts, ae_nelt * sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
@@ -329,7 +330,8 @@ SEXP _new_LOGICAL_from_IntAE(const IntAE *ae)
 	ae_nelt = _IntAE_get_nelt(ae);
 	/* ae_nelt <= R_XLEN_T_MAX so casting is safe. */
 	PROTECT(ans = NEW_LOGICAL((R_xlen_t) ae_nelt));
-	memcpy(LOGICAL(ans), ae->elts, ae_nelt * sizeof(int));
+	if (ae_nelt != 0)
+		memcpy(LOGICAL(ans), ae->elts, ae_nelt * sizeof(int));
 	UNPROTECT(1);
 	return ans;
 }
@@ -1317,7 +1319,8 @@ SEXP _new_NUMERIC_from_DoubleAE(const DoubleAE *ae)
 	ae_nelt = _DoubleAE_get_nelt(ae);
 	/* ae_nelt <= R_XLEN_T_MAX so casting is safe. */
 	PROTECT(ans = NEW_NUMERIC((R_xlen_t) ae_nelt));
-	memcpy(REAL(ans), ae->elts, ae_nelt * sizeof(double));
+	if (ae_nelt != 0)
+		memcpy(REAL(ans), ae->elts, ae_nelt * sizeof(double));
 	UNPROTECT(1);
 	return ans;
 }
@@ -1509,7 +1512,8 @@ SEXP _new_RAW_from_CharAE(const CharAE *ae)
 	ae_nelt = _CharAE_get_nelt(ae);
 	/* ae_nelt <= R_XLEN_T_MAX so casting is safe. */
 	PROTECT(ans = NEW_RAW((R_xlen_t) ae_nelt));
-	memcpy(RAW(ans), ae->elts, ae_nelt * sizeof(char));
+	if (ae_nelt != 0)
+		memcpy(RAW(ans), ae->elts, ae_nelt * sizeof(char));
 	UNPROTECT(1);
 	return ans;
 }

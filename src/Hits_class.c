@@ -37,13 +37,14 @@ static SEXP new_Hits1(const char *classname,
 		      int nLnode, int nRnode)
 {
 	SEXP ans_from, ans_to, ans;
-	size_t n;
 
 	PROTECT(ans_from = NEW_INTEGER(nhit));
 	PROTECT(ans_to = NEW_INTEGER(nhit));
-	n = sizeof(int) * nhit;
-	memcpy(INTEGER(ans_from), from, n);
-	memcpy(INTEGER(ans_to), to, n);
+	if (nhit != 0) {
+		size_t n = sizeof(int) * nhit;
+		memcpy(INTEGER(ans_from), from, n);
+		memcpy(INTEGER(ans_to), to, n);
+	}
 	ans = new_Hits0(classname, ans_from, ans_to,
 				   nLnode, nRnode);
 	UNPROTECT(2);
@@ -69,7 +70,8 @@ static void qsort_hits(int *from_in, const int *to_in,
 	for (k = 0; k < nhit; k++)
 		from_out[k] = from_in[revmap[k]];
 	if (revmap == to_out) {
-		memcpy(from_in, revmap, sizeof(int) * nhit);
+		if (nhit != 0)
+			memcpy(from_in, revmap, sizeof(int) * nhit);
 		revmap = from_in;
 	}
 	for (k = 0; k < nhit; k++)
@@ -107,7 +109,8 @@ static void tsort_hits(int *from_in, const int *to_in,
 			revmap[offset] = k + 1;
 	}
 	/* Fill 'from_out'. */
-	memcpy(from_in, from_out, sizeof(int) * nLnode);
+	if (nLnode != 0)
+		memcpy(from_in, from_out, sizeof(int) * nLnode);
 	k = offset = 0;
 	for (i = 1; i <= nLnode; i++) {
 		prev_offset = offset;
@@ -320,8 +323,11 @@ SEXP select_hits(SEXP from, SEXP to, SEXP nLnode, SEXP nRnode,
 	for (i = 0, ans_p = INTEGER(ans); i < ans_len; i++, ans_p++)
 		*ans_p = init_val;
 	if (nodup0) {
-		is_used = _new_CharAE(get_nnode(nRnode, "R"));
-		memset(is_used->elts, 0, is_used->_buflength);
+		int nnode = get_nnode(nRnode, "R");
+		if (nnode != 0) {
+			is_used = _new_CharAE(nnode);
+			memset(is_used->elts, 0, is_used->_buflength);
+		}
 	}
 	i_prev = 0;
 	for (k = 0; k < nhit; k++, from_p++, to_p++) {

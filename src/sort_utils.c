@@ -90,7 +90,8 @@ static void qsort1(int *base, int base_len, const int *a, int a_desc)
 {
 	aa = a;
 	aa_desc = a_desc;
-	qsort(base, base_len, sizeof(int), compar1_stable);
+	if (base_len != 0)
+		qsort(base, base_len, sizeof(int), compar1_stable);
 }
 
 static void qsort2(int *base, int base_len,
@@ -101,7 +102,8 @@ static void qsort2(int *base, int base_len,
 	bb = b;
 	aa_desc = a_desc;
 	bb_desc = b_desc;
-	qsort(base, base_len, sizeof(int), compar2_stable);
+	if (base_len != 0)
+		qsort(base, base_len, sizeof(int), compar2_stable);
 }
 
 static void qsort3(int *base, int base_len,
@@ -114,7 +116,8 @@ static void qsort3(int *base, int base_len,
 	aa_desc = a_desc;
 	bb_desc = b_desc;
 	cc_desc = c_desc;
-	qsort(base, base_len, sizeof(int), compar3_stable);
+	if (base_len != 0)
+		qsort(base, base_len, sizeof(int), compar3_stable);
 }
 
 static void qsort4(int *base, int base_len,
@@ -129,7 +132,8 @@ static void qsort4(int *base, int base_len,
 	bb_desc = b_desc;
 	cc_desc = c_desc;
 	dd_desc = d_desc;
-	qsort(base, base_len, sizeof(int), compar4_stable);
+	if (base_len != 0)
+		qsort(base, base_len, sizeof(int), compar4_stable);
 }
 
 
@@ -996,7 +1000,8 @@ void _sort_int_array(int *x, size_t nelt, int desc)
 	int (*compar)(const void *, const void *);
 
 	compar = desc ? compar_ints_for_desc_sort : compar_ints_for_asc_sort;
-	qsort(x, nelt, sizeof(int), compar);
+	if (nelt != 0)
+		qsort(x, nelt, sizeof(int), compar);
 	return;
 }
 
