@@ -632,6 +632,32 @@ SEXP extract_bytes_by_ranges(
 );
 
 /*
+ * map_ranges_to_runs.c
+ */
+
+const char *ranges_mapper(
+	const int *run_lengths,
+	int nrun,
+	const int *start,
+	const int *width,
+	int nranges,
+	int *mapped_range_offset,
+	int *mapped_range_span,
+	int *mapped_range_Ltrim,
+	int *mapped_range_Rtrim,
+	int method
+);
+
+const char *positions_mapper(
+	const int *run_lengths,
+	int nrun,
+	const int *pos,
+	int npos,
+	int *mapped_pos,
+	int method
+);
+
+/*
  * Low-level manipulation of Hits objects.
  * (see Hits_class.c)
  */

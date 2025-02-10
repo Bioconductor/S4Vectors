@@ -618,6 +618,20 @@ DEFINE_CCALLABLE_STUB(SEXP, extract_bytes_by_ranges,
 )
 
 /*
+ * Stubs for callables defined in map_ranges_to_runs.c
+ */
+
+DEFINE_CCALLABLE_STUB(const char *, ranges_mapper,
+	(const int *run_lengths, int nrun, const int *start, const int *width, int nranges, int *mapped_range_offset, int *mapped_range_span, int *mapped_range_Ltrim, int *mapped_range_Rtrim, int method),
+	(           run_lengths,     nrun,            start,            width,     nranges,      mapped_range_offset,      mapped_range_span,      mapped_range_Ltrim,      mapped_range_Rtrim,     method)
+)
+
+DEFINE_CCALLABLE_STUB(const char *, positions_mapper,
+	(const int *run_lengths, int nrun, const int *pos, int npos, int *mapped_pos, int method),
+	(           run_lengths,     nrun,            pos,     npos,      mapped_pos,     method)
+)
+
+/*
  * Stubs for callables defined in Hits_class.c
  */
 

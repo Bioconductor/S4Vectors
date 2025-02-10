@@ -240,6 +240,10 @@ void R_init_S4Vectors(DllInfo *info)
 	REGISTER_CCALLABLE(_extract_bytes_by_positions);
 	REGISTER_CCALLABLE(_extract_bytes_by_ranges);
 
+/* map_ranges_to_runs.c */
+	REGISTER_CCALLABLE(_ranges_mapper),
+	REGISTER_CCALLABLE(_positions_mapper),
+
 /* Hits_class.c */
 	REGISTER_CCALLABLE(_new_Hits);
 	REGISTER_CCALLABLE(_get_select_mode);
