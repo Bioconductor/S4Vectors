@@ -8,7 +8,10 @@ vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{methods,Matrix,IRanges,ShortRead,graph}
-output: slidy_presentation
+output:
+  ioslides_presentation:
+    widescreen: true
+    smaller: true
 ---
 
 ```{r setup, echo=FALSE, results='hide'}
@@ -20,6 +23,37 @@ suppressPackageStartupMessages({
     library(graph)
 })
 ```
+
+<style>
+div.footnotes {
+  position: absolute;
+  bottom: 0;
+  margin-bottom: 10px;
+  width: 80%;
+  font-size: 0.6em;
+}
+</style>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('slide:not(.backdrop):not(.title-slide)').append('<div class=\"footnotes\">');
+
+    $('footnote').each(function(index) {
+      var text  = $(this).html();
+      var fnNum = (index+1).toString().sup();
+      $(this).html(text + fnNum);
+
+      var footnote   = fnNum + ': ' + $(this).attr('content') + '<br/>';
+      var oldContent = $(this).parents('slide').children('div.footnotes').html();
+      var newContent = oldContent + footnote;
+      $(this).parents('slide').children('div.footnotes').html(newContent);
+    });
+  });
+</script>
+
 
 # What is S4?
 
@@ -57,11 +91,11 @@ like in other OO programming languages.
 
 **The central concepts**
 
-* The core components: *classes*[^1], *generic functions* and *methods*
+* The core components: <footnote content="also called formal classes, to
+  distinguish them from the S3 classes aka old style
+  classes">*classes*</footnote>, *generic functions* and *methods*
 * The glue: *method dispatch* (supports *simple* and *multiple* dispatch)
 
-[^1]: also called *formal classes*, to distinguish them from the S3 classes aka
-    *old style classes*
 
 ##
 
