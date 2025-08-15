@@ -9,9 +9,8 @@ vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteDepends{methods,Matrix,IRanges,ShortRead,graph}
 output:
-  ioslides_presentation:
-    widescreen: true
-    smaller: true
+  slidy_presentation:
+    font_adjustment: -1
 ---
 
 ```{r setup, echo=FALSE, results='hide'}
@@ -27,7 +26,7 @@ suppressPackageStartupMessages({
 <style>
 div.footnotes {
   position: absolute;
-  bottom: 0;
+  bottom: 20px;
   margin-bottom: 10px;
   width: 80%;
   font-size: 0.6em;
@@ -39,7 +38,7 @@ div.footnotes {
 
 <script>
   $(document).ready(function() {
-    $('slide:not(.backdrop):not(.title-slide)').append('<div class=\"footnotes\">');
+    $('div.slide').append('<div class=\"footnotes\">');
 
     $('footnote').each(function(index) {
       var text  = $(this).html();
@@ -47,9 +46,10 @@ div.footnotes {
       $(this).html(text + fnNum);
 
       var footnote   = fnNum + ': ' + $(this).attr('content') + '<br/>';
-      var oldContent = $(this).parents('slide').children('div.footnotes').html();
+      var slideParent = $(this).closest('div.slide');
+      var oldContent = slideParent.children('div.footnotes').html();
       var newContent = oldContent + footnote;
-      $(this).parents('slide').children('div.footnotes').html(newContent);
+      slideParent.children('div.footnotes').html(newContent);
     });
   });
 </script>
