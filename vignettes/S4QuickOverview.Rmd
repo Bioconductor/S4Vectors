@@ -479,9 +479,11 @@ setValidity("AnnotatedSNPs",
 
 * Man pages in the `methods` package: `?setClass`, `?showMethods`, `?selectMethod`, `?getMethod`, `?is`, `?setValidity`, `?as`
 * The *Extending RangedSummarizedExperiment* section of the *SummarizedExperiment* vignette in the `SummarizedExperiment` package.
-* Note: S4 is *not* covered in the *An Introduction to R* or *The R language definition* manuals[^2]
-* The *Writing R Extensions* manual for details about integrating S4 classes to a package
-* The *R Programming for Bioinformatics* book by Robert Gentleman[^3]
-
-[^2]: http://cran.fhcrc.org/manuals.html
-[^3]: http://bioconductor.org/help/publications/books/r-programming-for-bioinformatics/
+* Note: S4 is *not* covered in the *An Introduction to R* or *The R language
+  definition* <footnote content="http://cran.fhcrc.org/manuals.html">
+  manuals</footnote>
+* The *Writing R Extensions* manual for details about integrating S4 classes to
+  a package
+* The *R Programming for Bioinformatics* book by Robert <footnote content=
+  "http://bioconductor.org/help/publications/books/r-programming-for-bioinformatics/">
+  Gentleman</footnote>
