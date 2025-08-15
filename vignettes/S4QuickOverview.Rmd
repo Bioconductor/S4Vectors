@@ -119,10 +119,16 @@ like in other OO programming languages.
 
 ## S4 in Bioconductor
 
-* Heavily used. In BioC 3.3: 3158 classes and 22511 methods defined in 609 packages! (out of 1211 software packages)
-* Top 10: 128 classes in `ChemmineOB`, 98 in `flowCore`, 79 in `IRanges`, 68 in `rsbml`, 61 in `ShortRead`, 58 in `Biostrings`, 51 in `rtracklayer`, 50 in `oligoClasses`, 45 in `flowUtils`, and 40 in `BaseSpaceR`.
-* For the end user: it's mostly transparent. But when something goes wrong, error messages issued by the S4 class system can be hard to understand. Also it can be hard to find the documentation for a specific method.
-* Most Bioconductor packages use only a small subset of the S4 capabilities (covers 99.99% of our needs)
+* Heavily used. In BioC 3.3: 3158 classes and 22511 methods defined in 609
+  packages! (out of 1211 software packages)
+* Top 10: 128 classes in `ChemmineOB`, 98 in `flowCore`, 79 in `IRanges`, 68 in
+  `rsbml`, 61 in `ShortRead`, 58 in `Biostrings`, 51 in `rtracklayer`, 50 in
+  `oligoClasses`, 45 in `flowUtils`, and 40 in `BaseSpaceR`.
+* For the end user: it's mostly transparent. But when something goes wrong,
+  error messages issued by the S4 class system can be hard to understand. Also it
+  can be hard to find the documentation for a specific method.
+* Most Bioconductor packages use only a small subset of the S4 capabilities
+  (covers 99.99% of our needs)
 
 # S4 from an end-user point of view
 
@@ -212,16 +218,21 @@ class(qa1)
 
 ## How to find the right man page?
 
-* `class?graphNEL` or equivalently `?`graphNEL-class`` for accessing the man page of a class
+* `class?graphNEL` or equivalently `?`graphNEL-class`` for accessing the man
+  page of a class
 * `?qa` for accessing the man page of a generic function
-* The man page for a generic might also document some or all of the methods for this generic. The *See Also:* section might give a clue. Also using `showMethods()` can be useful:
+* The man page for a generic might also document some or all of the methods for
+  this generic. The *See Also:* section might give a clue. Also using
+  `showMethods()` can be useful:
 
 ```{r showMethods}
 showMethods("qa")
 ```
 
-* `?`qa,ShortReadQ-method`` to access the man page for a particular method (might be the same man page as for the generic)
-* In doubt: `??qa` will search the man pages of all the installed packages and return the list of man pages that contain the string `qa`
+* `?`qa,ShortReadQ-method`` to access the man page for a particular method
+  (might be the same man page as for the generic)
+* In doubt: `??qa` will search the man pages of all the installed packages and
+  return the list of man pages that contain the string `qa`
 
 ## Inspecting objects and discovering methods
 
@@ -442,7 +453,9 @@ is(snps, "SNPLocations")      # and is also a SNPLocations object
 class(snps)                   # but is *not* a SNPLocations *instance*
 ```
 
-* Method overriding: for example we could define a `show` method for AnnotatedSNPs objects. `callNextMethod` can be used in that context to call the method defined for the parent class from within the method for the child class.
+* Method overriding: for example we could define a `show` method for
+  AnnotatedSNPs objects. `callNextMethod` can be used in that context to call the
+  method defined for the parent class from within the method for the child class.
 * Automatic coercion method:
 
 ```{r automatic_coercion_method}
@@ -451,7 +464,8 @@ as(snps, "SNPLocations")
 
 ## Incremental validity method
 
-* The *validity method* for AnnotatedSNPs objects only needs to validate what's not already validated by the *validity method* for SNPLocations objects:
+* The *validity method* for AnnotatedSNPs objects only needs to validate what's
+  not already validated by the *validity method* for SNPLocations objects:
 
 ```{r incremental_validity_method, results='hide'}
 setValidity("AnnotatedSNPs",
@@ -463,7 +477,8 @@ setValidity("AnnotatedSNPs",
 )
 ```
 
-* In other words: before an AnnotatedSNPs object can be considered valid, it must first be a valid SNPLocations object.
+* In other words: before an AnnotatedSNPs object can be considered valid, it
+  must first be a valid SNPLocations object.
 
 # What else?
 
@@ -473,12 +488,16 @@ setValidity("AnnotatedSNPs",
 
 * *Virtual* classes: equivalent to *abstract* classes in Java
 * Class unions (see `?setClassUnion`)
-* Multiple inheritance: a powerful feature that should be used with caution. If used inappropriately, can lead to a class hierarchy that is very hard to maintain
+* Multiple inheritance: a powerful feature that should be used with caution. If
+  used inappropriately, can lead to a class hierarchy that is very hard to
+  maintain
 
 **Resources**
 
-* Man pages in the `methods` package: `?setClass`, `?showMethods`, `?selectMethod`, `?getMethod`, `?is`, `?setValidity`, `?as`
-* The *Extending RangedSummarizedExperiment* section of the *SummarizedExperiment* vignette in the `SummarizedExperiment` package.
+* Man pages in the `methods` package: `?setClass`, `?showMethods`,
+  `?selectMethod`, `?getMethod`, `?is`, `?setValidity`, `?as`
+* The *Extending RangedSummarizedExperiment* section of the
+  *SummarizedExperiment* vignette in the `SummarizedExperiment` package.
 * Note: S4 is *not* covered in the *An Introduction to R* or *The R language
   definition* <footnote content="http://cran.fhcrc.org/manuals.html">
   manuals</footnote>
