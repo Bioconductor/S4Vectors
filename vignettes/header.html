@@ -1,0 +1,19 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('div.slide').append('<div class=\"footnotes\">');
+
+    $('footnote').each(function(index) {
+      var text  = $(this).html();
+      var fnNum = (index+1).toString().sup();
+      $(this).html(text + fnNum);
+
+      var footnote   = fnNum + ': ' + $(this).attr('content') + '<br/>';
+      var slideParent = $(this).closest('div.slide');
+      var oldContent = slideParent.children('div.footnotes').html();
+      var newContent = oldContent + footnote;
+      slideParent.children('div.footnotes').html(newContent);
+    });
+  });
+</script>

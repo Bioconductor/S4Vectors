@@ -1,0 +1,7 @@
+div.footnotes {
+  position: absolute;
+  bottom: 20px;
+  margin-bottom: 10px;
+  width: 80%;
+  font-size: 0.6em;
+}
