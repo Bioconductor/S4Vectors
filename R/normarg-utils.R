@@ -39,7 +39,11 @@ isSingleStringOrNA <- function(x)
 }
 
 ### NOT exported.
-anyMissing <- function(x) .Call2("anyMissing", x, PACKAGE="S4Vectors")
+anyMissing <- function(x)
+{
+    .Deprecated(new="anyNA()", old="S4Vectors:::anyMissing()")
+    anyNA(x)
+}
 
 ### NOT exported.
 isNumericOrNAs <- function(x)
@@ -193,7 +197,7 @@ recycleArg <- function(arg, argname, length.out)
         stop("'", argname, "' has no elements")
     if (length(arg) > length.out)
         stop("'", argname, "' is longer than 'x'")
-    if (anyMissing(arg))
+    if (anyNA(arg))
         stop("'", argname, "' contains NAs")
     if (length(arg) < length.out)
         arg <- recycleVector(arg, length.out)  # drops the names

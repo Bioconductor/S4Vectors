@@ -293,7 +293,7 @@ setMethod("cov", signature = c(x = "Rle", y = "Rle"),
                   stop("only 'pearson' method is supported for Rle objects")
               na.rm <-
                 use %in% c("complete.obs", "pairwise.complete.obs", "na.or.complete")
-              if (use == "all.obs" && (anyMissing(x) || anyMissing(y)))
+              if (use == "all.obs" && (anyNA(x) || anyNA(y)))
                   stop("missing observations in cov/cor")
               var(x, y, na.rm = na.rm)
           })

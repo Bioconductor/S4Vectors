@@ -172,7 +172,7 @@ setMethod("is.na", "Vector", function(x) rep.int(FALSE, length(x)))
     x_len <- length(x)
     x_pslotnames <- parallel_slot_names(x)
     if (!is.character(x_pslotnames)
-     || anyMissing(x_pslotnames)
+     || anyNA(x_pslotnames)
      || anyDuplicated(x_pslotnames)) {
         msg <- c("'parallel_slot_names(x)' must be a character vector ",
                  "with no NAs and no duplicates")

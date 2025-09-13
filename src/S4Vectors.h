@@ -566,11 +566,6 @@ SEXP AEbufs_free(void);
 const char *_get_classname(SEXP x);
 
 
-/* anyMissing.c */
-
-SEXP anyMissing(SEXP x);
-
-
 /* LLint_class.c */
 
 int _is_LLint(SEXP x);
