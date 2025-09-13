@@ -1,0 +1,479 @@
+---
+title: "A quick overview of the S4 class system"
+author: "Hervé Pagès"
+date: "June 2016"
+package: S4Vectors
+vignette: >
+  %\VignetteIndexEntry{A quick overview of the S4 class system}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{methods,Matrix,IRanges,ShortRead,graph}
+output:
+  slidy_presentation:
+    font_adjustment: -1
+    css: styles.css
+    includes:
+      in_header: header.html
+---
+
+```{r setup, echo=FALSE, results='hide'}
+options(width=60)
+suppressPackageStartupMessages({
+    library(Matrix)
+    library(IRanges)
+    library(ShortRead)
+    library(graph)
+})
+```
+
+# What is S4?
+
+## The S4 class system
+
+* The *S4 class system* is a set of facilities provided in R for OO programming.
+* Implemented in the `methods` package.
+* On a fresh R session:
+
+```r
+> sessionInfo()
+...
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets
+[6] methods   base
+```
+
+* R also supports an older class system: the *S3 class system*.
+
+## A different world
+
+**The syntax**
+
+```r
+foo(x, ...)
+```
+
+not:
+
+```r
+x.foo(...)
+```
+
+like in other OO programming languages.
+
+**The central concepts**
+
+* The core components: <footnote content="also called formal classes, to
+  distinguish them from the S3 classes aka old style
+  classes">*classes*</footnote>, *generic functions* and *methods*
+* The glue: *method dispatch* (supports *simple* and *multiple* dispatch)
+
+
+##
+
+**The result**
+
+```
+> ls('package:methods')
+  [1] "addNextMethod"                   "allGenerics"
+  [3] "allNames"                        "Arith"
+  [5] "as"                              "as<-"
+  [7] "asMethodDefinition"              "assignClassDef"
+...
+[211] "testVirtual"                     "traceOff"
+[213] "traceOn"                         "tryNew"
+[215] "unRematchDefinition"             "validObject"
+[217] "validSlotNames"
+```
+
+* Rich, complex, can be intimidating
+* The classes and methods we implement in our packages can be hard to document, especially when the class hierarchy is complicated and multiple dispatch is used
+
+## S4 in Bioconductor
+
+* Heavily used. In BioC 3.3: 3158 classes and 22511 methods defined in 609
+  packages! (out of 1211 software packages)
+* Top 10: 128 classes in `ChemmineOB`, 98 in `flowCore`, 79 in `IRanges`, 68 in
+  `rsbml`, 61 in `ShortRead`, 58 in `Biostrings`, 51 in `rtracklayer`, 50 in
+  `oligoClasses`, 45 in `flowUtils`, and 40 in `BaseSpaceR`.
+* For the end user: it's mostly transparent. But when something goes wrong,
+  error messages issued by the S4 class system can be hard to understand. Also it
+  can be hard to find the documentation for a specific method.
+* Most Bioconductor packages use only a small subset of the S4 capabilities
+  (covers 99.99% of our needs)
+
+# S4 from an end-user point of view
+
+## Where do S4 objects come from?
+
+**From a dataset**
+
+```{r S4_object_in_dataset}
+library(graph)
+data(apopGraph)
+apopGraph
+```
+
+**From using an object constructor function**
+
+```{r S4_object_from_constructor}
+library(IRanges)
+IRanges(start=c(101, 25), end=c(110, 80))
+```
+
+##
+
+**From a coercion**
+
+```{r S4_object_from_ceorcion}
+library(Matrix)
+m <- matrix(3:-4, nrow=2)
+as(m, "Matrix")
+```
+
+**From using a specialized high-level constructor**
+
+```{r eval=FALSE}
+library(GenomicFeatures)
+makeTxDbFromUCSC("sacCer2", tablename="ensGene")
+```
+
+```
+TxDb object:
+# Db type: TxDb
+# Supporting package: GenomicFeatures
+# Data source: UCSC
+# Genome: sacCer2
+# Organism: Saccharomyces cerevisiae
+# Taxonomy ID: 4932
+# UCSC Table: ensGene
+# UCSC Track: Ensembl Genes
+...
+```
+
+##
+
+**From using a high-level I/O function**
+
+```{r S4_object_from_high_level_IO_function}
+library(ShortRead)
+path_to_my_data <- system.file(
+    package="ShortRead",
+    "extdata", "Data", "C1-36Firecrest", "Bustard", "GERALD")
+lane1 <- readFastq(path_to_my_data, pattern="s_1_sequence.txt")
+lane1
+```
+
+**Inside another object**
+
+```{r S4_object_inside_another_object}
+sread(lane1)
+```
+
+## How to manipulate S4 objects?
+
+**Low-level: getters and setters**
+
+```{r getters_and_setters}
+ir <- IRanges(start=c(101, 25), end=c(110, 80))
+width(ir)
+width(ir) <- width(ir) - 5
+ir
+```
+
+**High-level: plenty of specialized methods**
+
+```{r specialized_methods}
+qa1 <- qa(lane1, lane="lane1")
+class(qa1)
+```
+
+## How to find the right man page?
+
+* `class?graphNEL` or equivalently `?`graphNEL-class`` for accessing the man
+  page of a class
+* `?qa` for accessing the man page of a generic function
+* The man page for a generic might also document some or all of the methods for
+  this generic. The *See Also:* section might give a clue. Also using
+  `showMethods()` can be useful:
+
+```{r showMethods}
+showMethods("qa")
+```
+
+* `?`qa,ShortReadQ-method`` to access the man page for a particular method
+  (might be the same man page as for the generic)
+* In doubt: `??qa` will search the man pages of all the installed packages and
+  return the list of man pages that contain the string `qa`
+
+## Inspecting objects and discovering methods
+
+* `class()` and `showClass()`
+
+```{r showClass, R.options=list(width=60)}
+class(lane1)
+showClass("ShortReadQ")
+```
+
+* `str()` for compact display of the content of an object
+* `showMethods()` to discover methods
+* `selectMethod()` to see the code
+
+# Implementing an S4 class (in 4 slides)
+
+## Class definition and constructor
+
+**Class definition**
+
+```{r setClass}
+setClass("SNPLocations",
+    slots=c(
+      genome="character",  # a single string
+      snpid="character",   # a character vector of length N
+      chrom="character",   # a character vector of length N
+      pos="integer"        # an integer vector of length N
+    )
+)
+```
+
+**Constructor**
+
+```{r SNPLocations}
+SNPLocations <- function(genome, snpid, chrom, pos)
+    new("SNPLocations", genome=genome, snpid=snpid, chrom=chrom, pos=pos)
+```
+
+```{r test_SNPLocations}
+snplocs <- SNPLocations("hg19",
+             c("rs0001", "rs0002"),
+             c("chr1", "chrX"),
+             c(224033L, 1266886L))
+```
+
+## Getters
+
+**Defining the `length` method**
+
+```{r length, results='hide'}
+setMethod("length", "SNPLocations", function(x) length(x@snpid))
+```
+
+```{r test_length}
+length(snplocs)  # just testing
+```
+
+**Defining the slot getters**
+
+```{r genome, results='hide'}
+setGeneric("genome", function(x) standardGeneric("genome"))
+setMethod("genome", "SNPLocations", function(x) x@genome)
+```
+
+```{r snpid, results='hide'}
+setGeneric("snpid", function(x) standardGeneric("snpid"))
+setMethod("snpid", "SNPLocations", function(x) x@snpid)
+```
+
+```{r chrom, results='hide'}
+setGeneric("chrom", function(x) standardGeneric("chrom"))
+setMethod("chrom", "SNPLocations", function(x) x@chrom)
+```
+
+```{r pos, results='hide'}
+setGeneric("pos", function(x) standardGeneric("pos"))
+setMethod("pos", "SNPLocations", function(x) x@pos)
+```
+
+```{r test_slot_getters}
+genome(snplocs)  # just testing
+snpid(snplocs)   # just testing
+```
+
+##
+
+**Defining the `show` method**
+
+```{r show, results='hide'}
+setMethod("show", "SNPLocations",
+    function(object)
+        cat(class(object), "instance with", length(object),
+            "SNPs on genome", genome(object), "\n")
+)
+```
+
+```{r}
+snplocs  # just testing
+```
+
+**Defining the *validity method***
+
+```{r validity, results='hide'}
+setValidity("SNPLocations",
+    function(object) {
+        if (!is.character(genome(object)) ||
+            length(genome(object)) != 1 || is.na(genome(object)))
+            return("'genome' slot must be a single string")
+        slot_lengths <- c(length(snpid(object)),
+                          length(chrom(object)),
+                          length(pos(object)))
+        if (length(unique(slot_lengths)) != 1)
+            return("lengths of slots 'snpid', 'chrom' and 'pos' differ")
+        TRUE
+    }
+)
+```
+
+```{r error=TRUE}
+snplocs@chrom <- LETTERS[1:3]  # a very bad idea!
+validObject(snplocs)
+```
+
+##
+
+**Defining slot setters**
+
+```{r set_chrom, results='hide'}
+setGeneric("chrom<-", function(x, value) standardGeneric("chrom<-"))
+setReplaceMethod("chrom", "SNPLocations",
+    function(x, value) {x@chrom <- value; validObject(x); x})
+```
+
+```{r test_slot_setters}
+chrom(snplocs) <- LETTERS[1:2]  # repair currently broken object
+```
+
+```{r error=TRUE}
+chrom(snplocs) <- LETTERS[1:3]  # try to break it again
+```
+
+**Defining a coercion method**
+
+```{r setAs, results='hide'}
+setAs("SNPLocations", "data.frame",
+    function(from)
+        data.frame(snpid=snpid(from), chrom=chrom(from), pos=pos(from))
+)
+```
+
+```{r test_coercion}
+as(snplocs, "data.frame")  # testing
+```
+
+# Extending an existing class
+
+## Slot inheritance
+
+* Most of the time (but not always), the child class will have additional slots:
+
+```{r AnnotatedSNPs}
+setClass("AnnotatedSNPs",
+    contains="SNPLocations",
+    slots=c(
+        geneid="character"  # a character vector of length N
+    )
+)
+```
+
+* The slots from the parent class are inherited:
+
+```{r slot_inheritance}
+showClass("AnnotatedSNPs")
+```
+
+* Constructor:
+
+```{r AnnotatedSNPs_constructor}
+AnnotatedSNPs <- function(genome, snpid, chrom, pos, geneid)
+{
+    new("AnnotatedSNPs",
+        SNPLocations(genome, snpid, chrom, pos),
+        geneid=geneid)
+}
+```
+
+## Method inheritance
+
+* Let's create an AnnotatedSNPs object:
+
+```{r method_inheritance}
+snps <- AnnotatedSNPs("hg19",
+             c("rs0001", "rs0002"),
+             c("chr1", "chrX"),
+             c(224033L, 1266886L),
+             c("AAU1", "SXW-23"))
+```
+
+* All the methods defined for SNPLocations objects work out-of-the-box:
+
+```{r method_inheritance_2}
+snps
+```
+
+* But sometimes they don't do the right thing:
+
+```{r as_data_frame_is_not_right}
+as(snps, "data.frame")  # the 'geneid' slot is ignored
+```
+
+##
+
+* Being a SNPLocations *object* vs being a SNPLocations *instance*:
+
+```{r}
+is(snps, "AnnotatedSNPs")     # 'snps' is an AnnotatedSNPs object
+is(snps, "SNPLocations")      # and is also a SNPLocations object
+class(snps)                   # but is *not* a SNPLocations *instance*
+```
+
+* Method overriding: for example we could define a `show` method for
+  AnnotatedSNPs objects. `callNextMethod` can be used in that context to call the
+  method defined for the parent class from within the method for the child class.
+* Automatic coercion method:
+
+```{r automatic_coercion_method}
+as(snps, "SNPLocations")
+```
+
+## Incremental validity method
+
+* The *validity method* for AnnotatedSNPs objects only needs to validate what's
+  not already validated by the *validity method* for SNPLocations objects:
+
+```{r incremental_validity_method, results='hide'}
+setValidity("AnnotatedSNPs",
+    function(object) {
+        if (length(object@geneid) != length(object))
+            return("'geneid' slot must have the length of the object")
+        TRUE
+    }
+)
+```
+
+* In other words: before an AnnotatedSNPs object can be considered valid, it
+  must first be a valid SNPLocations object.
+
+# What else?
+
+##
+
+**Other important S4 features**
+
+* *Virtual* classes: equivalent to *abstract* classes in Java
+* Class unions (see `?setClassUnion`)
+* Multiple inheritance: a powerful feature that should be used with caution. If
+  used inappropriately, can lead to a class hierarchy that is very hard to
+  maintain
+
+**Resources**
+
+* Man pages in the `methods` package: `?setClass`, `?showMethods`,
+  `?selectMethod`, `?getMethod`, `?is`, `?setValidity`, `?as`
+* The *Extending RangedSummarizedExperiment* section of the
+  *SummarizedExperiment* vignette in the `SummarizedExperiment` package.
+* Note: S4 is *not* covered in the *An Introduction to R* or *The R language
+  definition* <footnote content="http://cran.fhcrc.org/manuals.html">
+  manuals</footnote>
+* The *Writing R Extensions* manual for details about integrating S4 classes to
+  a package
+* The *R Programming for Bioinformatics* book by Robert <footnote content=
+  "http://bioconductor.org/help/publications/books/r-programming-for-bioinformatics/">
+  Gentleman</footnote>
