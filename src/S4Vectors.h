@@ -1162,12 +1162,12 @@ SEXP _new_SimpleList(
 );
 
 
-/* DataFrame_class.c */
+/* DFrame_class.c */
 
-SEXP _new_DataFrame(
+SEXP _new_DFrame(
 	const char *classname,
-	SEXP vars,
-	SEXP rownames,
-	SEXP nrows
+	SEXP listData,
+	SEXP nrows,
+	SEXP rownames
 );
 

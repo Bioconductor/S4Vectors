@@ -261,8 +261,8 @@ void R_init_S4Vectors(DllInfo *info)
 /* SimpleList_class.c */
 	REGISTER_CCALLABLE(_new_SimpleList);
 
-/* DataFrame_class.c */
-	REGISTER_CCALLABLE(_new_DataFrame);
+/* DFrame_class.c */
+	REGISTER_CCALLABLE(_new_DFrame);
 
 	return;
 }

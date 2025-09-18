@@ -708,11 +708,11 @@ DEFINE_CCALLABLE_STUB(SEXP, new_SimpleList,
 )
 
 /*
- * Stubs for callables defined in DataFrame_class.c
+ * Stubs for callables defined in DFrame_class.c
  */
 
-DEFINE_CCALLABLE_STUB(SEXP, new_DataFrame,
-	(const char *classname, SEXP vars, SEXP rownames, SEXP nrows),
-	(            classname,      vars,      rownames,      nrows)
+DEFINE_CCALLABLE_STUB(SEXP, new_DFrame,
+	(const char *classname, SEXP listData, SEXP nrows, SEXP rownames),
+	(            classname,      listData,      nrows,      rownames)
 )
 
