@@ -636,8 +636,13 @@ DEFINE_CCALLABLE_STUB(const char *, positions_mapper,
  */
 
 DEFINE_CCALLABLE_STUB(SEXP, new_Hits,
-	(const char *Class, int *from, const int *to, int nhit, int nLnode, int nRnode, int already_sorted),
-	(            Class,      from,            to,     nhit,     nLnode,     nRnode,     already_sorted)
+	(const char *classname, int *from, const int *to, int nhit, int nLnode, int nRnode, int already_sorted),
+	(            classname,      from,            to,     nhit,     nLnode,     nRnode,     already_sorted)
+)
+
+DEFINE_CCALLABLE_STUB(SEXP, new_SortedByQueryHits_from_IntAEAE,
+	(const IntAEAE *aeae, int nRnode, int transpose),
+	(               aeae,     nRnode,     transpose)
 )
 
 DEFINE_CCALLABLE_STUB(int, get_select_mode,

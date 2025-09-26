@@ -663,13 +663,19 @@ const char *positions_mapper(
  */
 
 SEXP new_Hits(
-	const char *Class,
+	const char *classname,
 	int *from,
 	const int *to,
 	int nhit,
 	int nLnode,
 	int nRnode,
 	int already_sorted
+);
+
+SEXP new_SortedByQueryHits_from_IntAEAE(
+	const IntAEAE *aeae,
+	int nRnode,
+	int transpose
 );
 
 int get_select_mode(SEXP select);

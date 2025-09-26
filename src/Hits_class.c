@@ -5,7 +5,7 @@
 
 
 /****************************************************************************
- * C-level constructors
+ * Two low-level Hits constructors
  */
 
 static SEXP new_Hits0(const char *classname,
@@ -53,7 +53,7 @@ static SEXP new_Hits1(const char *classname,
 
 
 /****************************************************************************
- * High-level user-friendly constructor
+ * Two mid-level Hits constructors
  */
 
 /* Based on qsort(). Time is O(nhit*log(nhit)).
@@ -121,14 +121,14 @@ static void tsort_hits(int *from_in, const int *to_in,
 	return;
 }
 
-SEXP _new_Hits(const char *Class, int *from, const int *to, int nhit,
+SEXP _new_Hits(const char *classname, int *from, const int *to, int nhit,
 	       int nLnode, int nRnode, int already_sorted)
 {
 	SEXP ans_from, ans_to, ans;
 	int *from_out, *to_out;
 
 	if (already_sorted || nhit <= 1 || nLnode <= 1)
-		return new_Hits1(Class, from, to, nhit, nLnode, nRnode);
+		return new_Hits1(classname, from, to, nhit, nLnode, nRnode);
 	PROTECT(ans_from = NEW_INTEGER(nhit));
 	PROTECT(ans_to = NEW_INTEGER(nhit));
 	from_out = INTEGER(ans_from);
@@ -137,10 +137,58 @@ SEXP _new_Hits(const char *Class, int *from, const int *to, int nhit,
 		tsort_hits(from, to, from_out, to_out, nhit, nLnode, NULL);
 	else
 		qsort_hits(from, to, from_out, to_out, nhit, NULL);
-	ans = new_Hits0(Class, ans_from, ans_to, nLnode, nRnode);
+	ans = new_Hits0(classname, ans_from, ans_to, nLnode, nRnode);
 	UNPROTECT(2);
 	return ans;
 }
+
+static void unroll_IntAEAE(const IntAEAE *aeae, int *from_out, int *to_out)
+{
+	int nLnode = _IntAEAE_get_nelt(aeae);
+	for (int i = 0; i < nLnode; i++) {
+		const IntAE *ae = aeae->elts[i];
+		R_xlen_t ae_nelt = _IntAE_get_nelt(ae);
+		int i1 = i + 1;
+		for (R_xlen_t k = 0; k < ae_nelt; k++)
+			from_out[k] = i1;
+		memcpy(to_out, ae->elts, sizeof(int) * ae_nelt);
+		from_out += ae_nelt;
+		to_out += ae_nelt;
+	}
+	return;
+}
+
+SEXP _new_SortedByQueryHits_from_IntAEAE(const IntAEAE *aeae, int nRnode,
+					 int transpose)
+{
+	int nLnode = _IntAEAE_get_nelt(aeae);
+
+	/* Compute total number of hits. */
+	R_xlen_t ans_len = 0;
+	for (int i = 0; i < nLnode; i++)
+		ans_len += _IntAE_get_nelt(aeae->elts[i]);
+
+	const char *classname = "SortedByQueryHits";
+	if (transpose) {
+		int *from = (int *) R_alloc(ans_len, sizeof(int));
+		int *to   = (int *) R_alloc(ans_len, sizeof(int));
+		unroll_IntAEAE(aeae, to, from);
+		return _new_Hits(classname, from, to,
+				 (int) ans_len, nRnode, nLnode, 0);
+	}
+	SEXP ans_from = PROTECT(NEW_INTEGER(ans_len));
+	SEXP ans_to = PROTECT(NEW_INTEGER(ans_len));
+	unroll_IntAEAE(aeae, INTEGER(ans_from), INTEGER(ans_to));
+	SEXP ans = PROTECT(new_Hits0(classname, ans_from, ans_to,
+						nLnode, nRnode));
+	UNPROTECT(3);
+	return ans;
+}
+
+
+/****************************************************************************
+ * The high-level user-friendly Hits constructor
+ */
 
 static SEXP new_Hits_with_revmap(const char *classname,
 		const int *from, const int *to, int nhit,
@@ -150,7 +198,7 @@ static SEXP new_Hits_with_revmap(const char *classname,
 	int *from2, *from_out, *to_out;
 
 	if (revmap == NULL || nhit >= nLnode) {
-		from2 = (int *) R_alloc(sizeof(int), nhit);
+		from2 = (int *) R_alloc(nhit, sizeof(int));
 		memcpy(from2, from, sizeof(int) * nhit);
 	}
 	if (revmap == NULL)
@@ -176,12 +224,11 @@ static int get_nnode(SEXP nnode, const char *side)
 	int nnode0;
 
 	if (!IS_INTEGER(nnode) || LENGTH(nnode) != 1)
-		error("'n%snode(hits)' must be a single integer",
-                      side);
+		error("'n%snode(hits)' must be a single integer", side);
 	nnode0 = INTEGER(nnode)[0];
 	if (nnode0 == NA_INTEGER || nnode0 < 0)
 		error("'n%snode(hits)' must be a single non-negative integer",
-                      side);
+		      side);
 	return nnode0;
 }
 

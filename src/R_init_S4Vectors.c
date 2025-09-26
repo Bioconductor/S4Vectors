@@ -243,6 +243,7 @@ void R_init_S4Vectors(DllInfo *info)
 
 /* Hits_class.c */
 	REGISTER_CCALLABLE(_new_Hits);
+	REGISTER_CCALLABLE(_new_SortedByQueryHits_from_IntAEAE);
 	REGISTER_CCALLABLE(_get_select_mode);
 
 /* Rle_class.c */
