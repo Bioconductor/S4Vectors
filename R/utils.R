@@ -21,24 +21,29 @@ wmsg <- function(..., margin=2)
 
 errorIfWarning <- function(expr)
 {
-    old_options <- options(warn=2)        
+    old_options <- options(warn=2)
     on.exit(options(old_options))
     eval(expr)
 }
 
-.AEbufs_use_malloc <- function(x)
+AEbufs_use_malloc <- function(x=TRUE)
+{
+    stopifnot(isTRUEorFALSE(x))
     .Call("AEbufs_use_malloc", x, PACKAGE="S4Vectors")
+}
 
-.AEbufs_free <- function()
+AEbufs_free <- function()
+{
     .Call("AEbufs_free", PACKAGE="S4Vectors")
+}
 
 ### Exported!
 .Call2 <- function(.NAME, ..., PACKAGE)
 {
     ## Uncomment the 2 lines below to switch from R_alloc- to malloc-based
     ## Auto-Extending buffers.
-    #.AEbufs_use_malloc(TRUE)
-    #on.exit({.AEbufs_free(); .AEbufs_use_malloc(FALSE)})    
+    #AEbufs_use_malloc(TRUE)
+    #on.exit({AEbufs_free(); AEbufs_use_malloc(FALSE)})
     .Call(.NAME, ..., PACKAGE=PACKAGE)
 }
 
