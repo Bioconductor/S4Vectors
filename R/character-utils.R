@@ -1,19 +1,38 @@
 ### =========================================================================
-### Some utility functions to operate on strings
+### Some utility functions to operate on character vectors
 ### -------------------------------------------------------------------------
 
 
-### NOT exported
+### NOT exported but used in the IRanges and igblastr packages.
+### Vectorized.
+has_prefix <- function(x, prefix)
+{
+    stopifnot(is.character(x), isSingleString(prefix))
+    substr(x, 1L, nchar(prefix)) == prefix
+}
+
+### NOT exported but used in the IRanges and igblastr packages.
+### Vectorized.
+has_suffix <- function(x, suffix)
+{
+    stopifnot(is.character(x), isSingleString(suffix))
+    x_nc <- nchar(x)
+    substr(x, x_nc - nchar(suffix) + 1L, x_nc) == suffix
+}
+
+### NOT exported.
+### Vectorized.
 capitalize <- function(x)
 {
     substring(x, 1L, 1L) <- toupper(substring(x, 1L, 1L))
     x
 }
 
-### NOT exported
+### NOT exported.
 ### Reduce size of each input string by keeping only its head and tail
 ### separated by 3 dots. Each returned strings is guaranteed to have a number
 ### characters <= width.
+### Vectorized.
 sketchStr <- function(x, width=23) 
 {
     if (!is.character(x))
@@ -38,6 +57,7 @@ sketchStr <- function(x, width=23)
     x
 }
 
+### Would strunsplit() be a better name?
 setGeneric("unstrsplit", signature="x",
     function(x, sep="") standardGeneric("unstrsplit")
 )

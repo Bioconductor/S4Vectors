@@ -82,11 +82,11 @@ static void *realloc2(void *ptr, size_t old_nmemb, size_t new_nmemb,
 	if (new_nmemb <= old_nmemb)
 		error("S4Vectors internal error in realloc2(): "
 		      "'new_nmemb' must be > 'old_nmemb'");
+	//printf("realloc2: use_malloc=%d new_nmemb=%lu old_nmemb=%lu\n",
+	//	use_malloc, new_nmemb, old_nmemb);
 	if (old_nmemb == 0)
 		return alloc2(new_nmemb, memb_size);
 	if (use_malloc) {
-		//printf("realloc2: new_nmemb=%lu old_nmemb=%lu\n",
-		//       new_nmemb, old_nmemb);
 		memb_size *= new_nmemb;
 		new_ptr = realloc(ptr, memb_size);
 		if (new_ptr == NULL)
