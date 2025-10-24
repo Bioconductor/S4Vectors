@@ -46,10 +46,7 @@ setGeneric("splitAsList", signature=c("x", "f"),
 setMethod("splitAsList", c("ANY", "ANY"),
     function(x, f, drop=FALSE)
     {
-        if (!requireNamespace("IRanges", quietly=TRUE))
-            stop(wmsg("Couldn't load the IRanges package. Please install ",
-                      "the IRanges package before you try splitting ",
-                      "a Vector derivative."))
+        load_package_gracefully("IRanges", "to split a Vector derivative")
         IRanges:::default_splitAsList(x, f, drop=drop)
     }
 )

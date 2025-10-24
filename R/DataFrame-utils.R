@@ -13,10 +13,7 @@
     ## purpose of returning class name "CompressedSplitDFrameList" but
     ## we'd rather return the name of a class that actually exists from
     ## a user point of view.
-    if (!requireNamespace("IRanges", quietly=TRUE))
-        stop(wmsg("Couldn't load the IRanges package. Please install ",
-                  "the IRanges package before you try to relist or ",
-                  "split a data.frame."))
+    load_package_gracefully("IRanges", "to relist or split a data.frame")
     "CompressedSplitDFrameList"
 }
 

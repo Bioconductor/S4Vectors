@@ -19,6 +19,15 @@ wmsg <- function(..., margin=2)
            collapse=paste0("\n", strrep(" ", margin)))
 }
 
+load_package_gracefully <- function(package, ...)
+{
+    if (!requireNamespace(package, quietly=TRUE))
+        stop("Could not load package ", package, ". Is it installed?\n\n  ",
+             wmsg("Note that the ", package, " package is ",
+                  "required ", ..., ". Please install it with:"),
+             "\n\n    BiocManager::install(\"", package, "\")")
+}
+
 errorIfWarning <- function(expr)
 {
     old_options <- options(warn=2)

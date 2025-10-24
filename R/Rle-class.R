@@ -279,10 +279,7 @@ setMethod("replaceROWS", c("Rle", "ANY"),
         ## object so we need stuff that lives in the IRanges package for this
         ## to work. This is ugly/hacky and needs to be fixed (thru a redesign
         ## of this method).
-        if (!requireNamespace("IRanges", quietly=TRUE))
-            stop("Couldn't load the IRanges package. You need to install ",
-                 "the IRanges\n  package in order to replace values in ",
-                 "an Rle object.")
+        load_package_gracefully("IRanges", "to replace values in an Rle object")
 
         i <- normalizeSingleBracketSubscript(i, x, as.NSBS=TRUE)
         lv <- length(value)

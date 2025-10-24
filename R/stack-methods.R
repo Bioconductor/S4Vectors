@@ -25,10 +25,8 @@ stack_index <- function(x, index.var = "name") {
 setMethod("stack", "List",
           function(x, index.var = "name", value.var = "value", name.var = NULL)
           {
-            if (!requireNamespace("IRanges", quietly=TRUE))
-              stop(wmsg("Couldn't load the IRanges package. Please install ",
-                        "the IRanges package before you call stack() on ",
-                        "List derivative."))
+            load_package_gracefully("IRanges",
+                                    "to call stack() on a List derivative")
             value <- unlist(x, use.names=FALSE)
             index <- stack_index(x, index.var)
             unlistsToVector <- is(value, "Vector")
@@ -148,10 +146,8 @@ setMethod("mstack", "vector",
 setMethod("mstack", "DataFrame",
     function(..., .index.var="name")
     {
-        if (!requireNamespace("IRanges", quietly=TRUE))
-            stop(wmsg("Couldn't load the IRanges package. Please install ",
-                      "the IRanges package before you call mstack() on ",
-                      "DataFrame objects."))
+        load_package_gracefully("IRanges",
+                                "to call mstack() on a DataFrame object")
         stack(IRanges::DataFrameList(...), index.var=.index.var)
     }
 )

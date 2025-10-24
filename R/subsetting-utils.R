@@ -286,9 +286,7 @@ setMethod("complementNSBS", "RangeNSBS",
         } else {
             if (range_end < x@upper_bound) {
                 ## Complement has 2 ranges.
-                if (!requireNamespace("IRanges", quietly=TRUE))
-                    stop(wmsg("This operation requires the IRanges package. ",
-                              "Please install it and try again."))
+                load_package_gracefully("IRanges", "for this operation")
                 starts <- c(1L, range_end + 1L)
                 ends   <- c(range_start - 1L, x@upper_bound)
                 subscript <- IRanges::IRanges(starts, ends)
