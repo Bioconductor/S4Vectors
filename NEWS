@@ -1,3 +1,18 @@
+CHANGES IN VERSION 0.48.0
+-------------------------
+
+NEW FEATURES
+
+    o Add C callable new_SortedByQueryHits_from_IntAEAE.
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Replace C callable new_DataFrame with new_DFrame.
+
+    o Convert Rnw slides (rendered as PDF) to Rmd slides (rendered as
+      HTML) (#128). By Marcel Ramos Pérez.
+
+
 CHANGES IN VERSION 0.46.0
 -------------------------
 
