@@ -832,6 +832,7 @@ setMethod("with", "Vector",
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### transform()
 ###
+### TODO: Do we really need this? Maybe deprecate in BioC 3.24.
 
 ### NOT exported.
 setGeneric("column<-",
@@ -862,6 +863,7 @@ transformColumns <- function(`_data`, ...) {
     `_data`
 }
 
+### TODO: Maybe deprecate in BioC 3.24.
 ### S3/S4 combo for transform.Vector
 transform.Vector <- transformColumns
 setMethod("transform", "Vector", transform.Vector)
