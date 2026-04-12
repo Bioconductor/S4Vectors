@@ -192,7 +192,7 @@ setMethod("within", "List",
           function(data, expr, ...)
           {
             ## cannot use active bindings here, as they break for replacement
-            enclos <- top_prenv(expr)
+            enclos <- .find_arg_enclos("expr")
             e <- list2env(as.list(data), parent=enclos)
             safeEval(substitute(expr), e, enclos)
             l <- mget(ls(e), e)
@@ -273,4 +273,3 @@ cbind.List <- function(..., deparse.level=1L) {
     do.call(cbind, lapply(args, as.list))
 }
 setMethod("cbind", "List", cbind.List)
-

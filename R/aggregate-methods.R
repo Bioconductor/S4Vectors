@@ -220,11 +220,11 @@ aggregateWithDots <- function(x, by, FUN, ..., drop = TRUE) {
     
     by <- unname(by)
     
-    prenvs <- top_prenv_dots(...)
     exprs <- substitute(list(...))[-1L]
-    envs <- lapply(prenvs, function(p) {
-        as.env(x, p, tform = function(col) IRanges::extractList(col, by))
-    })
+    envs <- mapply(function(expr, argname) {
+        enclos <- .find_named_arg_enclos(argname)
+        as.env(x, enclos, tform = function(col) IRanges::extractList(col, by))
+    }, exprs, names(exprs), SIMPLIFY=FALSE)
     stats <- DataFrame(mapply(safeEval, exprs, envs, SIMPLIFY=FALSE))
 
     if (endomorphism && !is(x, "DataFrame")) {

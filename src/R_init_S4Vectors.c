@@ -70,10 +70,6 @@ static const R_CallMethodDef callMethods[] = {
 	CALLMETHOD_DEF(C_extract_character_from_raw_by_positions, 4),
 	CALLMETHOD_DEF(C_extract_character_from_raw_by_ranges, 5),
 
-/* eval_utils.c */
-	CALLMETHOD_DEF(top_prenv, 2),
-	CALLMETHOD_DEF(top_prenv_dots, 1),
-
 /* map_ranges_to_runs.c */
 	CALLMETHOD_DEF(map_ranges, 4),
 	CALLMETHOD_DEF(map_positions, 3),
@@ -267,4 +263,3 @@ void R_init_S4Vectors(DllInfo *info)
 
 	return;
 }
-

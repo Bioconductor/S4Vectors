@@ -25,8 +25,49 @@ makeGlobalWarningEnv <- function(expr, envir, enclos) {
   env
 }
 
+.find_arg_enclos <- function(argname, where=parent.frame()) {
+  dot_arg_index <- function(arg) {
+    if (!is.symbol(arg)) {
+      return(NA_integer_)
+    }
+    arg <- as.character(arg)
+    if (!grepl("^\\.\\.[1-9][0-9]*$", arg)) {
+      return(NA_integer_)
+    }
+    as.integer(substring(arg, 3L))
+  }
+  matched_call <- function(which) {
+    match.call(sys.function(which), sys.call(which), expand.dots=FALSE,
+               envir=sys.frame(parents[which]))
+  }
+
+  which <- Position(\(x) identical(x, where), sys.frames(), right=TRUE)
+  parents <- sys.parents()
+  mc <- matched_call(which)
+  arg <- mc[[argname]]
+  dot_idx <- dot_arg_index(arg)
+  while (!is.na(dot_idx)) {
+    which <- parents[which]
+    mc <- matched_call(which)
+    dots <- mc$...
+    arg <- dots[[dot_idx]]
+    dot_idx <- dot_arg_index(arg)
+  }
+
+  sys.frame(parents[which])
+}
+
+.find_named_arg_enclos <- function(argname) {
+  parents <- sys.parents()
+  which <- sys.parent()
+  while (argname %notin% names(sys.call(which))) {
+    which <- parents[which]
+  }
+  sys.frame(parents[which])
+}
+
 evalArg <- function(expr, envir, ..., where=parent.frame()) {
-  enclos <- eval(call("top_prenv", expr, where))
+  enclos <- .find_arg_enclos(as.character(expr), where=where)
   expr <- eval(call("substitute", expr), where)
   safeEval(expr, envir, enclos, ...)
 }
@@ -60,19 +101,3 @@ evalqForSelect <- function(expr, df, ...) {
     evalArg(substitute(expr), nl, ..., where=parent.frame())
   }
 }
-
-top_prenv <- function(x, where=parent.frame()) {
-  sym <- substitute(x)
-  if (!is.name(sym)) {
-    stop("'x' did not substitute to a symbol")
-  }
-  if (!is.environment(where)) {
-    stop("'where' must be an environment")
-  }
-  .Call2("top_prenv", sym, where, PACKAGE="S4Vectors")
-}
-
-top_prenv_dots <- function(...) {
-  .Call("top_prenv_dots", environment(), PACKAGE="S4Vectors")
-}
-

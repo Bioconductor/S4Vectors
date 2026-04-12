@@ -906,14 +906,6 @@ SEXP C_extract_character_from_raw_by_ranges(
 	SEXP lkup
 );
 
-
-/* eval_utils.c */
-
-SEXP top_prenv(SEXP nm, SEXP env);
-
-SEXP top_prenv_dots(SEXP env);
-
-
 /* map_ranges_to_runs.c */
 
 const char *_simple_range_mapper(
@@ -1176,4 +1168,3 @@ SEXP _new_DFrame(
 	SEXP nrows,
 	SEXP rownames
 );
-

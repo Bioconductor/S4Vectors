@@ -25,6 +25,44 @@ test_RectangularData_subset <- function() {
                  subset(y, select = Ozone:Wind))
 }
 
+test_RectangularData_subset_through_wrapper_dots <- function() {
+  wrapper <- function(x, ...) {
+    inner <- function(...) as.data.frame(subset(x, ..., select = c(Ozone, Temp)))
+    inner(...)
+  }
+  base_wrapper <- function(x, ...) {
+    inner <- function(...) as.data.frame(base::subset(x, ..., select = c(Ozone, Temp)))
+    inner(...)
+  }
+  run <- function() {
+    threshold <- 80
+    y <- airquality
+    rownames(y) <- as.character(seq_len(nrow(y)))
+    x <- as(y, "DataFrame")
+    checkIdentical(wrapper(x, Temp > threshold),
+                   subset(y, Temp > threshold, select = c(Ozone, Temp)))
+    checkIdentical(base_wrapper(x, Temp > threshold),
+                   base::subset(y, Temp > threshold, select = c(Ozone, Temp)))
+  }
+  run()
+}
+
+test_RectangularData_subset_through_callNextMethod <- function() {
+  classname <- "SubsetRelayDFrame"
+  if (!isClass(classname)) {
+    setClass(classname, contains="DFrame")
+  }
+  setMethod("subset", classname,
+            function(x, ...) callNextMethod())
+
+  threshold <- 80
+  y <- airquality
+  rownames(y) <- as.character(seq_len(nrow(y)))
+  x <- as(as(y, "DataFrame"), classname)
+  checkIdentical(as.data.frame(subset(x, Temp > threshold, select = c(Ozone, Temp))),
+                 subset(y, Temp > threshold, select = c(Ozone, Temp)))
+}
+
 test_combineUniqueCols <- function() {
     X <- DataFrame(x=1, dup=letters[1:3])
     Y <- DataFrame(y="A", dup=letters[1:3])
@@ -97,4 +135,3 @@ test_combineUniqueCols_unnamed <- function() {
     out <- combineUniqueCols(m1, m2, m1, m2)
     checkIdentical(out, cbind(m1, m2, m1))
 }
-

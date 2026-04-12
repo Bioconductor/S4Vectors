@@ -854,10 +854,9 @@ transformColumns <- function(`_data`, ...) {
     if (any(names(exprs) == "")) {
         stop("all arguments in '...' must be named")
     }
-    ## elements in '...' can originate from different environments
-    env <- setNames(top_prenv_dots(...), names(exprs))
     for (colName in names(exprs)) { # for loop allows inter-arg dependencies
-        value <- safeEval(exprs[[colName]], `_data`, env[[colName]])
+        enclos <- .find_named_arg_enclos(colName)
+        value <- safeEval(exprs[[colName]], `_data`, enclos)
         column(`_data`, colName) <- value
     }
     `_data`
@@ -905,4 +904,3 @@ setMethod("by", "Vector",
           })
 
 diff.Vector <- function(x, ...) diff(x, ...)
-

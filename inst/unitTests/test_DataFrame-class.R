@@ -418,3 +418,21 @@ test_DataFrame_transform <- function() {
                   ratio = log.area / state.area)
   checkIdentical(tf, as.data.frame(TF))
 }
+
+test_DataFrame_transform_through_wrapper_dots <- function() {
+  wrapper <- function(data, ...) {
+    inner <- function(...) transform(data, ...)
+    inner(...)
+  }
+  run <- function() {
+    offset <- 10
+    DF <- DataFrame(a=1:3, b=4:6)
+    expected <- DF
+    expected$shifted <- expected$a + offset
+    expected$total <- expected$shifted + offset
+    checkIdentical(wrapper(DF, shifted = a + offset,
+                           total = shifted + offset),
+                   expected)
+  }
+  run()
+}
