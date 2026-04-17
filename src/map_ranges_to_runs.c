@@ -536,8 +536,6 @@ static const char *positions_mapper3(
 
 static int choose_best_method(int nranges, int nrun, double cutoff)
 {
-	if (nranges == 0)
-		return -1;  /* will do nothing */
 	if (nranges == 1)
 		return 1;
 	return nranges <= cutoff * nrun ? 3 : 2;
@@ -552,14 +550,8 @@ const char *_ranges_mapper(
 		int *mapped_range_Rtrim,
 		int method)
 {
-	const char *(*fun)(
-		const int *run_lengths, int nrun,
-		const int *start, const int *width, int nranges,
-		int *mapped_range_offset,
-		int *mapped_range_span,
-		int *mapped_range_Ltrim,
-		int *mapped_range_Rtrim);
-
+	if (nranges == 0)
+		return NULL;  /* do nothing */
 	if (method == 0) {
 		/* If nranges <= 0.25 * nrun then use algo based on radix
 		   sort (method 3), otherwise use algo based on binary
@@ -569,11 +561,18 @@ const char *_ranges_mapper(
 		   RAM and running 64-bit Ubuntu 14.04.5 LTS). */
 		method = choose_best_method(nranges, nrun, 0.25);
 	}
+	const char *(*fun)(
+		const int *run_lengths, int nrun,
+		const int *start, const int *width, int nranges,
+		int *mapped_range_offset,
+		int *mapped_range_span,
+		int *mapped_range_Ltrim,
+		int *mapped_range_Rtrim);
 	switch (method) {
 		case 1: fun = ranges_mapper1; break;
 		case 2: fun = ranges_mapper2; break;
 		case 3: fun = ranges_mapper3; break;
-		default: return NULL;  /* do nothing */
+		default: error("invalid 'method': %d", method);
 	}
 	return fun(run_lengths, nrun,
 		   start, width, nranges,
@@ -588,10 +587,8 @@ const char *_positions_mapper(
 		const int *pos, int npos, int *mapped_pos,
 		int method)
 {
-	const char *(*fun)(
-		const int *run_lengths, int nrun,
-		const int *pos, int npos, int *mapped_pos);
-
+	if (npos == 0)
+		return NULL;  /* do nothing */
 	if (method == 0) {
 		/* If npos <= 0.75 * nrun then use algo based on radix
 		   sort (method 3), otherwise use algo based on binary
@@ -601,11 +598,14 @@ const char *_positions_mapper(
 		   RAM and running 64-bit Ubuntu 14.04.5 LTS). */
 		method = choose_best_method(npos, nrun, 0.75);
 	}
+	const char *(*fun)(
+		const int *run_lengths, int nrun,
+		const int *pos, int npos, int *mapped_pos);
 	switch (method) {
 		case 1: fun = positions_mapper1; break;
 		case 2: fun = positions_mapper2; break;
 		case 3: fun = positions_mapper3; break;
-		default: return NULL;  /* do nothing */
+		default: error("invalid 'method': %d", method);
 	}
 	return fun(run_lengths, nrun, pos, npos, mapped_pos);
 }
