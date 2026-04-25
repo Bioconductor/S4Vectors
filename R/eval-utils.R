@@ -57,13 +57,22 @@ makeGlobalWarningEnv <- function(expr, envir, enclos) {
   sys.frame(parents[which])
 }
 
-.find_named_arg_enclos <- function(argname) {
+top_prenv <- function(x, where = parent.frame()) {
+  .find_arg_enclos(substitute(x) |> as.character(), where)
+}
+
+.find_named_arg_enclos <- function(argname, which = sys.parent()) {
   parents <- sys.parents()
-  which <- sys.parent()
   while (argname %notin% names(sys.call(which))) {
     which <- parents[which]
   }
   sys.frame(parents[which])
+}
+
+top_prenv_dots <- function(...) {
+  args <- substitute(list(...))[-1L]
+  lapply(names(args), .find_named_arg_enclos, which = sys.parent()) |>
+    setNames(names(args))
 }
 
 evalArg <- function(expr, envir, ..., where=parent.frame()) {

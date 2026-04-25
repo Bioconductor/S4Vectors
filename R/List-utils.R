@@ -192,7 +192,7 @@ setMethod("within", "List",
           function(data, expr, ...)
           {
             ## cannot use active bindings here, as they break for replacement
-            enclos <- .find_arg_enclos("expr")
+            enclos <- top_prenv(expr)
             e <- list2env(as.list(data), parent=enclos)
             safeEval(substitute(expr), e, enclos)
             l <- mget(ls(e), e)
