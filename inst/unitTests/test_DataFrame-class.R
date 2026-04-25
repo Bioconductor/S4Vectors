@@ -88,6 +88,17 @@ test_DataFrame_construction <- function() {
   checkIdentical(as.data.frame(DF), data.frame(foo=foo, bar=bar))
 }
 
+test_DataFrame_aggregate_with_dots <- function() {
+  shift <- 100
+  df <- DataFrame(g=c("a", "a", "b", "b"), x=1:4, y=11:14)
+
+  ans <- aggregate(df, df[["g"]], sx=sum(x), shifted=mean(y) + shift)
+
+  checkIdentical(as.list(ans[["grouping"]]), list(1:2, 3:4))
+  checkIdentical(ans[["sx"]], c(3L, 7L))
+  checkEqualsNumeric(ans[["shifted"]], c(111.5, 113.5))
+}
+
 test_DataFrame_coerce <- function() {
   ## need to introduce character() dim names
   checkTrue(validObject(as(matrix(0L, 0L, 0L), "DataFrame")))

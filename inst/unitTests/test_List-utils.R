@@ -22,3 +22,14 @@ test_List_funprog <- function() {
   }
 }
 
+test_List_within <- function() {
+  shift <- 10L
+  x <- IntegerList(a=1:2, b=3:5)
+  y <- within(x, {
+    a <- a + shift
+    c <- b[1:2]
+    b <- NULL
+  })
+
+  checkIdentical(as.list(y), list(a=11:12, c=3:4))
+}

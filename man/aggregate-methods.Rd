@@ -83,6 +83,28 @@
 }
   (replace \code{x[start[i]:end[i]]} with 2D-style subsetting
   \code{x[start[i]:end[i], ]} if \code{x} is a \link{DataFrame} object).
+
+  When \code{x} is a \link{Vector} derivative such as a \link{DataFrame},
+  \code{FUN} can also be omitted and replaced by named summary expressions
+  supplied via \code{...}. In that case, each expression is evaluated once
+  per group in an environment where the grouped columns of \code{x} are
+  available as variables. Symbols not found there are resolved in the
+  calling environment. The returned object contains one row per group, a
+  \code{grouping} column describing the grouping, and one column for each
+  named summary expression.
+}
+
+\value{
+  Returns an object of the same general kind as the selected
+  \code{aggregate} method.
+
+  For the \link{Vector} methods, when \code{FUN} is supplied, the result is
+  the per-group summary returned by applying \code{FUN} to each subset of
+  \code{x}, simplified when possible.
+
+  When \code{FUN} is omitted and named summary expressions are supplied via
+  \code{...}, the result is a \link{DataFrame} with one row per group, a
+  \code{grouping} column, and one column for each named summary expression.
 }
 
 \seealso{
@@ -108,6 +130,10 @@ aggregate(x, FUN=mean, start=1:26, width=20)
 ## works on an ordinary data frame:
 aggregate(DataFrame(state.x77), list(Region=state.region), mean)
 aggregate(weight ~ feed, data=DataFrame(chickwts), mean)
+
+df <- DataFrame(g=c("a", "a", "b", "b"), x=1:4, y=11:14)
+offset <- 100
+aggregate(df, df[["g"]], sx=sum(x), shifted=mean(y) + offset)
 
 library(IRanges)
 by <- IRanges(start=1:26, width=20, names=LETTERS)
