@@ -39,6 +39,8 @@
 \alias{IQR,Rle-method}
 
 \alias{nchar,Rle-method}
+\alias{grep,ANY,Rle-method}
+\alias{grepl,ANY,Rle-method}
 \alias{substr,Rle-method}
 \alias{substring,Rle-method}
 \alias{chartr,ANY,ANY,Rle-method}
@@ -216,6 +218,18 @@
          \item{\code{allowNA}}{Should \code{NA} be returned for invalid multibyte
            strings rather than throwing an error?}
       }
+    }
+    \item{\code{grep(pattern, x, ignore.case = FALSE, perl = FALSE,
+                value = FALSE, fixed = FALSE, useBytes = FALSE,
+                invert = FALSE)}:}{
+      Behaves like \code{base::grep()} on the decoded values of \code{x}.
+      Returns matching indices by default, or matching values when
+      \code{value = TRUE}.
+    }
+    \item{\code{grepl(pattern, x, ignore.case = FALSE, perl = FALSE,
+                 fixed = FALSE, useBytes = FALSE, invert = FALSE)}:}{
+      Behaves like \code{base::grepl()} on the decoded values of \code{x}
+      and returns a logical vector parallel to \code{x}.
     }
     \item{\code{substr(x, start, stop)}, \code{substring(text, first, last = 1000000L)}:}{
       Returns a character or factor Rle containing the specified substrings

@@ -37,6 +37,9 @@
 \alias{makeNakedCharacterMatrixForDisplay,Pairs-method}
 \alias{show,Pairs-method}
 
+% transformation
+\alias{t,Pairs-method}
+
 \title{Pairs objects}
 
 \description{
@@ -97,6 +100,17 @@
   In the code snippets below, \code{x} is a \code{Pairs} object.
   \describe{
     \item{\code{x[i]}:}{ Subset the Pairs object.}
+  }
+}
+
+\section{Transformations}{
+  In the code snippets below, \code{x} is a \code{Pairs} object.
+
+  \describe{
+    \item{\code{t(x)}:}{
+      Transpose the pairs by swapping the first and second members of each
+      pair. Metadata columns are preserved.
+    }
   }
 }
 

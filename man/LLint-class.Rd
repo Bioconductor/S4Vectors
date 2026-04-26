@@ -11,6 +11,18 @@
 \alias{is.LLint}
 \alias{length,LLint-method}
 
+\alias{extractROWS,LLint,ANY-method}
+\alias{extractROWS,LLint,NSBS-method}
+\alias{extractROWS,LLint,RangeNSBS-method}
+\alias{[,LLint-method}
+\alias{head.LLint}
+\alias{head,LLint-method}
+\alias{tail.LLint}
+\alias{tail,LLint-method}
+\alias{window.LLint}
+\alias{window,LLint-method}
+\alias{rep.int,LLint-method}
+
 \alias{coerce,logical,LLint-method}
 \alias{coerce,integer,LLint-method}
 \alias{coerce,numeric,LLint-method}

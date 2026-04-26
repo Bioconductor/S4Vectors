@@ -1,6 +1,8 @@
 \name{FilterMatrix-class}
 \docType{class}
+\alias{class:FilterMatrix}
 \alias{FilterMatrix-class}
+\alias{FilterMatrix}
 
 % accessors
 \alias{filterRules,FilterMatrix-method}
@@ -22,9 +24,11 @@
 
 \title{Matrix for Filter Results}
 
-\description{A \code{FilterMatrix} object is a matrix meant for storing
-  the logical output of a set of \code{\linkS4class{FilterRules}}, where
-  each rule corresponds to a column. The \code{FilterRules} are stored
+\description{A \code{FilterMatrix} is typically produced by
+  \code{\link{evalSeparately}()} on a \code{\linkS4class{FilterRules}} object.
+  Each row corresponds to one record in the object being filtered, and
+  each column corresponds to one filter rule. Matrix values indicate
+  whether a given record passed a given rule. The \code{FilterRules} are stored
   within the \code{FilterMatrix} object, for the sake of
   provenance. In general, a \code{FilterMatrix} behaves like an
   ordinary \code{\link{matrix}}.

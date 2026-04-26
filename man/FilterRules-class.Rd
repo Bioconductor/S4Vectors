@@ -35,6 +35,8 @@
 \alias{FilterRules}
 
 % general 
+\alias{filterRules,FilterResults-method}
+\alias{summary,FilterResults-method}
 \alias{summary,FilterRules-method}
 
 % combining
@@ -171,9 +173,9 @@
       function rules are invoked with \code{envir} as their only
       argument. The evaluation of a rule should yield a logical
       vector. The results from the rule evaluations are combined into
-      a logical matrix, with a column for each rule. This is
-      essentially the parallel evaluator, while \code{eval} is the
-      serial evaluator.
+      a \code{\link{FilterMatrix}}, with a column for each rule.
+      This is essentially the parallel evaluator, while \code{eval}
+      is the serial evaluator.
     }
     \item{\code{subsetByFilter(x, filter)}:}{ Evaluates \code{filter} on
       \code{x} and uses the result to subset \code{x}. The result

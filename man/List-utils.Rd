@@ -30,6 +30,10 @@
 \alias{droplevels.List}
 \alias{droplevels,List-method}
 
+\alias{do.call,ANY,List-method}
+
+\alias{!,List-method}
+
 \title{Common operations on List objects}
 
 \description{

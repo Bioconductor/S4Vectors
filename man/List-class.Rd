@@ -20,6 +20,8 @@
 \alias{isEmpty,ANY-method}
 \alias{isEmpty,List-method}
 \alias{parallelVectorNames,List-method}
+\alias{anyNA,List-method}
+\alias{is.na,List-method}
 
 \alias{coerce,List,list-method}
 \alias{coerce,ANY,List-method}
@@ -34,6 +36,7 @@
 \alias{[[<-,List-method}
 \alias{$,List-method}
 \alias{$<-,List-method}
+\alias{normalizeSingleBracketReplacementValue,List-method}
 \alias{setListElement,List-method}
 \alias{getListElement,List-method}
 
@@ -148,6 +151,19 @@
     \item{\code{isEmpty(x)}:}{
       Returns a logical indicating either if the sequence has no elements
       or if all its elements are empty.
+    }
+    \item{\code{anyNA(x, recursive=FALSE)}:}{
+      Returns \code{TRUE} if \code{x} contains missing values and
+      \code{FALSE} otherwise. With \code{recursive=FALSE}, only missingness
+      at the outer List level is considered. With \code{recursive=TRUE},
+      the list elements are inspected recursively, like for an ordinary
+      \link[base]{list}.
+    }
+    \item{\code{is.na(x)}:}{
+      Returns a logical object parallel to \code{x} by applying
+      \code{is.na()} to each list element. For most List derivatives this is
+      a \link[IRanges]{LogicalList}; for \link[IRanges]{RleList} derivatives
+      it is an \link[IRanges]{RleList}.
     }
   }
 }

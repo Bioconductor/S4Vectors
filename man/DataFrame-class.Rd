@@ -37,6 +37,7 @@
 \alias{[,DataFrame-method}
 \alias{replaceROWS,DFrame-method}
 \alias{mergeROWS,DFrame-method}
+\alias{normalizeSingleBracketReplacementValue,DataFrame-method}
 \alias{replaceCOLS,DFrame-method}
 \alias{[<-,DataFrame-method}
 \alias{[[<-,DFrame-method}

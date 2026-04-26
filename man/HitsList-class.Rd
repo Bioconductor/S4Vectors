@@ -20,6 +20,8 @@
 % accessors
 \alias{space}
 \alias{space,HitsList-method}
+\alias{from,HitsList-method}
+\alias{to,HitsList-method}
 \alias{subjectHits,HitsList-method}
 \alias{queryHits,HitsList-method}
 
@@ -35,6 +37,7 @@
 \alias{splitAsList,SortedByQueryHits,ANY-method}
 
 % other
+\alias{t.HitsList}
 \alias{t,HitsList-method}
 
 \title{List of Hits objects}
@@ -66,6 +69,10 @@
 
 \section{Accessors}{
   \describe{
+    \item{\code{from(x)}:}{ Equivalent to \code{queryHits(x)}.
+    }
+    \item{\code{to(x)}:}{ Equivalent to \code{subjectHits(x)}.
+    }
     \item{\code{queryHits(x)}:}{ Equivalent to
       \code{unname(as.matrix(x)[,1])}.
     }

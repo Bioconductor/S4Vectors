@@ -4,7 +4,9 @@
 \alias{relistToClass,ANY-method}
 
 \alias{splitAsList}
+\alias{splitAsList,ANY-method}
 \alias{splitAsList,ANY,ANY-method}
+\alias{splitAsList,SortedByQueryHits-method}
 
 \alias{split}
 \alias{split,Vector,ANY-method}

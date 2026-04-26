@@ -48,7 +48,9 @@
 \alias{extractROWS,Rle,NSBS-method}
 \alias{[,Rle-method}
 \alias{replaceROWS,Rle,ANY-method}
+\alias{replaceROWS,Rle-method}
 \alias{[<-,Rle,ANY-method}
+\alias{[<-,Rle-method}
 \alias{NSBS,Rle-method}
 \alias{as.integer,RleNSBS-method}
 \alias{length,RleNSBS-method}

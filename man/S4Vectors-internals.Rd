@@ -1,50 +1,47 @@
-\name{S4Vectors internals}
+\name{S4Vectors-internals}
+\alias{S4Vectors-internals}
 
-% Stuff from R/S4-utils.R:
-\alias{coerce,ANY,AsIs-method}
-\alias{class:character_OR_NULL}
-\alias{character_OR_NULL-class}
-\alias{character_OR_NULL}
-\alias{class:vector_OR_factor}
-\alias{vector_OR_factor-class}
-\alias{vector_OR_factor}
+\alias{I}
+\alias{fold}
+\alias{isSingleInteger}
+\alias{isSingleNumber}
+\alias{isSingleNumberOrNA}
+\alias{isSingleString}
+\alias{isSingleStringOrNA}
+\alias{isTRUEorFALSE}
+\alias{new2}
+\alias{recycleArg}
+\alias{recycleCharacterArg}
+\alias{recycleIntegerArg}
+\alias{recycleLogicalArg}
+\alias{recycleNumericArg}
+\alias{setMethods}
+\alias{setValidity2}
+\alias{wmsg}
+
 \alias{class:atomic}
 \alias{atomic-class}
 \alias{atomic}
-\alias{coerce,ANY,vector-method}
-\alias{setValidity2}
-\alias{new2}
-\alias{setMethods}
-
-% Stuff from R/utils.R:
-\alias{wmsg}
-\alias{.Call2}
-
-% Low-level helper functions from R/normarg-utils.R:
-\alias{isTRUEorFALSE}
-\alias{isSingleInteger}
-\alias{isSingleNumber}
-\alias{isSingleString}
-\alias{isSingleNumberOrNA}
-\alias{isSingleStringOrNA}
-\alias{recycleIntegerArg}
-\alias{recycleNumericArg}
-\alias{recycleCharacterArg}
-\alias{recycleLogicalArg}
-\alias{recycleArg}
-\alias{fold}
-
-% From R/DataFrame_OR_NULL-class.R:
+\alias{class:character_OR_NULL}
+\alias{character_OR_NULL-class}
+\alias{character_OR_NULL}
 \alias{class:DataFrame_OR_NULL}
 \alias{DataFrame_OR_NULL-class}
 \alias{DataFrame_OR_NULL}
+\alias{class:vector_OR_factor}
+\alias{vector_OR_factor-class}
+\alias{vector_OR_factor}
 
-\title{S4Vectors internals}
+\alias{coerce,ANY,AsIs-method}
+\alias{coerce,ANY,vector-method}
+
+\title{Low-level internal helpers}
 
 \description{
-  Objects, classes and methods defined in the \pkg{S4Vectors} package
-  that are not intended to be used directly.
+  Low-level helper functions, coercions, and union classes used internally
+  by the \pkg{S4Vectors} package.
 }
+
 
 \keyword{internal}
 \keyword{classes}

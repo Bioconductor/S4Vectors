@@ -34,6 +34,7 @@
 \alias{rename}
 \alias{rename,vector-method}
 \alias{rename,Vector-method}
+\alias{unname}
 \alias{unname,Vector-method}
 
 \alias{as.logical,Vector-method}
@@ -42,7 +43,7 @@
 \alias{as.double,Vector-method}
 \alias{as.complex,Vector-method}
 \alias{as.character,Vector-method}
-\alias{as.raw,Vector-method}
+\alias{as.raw,Vector-method} 
 \alias{as.matrix,Vector-method}
 \alias{as.matrix.Vector}
 \alias{coerce,Vector,vector-method}
@@ -64,9 +65,14 @@
 \alias{as.list,Vector-method}
 
 \alias{[}
+\alias{extractROWS,Vector,ANY-method}
 \alias{[,Vector-method}
 \alias{[<-,Vector-method}
+\alias{replaceROWS,ANY-method}
+\alias{replaceROWS,Vector-method}
 \alias{replaceROWS,Vector,ANY-method}
+\alias{mergeROWS,ANY-method}
+\alias{mergeROWS,Vector-method}
 \alias{mergeROWS,Vector,ANY-method}
 
 \alias{subset}
@@ -100,12 +106,18 @@
 
 \alias{transform.Vector}
 \alias{transform,Vector-method}
+\alias{eval,expression,Vector-method}
+\alias{eval,language,Vector-method}
+\alias{with,Vector-method}
 
 \alias{expand.grid}
 \alias{expand.grid,Vector-method}
 
 \alias{parallelVectorNames}
 \alias{parallelVectorNames,ANY-method}
+
+\alias{by,Vector-method}
+\alias{xtabs,Vector-method}
 
 \title{Vector objects}
 
@@ -163,9 +175,19 @@
       destination names. This also works on a plain old \code{vector}.
     }
     \item{\code{unname(x)}:}{ removes the names from \code{x}, if any.
+      This affects only the element names, not the vector contents or
+      metadata columns.
     }
     \item{\code{nlevels(x)}:}{
       Returns the number of factor levels.
+    }
+    \item{\code{anyNA(x, recursive=FALSE)}:}{
+      Returns \code{TRUE} if \code{x} contains missing values and
+      \code{FALSE} otherwise.
+    }
+    \item{\code{is.na(x)}:}{
+      Returns a logical vector parallel to \code{x} indicating which
+      elements are missing.
     }
     \item{\code{mcols(x, use.names=TRUE)}, \code{mcols(x) <- value}:}{
       Get or set the metadata columns.
@@ -192,6 +214,13 @@
       \code{as.vector}. Note that many \code{Vector} derivatives do not
       support \code{as.vector}, so this coercion is possible only for
       certain types.
+    }
+    \item{\code{as.matrix(from)}:}{
+      Coerces \code{from} to a matrix via \code{as.vector(from)}.
+    }
+    \item{\code{as.list(from)}:}{
+      Coerces \code{from} to a \link[base]{list} when needed, then
+      returns its elements as an ordinary list.
     }
     \item{\code{as.env(x)}:}{
       Constructs an environment object containing the elements of
@@ -280,6 +309,50 @@
         \item \code{each}: Non-negative integer.  Each element of \code{x} is
               repeated \code{each} times.
       }
+    }
+  }
+}
+
+\section{Convenience wrappers for transformation and evaluation}{
+  In the code snippets below, \code{data} is a Vector object.
+
+  \describe{
+    \item{\code{eval(expr, envir, enclos=parent.frame())}:}{
+      Evaluates an expression or call in an environment derived from
+      \code{envir}. The variables represented by \code{envir}, together
+      with its metadata columns, are available by name.
+    }
+    \item{\code{with(data, expr, ...)}:}{
+      Evaluates \code{expr} in a context where the variables represented by
+      \code{data} are available by name.
+    }
+    \item{\code{transform(data, ...)}:}{
+      Returns a modified copy of \code{data} after evaluating the named
+      expressions in \code{...} sequentially in the context of
+      \code{data}. Each expression can refer to columns or variables
+      created by earlier expressions.
+    }
+  }
+}
+
+\section{Convenience wrappers for aggregation}{
+  In the code snippets below, \code{data} is a Vector object.
+
+  \describe{
+    \item{\code{by(data, INDICES, FUN, ..., simplify=TRUE)}:}{
+      Applies \code{FUN} to subsets of \code{data} defined by
+      \code{INDICES}. See also the \code{\link{aggregate}} methods for
+      Vector derivatives.
+    }
+    \item{\code{xtabs(formula = ~., data, subset, na.action,
+                 exclude = c(NA, NaN), drop.unused.levels = FALSE)}:}{
+      Builds a contingency table from variables extracted from \code{data}.
+      See \code{\link[stats]{xtabs}} for the interpretation of the
+      arguments.
+    }
+    \item{\code{summary(object, ...)}:}{
+      Returns a compact one-line summary describing the class, length,
+      and number of metadata columns in \code{object}.
     }
   }
 }

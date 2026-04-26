@@ -32,6 +32,11 @@
 
 \alias{sameAsPreviousROW}
 \alias{sameAsPreviousROW,ANY-method}
+\alias{sameAsPreviousROW,atomic-method}
+\alias{sameAsPreviousROW,integer-method}
+\alias{sameAsPreviousROW,numeric-method}
+\alias{sameAsPreviousROW,complex-method}
+\alias{sameAsPreviousROW,Rle-method}
 
 \alias{match}
 \alias{match,Vector,Vector-method}
@@ -57,6 +62,7 @@
 \alias{findMatches,ANY,missing-method}
 \alias{countMatches}
 \alias{countMatches,ANY,ANY-method}
+\alias{countMatches,ANY-method}
 
 \alias{sort.Vector}
 \alias{sort,Vector-method}
@@ -259,6 +265,9 @@ countMatches(x, table, ...)
   \code{countMatches} returns an integer vector of the length of \code{x}
   containing the number of matches in \code{table} for each element
   in \code{x}.
+
+  Recursive list-like comparisons are documented separately in
+  \link{List-comparison}.
 }
 
 \value{
@@ -420,14 +429,17 @@ setMethod(">", c("Vector", "Vector"),
   \itemize{
     \item The \link{Vector} class.
 
+    \item \link{List-comparison} for recursive comparison and ordering of
+          list-like objects.
+
     \item \link{Hits-comparison} for comparing and ordering hits.
 
     \item \link{Vector-setops} for set operations on vector-like objects.
 
     \item \link{Vector-merge} for merging vector-like objects.
 
-    \item \link[IRanges]{IntegerRanges-comparison} in the \pkg{IRanges}
-          package for comparing and ordering ranges.
+    \item The \link[IRanges]{IPosRanges-comparison} help topic in the
+          \pkg{IRanges} package for comparing and ordering ranges.
 
     \item \code{\link{==}} and \code{\link{\%in\%}} in the \pkg{base} package,
           and \code{BiocGenerics::\link[BiocGenerics]{match}},
@@ -458,8 +470,8 @@ x <- c(unique(y), 999L)
 findMatches(x, y)
 countMatches(x, y)
 
-## See ?`IntegerRanges-comparison` for more examples (on IntegerRanges
-## objects). You might need to load the IRanges package first.
+## See ?IPosRanges-comparison for more examples on IRanges objects. You
+## might need to load the IRanges package first.
 
 ## ---------------------------------------------------------------------
 ## B. FOR DEVELOPERS: HOW TO IMPLEMENT THE BINARY COMPARISON OPERATORS

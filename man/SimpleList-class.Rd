@@ -12,6 +12,7 @@
 % accessors
 \alias{names,SimpleList-method}
 \alias{names<-,SimpleList-method}
+\alias{getListElement,SimpleList-method}
 
 % coercion
 \alias{as.list.SimpleList}
