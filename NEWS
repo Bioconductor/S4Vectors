@@ -1,3 +1,11 @@
+CHANGES IN VERSION 0.50.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Add missing docs to pass R CMD check without warnings.
+
+
 CHANGES IN VERSION 0.48.0
 -------------------------
 
