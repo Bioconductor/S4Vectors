@@ -112,6 +112,21 @@ test_top_prenv_dots_with_unnamed_args <- function() {
   })
 }
 
+test_top_prenv_dots_with_lexically_forwarded_dots <- function() {
+  wrapper <- function(...) S4Vectors:::top_prenv_dots(...)
+  forwarded <- function(...) {
+    mapply(function(label) wrapper(...), "a", SIMPLIFY=FALSE)[[1L]]
+  }
+
+  local({
+    shift <- 100
+    envs <- forwarded(sum(x), shifted=mean(y) + shift)
+
+    checkIdentical(names(envs), c("", "shifted"))
+    checkTrue(all(vapply(envs, identical, logical(1), environment())))
+  })
+}
+
 test_DataFrame_coerce <- function() {
   ## need to introduce character() dim names
   checkTrue(validObject(as(matrix(0L, 0L, 0L), "DataFrame")))
