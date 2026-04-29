@@ -44,7 +44,7 @@ makeGlobalWarningEnv <- function(expr, envir, enclos) {
   which <- Position(\(x) identical(x, where), sys.frames(), right=TRUE)
   parents <- sys.parents()
   mc <- matched_call(which)
-  arg <- mc[[argname]]
+  arg <- if (is.integer(argname)) mc$...[[argname]] else mc[[argname]]
   dot_idx <- dot_arg_index(arg)
   while (!is.na(dot_idx)) {
     which <- parents[which]
@@ -57,11 +57,11 @@ makeGlobalWarningEnv <- function(expr, envir, enclos) {
   sys.frame(parents[which])
 }
 
-top_prenv <- function(x, where = parent.frame()) {
+top_prenv <- function(x, where=parent.frame()) {
   .find_arg_enclos(substitute(x) |> as.character(), where)
 }
 
-.find_named_arg_enclos <- function(argname, which = sys.parent()) {
+.find_named_arg_enclos <- function(argname, which=sys.parent()) {
   parents <- sys.parents()
   while (argname %notin% names(sys.call(which))) {
     which <- parents[which]
@@ -71,7 +71,7 @@ top_prenv <- function(x, where = parent.frame()) {
 
 top_prenv_dots <- function(...) {
   args <- substitute(list(...))[-1L]
-  lapply(names(args), .find_named_arg_enclos, which = sys.parent()) |>
+  lapply(seq_along(args), .find_arg_enclos, where=parent.frame()) |>
     setNames(names(args))
 }
 
