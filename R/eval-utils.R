@@ -40,14 +40,24 @@ makeGlobalWarningEnv <- function(expr, envir, enclos) {
     match.call(sys.function(which), sys.call(which), expand.dots=FALSE,
                envir=sys.frame(parents[which]))
   }
+  frame_index <- function(frame) {
+    Position(\(x) identical(x, frame), sys.frames(), right=TRUE)
+  }
+  find_dots <- function(which) {
+    frame <- sys.frame(which)
+    while (!exists("...", frame, inherits=FALSE)) {
+      frame <- parent.env(frame)
+    }
+    frame_index(frame)
+  }
 
-  which <- Position(\(x) identical(x, where), sys.frames(), right=TRUE)
+  which <- frame_index(where)
   parents <- sys.parents()
   mc <- matched_call(which)
   arg <- if (is.integer(argname)) mc$...[[argname]] else mc[[argname]]
   dot_idx <- dot_arg_index(arg)
   while (!is.na(dot_idx)) {
-    which <- parents[which]
+    which <- find_dots(parents[which])
     mc <- matched_call(which)
     dots <- mc$...
     arg <- dots[[dot_idx]]
