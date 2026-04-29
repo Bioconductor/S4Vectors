@@ -99,6 +99,19 @@ test_DataFrame_aggregate_with_dots <- function() {
   checkEqualsNumeric(ans[["shifted"]], c(111.5, 113.5))
 }
 
+test_top_prenv_dots_with_unnamed_args <- function() {
+  wrapper <- function(...) S4Vectors:::top_prenv_dots(...)
+  forwarded <- function(...) wrapper(...)
+
+  local({
+    shift <- 100
+    envs <- forwarded(sum(x), shifted=mean(y) + shift)
+
+    checkIdentical(names(envs), c("", "shifted"))
+    checkTrue(all(vapply(envs, identical, logical(1), environment())))
+  })
+}
+
 test_DataFrame_coerce <- function() {
   ## need to introduce character() dim names
   checkTrue(validObject(as(matrix(0L, 0L, 0L), "DataFrame")))
