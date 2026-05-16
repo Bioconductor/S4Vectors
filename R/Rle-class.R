@@ -16,7 +16,7 @@ setClass("Rle",
     )
 )
 
- 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Getters
 ###
@@ -28,7 +28,7 @@ setMethod("length", "Rle",
 setGeneric("runLength", signature = "x",
            function(x) standardGeneric("runLength"))
 setMethod("runLength", "Rle", function(x) x@lengths)
- 
+
 setGeneric("runValue", signature = "x",
            function(x) standardGeneric("runValue"))
 setMethod("runValue", "Rle", function(x) x@values)
@@ -112,7 +112,7 @@ setGeneric("runLength<-", signature="x",
            function(x, value) standardGeneric("runLength<-"))
 setReplaceMethod("runLength", "Rle",
                  function(x, value) Rle(runValue(x), value))
-         
+
 setGeneric("runValue<-", signature="x",
            function(x, value) standardGeneric("runValue<-"))
 setReplaceMethod("runValue", "Rle",
@@ -228,7 +228,7 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
 ###
 
 setMethod("extractROWS", c("Rle", "ANY"),
-    function (x, i) 
+    function (x, i)
     {
         i <- normalizeSingleBracketSubscript(i, x, allow.NAs=TRUE, as.NSBS=TRUE)
         callGeneric()
@@ -331,7 +331,7 @@ setMethod("replaceROWS", c("Rle", "ANY"),
             offsetStart <- c(0L, offsetStart)
             runEnd <- c(0L, runEnd)
             offsetEnd <- c(0L, offsetEnd)
-        } 
+        }
         if ((length(ir) > 0L) && (end(ir[length(ir)]) != length(x))) {
             k <- k + 1L
             runStart <- c(runStart, 1L)
@@ -410,7 +410,7 @@ setClass("RleNSBS",      # not exported
     prototype(
         ## Calling Rle(integer(0)) below causes the following error at
         ## installation time:
-        ##     Error in .Call(.NAME, ..., PACKAGE = PACKAGE) : 
+        ##     Error in .Call(.NAME, ..., PACKAGE = PACKAGE) :
         ##       "Rle_constructor" not available for .Call() for package
         ##       "S4Vectors"
         ##     Error : unable to load R code in package ‘S4Vectors’
@@ -761,7 +761,7 @@ sort.Rle <- function(x, decreasing=FALSE, na.last=NA, ...)
 setMethod("sort", "Rle", sort.Rle)
 
 setMethod("rank", "Rle", function (x, na.last = TRUE,
-                                   ties.method = c("average", "first", 
+                                   ties.method = c("average", "first",
                                      "random", "max", "min"))
           {
               ties.method <- match.arg(ties.method)
@@ -782,51 +782,43 @@ setMethod("xtfrm", "Rle", function(x) {
     initialize(x, values=xtfrm(runValue(x)))
 })
 
-setMethod("table", "Rle", 
-    function(...)
+setMethod("table", "Rle",
+    function(x, ...)
     {
-        ## Currently only 1 Rle is supported. An approach for multiple 
-        ## Rle's could be disjoin(), findRun() to find matches, then 
+        ## Old comment by M. Lawrence or P. Aboyoun from many years ago when
+        ## the Rle stuff was living in IRanges (this is where it started):
+        ## Currently only 1 Rle is supported. An approach for multiple Rle's
+        ## could be disjoin(), findRun() to find matches, then
         ## xtabs(length ~ value ...).
-        x <- sort(list(...)[[1L]]) 
+        ## TODO (H.P. May 2026): Explore support for multiple Rle's (a.k.a.
+        ## n-ary table()) via an BiocGenerics:::nary_table() method.
+        dotargs <- list(...)
+        if (length(dotargs) != 0L)
+            stop(wmsg("the table() method for Rle objects only ",
+                      "takes one input object at the moment"))
+        x <- sort(x)
         if (is.factor(runValue(x))) {
             dn <- levels(x)
             tab <- integer(length(dn))
             tab[dn %in% runValue(x)] <- runLength(x)
             dims <- length(dn)
         } else {
-            dn <- as.character(runValue(x)) 
-            tab <- runLength(x) 
+            dn <- as.character(runValue(x))
+            tab <- runLength(x)
             dims <- nrun(x)
         }
         ## Adjust 'dn' for consistency with base::table
-        if (length(dn) == 0L)
-            dn <- NULL
-        dn <- list(dn)
-        names(dn) <- .list.names(...) 
+        if (length(dn) == 0L) {
+            dn <- setNames(list(NULL), "")
+        } else {
+            dn <- list(dn)
+            #names(dn) <- list.names(...)  # skip for now (H.P. May 2026)
+        }
         y <- array(tab, dims, dimnames=dn)
         class(y) <- "table"
-        y 
+        y
     }
 )
-
-.list.names <- function(...) {
-    l <- as.list(substitute(list(...)))[-1L]
-    deparse.level <- 1 
-    nm <- names(l)
-    fixup <- if (is.null(nm))
-        seq_along(l)
-    else nm == ""
-    dep <- vapply(l[fixup], function(x) switch(deparse.level +
-        1, "", if (is.symbol(x)) as.character(x) else "",
-        deparse(x, nlines = 1)[1L]), "")
-    if (is.null(nm))
-        dep
-    else {
-        nm[fixup] <- dep
-        nm
-    }
-}
 
 ### Not exported? Broken on numeric-Rle and factor-Rle. H.P. -- Oct 16, 2016
 setMethod("tabulate", "Rle",

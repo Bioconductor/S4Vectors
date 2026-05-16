@@ -504,7 +504,7 @@ setMethod("xtfrm", "Vector", function(x) {
 
 ### This is a copy/paste of the list.names() function locally defined inside
 ### base::table().
-.list.names <- function(...) {
+list.names <- function(...) {
     deparse.level <- 1
     l <- as.list(substitute(list(...)))[-1L]
     nm <- names(l)
@@ -542,19 +542,18 @@ setMethod("xtfrm", "Vector", function(x) {
 }
 
 setMethod("table", "Vector",
-    function(...)
+    function(x, ...)
     {
-        args <- list(...)
-        if (length(args) != 1L)
-            stop("\"table\" method for Vector objects ",
-                 "can only take one input object")
-        x <- args[[1L]]
+        dotargs <- list(...)
+        if (length(dotargs) != 0L)
+            stop(wmsg("the table() method for Vector objects only ",
+                      "takes one input object at the moment"))
 
         ## Compute the table as an array.
         ans <- .compute_table(x)
 
         ## Some cosmetic adjustments.
-        names(dimnames(ans)) <- .list.names(...)
+        #names(dimnames(ans)) <- list.names(...) # skip for now (H.P. May 2026)
         class(ans) <- "table"
         ans
     }

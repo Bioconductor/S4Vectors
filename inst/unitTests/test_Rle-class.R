@@ -197,22 +197,22 @@ test_Rle_sort <- function()
     cx <- c("c", "B", NA, "a")
     lx <- c(FALSE, FALSE, NA, TRUE, NA)
     checkIdentical(sort(nx), as.numeric(sort(Rle(nx))))
-    checkIdentical(sort(nx, na.last=TRUE), 
+    checkIdentical(sort(nx, na.last=TRUE),
         as.numeric(sort(Rle(nx), na.last=TRUE)))
-    checkIdentical(sort(nx, na.last=FALSE), 
+    checkIdentical(sort(nx, na.last=FALSE),
         as.numeric(sort(Rle(nx), na.last=FALSE)))
     checkIdentical(sort(ix), as.integer(sort(Rle(ix))))
     checkIdentical(sort(cx), as.character(sort(Rle(cx))))
     checkIdentical(sort(lx), as.logical(sort(Rle(lx))))
     checkIdentical(sort(numeric()), as.numeric(sort(Rle(numeric()))))
     checkIdentical(sort(character()), as.character(sort(Rle(character()))))
-    
-    ## factor 
+
+    ## factor
     nf <- factor(nx)
     checkIdentical(sort(nf), as.factor(sort(Rle(nf))))
-    checkIdentical(sort(nf, decreasing=TRUE, na.last=TRUE), 
+    checkIdentical(sort(nf, decreasing=TRUE, na.last=TRUE),
         as.factor(sort(Rle(nf), decreasing=TRUE, na.last=TRUE)))
-    checkIdentical(sort(nf, na.last=FALSE), 
+    checkIdentical(sort(nf, na.last=FALSE),
         as.factor(sort(Rle(nf), na.last=FALSE)))
     checkIdentical(sort(factor()), as.factor(sort(Rle(factor()))))
 
@@ -223,27 +223,39 @@ test_Rle_sort <- function()
 
 test_Rle_table <- function()
 {
+    ## Note that, starting with S4Vectors 0.51.2, the 1D table object
+    ## returned by 'table(<Rle>)' has no "dimnames names"! Hence why
+    ## now we set 'dnn' to NULL when calling table() on an atomic vector
+    ## or factor below.
+
     ## atomic
     ix <- c(NA, 3L, NA)
     nx <- c(2, 5, 1, 2, NA, 5, NA)
     cx <- c("c", "B", NA, "a")
     lx <- c(FALSE, FALSE, NA, TRUE, NA)
-    checkIdentical(table(ix), table("ix"=Rle(ix)))
-    checkIdentical(table(nx), table("nx"=Rle(nx)))
-    checkIdentical(table(cx), table("cx"=Rle(cx)))
-    checkIdentical(table(lx), table("lx"=Rle(lx)))
+    checkIdentical(table(ix, dnn=NULL), table(Rle(ix)))
+    checkIdentical(table(ix, dnn=NULL), table(ix=Rle(ix)))
+    checkIdentical(table(nx, dnn=NULL), table(Rle(nx)))
+    checkIdentical(table(nx, dnn=NULL), table(nx=Rle(nx)))
+    checkIdentical(table(cx, dnn=NULL), table(Rle(cx)))
+    checkIdentical(table(lx, dnn=NULL), table(Rle(lx)))
     checkIdentical(table(numeric()), table(Rle(numeric())))
     checkIdentical(table(character()), table(Rle(character())))
-    
+
     ## factor
     nf <- factor(nx)
-    checkIdentical(table("nx"=nx), table("nx"=Rle(nx)))
+    checkIdentical(table(nf, dnn=NULL), table(Rle(nf)))
+    checkIdentical(table(nf, dnn=NULL), table(nf=Rle(nf)))
     checkIdentical(table(factor()), table(Rle(factor())))
-    
+
     ## factor, unused levels
     nf <- factor(nx, levels=1:6)
     cf <- factor(cx, levels=c("a", "c", "B", "b"))
+    checkIdentical(table(nf, dnn=NULL), table(Rle(nf)))
+    checkIdentical(table(nf, dnn=NULL), table(nf=Rle(nf)))
     checkIdentical(as.factor(table(nf)), as.factor(table(Rle(nf))))
+    checkIdentical(table(cf, dnn=NULL), table(Rle(cf)))
+    checkIdentical(table(cf, dnn=NULL), table(cf=Rle(cf)))
     checkIdentical(as.factor(table(cf)), as.factor(table(Rle(cf))))
 }
 

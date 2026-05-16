@@ -85,8 +85,8 @@ setMethod("xtabs", signature(data = "DataFrame"),
             callGeneric()
           })
 
-setMethod("table", "DataFrame", function(...) {
-  table(as.list(cbind(...)))
+setMethod("table", "DataFrame", function(x, ...) {
+  table(as.list(cbind(x, ...)))
 })
 
 ## TODO: lm, glm, loess, ...
