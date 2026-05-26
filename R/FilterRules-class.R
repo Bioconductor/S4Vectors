@@ -371,7 +371,7 @@ FilterMatrix <- function(matrix, filterRules) {
 }
 
 setMethod("show", "FilterMatrix", function(object) {
-  cat(class(object), " (", nrow(object), " x ", ncol(object), ")\n", sep = "")
+  cat(class1(object), " (", nrow(object), " x ", ncol(object), ")\n", sep = "")
   mat <- makePrettyMatrixForCompactPrinting(object)
   print(mat, quote = FALSE, right = TRUE)
 })

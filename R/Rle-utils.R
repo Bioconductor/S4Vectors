@@ -160,7 +160,7 @@ summary.Rle <- function(object, ..., digits)
         }
         else
             c(Length = length(object),
-              Class = class(object),
+              Class = class1(object),
               ValueMode = mode(runValue(object)))
     class(value) <- c("summaryDefault", "table")
     value
@@ -201,7 +201,7 @@ diff.Rle <- function(x, ...) diff(x, ...)
     lag <- as.integer(lag)
     differences <- as.integer(differences)
     if (lag * differences >= length(x))
-        return(Rle(vector(class(runValue(x)))))
+        return(Rle(vector(class1(runValue(x)))))
     for (i in seq_len(differences)) {
         n <- length(x)
         x <- window(x, 1L + lag, n) - window(x, 1L, n - lag)
@@ -708,4 +708,3 @@ droplevels.Rle <- function(x, ...) droplevels(x, ...)
   x
 }
 setMethod("droplevels", "Rle", .droplevels.Rle)
-

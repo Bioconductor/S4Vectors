@@ -310,7 +310,7 @@ setMethod("updateObject", "Hits",
 .from_Hits_to_SelfHits <- function(from, to)
 {
     if (nLnode(from) != nRnode(from))
-        stop(wmsg(class(from), " object to coerce to ", to,
+        stop(wmsg(class1(from), " object to coerce to ", to,
                   " must satisfy 'nLnode(x) == nRnode(x)'"))
     class(from) <- class(new(to))
     from
@@ -389,10 +389,10 @@ setMethod("extractROWS", "SortedByQueryHits",
         ans <- callNextMethod()
         pbs <- validObject(ans, test=TRUE)
         if (is.character(pbs))
-            stop(wmsg("Problem(s) found when testing validity of ", class(ans),
+            stop(wmsg("Problem(s) found when testing validity of ", class1(ans),
                       " object returned by subsetting operation: ",
                       paste0(pbs, collapse=", "), ". Make sure to use a ",
-                      "subscript that results in a valid ", class(ans),
+                      "subscript that results in a valid ", class1(ans),
                       " object."))
         ans
     }
@@ -404,7 +404,7 @@ setMethod("extractROWS", "SortedByQueryHits",
 ###
 
 setMethod("classNameForDisplay", "SortedByQueryHits",
-    function(x) sub("^SortedByQuery", "", class(x))
+    function(x) sub("^SortedByQuery", "", class1(x))
 )
 
 .Hits_summary <- function(object)
@@ -627,7 +627,7 @@ revmap_Hits <- function(x)
         ## - Because revmap_Hits() reorders the hits by query, doing
         ##   'revmap_Hits(revmap_Hits(x))' brings back 'x' but with the hits
         ##   in it now "fully sorted".
-        return(new_Hits(class(x), to(x), from(x), nRnode(x), nLnode(x),
+        return(new_Hits(class1(x), to(x), from(x), nRnode(x), nLnode(x),
                                   mcols(x, use.names=FALSE)))
     }
     BiocGenerics:::replaceSlots(x, from=to(x), to=from(x),
@@ -749,7 +749,7 @@ remapHits <- function(x, Lnodes.remapping=NULL, new.nLnode=NA,
         x_to <- x_to[keep_idx]
         x_mcols <- extractROWS(x_mcols, keep_idx)
     }
-    new_Hits(class(x), x_from, x_to, new.nLnode, new.nRnode, x_mcols)
+    new_Hits(class1(x), x_from, x_to, new.nLnode, new.nRnode, x_mcols)
 }
 
 
@@ -828,4 +828,3 @@ makeAllGroupInnerHits.old <- function(GS)
     ans_to <- (0:(NH-1L) - CGSr2[HGA]) %% GS[HGA] + FEIG[HGA]
     SelfHits(ans_from, ans_to, nnode, sort.by.query=TRUE)
 }
-

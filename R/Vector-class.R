@@ -65,7 +65,7 @@ setMethod("parallel_slot_names", "Vector", function(x) "elementMetadata")
 setGeneric("parallelVectorNames",
            function(x) standardGeneric("parallelVectorNames"))
 setMethod("parallelVectorNames", "ANY",
-          function(x) setdiff(colnames(as.data.frame(new(class(x)))), "value"))
+          function(x) setdiff(colnames(as.data.frame(new(class1(x)))), "value"))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -305,7 +305,7 @@ normarg_mcols <- function(mcols, x_class, x_len)
 setReplaceMethod("elementMetadata", "Vector",
     function(x, ..., value)
     {
-        value <- normarg_mcols(value, class(x), length(x))
+        value <- normarg_mcols(value, class1(x), length(x))
         BiocGenerics:::replaceSlots(x, elementMetadata=value, check=FALSE)
     }
 )
@@ -411,7 +411,7 @@ setMethod("as.matrix", "Vector", function(x) {
           })
 
 classNamespace <- function(x) {
-    pkg <- packageSlot(class(x))
+    pkg <- packageSlot(class1(x))
     pvnEnv <- .GlobalEnv
     if (!is.null(pkg)) {
         pvnEnv <- getNamespace(pkg)

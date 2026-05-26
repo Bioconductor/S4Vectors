@@ -12,9 +12,8 @@
 setMethod("union", c("SortedByQueryHits", "Hits"),
     function(x, y)
     {
-        ans_class <- class(x)
+        ans_class <- class1(x)
         x <- as(x, "Hits")
         as(callNextMethod(), ans_class)  # sort, and restore original class
     }
 )
-

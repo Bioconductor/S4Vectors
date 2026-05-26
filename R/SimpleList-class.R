@@ -83,7 +83,7 @@ new_SimpleList_from_list <- function(Class, x, ..., mcols)
     ans_elementType <- elementType(proto)
     if (is(S4Vectors::mcols(proto, use.names=FALSE), "DataFrame"))
         mcols <- make_zero_col_DFrame(length(x))
-    if (!all(sapply(x, function(xi) extends(class(xi), ans_elementType))))
+    if (!all(sapply(x, function(xi) extends(class1(xi), ans_elementType))))
         stop("all elements in 'x' must be ", ans_elementType, " objects")
     if (missing(mcols))
         return(new2(Class, listData=x, ..., check=FALSE))
@@ -105,7 +105,7 @@ SimpleList <- function(...)
     ##   invalid class “SimpleList” object: invalid object for slot "listData"
     ##   in class "SimpleList": got class "matrix", should be or extend class
     ##   "list"
-    if (length(args) == 1L && extends(class(args[[1L]]), "list"))
+    if (length(args) == 1L && extends(class1(args[[1L]]), "list"))
         args <- args[[1L]]
     new2("SimpleList", listData=args, check=FALSE)
 }
@@ -119,7 +119,7 @@ SimpleList <- function(...)
 {
     elementTypeX <- elementType(x)
     if (!all(sapply(as.list(x),
-                    function(xi) extends(class(xi), elementTypeX))))
+                    function(xi) extends(class1(xi), elementTypeX))))
         return(paste("the 'listData' slot must be a list containing",
                      elementTypeX, "objects"))
     NULL
@@ -136,7 +136,7 @@ setValidity2("SimpleList", .valid.SimpleList)
 ###
 
 setMethod("classNameForDisplay", "SimpleList",
-    function(x) sub("^Simple", "", class(x))
+    function(x) sub("^Simple", "", class1(x))
 )
 
 
@@ -238,7 +238,7 @@ coerceToSimpleList <- function(from, element.type)
         } else if (is.list(from)) {
             element.type <- lowestListElementClass(from)
         } else {
-            element.type <- class(from)
+            element.type <- class1(from)
         }
         coerce_list_elts <- FALSE
     } else {
@@ -292,7 +292,6 @@ makeEnvForNames <- function(x, nms, enclos = parent.frame(2),
 
 ### TODO: easily generalized to List
 .unique.SimpleList <- function(x, incomparables=FALSE, ...) {
-    as(lapply(x, unique, incomparables=incomparables, ...), class(x))
+    as(lapply(x, unique, incomparables=incomparables, ...), class1(x))
 }
 setMethod("unique", "SimpleList", .unique.SimpleList)
-

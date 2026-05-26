@@ -56,7 +56,7 @@ setMethod("updateObject", "DataFrame",
     function(object, ..., verbose=FALSE)
     {
         ## class attribute.
-        if (class(object) == "DataFrame") {
+        if (class1(object) == "DataFrame") {
             ## Starting with S4Vectors 0.23.19, all DataFrame instances need
             ## to be replaced with DFrame instances. Note that this is NOT a
             ## change of the internals, only a change of the class attribute.
@@ -68,7 +68,7 @@ setMethod("updateObject", "DataFrame",
                 message("OK")
         } else {
             if (verbose)
-                message("[updateObject] ", class(object), " object ",
+                message("[updateObject] ", class1(object), " object ",
                         "is current.\n",
                         "[updateObject] Nothing to update.")
         }
@@ -316,7 +316,7 @@ DataFrame <- function(..., row.names = NULL, check.names = TRUE,
       var <- listData[[i]]
       element <- try(as(var, "DFrame"), silent = TRUE)
       if (inherits(element, "try-error"))
-        stop("cannot coerce class \"", class(var)[[1L]], "\" to a DataFrame")
+        stop("cannot coerce class \"", class1(var), "\" to a DataFrame")
       nrows[i] <- nrow(element)
       ncols[i] <- ncol(element)
       varlist[[i]] <- element
@@ -497,7 +497,7 @@ setMethod("extractROWS", "DataFrame",
 setMethod("extractCOLS", "DataFrame", function(x, i) {
     ## Remove this call to updateObject() when the signature of this
     ## extractCOLS() method is changed from DataFrame to DFrame.
-    if (class(x)[[1L]] == "DataFrame")
+    if (class1(x) == "DataFrame")
         x <- updateObject(x, check=FALSE)
     if (missing(i))
         return(x)
@@ -754,8 +754,8 @@ hasS3Method <- function(f, signature) {
 
 droplevels.DFrame <- function(x, except=NULL) {
   canDropLevels <- function(xi) {
-    hasNonDefaultMethod(droplevels, class(xi)[[1L]]) ||
-      hasS3Method("droplevels", class(xi)[[1L]])
+    hasNonDefaultMethod(droplevels, class1(xi)) ||
+      hasS3Method("droplevels", class1(xi))
   }
   drop.levels <- vapply(x, canDropLevels, NA)
   if (!is.null(except))
@@ -947,9 +947,9 @@ setAs("ANY", "DataFrame_OR_NULL", function(from) as(from, "DFrame"))
 setMethod("coerce2", "DataFrame",
     function(from, to)
     {
-        to_class <- class(to)[[1L]]
+        to_class <- class1(to)
         ## Is this test equivalent to is.list(from) && !is.object(from)?
-        if (class(from)[[1L]] == "list") {
+        if (class1(from) == "list") {
             ## Turn an ordinary list into a DataFrame in the most possibly
             ## straightforward way.
             ans <- new_DataFrame(from, what="list elements")
@@ -977,7 +977,7 @@ setMethod("coerce2", "DataFrame",
                 return(from)
             ans <- as(from, to_class, strict=FALSE)
             if (!identical(dim(ans), from_dim))
-                stop(wmsg("coercion of ", class(from)[[1L]], " object ",
+                stop(wmsg("coercion of ", class1(from), " object ",
                           "to ", to_class, " didn't preserve its dimensions"))
             ## Try to restore the dimnames if they were lost or altered.
             from_dimnames <- dimnames(from)
@@ -998,7 +998,7 @@ setMethod("coerce2", "DataFrame",
 ###
 
 setMethod("classNameForDisplay", "DFrame",
-    function(x) if (class(x) == "DFrame") "DataFrame" else class(x)
+    function(x) if (class1(x) == "DFrame") "DataFrame" else class1(x)
 )
 
 setMethod("makeNakedCharacterMatrixForDisplay", "DataFrame",
@@ -1050,7 +1050,7 @@ make_class_info_for_DataFrame_display <- function(x)
 setMethod("show", "DataFrame",
     function(object)
     {
-        if (class(object) == "DataFrame") {
+        if (class1(object) == "DataFrame") {
             ## Aug 20, 2019: Too early for this warning.
             #warning(wmsg(.OLD_DATAFRAME_INSTANCE_MSG))
             object <- updateObject(object, check=FALSE)
@@ -1060,4 +1060,3 @@ setMethod("show", "DataFrame",
 )
 
 setMethod("showAsCell", "DataFrame", showAsCell_array)
-

@@ -136,10 +136,10 @@ LLint <- function(length=0L)
 {
     x_len <- length(x)
     if (x_len == 0L) {
-        cat(class(x), "(0)\n", sep="")
+        cat(class1(x), "(0)\n", sep="")
         return()
     }
-    cat(class(x), " of length ", x_len, ":\n", sep="")
+    cat(class1(x), " of length ", x_len, ":\n", sep="")
     print(as.character(x), quote=FALSE, na.print="NA")
     return()
 }
@@ -185,7 +185,7 @@ setMethod("showAsCell", "LLint", function(object) as.character(object))
             if (is.LLint(object))
                 return(object@bytes)
             stop(wmsg("cannot combine LLint objects ",
-                      "with objects of class ", class(object)))
+                      "with objects of class ", class1(object)))
         }
     )
     ans_bytes <- unlist(bytes_list, use.names=FALSE)
@@ -271,4 +271,3 @@ setMethod("Summary", "LLint",
         .Call("LLint_Summary", .Generic, x, na.rm=na.rm, PACKAGE="S4Vectors")
     }
 )
-

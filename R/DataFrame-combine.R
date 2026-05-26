@@ -367,14 +367,13 @@ setMethod("merge", c("DataFrame", "DataFrame"), function(x, y, by, ...) {
     if (is(by, "Hits")) {
         return(.mergeByHits(x, y, by, ...))
     }
-    as(merge(as(x, "data.frame"), as(y, "data.frame"), by, ...), class(x))
+    as(merge(as(x, "data.frame"), as(y, "data.frame"), by, ...), class1(x))
 })
 
 setMethod("merge", c("data.frame", "DataFrame"), function(x, y, ...) {
-  as(merge(x, as(y, "data.frame"), ...), class(y))
+  as(merge(x, as(y, "data.frame"), ...), class1(y))
 })
 
 setMethod("merge", c("DataFrame", "data.frame"), function(x, y, ...) {
-  as(merge(as(x, "data.frame"), y, ...), class(x))
+  as(merge(as(x, "data.frame"), y, ...), class1(x))
 })
-

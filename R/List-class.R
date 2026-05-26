@@ -57,7 +57,7 @@ setMethod("isEmpty", "ANY",
                   return(length(x) == 0L)
               if (!is(x, "list_OR_List"))
                   stop("isEmpty() is not defined for objects of class ",
-                       class(x)[[1L]])
+                       class1(x))
               ## Recursive definition
               if (length(x) == 0L)
                   return(TRUE)
@@ -143,7 +143,7 @@ set_unlisted_names <- function(unlisted_x, x)
     }
     if (is(res, "try-error"))
         warning("failed to set ", what, " on the ",
-                "unlisted ", class(x)[[1L]], " object")
+                "unlisted ", class1(x), " object")
     unlisted_x
 }
 
@@ -396,7 +396,7 @@ subset_List_by_List <- function(x, i)
                                     LL=.fast_subset_List_by_LL,
                                     NL=.fast_subset_List_by_NL,
                                     RL=.fast_subset_List_by_RL)
-            ans <- as(fast_path_FUN(x, i), class(x))  # fast path
+            ans <- as(fast_path_FUN(x, i), class1(x))  # fast path
             ## Propagate 'metadata(x)' and 'mcols(x)'.
             metadata(ans) <- metadata(x)
             mcols(ans) <- mcols(x, use.names=FALSE)
@@ -441,7 +441,7 @@ subset_List_by_List <- function(x, i)
     unlisted_ans <- replaceROWS(unlisted_x, unlisted_i, unlisted_value)
 
     ## Relist.
-    ans <- as(relist(unlisted_ans, x), class(x))
+    ans <- as(relist(unlisted_ans, x), class1(x))
     metadata(ans) <- metadata(x)
     ans
 }
@@ -651,4 +651,3 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
     ans
 }
 setMethod("as.data.frame", "List", .as.data.frame.List)
-

@@ -30,7 +30,7 @@ setGeneric("relistToClass", function(x) standardGeneric("relistToClass"))
   cn
 }
 
-setMethod("relistToClass", "ANY", function(x) .selectListClassName(class(x)))
+setMethod("relistToClass", "ANY", function(x) .selectListClassName(class1(x)))
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,4 +66,3 @@ setMethods("split", list(c("Vector", "ANY"),
 setMethod("split", c("list", "Vector"),
     function(x, f, drop=FALSE, ...) split(x, as.vector(f), drop=drop, ...)
 )
-

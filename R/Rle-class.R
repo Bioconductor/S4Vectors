@@ -194,13 +194,13 @@ extract_positions_from_Rle <- function(x, pos, method=0L, decoded=FALSE)
     ans <- runValue(x)[mapped_pos]
     if (decoded)
         return(ans)
-    as(Rle(ans), class(x))  # so the function is an endomorphism
+    as(Rle(ans), class1(x))  # so the function is an endomorphism
 }
 
 extract_range_from_Rle <- function(x, start, end)
 {
     ans <- .Call2("Rle_extract_range", x, start, end, PACKAGE="S4Vectors")
-    as(ans, class(x))  # so the function is an endomorphism
+    as(ans, class1(x))  # so the function is an endomorphism
 }
 
 ### NOT exported but used in IRanges package (by "extractROWS" method with
@@ -213,7 +213,7 @@ extract_ranges_from_Rle <- function(x, start, width, method=0L, as.list=FALSE)
     ans <- .Call2("Rle_extract_ranges", x, start, width, method, as.list,
                                         PACKAGE="S4Vectors")
     ## The function must act like an endomorphism.
-    x_class <- class(x)
+    x_class <- class1(x)
     if (!as.list)
         return(as(ans, x_class))
     ## 'ans' is a list of Rle instances.
@@ -534,7 +534,7 @@ setMethod("rep.int", "Rle",
             stop("invalid 'times' argument")
         ans <- Rle(rep.int(runValue(x), times),
                    rep.int(runLength(x), times))
-        as(ans, class(x))  # so the function is an endomorphism
+        as(ans, class1(x))  # so the function is an endomorphism
     }
 )
 
@@ -549,7 +549,7 @@ setMethod("rep", "Rle",
                           stop("invalid 'each' argument")
                       usedEach <- TRUE
                       if (each == 0)
-                          x <- new2(class(x), values=runValue(x)[0L],
+                          x <- new2(class1(x), values=runValue(x)[0L],
                                               check=FALSE)
                       else
                           x@lengths <- each[1L] * runLength(x)
@@ -560,7 +560,7 @@ setMethod("rep", "Rle",
                   length.out <- as.integer(length.out[1L])
                   if (!is.na(length.out)) {
                       if (length.out == 0) {
-                          x <- new2(class(x), values=runValue(x)[0L],
+                          x <- new2(class1(x), values=runValue(x)[0L],
                                               check=FALSE)
                       } else if (length.out < n) {
                           x <- window(x, 1, length.out)
@@ -906,4 +906,3 @@ setMethod("show", "Rle",
               if (is.factor(runValue(object)))
                   cat(labeledLine("Levels", levels(object)))
           })
-

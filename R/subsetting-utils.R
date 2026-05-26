@@ -475,19 +475,20 @@ setGeneric("normalizeSingleBracketReplacementValue", signature="x",
 setMethod("normalizeSingleBracketReplacementValue", "ANY",
     function(value, x)
     {
-        if (is(value, class(x)))
+        target_class <- class1(x)
+        if (is(value, target_class))
             return(value)
         value_len <- length(value)
-        value <- try(as(value, class(x)), silent=TRUE)
+        value <- try(as(value, target_class), silent=TRUE)
         if (inherits(value, "try-error"))
-            stop("'value' must be a ", class(x), " object (or coercible ",
-                 "to a ", class(x), " object)")
+            stop("'value' must be a ", target_class, " object (or coercible ",
+                 "to a ", target_class, " object)")
         if (length(value) != value_len)
-            stop("coercing replacement value to ", class(x), "\n",
+            stop("coercing replacement value to ", target_class, "\n",
                  "  changed its length!\n",
                  "  Please do the explicit coercion ",
                  "yourself with something like:\n",
-                 "    x[...] <- as(value, \"", class(x), "\")\n",
+                 "    x[...] <- as(value, \"", target_class, "\")\n",
                  "  but first make sure this coercion does what you want.")
         value
     }
@@ -718,10 +719,10 @@ normalizeDoubleBracketSubscript <- function(i, x, exact=TRUE,
         stop("'allow.NA' must be TRUE or FALSE")
     if (!isTRUEorFALSE(allow.nomatch))
         stop("'allow.nomatch' must be TRUE or FALSE")
-    subscript_type <- class(i)
+    subscript_type <- class1(i)
     if (is(i, "Rle")) {
         i <- decodeRle(i)
-        subscript_type <- paste0(class(i), "-", subscript_type)
+        subscript_type <- paste0(class1(i), "-", subscript_type)
     }
     if (is.factor(i))
         i <- as.character(i)
@@ -826,7 +827,7 @@ setMethod("getListElement", "list",
     value <- setNames(list(value), name)
     value <- try(coerce2(value, x), silent=TRUE)
     if (inherits(value, "try-error"))
-        stop(wmsg("failed to coerce 'list(value)' to a ", class(x),
+        stop(wmsg("failed to coerce 'list(value)' to a ", class1(x),
                   " object of length 1"))
     value
 }
@@ -953,4 +954,3 @@ rep.int_along_ROWS <- function(x, times)
 }
 
 setMethod("rep.int", "LLint", rep.int_along_ROWS)
-

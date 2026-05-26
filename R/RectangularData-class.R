@@ -236,7 +236,7 @@ combineUniqueCols <- function(x, ..., use.names=TRUE)
                 # something is probably already wrong if this warning fires.
                 if (!identical(extractROWS(previous, overlapped), extractROWS(replacements, overlapped))) {
                     warning(wmsg("different values for shared rows in multiple instances of column '",
-                        d, "', ignoring this column in ", class(all_objects[[i_object]]), " ", i_object))
+                        d, "', ignoring this column in ", class1(all_objects[[i_object]]), " ", i_object))
                 } else {
                     reference <- replaceROWS(reference, candidates, replacements)
                     filled[candidates] <- TRUE
@@ -262,7 +262,7 @@ combineUniqueCols <- function(x, ..., use.names=TRUE)
                 if (!identical(all_objects[[i_object]][,i_col], reference)) {
                     # In this case, the warning is only emitted if they are not identical.
                     warning(wmsg("different values in multiple instances of column '",
-                        d, "', ignoring this column in ", class(all_objects[[i_object]]), " ", i_object))
+                        d, "', ignoring this column in ", class1(all_objects[[i_object]]), " ", i_object))
                 }
             }
         }
@@ -296,4 +296,3 @@ make_rownames_for_RectangularData_display <-
     }
     c(s1, "...", s2)
 }
-

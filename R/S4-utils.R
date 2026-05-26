@@ -43,6 +43,16 @@ drop_AsIs <- function(x)
     x
 }
 
+### Return the primary class name for code that needs a scalar class.
+class1 <- function(x)
+{
+    cl <- class(x)
+    if (length(cl) > 1L)
+        cl[[1L]]
+    else
+        cl
+}
+
 
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Some convenient union classes
@@ -144,7 +154,7 @@ setGeneric("coerce2", signature="to",
 setMethod("coerce2", "ANY",
     function(from, to)
     {
-        to_class <- class(to)
+        to_class <- class1(to)
         if (is(from, to_class))
             return(from)
         if (is.data.frame(to)) {
@@ -160,7 +170,7 @@ setMethod("coerce2", "ANY",
             }
         }
         if (length(ans) != length(from))
-            stop(wmsg("coercion of ", class(from), " object to ", to_class,
+            stop(wmsg("coercion of ", class1(from), " object to ", to_class,
                       " didn't preserve its length"))
         ## Try to restore the names if they were lost (e.g. by as.integer())
         ## or altered (e.g. by as.data.frame(), which will alter names equal
@@ -366,7 +376,7 @@ setDefaultSlotValue <- function(classname, slotname, value, where=.GlobalEnv)
 setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
 {
     classdef <- getClass(classname, where=where)
-    if (class(object) != classname)
+    if (class1(object) != classname)
         stop("'object' must be a ", classname, " instance")
     object_attribs <- attributes(object)
     object_attribs$class <- NULL
@@ -388,7 +398,8 @@ setPrototypeFromObject <- function(classname, object, where=.GlobalEnv)
 
 .allEqualS4 <- function(x, y) {
   eq <- all.equal(x, y)
-  canCompareS4 <- !isTRUE(eq) && isS4(x) && isS4(y) && class(x) == class(y)
+  canCompareS4 <- !isTRUE(eq) && isS4(x) && isS4(y) &&
+    class1(x) == class1(y)
   if (canCompareS4) {
     child.diffs <- mapply(.allEqualS4, attributes(x), attributes(y),
                           SIMPLIFY=FALSE)
@@ -409,4 +420,3 @@ allEqualS4 <- function(x, y) {
   eq <- .allEqualS4(x, y)
   setNames(eq$comparison, rownames(eq))[sapply(eq$comparison, Negate(isTRUE))]
 }
-

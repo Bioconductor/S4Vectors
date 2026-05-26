@@ -154,7 +154,7 @@ setMethod("normalizeSingleBracketReplacementValue", "TransposedDataFrame",
         is_empty_list <- is(value, "list_OR_List") && length(value) == 0L
         if (is.null(value) || is_empty_list)
             return(NULL)
-        as(value, class(x), strict=FALSE)
+        as(value, class1(x), strict=FALSE)
     }
 )
 
@@ -279,4 +279,3 @@ setMethod("bindCOLS", "TransposedDataFrame",
                    use.names=use.names, check=check))
     }
 )
-

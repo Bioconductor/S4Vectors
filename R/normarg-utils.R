@@ -288,9 +288,10 @@ fold <- function(x, circle.length, from=1)
         from <- as.integer(from)
     from <- 1L + (from - 1L) %% circle.length
     if (typeof(x) == "S4") {
-        ans <- as(rep.int(0L, circle.length), class(x))
+        x_class <- class1(x)
+        ans <- as(rep.int(0L, circle.length), x_class)
         if (length(ans) != circle.length)
-            stop("don't know how to handle 'x' of class ", class(x))
+            stop("don't know how to handle 'x' of class ", x_class)
     } else {
         ans <- vector(typeof(x), length=circle.length)
     }
@@ -399,4 +400,3 @@ extraArgsAsList <- function(.valid.argnames, ...)
         stop("argument names must be unique")
     args
 }
-

@@ -412,7 +412,7 @@ setMethod("as.character", "Factor",
     cat(summary(x), "\n", sep="")
     x_levels <- levels(x)
     x_nlevels <- NROW(x_levels)
-    cat("Levels:", class(x_levels), "object ")
+    cat("Levels:", class1(x_levels), "object ")
     if (length(dim(x_levels)) < 2L) {
         cat("of length", x_nlevels)
     } else {
@@ -442,7 +442,7 @@ setMethod("showAsCell", "Factor",
 ### external pointers internally like DNAStringSet objects.
 .same_levels <- function(x_levels, y_levels)
 {
-    if (class(x_levels) != class(y_levels))
+    if (class1(x_levels) != class1(y_levels))
         return(FALSE)
     x_levels_dim <- dim(x_levels)
     y_levels_dim <- dim(y_levels)
@@ -575,4 +575,3 @@ setMethod("selfmatch", "Factor",
 )
 
 setMethod("xtfrm", "Factor", function(x) xtfrm(x@levels)[as.integer(x@index)])
-

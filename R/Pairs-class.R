@@ -196,7 +196,7 @@ setMethod("makeNakedCharacterMatrixForDisplay", "Pairs",
 )
 
 showPairs <- function(x, margin = "", print.classinfo = FALSE) {
-    x_class <- class(x)
+    x_class <- class1(x)
     x_len <- length(x)
     x_mcols <- mcols(x, use.names=FALSE)
     x_nmc <- if (is.null(x_mcols)) 
@@ -207,7 +207,7 @@ showPairs <- function(x, margin = "", print.classinfo = FALSE) {
         ifelse(x_nmc == 1L, "", "s"), ":\n", sep = "")
     out <- makePrettyMatrixForCompactPrinting(x)
     if (print.classinfo) {
-        .COL2CLASS <- c(first = class(first(x)), second = class(second(x)))
+        .COL2CLASS <- c(first = class1(first(x)), second = class1(second(x)))
         classinfo <- makeClassinfoRowForCompactPrinting(x, .COL2CLASS)
         stopifnot(identical(colnames(classinfo), colnames(out)))
         out <- rbind(classinfo, out)
