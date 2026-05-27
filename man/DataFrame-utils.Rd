@@ -65,7 +65,7 @@
 \section{Transforming}{
   In the code snippet below, \code{x} is a \link{DataFrame} object.
   \describe{
-    \item{\code{transform(`_data`, ...)}:}{ adds or replaces columns based on
+    \item{\code{transform(x, ...)}:}{ adds or replaces columns based on
       expressions in \code{\dots}. See \code{\link{transform}}.
     }
   }

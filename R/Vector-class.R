@@ -849,17 +849,17 @@ setReplaceMethod("column", "Vector", function(x, name, value) {
     }
 })
 
-transformColumns <- function(`_data`, ...) {
+transformColumns <- function(x, ...) {
     exprs <- as.list(substitute(list(...))[-1L])
     if (any(names(exprs) == "")) {
         stop("all arguments in '...' must be named")
     }
     for (colName in names(exprs)) { # for loop allows inter-arg dependencies
         enclos <- .find_named_arg_enclos(colName)
-        value <- safeEval(exprs[[colName]], `_data`, enclos)
-        column(`_data`, colName) <- value
+        value <- safeEval(exprs[[colName]], x, enclos)
+        column(x, colName) <- value
     }
-    `_data`
+    x
 }
 
 ### TODO: Maybe deprecate in BioC 3.24.
