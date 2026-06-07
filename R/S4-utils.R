@@ -223,21 +223,26 @@ wmsg2 <- function(...)
 
 setValidity2 <- function(Class, method, where=topenv(parent.frame()))
 {
-    setValidity(Class,
+    enclos <- environment(setValidity2)
+    validity <- eval(substitute(
         function(object)
         {
             if (disableValidity())
                 return(TRUE)
             if (debugValidity()) {
-                whoami <- paste("validity method for", Class, "object")
+                whoami <- paste("validity method for", CLASS, "object")
                 cat("[debugValidity] Entering ", whoami, "\n", sep="")
                 on.exit(cat("[debugValidity] Leaving ", whoami, "\n", sep=""))
             }
-            desc_strings <- method(object)
+            desc_strings <- METHOD(object)
             if (isTRUE(desc_strings) || length(desc_strings) == 0L)
                 return(TRUE)
             vapply(desc_strings, wmsg2, character(1), USE.NAMES=FALSE)
         },
+        list(CLASS=Class, METHOD=method)
+    ), envir=enclos)
+    setValidity(Class,
+        validity,
         where=where
     )
 }
