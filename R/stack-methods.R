@@ -39,7 +39,7 @@ setMethod("stack", "List",
             if (!is.null(name.var)) {
               nms <- as.character(unlist(lapply(x, names)))
               if (length(nms) == 0L) {
-                rngs <- IRange::IRanges(1L, width=elementNROWS(x))
+                rngs <- IRanges::IRanges(1L, width=elementNROWS(x))
                 nms <- as.integer(rngs)
               } else {
                 nms <- factor(nms, unique(nms))
