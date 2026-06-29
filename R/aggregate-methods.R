@@ -53,8 +53,8 @@
 
 
 setMethod("aggregate", "matrix", stats:::aggregate.default)
-setMethod("aggregate", "data.frame", stats:::aggregate.data.frame)
-setMethod("aggregate", "ts", stats:::aggregate.ts)
+setMethod("aggregate", "data.frame", stats::aggregate.data.frame)
+setMethod("aggregate", "ts", stats::aggregate.ts)
 
 ### S3/S4 combo for aggregate.Vector
 aggregate.Vector <- function(x, by, FUN, start=NULL, end=NULL, width=NULL,
