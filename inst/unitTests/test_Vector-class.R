@@ -19,5 +19,5 @@ test_parallelVectorNames_supports_oldClass_prototype <- function()
 {
     x <- structure(Sys.time() + 1:3, class=c("POSIXct", "POSIXt"))
     checkException(new("POSIXct"), silent=TRUE)
-    checkIdentical(parallelVectorNames(x), "proto")
+    checkIdentical(parallelVectorNames(x), character(0))
 }

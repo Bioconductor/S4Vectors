@@ -66,8 +66,8 @@ setGeneric("parallelVectorNames",
            function(x) standardGeneric("parallelVectorNames"))
 setMethod("parallelVectorNames", "ANY",
           function(x) {
-              proto <- structure(getClass(class1(x))@prototype, class=class(x))
-              setdiff(colnames(as.data.frame(proto)), "value")
+              value <- structure(getClass(class1(x))@prototype, class=class(x))
+              setdiff(colnames(as.data.frame(value)), "value")
           })
 
 
