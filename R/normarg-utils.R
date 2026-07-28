@@ -39,11 +39,7 @@ isSingleStringOrNA <- function(x)
 }
 
 ### NOT exported.
-anyMissing <- function(x)
-{
-    .Deprecated(new="anyNA()", old="S4Vectors:::anyMissing()")
-    anyNA(x)
-}
+anyMissing <- function(x) .Defunct(new="anyNA()")
 
 ### NOT exported.
 isNumericOrNAs <- function(x)
