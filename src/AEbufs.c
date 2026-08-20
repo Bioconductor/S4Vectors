@@ -1691,9 +1691,13 @@ SEXP _new_CHARACTER_from_CharAEAE(const CharAEAE *aeae)
 	PROTECT(ans = NEW_CHARACTER((R_xlen_t) aeae_nelt));
 	for (i = 0; i < aeae_nelt; i++) {
 		ae = aeae->elts[i];
-		PROTECT(ans_elt = _new_CHARSXP_from_CharAE(ae));
-		SET_STRING_ELT(ans, i, ans_elt);
-		UNPROTECT(1);
+		if (ae == NULL) {
+			SET_STRING_ELT(ans, i, NA_STRING);
+		} else {
+			PROTECT(ans_elt = _new_CHARSXP_from_CharAE(ae));
+			SET_STRING_ELT(ans, i, ans_elt);
+			UNPROTECT(1);
+		}
 	}
 	UNPROTECT(1);
 	return ans;
