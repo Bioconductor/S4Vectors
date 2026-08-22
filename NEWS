@@ -5,6 +5,11 @@ SIGNIFICANT USER-VISIBLE CHANGES
 
     o Add missing docs to pass R CMD check without warnings.
 
+BUG FIXES
+
+    o Avoid a warning from as.data.frame() when called with the new 'validRN'
+      argument used by R 4.7.0 during data frame construction (#138).
+
 
 CHANGES IN VERSION 0.48.0
 -------------------------
@@ -814,5 +819,4 @@ BUG FIXES
     o Fix subset() on a zero column DataFrame.
 
     o Fix rendering of Date/time classes as DataFrame columns.
-
 

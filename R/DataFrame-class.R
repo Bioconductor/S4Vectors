@@ -775,9 +775,10 @@ setMethod("rep", "DataFrame", function(x, ...) {
 ###
 
 ### S3/S4 combo for as.data.frame.DataFrame
-### Same arguments as as.data.frame.matrix().
+### Same arguments as as.data.frame.matrix(), plus 'validRN' for
+### compatibility with the R 4.7.0 data.frame() implementation.
 as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
-                                    make.names=TRUE, ...,
+                                    make.names=TRUE, validRN=TRUE, ...,
                                     stringsAsFactors=FALSE)
 {
     if (!isTRUEorFALSE(make.names))

@@ -88,6 +88,20 @@ test_DataFrame_construction <- function() {
   checkIdentical(as.data.frame(DF), data.frame(foo=foo, bar=bar))
 }
 
+test_DataFrame_as_data_frame_validRN <- function() {
+  DF <- DataFrame(score = 1:3)
+  warnings <- list()
+  ans <- withCallingHandlers(
+    as.data.frame(DF, optional=TRUE, validRN=FALSE),
+    warning = function(w) {
+      warnings <<- c(warnings, list(w))
+      invokeRestart("muffleWarning")
+    }
+  )
+  checkIdentical(warnings, list())
+  checkIdentical(ans, data.frame(score=1:3))
+}
+
 test_DataFrame_aggregate_with_dots <- function() {
   shift <- 100
   df <- DataFrame(g=c("a", "a", "b", "b"), x=1:4, y=11:14)
