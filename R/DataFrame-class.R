@@ -779,13 +779,12 @@ setMethod("rep", "DataFrame", function(x, ...) {
 ### Inherits the 'validRN' argument from as.data.frame.vector(), and
 ### the 'stringsAsFactors' argument from as.data.frame.character(),
 ### as.data.frame.list(), and as.data.frame.matrix().
+### Silently ignores the 'optional' argument.
 .as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
                                      make.names=TRUE,
                                      validRN=TRUE,
                                      stringsAsFactors=FALSE)
 {
-    if (!isTRUEorFALSE(optional))
-        stop(wmsg("'optional' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(make.names))
         stop(wmsg("'make.names' must be TRUE or FALSE"))
     if (is.null(row.names)) {
@@ -811,7 +810,7 @@ setMethod("rep", "DataFrame", function(x, ...) {
             if (is.data.frame(col))
                 return(col)
             if (is(col, "DataFrame"))
-                return(as.data.frame(col, optional=optional, validRN=validRN,
+                return(as.data.frame(col, optional=TRUE, validRN=validRN,
                                      stringsAsFactors=stringsAsFactors))
             ## If 'col is an AtomicList derivative (e.g. IntegerList,
             ## CharacterList, etc...) or other List derivative that compares
@@ -836,7 +835,7 @@ setMethod("rep", "DataFrame", function(x, ...) {
             protect <- !is(col, "AsIs") && is.list(col) && !is.object(col)
             if (protect)
                 col <- I(col)  # set AsIs class to protect column
-            df <- as.data.frame(col, optional=optional, validRN=validRN,
+            df <- as.data.frame(col, optional=TRUE, validRN=validRN,
                                      stringsAsFactors=stringsAsFactors)
             if (protect)
                 df[[1L]] <- unclass(df[[1L]])  # drop AsIs class
@@ -845,7 +844,7 @@ setMethod("rep", "DataFrame", function(x, ...) {
             df
         })
     do.call(data.frame,
-            c(df_list, list(row.names=row.names, check.names=!optional)))
+            c(df_list, list(row.names=row.names, check.names=FALSE)))
 }
 as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
     .as.data.frame.DataFrame(x, row.names=row.names, optional=optional, ...)
