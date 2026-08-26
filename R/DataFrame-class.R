@@ -774,16 +774,13 @@ setMethod("rep", "DataFrame", function(x, ...) {
 ### Coercion
 ###
 
-### S3/S4 combo for as.data.frame.DataFrame
+### --- S3/S4 combo for as.data.frame.DataFrame ---
 ### Inherits the 'make.names' argument from as.data.frame.matrix().
 ### Inherits the 'validRN' argument from as.data.frame.vector(), and
 ### the 'stringsAsFactors' argument from as.data.frame.character(),
 ### as.data.frame.list(), and as.data.frame.matrix().
-### Silently ignores the 'optional' argument.
-.as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
-                                     make.names=TRUE,
-                                     validRN=TRUE,
-                                     stringsAsFactors=FALSE)
+.as.data.frame.DataFrame <- function(x, row.names=NULL, make.names=TRUE,
+                                     validRN=TRUE, stringsAsFactors=FALSE)
 {
     if (!isTRUEorFALSE(make.names))
         stop(wmsg("'make.names' must be TRUE or FALSE"))
@@ -846,8 +843,9 @@ setMethod("rep", "DataFrame", function(x, ...) {
     do.call(data.frame,
             c(df_list, list(row.names=row.names, check.names=FALSE)))
 }
+### Silently ignores the 'optional' argument.
 as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
-    .as.data.frame.DataFrame(x, row.names=row.names, optional=optional, ...)
+    .as.data.frame.DataFrame(x, row.names=row.names, ...)
 setMethod("as.data.frame", "DataFrame", as.data.frame.DataFrame)
 
 setMethod("as.matrix", "DataFrame", function(x) {
