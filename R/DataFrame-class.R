@@ -775,17 +775,19 @@ setMethod("rep", "DataFrame", function(x, ...) {
 ###
 
 ### S3/S4 combo for as.data.frame.DataFrame
-### Same arguments as as.data.frame.matrix().
-as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
-                                    make.names=TRUE, ...,
-                                    stringsAsFactors=FALSE)
+### Inherits the 'make.names' argument from as.data.frame.matrix().
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
+                                     make.names=TRUE,
+                                     validRN=TRUE,
+                                     stringsAsFactors=FALSE)
 {
+    if (!isTRUEorFALSE(optional))
+        stop(wmsg("'optional' must be TRUE or FALSE"))
     if (!isTRUEorFALSE(make.names))
-        stop("'make.names' must be TRUE or FALSE")
-    if (length(list(...)))
-        warning("arguments in '...' ignored")
-    if (!identical(stringsAsFactors, FALSE))
-        stop("'stringsAsFactors' not supported")
+        stop(wmsg("'make.names' must be TRUE or FALSE"))
     if (is.null(row.names)) {
         row.names <- rownames(x)
         if (is.null(row.names)) {
@@ -800,11 +802,8 @@ as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
         if (make.names)
             row.names <- make.names(row.names, unique=TRUE)
         if (length(row.names) != nrow(x))
-            stop("row names supplied are of the wrong length")
+            stop(wmsg("supplied row names are of the wrong length"))
     }
-    old_option <- getOption("stringsAsFactors")
-    options(stringsAsFactors=FALSE)
-    on.exit(options(stringsAsFactors=old_option))
     x_colnames <- colnames(x)
     df_list <- lapply(setNames(seq_along(x), x_colnames),
         function(j) {
@@ -812,7 +811,8 @@ as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
             if (is.data.frame(col))
                 return(col)
             if (is(col, "DataFrame"))
-                return(as.data.frame(col, optional=optional))
+                return(as.data.frame(col, optional=optional, validRN=validRN,
+                                     stringsAsFactors=stringsAsFactors))
             ## If 'col is an AtomicList derivative (e.g. IntegerList,
             ## CharacterList, etc...) or other List derivative that compares
             ## recursively (i.e. not an IRanges, GRanges, or DNAStringSet,
@@ -836,7 +836,8 @@ as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
             protect <- !is(col, "AsIs") && is.list(col) && !is.object(col)
             if (protect)
                 col <- I(col)  # set AsIs class to protect column
-            df <- as.data.frame(col, optional=optional)
+            df <- as.data.frame(col, optional=optional, validRN=validRN,
+                                     stringsAsFactors=stringsAsFactors)
             if (protect)
                 df[[1L]] <- unclass(df[[1L]])  # drop AsIs class
             if (is.null(colnames(col)) && ncol(df) == 1L)
@@ -844,10 +845,10 @@ as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE,
             df
         })
     do.call(data.frame,
-            c(df_list, list(row.names=row.names,
-                            check.names=!optional,
-                            stringsAsFactors=FALSE)))
+            c(df_list, list(row.names=row.names, check.names=!optional)))
 }
+as.data.frame.DataFrame <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.DataFrame(x, row.names=row.names, optional=optional, ...)
 setMethod("as.data.frame", "DataFrame", as.data.frame.DataFrame)
 
 setMethod("as.matrix", "DataFrame", function(x) {

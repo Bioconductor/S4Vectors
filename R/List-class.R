@@ -74,7 +74,7 @@ setMethod("isEmpty", "List", function(x) all(elementNROWS(x) == 0L))
 List <- function(...)
 {
     args <- list(...)
-    if (length(args) == 1L && is.list(args[[1L]])) 
+    if (length(args) == 1L && is.list(args[[1L]]))
         args <- args[[1L]]
     as(args, "List")
 }
@@ -625,7 +625,8 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
     data.frame(group=group, group_name=group_name, stringsAsFactors=FALSE)
 }
 
-.as.data.frame.List <- 
+### S3/S4 combo for as.data.frame.List
+as.data.frame.List <-
     function(x, row.names=NULL, optional=FALSE, ..., value.name="value",
              use.outer.mcols=FALSE, group_name.as.factor=FALSE)
 {
@@ -650,4 +651,7 @@ setAs("integer", "List", getMethod(coerce, c("ANY", "List")))
     }
     ans
 }
+.as.data.frame.List <- function(x, row.names=NULL, optional=FALSE, ...)
+    as.data.frame.List(x, row.names=row.names, optional=optional, ...)
 setMethod("as.data.frame", "List", .as.data.frame.List)
+

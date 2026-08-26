@@ -28,6 +28,7 @@
 \alias{coerce,integer,List-method}
 \alias{as.list,List-method}
 \alias{unlist,List-method}
+\alias{as.data.frame.List}
 \alias{as.data.frame,List-method}
 
 \alias{[,List-method}
