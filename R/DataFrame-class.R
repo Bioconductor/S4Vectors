@@ -807,7 +807,7 @@ setMethod("rep", "DataFrame", function(x, ...) {
             if (is.data.frame(col))
                 return(col)
             if (is(col, "DataFrame"))
-                return(as.data.frame(col, optional=TRUE, validRN=validRN,
+                return(as.data.frame(col, validRN=validRN,
                                      stringsAsFactors=stringsAsFactors))
             ## If 'col is an AtomicList derivative (e.g. IntegerList,
             ## CharacterList, etc...) or other List derivative that compares

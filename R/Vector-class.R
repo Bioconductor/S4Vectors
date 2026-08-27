@@ -24,7 +24,7 @@ setClass("Vector",
 ###   [1] FALSE
 ### See R/S4-utils.R for other examples of messed up inheritance with union
 ### classes.
-### TODO: Should we explicitely add "factor" to this union?
+### TODO: Should we explicitly add "factor" to this union?
 setClassUnion("vector_OR_Vector", c("vector", "Vector"))  # vector-like objects
 
 
