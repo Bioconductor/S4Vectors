@@ -125,16 +125,6 @@ setReplaceMethod("runValue", "Rle",
 
 setAs("ANY", "Rle", function(from) Rle(from))
 
-setAs("Rle", "vector", function(from) as.vector(from))
-setAs("Rle", "logical", function(from) as.logical(from))
-setAs("Rle", "integer", function(from) as.integer(from))
-setAs("Rle", "numeric", function(from) as.numeric(from))
-setAs("Rle", "complex", function(from) as.complex(from))
-setAs("Rle", "character", function(from) as.character(from))
-setAs("Rle", "raw", function(from) as.raw(from))
-setAs("Rle", "factor", function(from) as.factor(from))
-setAs("Rle", "list", function(from) as.list(from))
-
 as.vector.Rle <- function(x, mode)
   rep.int(as.vector(runValue(x), mode), runLength(x))
 setMethod("as.vector", "Rle", as.vector.Rle)
@@ -159,13 +149,21 @@ setMethod("decode", "ANY", identity)
 decodeRle <- function(x) rep.int(runValue(x), runLength(x))
 setMethod("decode", "Rle", decodeRle)
 
-.as.data.frame.Rle <- function(x, row.names=NULL, optional=FALSE, ...)
+### --- S3/S4 combo for as.data.frame.Rle ---
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+.as.data.frame.Rle <- function(x, row.names=NULL,
+                               validRN=TRUE, stringsAsFactors=FALSE)
 {
-    value <- decodeRle(x)
-    as.data.frame(value, row.names=row.names,
-                  optional=optional, ...)
+    x <- decodeRle(x)
+    as.data.frame(x, row.names=row.names, optional=TRUE,
+                  validRN=validRN, stringsAsFactors=stringsAsFactors)
 }
-setMethod("as.data.frame", "Rle", .as.data.frame.Rle)
+### Silently ignores the 'optional' argument.
+as.data.frame.Rle <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.Rle(x, row.names=row.names, ...)
+setMethod("as.data.frame", "Rle", as.data.frame.Rle)
 
 getStartEndRunAndOffset <- function(x, start, end) {
     .Call2("Rle_getStartEndRunAndOffset", x, start, end, PACKAGE="S4Vectors")

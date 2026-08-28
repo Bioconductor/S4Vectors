@@ -44,8 +44,8 @@
 \alias{as.complex,Vector-method}
 \alias{as.character,Vector-method}
 \alias{as.raw,Vector-method} 
-\alias{as.matrix,Vector-method}
 \alias{as.matrix.Vector}
+\alias{as.matrix,Vector-method}
 \alias{coerce,Vector,vector-method}
 \alias{coerce,Vector,logical-method}
 \alias{coerce,Vector,integer-method}
@@ -55,6 +55,7 @@
 \alias{coerce,Vector,character-method}
 \alias{coerce,Vector,raw-method}
 \alias{coerce,Vector,factor-method}
+\alias{coerce,Vector,list-method}
 \alias{coerce,Vector,data.frame-method}
 \alias{as.data.frame.Vector}
 \alias{as.data.frame,Vector-method}

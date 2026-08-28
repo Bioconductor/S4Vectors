@@ -352,58 +352,51 @@ setMethod("unname", "Vector", function(obj, force = FALSE) {
     obj
 })
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ### Coercion
 ###
 
-setMethod("as.logical", "Vector",
-    function(x) as.vector(x, mode="logical")
-)
-setMethod("as.integer", "Vector",
-    function(x) as.vector(x, mode="integer")
-)
-setMethod("as.numeric", "Vector",
-    function(x) as.vector(x, mode="numeric")
-)
+setMethod("as.logical", "Vector", function(x) as.vector(x, mode="logical"))
+setMethod("as.integer", "Vector", function(x) as.vector(x, mode="integer"))
+setMethod("as.numeric", "Vector", function(x) as.vector(x, mode="numeric"))
 ### Even though as.double() is a generic function (as reported by
-### 'getGeneric("as.double")', it seems impossible to define methods for this
-### generic. Trying to do so like in the code below actually creates an
-### "as.numeric" method.
-#setMethod("as.double", "Vector",
-#    function(x) as.vector(x, mode="double")
-#)
-setMethod("as.complex", "Vector",
-    function(x) as.vector(x, mode="complex")
-)
-setMethod("as.character", "Vector",
-    function(x) as.vector(x, mode="character")
-)
-setMethod("as.raw", "Vector",
-    function(x) as.vector(x, mode="raw")
-)
+### 'getGeneric("as.double")', it seems impossible to define methods for
+### this generic. Trying to do so like in the code below actually creates
+### an as.numeric() method.
+#setMethod("as.double", "Vector", function(x) as.vector(x, mode="double"))
+setMethod("as.complex", "Vector", function(x) as.vector(x, mode="complex"))
+setMethod("as.character", "Vector", function(x) as.vector(x, mode="character"))
+setMethod("as.raw", "Vector", function(x) as.vector(x, mode="raw"))
 
-setAs("Vector", "vector", function(from) as.vector(from))
-setAs("Vector", "logical", function(from) as.logical(from))
-setAs("Vector", "integer", function(from) as.integer(from))
-setAs("Vector", "numeric", function(from) as.numeric(from))
-setAs("Vector", "complex", function(from) as.complex(from))
-setAs("Vector", "character", function(from) as.character(from))
-setAs("Vector", "raw", function(from) as.raw(from))
-
-setAs("Vector", "factor", function(from) as.factor(from))
-
+setAs("Vector", "vector",     function(from) as.vector(from))
+setAs("Vector", "logical",    function(from) as.logical(from))
+setAs("Vector", "integer",    function(from) as.integer(from))
+setAs("Vector", "numeric",    function(from) as.numeric(from))
+setAs("Vector", "complex",    function(from) as.complex(from))
+setAs("Vector", "character",  function(from) as.character(from))
+setAs("Vector", "raw",        function(from) as.raw(from))
+setAs("Vector", "factor",     function(from) as.factor(from))
+setAs("Vector", "list",       function(from) as.list(from))
 setAs("Vector", "data.frame", function(from) as.data.frame(from, optional=TRUE))
 
-### S3/S4 combo for as.data.frame.Vector
-as.data.frame.Vector <- function(x, row.names=NULL, optional=FALSE, ...) {
-    as.data.frame(x, row.names=NULL, optional=optional, ...)
+### --- S3/S4 combo for as.data.frame.Vector ---
+### Inherits the 'validRN' argument from as.data.frame.vector(), and
+### the 'stringsAsFactors' argument from as.data.frame.character(),
+### as.data.frame.list(), and as.data.frame.matrix().
+### Relies on as.vector() which only works on **some** Vector derivatives
+### like XInteger or XRaw objects from the XVector package.
+.as.data.frame.Vector <- function(x, row.names=NULL,
+                                  validRN=TRUE, stringsAsFactors=FALSE)
+{
+    x <- as.vector(x)
+    as.data.frame(x, row.names=row.names, optional=TRUE,
+                  validRN=validRN, stringsAsFactors=stringsAsFactors)
 }
-setMethod("as.data.frame", "Vector",
-          function(x, row.names=NULL, optional=FALSE, ...)
-          {
-              x <- as.vector(x)
-              as.data.frame(x, row.names=row.names, optional=optional, ...)
-          })
+### Silently ignores the 'optional' argument.
+as.data.frame.Vector <- function(x, row.names=NULL, optional=FALSE, ...)
+    .as.data.frame.Vector(x, row.names=row.names, ...)
+setMethod("as.data.frame", "Vector", as.data.frame.Vector)
 
 as.matrix.Vector <- function(x, ...) {
     as.matrix(x)
