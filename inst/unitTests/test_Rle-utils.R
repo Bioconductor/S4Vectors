@@ -602,3 +602,121 @@ test_Rle_runq_integer <- function() {
     }
 }
 
+test_Rle_runwtsum_edge_cases <- function() {
+    # 1. Multi-run boundary transitions
+    x0_int <- c(10L, 20L, 20L, 30L, 40L, 40L, 40L, 50L, 60L, 60L, 70L)
+    x_int <- Rle(x0_int)
+    for (k in 1:length(x0_int)) {
+        wt_unif <- rep(1, k)
+        wt_seq <- seq_len(k)
+        wt_rev <- rev(seq_len(k))
+        for (wt in list(wt_unif, wt_seq, wt_rev)) {
+            target <- .naive_runwtsum(x0_int, k, wt, na.rm=TRUE)
+            current <- as.vector(runwtsum(x_int, k, wt, na.rm=TRUE))
+            checkIdentical(as.numeric(target), current)
+
+            target <- .naive_runwtsum(x0_int, k, wt, na.rm=FALSE)
+            current <- as.vector(runwtsum(x_int, k, wt, na.rm=FALSE))
+            checkIdentical(as.numeric(target), current)
+        }
+    }
+
+    # 2. Real/numeric Rle with all length-1 runs (every element changes)
+    x0_real <- c(1.5, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5)
+    x_real <- Rle(x0_real)
+    for (k in 1:length(x0_real)) {
+        wt <- rep(0.5, k)
+        target <- .naive_runwtsum(x0_real, k, wt, na.rm=TRUE)
+        current <- as.vector(runwtsum(x_real, k, wt, na.rm=TRUE))
+        checkIdentical(target, current)
+    }
+
+    # 3. Single-run Rle
+    x0_single <- rep(42L, 10)
+    x_single <- Rle(x0_single)
+    for (k in c(1, 3, 5, 10)) {
+        wt <- rep(1, k)
+        target <- .naive_runwtsum(x0_single, k, wt, na.rm=TRUE)
+        current <- as.vector(runwtsum(x_single, k, wt, na.rm=TRUE))
+        checkIdentical(as.numeric(target), current)
+    }
+
+    # 4. Leading, trailing, and isolated NAs with runs
+    x0_na <- c(NA_integer_, 1L, 1L, 2L, NA_integer_, 3L, 3L, 3L, NA_integer_)
+    x_na <- Rle(x0_na)
+    for (k in 1:length(x0_na)) {
+        wt <- rep(1, k)
+        target_narm <- .naive_runwtsum(x0_na, k, wt, na.rm=TRUE)
+        current_narm <- as.vector(runwtsum(x_na, k, wt, na.rm=TRUE))
+        checkIdentical(as.numeric(target_narm), current_narm)
+
+        target_na <- .naive_runwtsum(x0_na, k, wt, na.rm=FALSE)
+        current_na <- as.vector(runwtsum(x_na, k, wt, na.rm=FALSE))
+        checkIdentical(as.numeric(target_na), current_na)
+    }
+}
+
+test_Rle_runq_edge_cases <- function() {
+    # 1. Multi-run boundary transitions for integer Rle
+    x0_int <- c(5L, 10L, 10L, 15L, 20L, 20L, 20L, 25L, 30L, 30L, 35L)
+    x_int <- Rle(x0_int)
+    for (k in 1:length(x0_int)) {
+        for (i in c(1L, max(1L, k %/% 2L), k)) {
+            target <- as.integer(unlist(.naive_runq(x0_int, k, i, na.rm=TRUE)))
+            current <- as.vector(runq(x_int, k, i, na.rm=TRUE))
+            checkIdentical(target, current)
+
+            target_na <- as.integer(unlist(.naive_runq(x0_int, k, i, na.rm=FALSE)))
+            current_na <- as.vector(runq(x_int, k, i, na.rm=FALSE))
+            checkIdentical(target_na, current_na)
+        }
+    }
+
+    # 2. Multi-run real Rle with fractional values
+    x0_real <- c(1.1, 1.1, 2.2, 3.3, 3.3, 3.3, 4.4, 5.5, 5.5, 6.6)
+    x_real <- Rle(x0_real)
+    for (k in 1:length(x0_real)) {
+        for (i in c(1L, max(1L, k %/% 2L), k)) {
+            target <- as.numeric(.naive_runq(x0_real, k, i, na.rm=TRUE))
+            current <- as.numeric(runq(x_real, k, i, na.rm=TRUE))
+            checkIdentical(target, current)
+        }
+    }
+
+    # 3. All length-1 runs (every element changes)
+    x0_all1 <- c(9L, 3L, 7L, 1L, 8L, 2L, 6L, 4L, 5L)
+    x_all1 <- Rle(x0_all1)
+    for (k in 1:length(x0_all1)) {
+        for (i in c(1L, k)) {
+            target <- as.integer(unlist(.naive_runq(x0_all1, k, i, na.rm=TRUE)))
+            current <- as.vector(runq(x_all1, k, i, na.rm=TRUE))
+            checkIdentical(target, current)
+        }
+    }
+
+    # 4. Single-run Rle
+    x0_single <- rep(100L, 8)
+    x_single <- Rle(x0_single)
+    for (k in c(1, 4, 8)) {
+        for (i in c(1, k)) {
+            target <- as.integer(unlist(.naive_runq(x0_single, k, i, na.rm=TRUE)))
+            current <- as.vector(runq(x_single, k, i, na.rm=TRUE))
+            checkIdentical(target, current)
+        }
+    }
+
+    # 5. Interleaved NAs in integer Rle
+    x0_na <- c(NA_integer_, 2L, 2L, NA_integer_, 1L, 3L, NA_integer_)
+    x_na <- Rle(x0_na)
+    for (k in 1:length(x0_na)) {
+        for (i in c(1L, k)) {
+            target_narm <- as.integer(unlist(.naive_runq(x0_na, k, i, na.rm=TRUE)))
+            current_narm <- as.vector(runq(x_na, k, i, na.rm=TRUE))
+            checkIdentical(target_narm, current_narm)
+
+            target_na <- unlist(.naive_runq(x0_na, k, i, na.rm=FALSE))
+            current_na <- as.integer(runq(x_na, k, i, na.rm=FALSE))
+            checkIdentical(as.integer(target_na), current_na)
+        }
+    }
+}
