@@ -82,6 +82,8 @@ static int compar4_stable(const void *p1, const void *p2)
 	if (ret != 0)
 		return ret;
 	ret = COMPARE_TARGET_INTS(dd, i1, i2, dd_desc);
+	if (ret != 0)
+		return ret;
 	/* Break tie by position so the ordering is "stable". */
 	return i1 - i2;
 }
