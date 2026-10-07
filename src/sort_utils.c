@@ -14,9 +14,11 @@
 static const int *aa, *bb, *cc, *dd;
 static int aa_desc, bb_desc, cc_desc, dd_desc;
 
-#define	COMPARE_TARGET_INTS(target, i1, i2, desc) \
-	((desc) ? (target)[(i2)] - (target)[(i1)] \
-		: (target)[(i1)] - (target)[(i2)])
+#define CMP_INTS(a, b) (((a) > (b)) - ((a) < (b)))
+
+#define COMPARE_TARGET_INTS(target, i1, i2, desc)    \
+  ((desc) ? CMP_INTS((target)[(i2)], (target)[(i1)]) \
+          : CMP_INTS((target)[(i1)], (target)[(i2)]))
 
 static int compar1_stable(const void *p1, const void *p2)
 {
