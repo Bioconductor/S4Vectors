@@ -298,7 +298,7 @@ SEXP Rle_integer_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
 				stat += (*wt_elt) * (*curr_value);
 				stat_na += *curr_value_na;
 				curr_offset--;
-				if (curr_offset == 0) {
+				if (curr_offset == 0 && j < window_len - 1) {
 					curr_value++;
 					curr_value_na++;
 					curr_length++;
@@ -341,7 +341,7 @@ SEXP Rle_integer_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
 			}
 
 			/* move pointers if end of run */
-			if (start_offset == 0) {
+			if (start_offset == 0 && i < buf_len - 1) {
 				values_elt++;
 				values_elt_na++;
 				lengths_elt++;
@@ -422,7 +422,7 @@ SEXP Rle_real_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
 			     j++, wt_elt++) {
 				stat += (*wt_elt) * (*curr_value);
 				curr_offset--;
-				if (curr_offset == 0) {
+				if (curr_offset == 0 && j < window_len - 1) {
 					curr_value++;
 					curr_length++;
 					curr_offset = *curr_length;
@@ -466,7 +466,7 @@ SEXP Rle_real_runwtsum(SEXP x, SEXP k, SEXP wt, SEXP na_rm)
 				    start_offset--;
 			}
 			/* move pointers if end of run */
-			if (start_offset == 0) {
+			if (start_offset == 0 && i < buf_len - 1) {
 				values_elt++;
 				lengths_elt++;
 				start_offset = *lengths_elt;
@@ -565,7 +565,7 @@ SEXP Rle_integer_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 					count_na += 1;
 				window[j] = *curr_value;
 				curr_offset--;
-				if (curr_offset == 0) {
+				if (curr_offset == 0 && j < window_len - 1) {
 					curr_value++;
 					curr_length++;
 					curr_offset = *curr_length;
@@ -610,7 +610,7 @@ SEXP Rle_integer_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 			        start_offset--;
 			}
 			/* move pointers if end of run */
-			if (start_offset == 0) {
+			if (start_offset == 0 && i < buf_len - 1) {
 				values_elt++;
 				lengths_elt++;
 				start_offset = *lengths_elt;
@@ -687,7 +687,7 @@ SEXP Rle_real_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 					count_na += 1;	
 				window[j] = *curr_value;
 				curr_offset--;
-				if (curr_offset == 0) {
+				if (curr_offset == 0 && j < window_len - 1) {
 					curr_value++;
 					curr_length++;
 					curr_offset = *curr_length;
@@ -731,7 +731,7 @@ SEXP Rle_real_runq(SEXP x, SEXP k, SEXP which, SEXP na_rm)
 				start_offset--;
 			}
 			/* move pointers if end of run */
-			if (start_offset == 0) {
+			if (start_offset == 0 && i < buf_len - 1) {
 				values_elt++;
 				lengths_elt++;
 				start_offset = *lengths_elt;
