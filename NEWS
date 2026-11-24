@@ -1,3 +1,22 @@
+CHANGES IN VERSION 0.52.0
+-------------------------
+
+SIGNIFICANT USER-VISIBLE CHANGES
+
+    o Refactor as.data.frame.DataFrame(). See #138.
+
+    o Small tweaks to as.data.frame() methods for Vector and Rle objects.
+
+DEPRECATED AND DEFUNCT
+
+    o S4Vectors:::anyMissing() is now defunct (was deprecated)
+
+BUG FIXES
+
+    o Several bug fixes by various contributors. See #129, #136, #140,
+      #144, and #145.
+
+
 CHANGES IN VERSION 0.50.0
 -------------------------
 
